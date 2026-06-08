@@ -29,13 +29,26 @@
       padding: 32px;
     }
     main {
+      position: relative;
       width: min(1040px, 100%);
       border: 1px solid var(--border);
       border-radius: 28px;
       background: linear-gradient(145deg, rgba(13,27,47,.94), rgba(7,17,31,.92));
       padding: clamp(28px, 6vw, 72px);
       box-shadow: 0 30px 90px rgba(0,0,0,.35);
+      overflow: hidden;
     }
+    .brand {
+      position: absolute;
+      right: clamp(20px, 4vw, 54px);
+      top: clamp(20px, 4vw, 54px);
+      width: clamp(86px, 16vw, 170px);
+      opacity: .9;
+      filter: drop-shadow(0 18px 44px rgba(0,0,0,.35));
+      pointer-events: none;
+      user-select: none;
+    }
+    .content { position: relative; z-index: 1; }
     .badge {
       display: inline-flex;
       border: 1px solid var(--border);
@@ -46,12 +59,14 @@
       letter-spacing: .08em;
       text-transform: uppercase;
       margin-bottom: 28px;
+      background: rgba(7,17,31,.36);
     }
     h1 {
       font-size: clamp(52px, 11vw, 116px);
       line-height: .9;
       margin: 0 0 24px;
       letter-spacing: -0.08em;
+      padding-right: min(210px, 22vw);
     }
     h1 span { color: var(--accent); }
     p.lead {
@@ -90,22 +105,27 @@
     @media (max-width: 760px) {
       body { padding: 16px; align-items: flex-start; }
       main { border-radius: 22px; padding: 28px; }
+      .brand { width: 86px; right: 18px; top: 18px; opacity: .72; }
+      h1 { padding-right: 74px; }
       .grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
   <main>
-    <div class="badge">SaaS en construccion</div>
-    <h1>Xeler<span>IA</span></h1>
-    <p class="lead">El ERP inteligente para vender online sin perder el control.</p>
-    <p class="sub">Stock, ventas, clientes, facturacion e integraciones para ecommerce y marketplaces. Una base operativa clara para que cada canal deje de ser una isla.</p>
-    <section class="grid" aria-label="Modulos principales">
-      <div class="card"><strong>Inventario</strong><span>Stock centralizado, movimientos y trazabilidad operativa.</span></div>
-      <div class="card"><strong>Marketplaces</strong><span>Ventas y publicaciones conectadas sin duplicar trabajo.</span></div>
-      <div class="card"><strong>Facturacion</strong><span>Comprobantes y datos fiscales preparados para operar mejor.</span></div>
-    </section>
-    <footer>xeleria.com.ar</footer>
+    <img class="brand" src="./favicon_xeleria.png?v=1" alt="" aria-hidden="true">
+    <div class="content">
+      <div class="badge">SaaS en construccion</div>
+      <h1>Xeler<span>IA</span></h1>
+      <p class="lead">El ERP inteligente para vender online sin perder el control.</p>
+      <p class="sub">Stock, ventas, clientes, facturacion e integraciones para ecommerce y marketplaces. Una base operativa clara para que cada canal deje de ser una isla.</p>
+      <section class="grid" aria-label="Modulos principales">
+        <div class="card"><strong>Inventario</strong><span>Stock centralizado, movimientos y trazabilidad operativa.</span></div>
+        <div class="card"><strong>Marketplaces</strong><span>Ventas y publicaciones conectadas sin duplicar trabajo.</span></div>
+        <div class="card"><strong>Facturacion</strong><span>Comprobantes y datos fiscales preparados para operar mejor.</span></div>
+      </section>
+      <footer>xeleria.com.ar</footer>
+    </div>
   </main>
 </body>
 </html>
