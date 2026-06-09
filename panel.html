@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>XelerIA Panel</title>
+  <style>
+    body{font-family:Arial,sans-serif;background:#0b1220;color:#eef4ff;margin:0;padding:24px}
+    input,button,select{padding:10px;border-radius:8px;border:1px solid #334;background:#111c30;color:#eef4ff;margin:4px}
+    .card{background:#121a2b;border:1px solid #26344f;border-radius:14px;padding:16px;margin:14px 0}
+    table{width:100%;border-collapse:collapse}td,th{border-bottom:1px solid #26344f;padding:8px;text-align:left}
+    .muted{color:#8ea0bd}.pill{background:#22324e;border-radius:99px;padding:3px 8px;margin:2px;display:inline-block}
+  </style>
+</head>
+<body>
+  <h1>XelerIA · Panel beta</h1>
+  <div class="muted">Stock unificado ML / TN / manual</div>
+  <div class="card">
+    <input id="api" value="https://api.xeleria.com.ar" size="32">
+    <input id="tenant" value="fbfa89c2-b377-49b3-9d18-d7d313c01db1" size="40">
+    <button onclick="loadAll()">Actualizar</button>
+  </div>
+  <div class="card"><h3>Resumen</h3><pre id="summary">...</pre></div>
+  <div class="card">
+    <h3>Stock</h3>
+    <input id="q" placeholder="Buscar SKU/producto">
+    <select id="marketplace"><option value="">Todos</option><option>ML</option><option>TN</option></select>
+    <button onclick="loadStock()">Buscar</button>
+    <table><thead><tr><th>SKU</th><th>Producto</th><th>Stock</th><th>Canales</th></tr></thead><tbody id="rows"></tbody></table>
+  </div>
+<script>
+function cfg(){return {api:api.value.replace(/\/$/,''),tenant:tenant.value.trim()}}
+async function getJson(path){let c=cfg();let r=await fetch(c.api+path);return await r.json()}
+async function loadSummary(){let c=cfg();let d=await getJson('/api/dashboard/'+c.tenant+'/summary');summary.textContent=JSON.stringify(d,null,2)}
+async function loadStock(){let c=cfg();let p=new URLSearchParams();if(q.value)p.set('q',q.value);if(marketplace.value)p.set('marketplace',marketplace.value);let d=await getJson('/api/stock-view/'+c.tenant+'?'+p.toString());rows.innerHTML=(d.items||[]).map(i=>'<tr><td>'+i.sku+'</td><td>'+i.name+'</td><td>'+i.stock+'</td><td>'+((i.channels||[]).map(x=>'<span class="pill">'+x+'</span>').join('')||'<span class="muted">manual</span>')+'</td></tr>').join('')}
+async function loadAll(){await loadSummary();await loadStock()}
+loadAll()
+</script>
+</body>
+</html>
