@@ -11,7 +11,7 @@
     .layout{display:grid;grid-template-columns:250px 1fr;min-height:100vh}.side{border-right:1px solid var(--border);background:rgba(7,17,31,.72);padding:24px}.brand{display:flex;gap:12px;align-items:center;margin-bottom:28px}.brand img{width:42px;height:42px;border-radius:12px}.brand strong{font-size:24px;letter-spacing:-.05em}.brand span{color:var(--accent)}
     nav{display:grid;gap:8px}nav a{color:var(--muted);text-decoration:none;border:1px solid transparent;border-radius:14px;padding:12px 14px}nav a.active,nav a:hover{color:var(--text);border-color:var(--border);background:rgba(255,255,255,.04)}
     main{padding:28px}.top{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:22px}.badge{display:inline-flex;border:1px solid var(--border);border-radius:999px;padding:8px 14px;color:var(--accent);font-size:13px;letter-spacing:.08em;text-transform:uppercase;background:rgba(7,17,31,.36)}h1{font-size:clamp(34px,5vw,64px);line-height:.95;margin:0;letter-spacing:-.07em}p{color:var(--muted);line-height:1.5}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.card{border:1px solid var(--border);border-radius:20px;padding:20px;background:rgba(255,255,255,.035)}.card strong{display:block;color:var(--accent2);margin-bottom:8px}.metric{font-size:34px;font-weight:800;letter-spacing:-.05em}.status{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--border);border-radius:999px;padding:7px 10px;color:var(--muted);font-size:13px}.dot{width:9px;height:9px;border-radius:999px;background:var(--accent)}
-    .actions{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}.btn{border:1px solid var(--border);background:rgba(255,255,255,.06);color:var(--text);border-radius:12px;padding:10px 12px;cursor:pointer}.btn:hover{border-color:var(--accent);color:var(--accent)}.wide{grid-column:1/-1}.log{white-space:pre-wrap;max-height:360px;overflow:auto;font:13px/1.45 Consolas,Monaco,monospace;color:#dbeafe;background:rgba(0,0,0,.24);border-radius:14px;padding:14px;border:1px solid var(--border)}.small{font-size:12px;color:var(--muted)}.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}.input{border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--text);border-radius:12px;padding:10px 12px;min-width:260px}.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}.btn{border:1px solid var(--border);background:rgba(255,255,255,.06);color:var(--text);border-radius:12px;padding:10px 12px;cursor:pointer}.btn:hover{border-color:var(--accent);color:var(--accent)}.wide{grid-column:1/-1}.log{white-space:pre-wrap;max-height:380px;overflow:auto;font:13px/1.45 Consolas,Monaco,monospace;color:#dbeafe;background:rgba(0,0,0,.24);border-radius:14px;padding:14px;border:1px solid var(--border)}.small{font-size:12px;color:var(--muted)}.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}.input{border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--text);border-radius:12px;padding:10px 12px;min-width:260px}.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
     @media(max-width:860px){.layout{grid-template-columns:1fr}.side{border-right:0;border-bottom:1px solid var(--border)}.grid{grid-template-columns:1fr}.top{display:block}}
   </style>
 </head>
@@ -38,6 +38,8 @@
         <button class="btn" id="ping-tn">Ping TN</button>
         <button class="btn" id="preview-tn-orders">Preview ordenes TN</button>
         <button class="btn" id="preview-ml-orders">Preview ordenes ML</button>
+        <button class="btn" id="bundle-list">Combos</button>
+        <button class="btn" id="bot-conversations">Panel humano</button>
       </div>
       <section class="grid">
         <div class="card"><strong>Inventario</strong><div class="metric" id="m-inventory">—</div><p>Items, stock master, movimientos y trazabilidad.</p></div>
@@ -51,6 +53,7 @@
       </section>
       <section class="grid" style="margin-top:14px">
         <div class="card wide"><strong>Consulta detalle de orden externa</strong><p>Busca por canal + ID externo sin tocar stock.</p><div class="toolbar"><input class="input" id="external-order-id" placeholder="ID externo de orden"><button class="btn" id="detail-tn-order">Detalle TN</button><button class="btn" id="detail-ml-order">Detalle ML</button></div></div>
+        <div class="card wide"><strong>Recalcular combo</strong><p>Recalcula stock disponible de un combo por SKU.</p><div class="toolbar"><input class="input" id="bundle-sku" placeholder="SKU combo"><button class="btn" id="bundle-detail">Ver combo</button><button class="btn" id="bundle-recalc">Recalcular</button></div></div>
         <div class="card wide"><strong>Consola XelerIA</strong><div class="log" id="log">Inicializando…</div></div>
       </section>
     </main>
@@ -68,6 +71,7 @@
       if (!response.ok) throw { status: response.status, data };
       return data;
     };
+    const postJSON = (path, body = {}) => getJSON(path, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
     async function refreshDashboard(){
       try{
         $('api-line').textContent = 'API: consultando version…';
@@ -80,21 +84,29 @@
         $('s-ml').textContent = (summary.channels || {}).ML ? 'con datos' : 'preparado';
         $('s-tn').textContent = (summary.channels || {}).TN ? 'con datos' : 'preparado';
         log(summary);
-      }catch(error){
-        $('api-line').innerHTML = 'API: <span class="bad">error</span>';
-        log(error);
-      }
+      }catch(error){ $('api-line').innerHTML = 'API: <span class="bad">error</span>'; log(error); }
     }
     async function pingTN(){ try { log(await getJSON('/tn-reader/ping')); } catch(error){ log(error); } }
     async function previewTNOrders(){ try { log(await getJSON(`/tn-reader/${TENANT_ID}/orders?per_page=5`)); } catch(error){ log(error); } }
     async function previewMLOrders(){ try { log(await getJSON(`/ml-reader/${TENANT_ID}/orders?limit=5`)); } catch(error){ log(error); } }
     async function readiness(){ try { log(await getJSON(`/system-checks/${TENANT_ID}/readiness`)); } catch(error){ log(error); } }
     async function opsResources(){ try { log(await getJSON('/ops/resources')); } catch(error){ log(error); } }
+    async function bundleList(){ try { log(await getJSON(`/bundle-items/${TENANT_ID}`)); } catch(error){ log(error); } }
+    async function botConversations(){ try { log(await getJSON(`/bot-panel/${TENANT_ID}/conversations`)); } catch(error){ log(error); } }
     async function externalOrderDetail(channel){
       const id = $('external-order-id').value.trim();
       if(!id){ log('Cargar ID externo de orden.'); return; }
-      try { log(await getJSON(`/orders/${TENANT_ID}/external/${channel}/${encodeURIComponent(id)}/detail`)); }
-      catch(error){ log(error); }
+      try { log(await getJSON(`/orders/${TENANT_ID}/external/${channel}/${encodeURIComponent(id)}/detail`)); } catch(error){ log(error); }
+    }
+    async function bundleDetail(){
+      const sku = $('bundle-sku').value.trim();
+      if(!sku){ log('Cargar SKU combo.'); return; }
+      try { log(await getJSON(`/bundle-items/${TENANT_ID}/${encodeURIComponent(sku)}`)); } catch(error){ log(error); }
+    }
+    async function bundleRecalc(){
+      const sku = $('bundle-sku').value.trim();
+      if(!sku){ log('Cargar SKU combo.'); return; }
+      try { log(await postJSON(`/bundle-items/${TENANT_ID}/${encodeURIComponent(sku)}/recalculate`)); } catch(error){ log(error); }
     }
     $('refresh').addEventListener('click', refreshDashboard);
     $('readiness').addEventListener('click', readiness);
@@ -102,8 +114,12 @@
     $('ping-tn').addEventListener('click', pingTN);
     $('preview-tn-orders').addEventListener('click', previewTNOrders);
     $('preview-ml-orders').addEventListener('click', previewMLOrders);
+    $('bundle-list').addEventListener('click', bundleList);
+    $('bot-conversations').addEventListener('click', botConversations);
     $('detail-tn-order').addEventListener('click', () => externalOrderDetail('TN'));
     $('detail-ml-order').addEventListener('click', () => externalOrderDetail('ML'));
+    $('bundle-detail').addEventListener('click', bundleDetail);
+    $('bundle-recalc').addEventListener('click', bundleRecalc);
     refreshDashboard();
   </script>
 </body>
