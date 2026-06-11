@@ -6,11 +6,11 @@
   <title>XelerIA · Inicio</title>
   <link rel="icon" type="image/png" href="./favicon_xeleria.png?v=1">
   <style>
-    :root{--bg:#07111f;--panel:#0d1b2f;--text:#f5f7fb;--muted:#aab6c8;--accent:#5eead4;--accent2:#60a5fa;--border:rgba(255,255,255,.14)}
+    :root{--bg:#07111f;--panel:#0d1b2f;--text:#f5f7fb;--muted:#aab6c8;--accent:#5eead4;--accent2:#60a5fa;--border:rgba(255,255,255,.14);--ml:#ffe600;--tn:#202849}
     *{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:Arial,Helvetica,sans-serif;background:radial-gradient(circle at top left,rgba(94,234,212,.18),transparent 34%),radial-gradient(circle at bottom right,rgba(96,165,250,.14),transparent 30%),var(--bg);color:var(--text);display:flex;align-items:center;justify-content:center;padding:26px}
     .wrap{width:min(980px,100%);display:grid;grid-template-columns:1.1fr .9fr;gap:18px;align-items:stretch}.hero,.panel{border:1px solid var(--border);background:rgba(255,255,255,.04);border-radius:28px;padding:30px;box-shadow:0 22px 70px rgba(0,0,0,.22)}
     .brand{display:flex;gap:14px;align-items:center;margin-bottom:28px}.brand img{width:54px;height:54px;border-radius:16px}.brand strong{font-size:32px;letter-spacing:-.06em}.brand span{color:var(--accent)}
-    h1{font-size:clamp(42px,6vw,74px);line-height:.9;margin:0 0 18px;letter-spacing:-.08em}p{color:var(--muted);line-height:1.55}.badge{display:inline-flex;border:1px solid var(--border);border-radius:999px;padding:8px 12px;color:var(--accent);font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:16px}.actions{display:grid;gap:10px;margin-top:18px}.btn{border:1px solid var(--border);border-radius:16px;background:rgba(255,255,255,.07);color:var(--text);padding:14px 16px;text-decoration:none;font-weight:800;display:flex;justify-content:space-between;gap:10px}.btn:hover{border-color:var(--accent);color:var(--accent)}.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#06111f;border:0}.primary:hover{color:#06111f}.small{font-size:12px;color:var(--muted)}.input{width:100%;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--text);border-radius:14px;padding:13px;margin:7px 0 12px}.line{height:1px;background:var(--border);margin:18px 0}.ok{color:var(--accent)}
+    h1{font-size:clamp(42px,6vw,74px);line-height:.9;margin:0 0 18px;letter-spacing:-.08em}h2{font-size:34px;margin:0 0 10px}p{color:var(--muted);line-height:1.55}.badge{display:inline-flex;border:1px solid var(--border);border-radius:999px;padding:8px 12px;color:var(--accent);font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:16px}.actions{display:grid;gap:10px;margin-top:18px}.btn{border:1px solid var(--border);border-radius:16px;background:rgba(255,255,255,.07);color:var(--text);padding:14px 16px;text-decoration:none;font-weight:800;display:flex;justify-content:space-between;gap:10px}.btn:hover{border-color:var(--accent);color:var(--accent)}.primary{background:var(--ml);color:#111;border:0}.primary:hover{color:#111}.tn{background:var(--tn);color:#fff}.small{font-size:12px;color:var(--muted)}.input{width:100%;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--text);border-radius:14px;padding:13px;margin:7px 0 12px}.line{height:1px;background:var(--border);margin:18px 0}.ok{color:var(--accent)}
     @media(max-width:820px){.wrap{grid-template-columns:1fr}.hero,.panel{padding:22px}}
   </style>
 </head>
@@ -19,22 +19,22 @@
     <section class="hero">
       <div class="brand"><img src="./favicon_xeleria.png?v=1" alt=""><strong>Xeler<span>IA</span></strong></div>
       <div class="badge">ERP SaaS beta</div>
-      <h1>Inicio operativo</h1>
-      <p>Entrada simple para usuario cero y primeros tenants. Primero lectura y simulacion; escritura real bloqueada hasta habilitarla explicitamente.</p>
-      <p class="small">Modo actual esperado: <span class="ok">lectura + dry-run</span>.</p>
+      <h1>Entrá con tu canal</h1>
+      <p>El onboarding arranca como lo usabas en EcommApp: conectás Mercado Libre o Tienda Nube, XelerIA detecta tu cuenta y carga tu entorno.</p>
+      <p class="small">Modo actual esperado: <span class="ok">lectura + dry-run</span>. Escritura real bloqueada.</p>
     </section>
     <section class="panel">
-      <h2>Entrar</h2>
-      <p class="small">Para Planeta Casa usamos el tenant demo mientras migramos pantallas.</p>
-      <label class="small" for="tenant">Tenant ID</label>
+      <h2>Ingresar</h2>
+      <p class="small">Para usuario cero usamos Planeta Casa mientras migramos pantallas. Después el tenant se resuelve por OAuth.</p>
+      <label class="small" for="tenant">Tenant demo</label>
       <input class="input" id="tenant" value="fbfa89c2-b377-49b3-9d18-d7d313c01db1">
       <div class="actions">
-        <a class="btn primary" id="enter" href="#">Entrar al panel <span>→</span></a>
-        <a class="btn" id="ml" href="#">Conectar Mercado Libre <span>ML</span></a>
-        <a class="btn" id="tn" href="#">Conectar Tienda Nube <span>TN</span></a>
+        <a class="btn primary" id="ml" href="#">Entrar con Mercado Libre <span>ML</span></a>
+        <a class="btn tn" id="tn" href="#">Entrar con Tienda Nube <span>TN</span></a>
+        <a class="btn" id="enter" href="#">Entrar al panel demo <span>→</span></a>
       </div>
       <div class="line"></div>
-      <p class="small">Luego reemplazamos esto por login real de usuarios, roles y selector de empresa.</p>
+      <p class="small">El login con email queda para usuarios internos, empleados o multirol. El vendedor común entra por su canal.</p>
     </section>
   </div>
   <script>
