@@ -19,7 +19,7 @@
   <div class="layout">
     <aside class="side"><div class="brand"><img src="./favicon_xeleria.png?v=1" alt=""><strong>Xeler<span>IA</span></strong></div><nav><a class="active" href="#dashboard">Dashboard</a><a href="#inventario">Inventario</a><a href="#publicaciones">Publicaciones</a><a href="#ventas">Ventas</a><a href="#sincronizacion">Sincronizacion</a><a href="#integraciones">Integraciones</a><a href="#auditoria">Auditoria</a></nav></aside>
     <main>
-      <div class="top"><div><h1>ERP operativo</h1><p>Base multiusuario para operar stock, ventas, compras, facturacion y canales desde un solo lugar.</p><p class="small" id="api-line">API: conectando…</p></div><div class="badge">SaaS beta</div></div>
+      <div class="top"><div><h1>ERP operativo</h1><p>Base simple para operar stock, ventas, compras, facturacion y canales desde un solo lugar.</p><p class="small" id="api-line">API: conectando…</p></div><div class="badge">beta privada</div></div>
       <div class="actions">
         <button class="btn" id="refresh">Dashboard</button><button class="btn" id="readiness">Readiness</button><button class="btn" id="ops-resources">Ops</button><button class="btn" id="ping-tn">Ping TN</button><button class="btn" id="preview-tn-orders">Órdenes TN</button><button class="btn" id="preview-ml-orders">Órdenes ML</button><button class="btn" id="bundle-list">Combos</button><button class="btn" id="fiscal-list">Fiscal</button><button class="btn" id="purchasing-list">Compras</button><button class="btn" id="pricing-list">Pricing</button><button class="btn" id="admin-snapshot">Snapshot ERP</button>
       </div>
@@ -30,12 +30,17 @@
   </div>
   <script>
     const API_BASE = 'https://api.xeleria.com.ar/api';
-    const TENANT_ID = 'fbfa89c2-b377-49b3-9d18-d7d313c01db1';
+    const DEFAULT_TENANT_ID = 'fbfa89c2-b377-49b3-9d18-d7d313c01db1';
+    const params = new URLSearchParams(location.search);
+    const TENANT_ID = params.get('tenant') || localStorage.getItem('xeleria_tenant_id') || DEFAULT_TENANT_ID;
+    localStorage.setItem('xeleria_tenant_id', TENANT_ID);
+    const ownerKey = () => localStorage.getItem('xeleria_owner_key') || '';
     const $ = (id) => document.getElementById(id);
     const log = (value) => { $('log').textContent = typeof value === 'string' ? value : JSON.stringify(value, null, 2); };
-    const getJSON = async (path, options = {}) => { const response = await fetch(`${API_BASE}${path}`, options); const text = await response.text(); let data; try { data = JSON.parse(text); } catch { data = { raw: text }; } if (!response.ok) throw { status: response.status, data }; return data; };
+    const authHeaders = (extra = {}) => ownerKey() ? {'x-xeleria-owner-key': ownerKey(), ...extra} : extra;
+    const getJSON = async (path, options = {}) => { const response = await fetch(`${API_BASE}${path}`, {...options, headers: authHeaders(options.headers || {})}); const text = await response.text(); let data; try { data = JSON.parse(text); } catch { data = { raw: text }; } if (!response.ok) throw { status: response.status, data }; return data; };
     const postJSON = (path, body = {}) => getJSON(path, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
-    async function refreshDashboard(){ try{ $('api-line').textContent = 'API: consultando version…'; const version = await getJSON('/version'); $('api-line').innerHTML = `API: <span class="ok">online</span> · ${version.app || 'XelerIA'} · ${version.version || ''}`; const summary = await getJSON(`/dashboard/${TENANT_ID}/summary`); $('m-inventory').textContent = summary.inventory_items ?? '—'; $('m-channels').textContent = Object.keys(summary.channels || {}).length || summary.marketplace_listings || '—'; $('m-queue').textContent = summary.pending_or_failed_tasks ?? summary.sync_tasks ?? '—'; $('s-ml').textContent = (summary.channels || {}).ML ? 'con datos' : 'preparado'; $('s-tn').textContent = (summary.channels || {}).TN ? 'con datos' : 'preparado'; log(summary); }catch(error){ $('api-line').innerHTML = 'API: <span class="bad">error</span>'; log(error); } }
+    async function refreshDashboard(){ try{ $('api-line').textContent = 'API: consultando version…'; const version = await getJSON('/version'); $('api-line').innerHTML = `API: <span class="ok">online</span> · ${version.app || 'XelerIA'} · ${version.version || ''} · tenant ${TENANT_ID.slice(0,8)}…`; const summary = await getJSON(`/dashboard/${TENANT_ID}/summary`); $('m-inventory').textContent = summary.inventory_items ?? '—'; $('m-channels').textContent = Object.keys(summary.channels || {}).length || summary.marketplace_listings || '—'; $('m-queue').textContent = summary.pending_or_failed_tasks ?? summary.sync_tasks ?? '—'; $('s-ml').textContent = (summary.channels || {}).ML ? 'con datos' : 'preparado'; $('s-tn').textContent = (summary.channels || {}).TN ? 'con datos' : 'preparado'; log(summary); }catch(error){ $('api-line').innerHTML = 'API: <span class="bad">error</span>'; log(error); } }
     async function show(path){ try { log(await getJSON(path)); } catch(error){ log(error); } }
     async function pingTN(){ await show('/tn-reader/ping'); }
     async function previewTNOrders(){ await show(`/tn-reader/${TENANT_ID}/orders?per_page=5`); }
@@ -49,7 +54,7 @@
     async function adminSnapshot(){ await show(`/admin-compat/${TENANT_ID}/inventory-master?limit=50`); }
     async function externalOrderDetail(channel){ const id = $('external-order-id').value.trim(); if(!id){ log('Cargar ID externo de orden.'); return; } await show(`/orders/${TENANT_ID}/external/${channel}/${encodeURIComponent(id)}/detail`); }
     async function bundleDetail(){ const sku = $('bundle-sku').value.trim(); if(!sku){ log('Cargar SKU combo.'); return; } await show(`/bundle-items/${TENANT_ID}/${encodeURIComponent(sku)}`); }
-    async function bundleRecalc(){ const sku = $('bundle-sku').value.trim(); if(!sku){ log('Cargar SKU combo.'); return; } try { log(await postJSON(`/bundle-items/${TENANT_ID}/${encodeURIComponent(sku)}/recalculate`)); } catch(error){ log(error); } }
+    async function bundleRecalc(){ const sku = $('bundle-sku').value.trim(); if(!sku){ log('Cargar SKU combo.'); return; } try { log(await postJSON(`/bundle-items/${TENANT_ID}/${encodeURIComponent(sku)}/recalculate?dry_run=true`)); } catch(error){ log(error); } }
     $('refresh').addEventListener('click', refreshDashboard); $('readiness').addEventListener('click', readiness); $('ops-resources').addEventListener('click', opsResources); $('ping-tn').addEventListener('click', pingTN); $('preview-tn-orders').addEventListener('click', previewTNOrders); $('preview-ml-orders').addEventListener('click', previewMLOrders); $('bundle-list').addEventListener('click', bundleList); $('fiscal-list').addEventListener('click', fiscalList); $('purchasing-list').addEventListener('click', purchasingList); $('pricing-list').addEventListener('click', pricingList); $('admin-snapshot').addEventListener('click', adminSnapshot); $('detail-tn-order').addEventListener('click', () => externalOrderDetail('TN')); $('detail-ml-order').addEventListener('click', () => externalOrderDetail('ML')); $('bundle-detail').addEventListener('click', bundleDetail); $('bundle-recalc').addEventListener('click', bundleRecalc); refreshDashboard();
   </script>
 </body>
