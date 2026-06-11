@@ -28,27 +28,39 @@
       <h2>Ingresar</h2>
       <p class="small">Elegí el canal que usás para vender. XelerIA abre tu espacio de trabajo desde esa conexión.</p>
       <input class="input" id="tenant" value="fbfa89c2-b377-49b3-9d18-d7d313c01db1" hidden>
+      <label class="small" for="ownerKey">Código beta privado</label>
+      <input class="input" id="ownerKey" type="password" placeholder="Código de acceso">
       <div class="actions">
         <a class="btn primary" id="ml" href="#">Entrar con Mercado Libre <span>ML</span></a>
         <a class="btn tn" id="tn" href="#">Entrar con Tienda Nube <span>TN</span></a>
         <a class="btn" id="enter" href="#">Entrar como Planeta Casa <span>→</span></a>
       </div>
       <div class="line"></div>
-      <p class="small">Acceso protegido: por ahora muestra y simula, no escribe cambios reales.</p>
+      <p class="small">Acceso protegido: por ahora escribe solo en bases XelerIA. No escribe cambios reales en ML/TN.</p>
     </section>
   </div>
   <script>
     const API_BASE = 'https://api.xeleria.com.ar/api';
     const tenantInput = document.getElementById('tenant');
+    const ownerKeyInput = document.getElementById('ownerKey');
+    ownerKeyInput.value = localStorage.getItem('xeleria_owner_key') || '';
     const tenant = () => encodeURIComponent(tenantInput.value.trim());
+    const ownerKey = () => ownerKeyInput.value.trim();
+    const rememberAccess = () => {
+      if(ownerKey()) localStorage.setItem('xeleria_owner_key', ownerKey());
+      if(tenantInput.value.trim()) localStorage.setItem('xeleria_tenant_id', tenantInput.value.trim());
+    };
     document.getElementById('enter').addEventListener('click', (event) => {
       event.preventDefault();
       if(!tenantInput.value.trim()) return;
+      rememberAccess();
       location.href = `./app.html?tenant=${tenant()}`;
     });
     document.getElementById('ml').addEventListener('click', (event) => {
       event.preventDefault();
-      alert('Conexión real de Mercado Libre bloqueada mientras XelerIA está en modo lectura. Usá Entrar como Planeta Casa.');
+      if(!tenantInput.value.trim() || !ownerKey()) { alert('Cargá el código beta privado.'); return; }
+      rememberAccess();
+      location.href = `${API_BASE}/oauth/ml/start/${tenant()}?owner_key=${encodeURIComponent(ownerKey())}`;
     });
     document.getElementById('tn').addEventListener('click', (event) => {
       event.preventDefault();
