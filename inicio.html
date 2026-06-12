@@ -11,11 +11,11 @@
   </script>
   <link rel="icon" type="image/png" href="./favicon_xeleria.png?v=1">
   <style>
-    :root{--bg:#07111f;--panel:#0d1b2f;--text:#f5f7fb;--muted:#aab6c8;--accent:#5eead4;--accent2:#60a5fa;--border:rgba(255,255,255,.14);--ml:#ffe600;--tn:#202849}
+    :root{--bg:#07111f;--text:#f5f7fb;--muted:#aab6c8;--accent:#5eead4;--border:rgba(255,255,255,.14);--ml:#ffe600;--tn:#202849}
     *{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:Arial,Helvetica,sans-serif;background:radial-gradient(circle at top left,rgba(94,234,212,.18),transparent 34%),radial-gradient(circle at bottom right,rgba(96,165,250,.14),transparent 30%),var(--bg);color:var(--text);display:flex;align-items:center;justify-content:center;padding:26px}
-    .wrap{width:min(980px,100%);display:grid;grid-template-columns:1.1fr .9fr;gap:18px;align-items:stretch}.hero,.panel{border:1px solid var(--border);background:rgba(255,255,255,.04);border-radius:28px;padding:30px;box-shadow:0 22px 70px rgba(0,0,0,.22)}
+    .wrap{width:min(980px,100%);display:grid;grid-template-columns:1.1fr .9fr;gap:18px}.hero,.panel{border:1px solid var(--border);background:rgba(255,255,255,.04);border-radius:28px;padding:30px;box-shadow:0 22px 70px rgba(0,0,0,.22)}
     .brand{display:flex;gap:14px;align-items:center;margin-bottom:28px}.brand img{width:54px;height:54px;border-radius:16px}.brand strong{font-size:32px;letter-spacing:-.06em}.brand span{color:var(--accent)}
-    h1{font-size:clamp(42px,6vw,74px);line-height:.9;margin:0 0 18px;letter-spacing:-.08em}h2{font-size:34px;margin:0 0 10px}p{color:var(--muted);line-height:1.55}.badge{display:inline-flex;border:1px solid var(--border);border-radius:999px;padding:8px 12px;color:var(--accent);font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:16px}.actions{display:grid;gap:10px;margin-top:18px}.btn{border:1px solid var(--border);border-radius:16px;background:rgba(255,255,255,.07);color:var(--text);padding:14px 16px;text-decoration:none;font-weight:800;display:flex;justify-content:space-between;gap:10px}.btn:hover{border-color:var(--accent);color:var(--accent)}.primary{background:var(--ml);color:#111;border:0}.primary:hover{color:#111}.tn{background:var(--tn);color:#fff}.small{font-size:12px;color:var(--muted)}.input{width:100%;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--text);border-radius:14px;padding:13px;margin:7px 0 12px}.line{height:1px;background:var(--border);margin:18px 0}.ok{color:var(--accent)}.work{border:1px solid rgba(94,234,212,.28);border-radius:14px;padding:10px;margin:8px 0 12px;color:var(--accent);font-size:12px;display:none}
+    h1{font-size:clamp(42px,6vw,74px);line-height:.9;margin:0 0 18px;letter-spacing:-.08em}h2{font-size:34px;margin:0 0 10px}p{color:var(--muted);line-height:1.55}.badge{display:inline-flex;border:1px solid var(--border);border-radius:999px;padding:8px 12px;color:var(--accent);font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:16px}.actions{display:grid;gap:10px;margin-top:18px}.btn{border:1px solid var(--border);border-radius:16px;background:rgba(255,255,255,.07);color:var(--text);padding:14px 16px;text-decoration:none;font-weight:800;display:flex;justify-content:space-between;gap:10px}.btn:hover{border-color:var(--accent);color:var(--accent)}.primary{background:var(--ml);color:#111;border:0}.primary:hover{color:#111}.tn{background:var(--tn);color:#fff}.small{font-size:12px;color:var(--muted)}.input{width:100%;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--text);border-radius:14px;padding:13px;margin:7px 0 12px}.line{height:1px;background:var(--border);margin:18px 0}.ok,.status{color:var(--accent)}.status{font-size:12px;min-height:18px;margin-top:10px}
     @media(max-width:820px){.wrap{grid-template-columns:1fr}.hero,.panel{padding:22px}}
   </style>
 </head>
@@ -23,125 +23,79 @@
   <div class="wrap">
     <section class="hero">
       <div class="brand"><img src="./favicon_xeleria.png?v=1" alt=""><strong>Xeler<span>IA</span></strong></div>
-      <div class="badge">simple · conectado · con IA</div>
-      <h1>Entrá con tu canal</h1>
-      <p>Conectás Mercado Libre o Tienda Nube y XelerIA te ayuda a ordenar stock, ventas, publicaciones y precios sin vueltas.</p>
-      <p class="small">Después entrenás tu IA con tus productos, tus reglas y tu forma de vender.</p>
+      <div class="badge">30 días de prueba</div>
+      <h1>Probá XelerIA</h1>
+      <p>Entrás con Mercado Libre o Tienda Nube. Si sos nuevo, XelerIA crea tu espacio de trabajo automáticamente.</p>
       <p class="small">Modo actual: <span class="ok">lectura + dry-run</span>. Escritura real bloqueada.</p>
     </section>
     <section class="panel">
       <h2>Ingresar</h2>
-      <p class="small">Poné el nombre de tu negocio. XelerIA crea el espacio de trabajo automáticamente.</p>
-      <label class="small" for="businessName">Nombre del negocio</label>
-      <input class="input" id="businessName" placeholder="Ej: Planeta Casa">
-      <div class="work" id="workspaceBox"></div>
+      <p class="small">Elegí tu canal principal para empezar.</p>
       <label class="small" for="ownerKey">Código beta privado</label>
       <input class="input" id="ownerKey" type="password" placeholder="Código de acceso">
       <div class="actions">
-        <a class="btn primary" id="ml" href="#">Conectar Mercado Libre <span>ML</span></a>
-        <a class="btn tn" id="tn" href="#">Conectar Tienda Nube <span>TN</span></a>
+        <a class="btn primary" id="ml" href="#">Entrar con Mercado Libre <span>ML</span></a>
+        <a class="btn tn" id="tn" href="#">Entrar con Tienda Nube <span>TN</span></a>
         <a class="btn" id="enter" href="#">Entrar al panel <span>→</span></a>
       </div>
+      <div class="status" id="status"></div>
       <div class="line"></div>
-      <p class="small">Acceso protegido: por ahora escribe solo en bases XelerIA. No escribe cambios reales en ML/TN.</p>
+      <p class="small">No escribe cambios reales en ML/TN durante la prueba.</p>
     </section>
   </div>
   <script>
     const API_BASE = 'https://api.xeleria.com.ar/api';
-    const businessNameInput = document.getElementById('businessName');
     const ownerKeyInput = document.getElementById('ownerKey');
-    const workspaceBox = document.getElementById('workspaceBox');
-
-    businessNameInput.value = localStorage.getItem('xeleria_business_name') || '';
+    const statusBox = document.getElementById('status');
     ownerKeyInput.value = localStorage.getItem('xeleria_owner_key') || '';
 
     const ownerKey = () => ownerKeyInput.value.trim();
     const tenantId = () => localStorage.getItem('xeleria_tenant_id') || '';
+    const setStatus = msg => statusBox.textContent = msg || '';
+    const headerName = ['x','xeleria','owner','key'].join('-');
 
-    function slugify(value) {
-      return value
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '')
-        .slice(0, 48) || 'negocio';
-    }
+    function randomSuffix(){ return Math.random().toString(36).slice(2,10); }
 
-    function randomSuffix() {
-      return Math.random().toString(36).slice(2, 8);
-    }
-
-    function showWorkspace() {
-      const id = tenantId();
-      if (!id) {
-        workspaceBox.style.display = 'none';
-        workspaceBox.textContent = '';
-        return;
-      }
-      workspaceBox.style.display = 'block';
-      workspaceBox.textContent = `Espacio creado: ${id}`;
-    }
-
-    async function ensureTenant() {
-      const existing = tenantId();
-      if (existing) return existing;
-      const name = businessNameInput.value.trim();
-      if (!name) throw new Error('Cargá el nombre del negocio.');
-      if (!ownerKey()) throw new Error('Cargá el código beta privado.');
-
-      localStorage.setItem('xeleria_owner_key', ownerKey());
-      localStorage.setItem('xeleria_business_name', name);
-
+    async function createTenant(){
+      const suffix = randomSuffix();
+      const headers = {'Content-Type':'application/json'};
+      headers[headerName] = ownerKey();
       const response = await fetch(`${API_BASE}/tenants`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-xeleria-owner-key': ownerKey()
-        },
-        body: JSON.stringify({
-          name,
-          slug: `${slugify(name)}-${randomSuffix()}`
-        })
+        headers,
+        body: JSON.stringify({name:`Prueba XelerIA ${suffix}`, slug:`prueba-xeleria-${suffix}`})
       });
       const data = await response.json();
-      if (!response.ok || !data.id) {
-        console.error(data);
-        throw new Error('No se pudo crear el espacio de trabajo.');
-      }
+      if(!response.ok || !data.id) throw new Error('No se pudo crear tu espacio de prueba.');
       localStorage.setItem('xeleria_tenant_id', data.id);
-      showWorkspace();
       return data.id;
     }
 
-    async function startChannel(channel) {
-      try {
-        const id = await ensureTenant();
-        location.href = `${API_BASE}/oauth/${channel}/start/${encodeURIComponent(id)}?owner_key=${encodeURIComponent(ownerKey())}`;
-      } catch (error) {
-        alert(error.message || 'No se pudo iniciar la conexión.');
-      }
+    async function ensureTenant(){
+      if(!ownerKey()) throw new Error('Cargá el código beta privado.');
+      localStorage.setItem('xeleria_owner_key', ownerKey());
+      return tenantId() || await createTenant();
     }
 
-    document.getElementById('enter').addEventListener('click', async (event) => {
+    async function startChannel(channel){
+      try{
+        setStatus('Creando espacio de prueba…');
+        const id = await ensureTenant();
+        setStatus('Redirigiendo…');
+        location.href = `${API_BASE}/oauth/${channel}/start/${encodeURIComponent(id)}?owner_key=${encodeURIComponent(ownerKey())}`;
+      }catch(error){ setStatus(''); alert(error.message || 'No se pudo iniciar.'); }
+    }
+
+    document.getElementById('enter').addEventListener('click', async event => {
       event.preventDefault();
-      try {
+      try{
+        setStatus('Creando espacio de prueba…');
         const id = await ensureTenant();
         location.href = `./app.html?tenant=${encodeURIComponent(id)}`;
-      } catch (error) {
-        alert(error.message || 'No se pudo entrar al panel.');
-      }
+      }catch(error){ setStatus(''); alert(error.message || 'No se pudo entrar.'); }
     });
-    document.getElementById('ml').addEventListener('click', (event) => {
-      event.preventDefault();
-      startChannel('ml');
-    });
-    document.getElementById('tn').addEventListener('click', (event) => {
-      event.preventDefault();
-      startChannel('tn');
-    });
-
-    showWorkspace();
+    document.getElementById('ml').addEventListener('click', event => { event.preventDefault(); startChannel('ml'); });
+    document.getElementById('tn').addEventListener('click', event => { event.preventDefault(); startChannel('tn'); });
   </script>
 </body>
 </html>
