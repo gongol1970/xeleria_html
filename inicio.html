@@ -31,14 +31,15 @@
     </section>
     <section class="panel">
       <h2>Ingresar</h2>
-      <p class="small">Elegí el canal que usás para vender. XelerIA abre tu espacio de trabajo desde esa conexión.</p>
-      <input class="input" id="tenant" value="fbfa89c2-b377-49b3-9d18-d7d313c01db1" hidden>
+      <p class="small">Cargá el espacio de trabajo y elegí el canal que querés conectar.</p>
+      <label class="small" for="tenant">Espacio / Tenant</label>
+      <input class="input" id="tenant" placeholder="ID del espacio de trabajo">
       <label class="small" for="ownerKey">Código beta privado</label>
       <input class="input" id="ownerKey" type="password" placeholder="Código de acceso">
       <div class="actions">
-        <a class="btn primary" id="ml" href="#">Entrar con Mercado Libre <span>ML</span></a>
-        <a class="btn tn" id="tn" href="#">Entrar con Tienda Nube <span>TN</span></a>
-        <a class="btn" id="enter" href="#">Entrar como Planeta Casa <span>→</span></a>
+        <a class="btn primary" id="ml" href="#">Conectar Mercado Libre <span>ML</span></a>
+        <a class="btn tn" id="tn" href="#">Conectar Tienda Nube <span>TN</span></a>
+        <a class="btn" id="enter" href="#">Entrar al panel <span>→</span></a>
       </div>
       <div class="line"></div>
       <p class="small">Acceso protegido: por ahora escribe solo en bases XelerIA. No escribe cambios reales en ML/TN.</p>
@@ -46,8 +47,10 @@
   </div>
   <script>
     const API_BASE = 'https://api.xeleria.com.ar/api';
+    const DEFAULT_TENANT_ID = 'fbfa89c2-b377-49b3-9d18-d7d313c01db1';
     const tenantInput = document.getElementById('tenant');
     const ownerKeyInput = document.getElementById('ownerKey');
+    tenantInput.value = localStorage.getItem('xeleria_tenant_id') || DEFAULT_TENANT_ID;
     ownerKeyInput.value = localStorage.getItem('xeleria_owner_key') || '';
     const tenant = () => encodeURIComponent(tenantInput.value.trim());
     const ownerKey = () => ownerKeyInput.value.trim();
@@ -55,22 +58,26 @@
       if(ownerKey()) localStorage.setItem('xeleria_owner_key', ownerKey());
       if(tenantInput.value.trim()) localStorage.setItem('xeleria_tenant_id', tenantInput.value.trim());
     };
+    const requireAccess = () => {
+      if(!tenantInput.value.trim()) { alert('Cargá el ID del espacio de trabajo.'); return false; }
+      if(!ownerKey()) { alert('Cargá el código beta privado.'); return false; }
+      rememberAccess();
+      return true;
+    };
     document.getElementById('enter').addEventListener('click', (event) => {
       event.preventDefault();
-      if(!tenantInput.value.trim()) return;
+      if(!tenantInput.value.trim()) { alert('Cargá el ID del espacio de trabajo.'); return; }
       rememberAccess();
       location.href = `./app.html?tenant=${tenant()}`;
     });
     document.getElementById('ml').addEventListener('click', (event) => {
       event.preventDefault();
-      if(!tenantInput.value.trim() || !ownerKey()) { alert('Cargá el código beta privado.'); return; }
-      rememberAccess();
+      if(!requireAccess()) return;
       location.href = `${API_BASE}/oauth/ml/start/${tenant()}?owner_key=${encodeURIComponent(ownerKey())}`;
     });
     document.getElementById('tn').addEventListener('click', (event) => {
       event.preventDefault();
-      if(!tenantInput.value.trim() || !ownerKey()) { alert('Cargá el código beta privado.'); return; }
-      rememberAccess();
+      if(!requireAccess()) return;
       location.href = `${API_BASE}/oauth/tn/start/${tenant()}?owner_key=${encodeURIComponent(ownerKey())}`;
     });
   </script>
