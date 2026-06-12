@@ -64,7 +64,9 @@
     });
     document.getElementById('tn').addEventListener('click', (event) => {
       event.preventDefault();
-      alert('Tienda Nube: pendiente de crear app nueva y OAuth TN.');
+      if(!tenantInput.value.trim() || !ownerKey()) { alert('Cargá el código beta privado.'); return; }
+      rememberAccess();
+      location.href = `${API_BASE}/oauth/tn/start/${tenant()}?owner_key=${encodeURIComponent(ownerKey())}`;
     });
   </script>
 </body>
