@@ -7,7 +7,7 @@
 <script>
 if(location.protocol==='http:'&&location.hostname.endsWith('xeleria.com.ar'))location.replace('https://'+location.host+location.pathname+location.search+location.hash);
 </script>
-<link rel="icon" type="image/png" href="./favicon_xeleria.png?v=5">
+<link rel="icon" type="image/png" href="./favicon_xeleria.png?v=6">
 <style>
 :root {
   --bg:#f2f0eb;
@@ -84,7 +84,7 @@ aside {
   font-weight:950
 }
 .tenantBadge {
-  min-width:54px;
+  width:54px;
   height:38px;
   border-radius:10px;
   background:rgba(255,255,255,.08);
@@ -94,7 +94,15 @@ aside {
   justify-content:center;
   color:#d8d0c0;
   font-size:10px;
-  font-weight:900
+  font-weight:900;
+  overflow:hidden
+}
+.tenantBadge img {
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  display:block;
+  background:#fff
 }
 .brand p {
   margin:10px 0 0;
@@ -590,7 +598,7 @@ th {
 </head>
 <body>
 <div class="app">
-<aside><div class="brand"><div class="brandTop"><span class="appMark"><img src="./favicon_xeleria.png?v=5" alt="XelerIA"></span><div class="brandName">XelerIA</div><div class="tenantBadge" id="tenantBadge">PC</div></div><p id="tenantSubtitle">Panel operativo</p></div><nav><button class="navBtn active" data-view="inicio">Inicio / Dashboard</button><div class="navTitle">Mercado Libre</div><button class="navBtn" data-view="ml-publicaciones">Publicaciones</button><button class="navBtn" data-view="ml-ventas">Ventas</button><div class="navTitle">Tienda Nube</div><button class="navBtn" data-view="tn-publicaciones">Publicaciones</button><button class="navBtn" data-view="tn-ventas">Ventas</button><div class="navTitle">Gestión</div><button class="navBtn" data-view="inventario">Inventario</button><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="consola">Detalle técnico</button></nav><div class="sidebarFoot">Pantalla: XelerIA 1.0.5-config<br>Servidor: <span id="footBackendVer">?</span><br><span class="muted">Cambios externos desactivados</span></div></aside>
+<aside><div class="brand"><div class="brandTop"><span class="appMark"><img src="./favicon_xeleria.png?v=6" alt="XelerIA"></span><div class="brandName">XelerIA</div><div class="tenantBadge" id="tenantBadge">PC</div></div><p id="tenantSubtitle">Panel operativo</p></div><nav><button class="navBtn active" data-view="inicio">Inicio / Dashboard</button><div class="navTitle">Mercado Libre</div><button class="navBtn" data-view="ml-publicaciones">Publicaciones</button><button class="navBtn" data-view="ml-ventas">Ventas</button><div class="navTitle">Tienda Nube</div><button class="navBtn" data-view="tn-publicaciones">Publicaciones</button><button class="navBtn" data-view="tn-ventas">Ventas</button><div class="navTitle">Gestión</div><button class="navBtn" data-view="inventario">Inventario</button><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="consola">Detalle técnico</button></nav><div class="sidebarFoot">Pantalla: XelerIA 1.0.6-config<br>Servidor: <span id="footBackendVer">?</span><br><span class="muted">Cambios externos desactivados</span></div></aside>
 <main><div class="topbar"><h2 id="pageTitle">Inicio</h2><div class="crumb" id="pageCrumb">Panel operativo</div></div>
 <section id="inicio" class="view active"><div class="hero"><div class="btnrow" style="justify-content:space-between"><div><h3>Dashboard</h3><p>Resumen operativo de XelerIA. El dashboard informa; no dispara operaciones.</p></div><button class="secondary" onclick="refreshAll()">Actualizar</button></div><div id="homeStatus" class="status"></div></div><div class="grid"><div class="col-3 stat good"><div class="k">Servidor</div><div class="v" id="stApi">?</div><div class="s">Versión <span id="dashBackendVer">?</span></div></div><div class="col-3 stat" id="mlCardMini"><div class="k">Mercado Libre</div><div class="v" id="stML">?</div><div class="s" id="stMLSub">Conexión</div></div><div class="col-3 stat" id="tnCardMini"><div class="k">Tienda Nube</div><div class="v" id="stTN">?</div><div class="s" id="stTNSub">Conexión</div></div><div class="col-3 stat warnline"><div class="k">Cambios externos</div><div class="v">Bloqueado</div><div class="s">No modifica stock/precios en ML/TN</div></div></div><div class="card"><h3>Resumen operativo</h3><div id="snapshotWrap" class="tableWrap"><div class="dashEmpty">Tocá “Actualizar”.</div></div></div></section>
 <section id="ml-publicaciones" class="view"><div class="card"><h3>Mercado Libre · Publicaciones</h3><p>Vista segura: lee publicaciones, no cambia tu inventario.</p><div class="btnrow"><button class="secondary" onclick="readMLItems()">Ver primeras publicaciones</button><button class="primary importBtn" onclick="startStaging('ML')">Configurar inventario ML</button><button class="secondary" onclick="connectML()">Conectar ML</button></div><div id="mlItemsStatus" class="status"></div><div id="mlItemsTable" class="tableWrap"></div></div></section>
@@ -762,6 +770,7 @@ const params=new URLSearchParams(location.search);if(params.get('tenant')){local
 
 let TENANT_ID=(xeleriaSessionPayload&&xeleriaSessionPayload.tenant_id)||localStorage.getItem('xeleria_tenant_id')||DEFAULT_TENANT_ID;if(xeleriaSessionPayload&&xeleriaSessionPayload.tenant_id)localStorage.setItem('xeleria_tenant_id',xeleriaSessionPayload.tenant_id);
 let INTEGRATIONS={};
+let TENANT_SETTINGS={};
 let PUBLICATION_ROWS=[];
 const $=id=>document.getElementById(id);
 const ownerKey=()=>localStorage.getItem('xeleria_owner_key')||'';
@@ -902,6 +911,32 @@ async function handleLogoFileSelected(ev) {
   }
 }
 
+
+function initialsFromName(name) {
+  const parts = String(name || 'XelerIA').trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return 'XE';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[1][0]).toUpperCase();
+}
+
+function renderTenantBrand() {
+  const name = (TENANT_SETTINGS?.display_name || '').trim()
+    || cleanLabel(INTEGRATIONS.TN?.account_label)
+    || cleanLabel(INTEGRATIONS.ML?.account_label)
+    || 'XelerIA';
+  const logo = (TENANT_SETTINGS?.logo_url || '').trim();
+  if ($('tenantSubtitle')) $('tenantSubtitle').textContent = name;
+  if ($('tenantBadge')) {
+    if (logo) {
+      $('tenantBadge').innerHTML = `<img src="${esc(logo)}" alt="${esc(name)}">`;
+      $('tenantBadge').title = name;
+    } else {
+      $('tenantBadge').textContent = initialsFromName(name);
+      $('tenantBadge').title = name;
+    }
+  }
+}
+
 function applyLocalConfig(c = {}) {
   for (const id of cfgIds) {
     if ($(id) && c[id] !== undefined && c[id] !== null) $(id).value = c[id] || '';
@@ -909,17 +944,35 @@ function applyLocalConfig(c = {}) {
   for (const id of ['cfgAutoML', 'cfgAutoTN']) {
     if ($(id) && c[id] !== undefined) $(id).checked = !!c[id];
   }
+  if (c.cfgNombreFantasia || c.cfgLogo || c.cfgAutoML !== undefined || c.cfgAutoTN !== undefined) {
+    TENANT_SETTINGS = {
+      ...TENANT_SETTINGS,
+      display_name: c.cfgNombreFantasia || TENANT_SETTINGS.display_name || '',
+      logo_url: c.cfgLogo || TENANT_SETTINGS.logo_url || '',
+      auto_invoice_ml: !!c.cfgAutoML,
+      auto_invoice_tn: !!c.cfgAutoTN
+    };
+  }
   normalizeCuitInput();
   updateLogoPreview();
+  renderTenantBrand();
 }
 
 function applyTenantSettings(settings = {}) {
   if (!settings) return;
-  if ($('cfgNombreFantasia')) $('cfgNombreFantasia').value = settings.display_name || '';
-  if ($('cfgLogo')) $('cfgLogo').value = settings.logo_url || '';
-  if ($('cfgAutoML')) $('cfgAutoML').checked = !!settings.auto_invoice_ml;
-  if ($('cfgAutoTN')) $('cfgAutoTN').checked = !!settings.auto_invoice_tn;
+  TENANT_SETTINGS = {
+    ...TENANT_SETTINGS,
+    display_name: settings.display_name || '',
+    logo_url: settings.logo_url || '',
+    auto_invoice_ml: !!settings.auto_invoice_ml,
+    auto_invoice_tn: !!settings.auto_invoice_tn
+  };
+  if ($('cfgNombreFantasia')) $('cfgNombreFantasia').value = TENANT_SETTINGS.display_name || '';
+  if ($('cfgLogo')) $('cfgLogo').value = TENANT_SETTINGS.logo_url || '';
+  if ($('cfgAutoML')) $('cfgAutoML').checked = !!TENANT_SETTINGS.auto_invoice_ml;
+  if ($('cfgAutoTN')) $('cfgAutoTN').checked = !!TENANT_SETTINGS.auto_invoice_tn;
   updateLogoPreview();
+  renderTenantBrand();
 }
 
 function collectCfg() {
@@ -1025,8 +1078,7 @@ const v=await api('/version');$('stApi').textContent='OK';$('dashBackendVer').te
 
 async function loadDashboard(){try{return await api(`/dashboard/${TENANT_ID}/summary`)}catch(e){raw(e)}}
 
-async function loadIntegrations(){try{const d=await api(`/integrations-status/${TENANT_ID}`);INTEGRATIONS=d.integrations||{};renderIntegration('ML',INTEGRATIONS.ML);renderIntegration('TN',INTEGRATIONS.TN);
-const tenant=cleanLabel(INTEGRATIONS.TN?.account_label)||cleanLabel(INTEGRATIONS.ML?.account_label)||'XelerIA';$('tenantSubtitle').textContent=tenant;$('tenantBadge').textContent=(tenant||'XE').slice(0,2).toUpperCase()}catch(e){raw(e)}}
+async function loadIntegrations(){try{const d=await api(`/integrations-status/${TENANT_ID}`);INTEGRATIONS=d.integrations||{};renderIntegration('ML',INTEGRATIONS.ML);renderIntegration('TN',INTEGRATIONS.TN);renderTenantBrand()}catch(e){raw(e)}}
 
 function renderIntegration(ch,it={}){const ok=!!it.connected;
 const card=$(ch==='ML'?'mlConnectCard':'tnConnectCard');
