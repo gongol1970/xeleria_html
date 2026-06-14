@@ -7,7 +7,7 @@
 <script>
 if(location.protocol==='http:'&&location.hostname.endsWith('xeleria.com.ar'))location.replace('https://'+location.host+location.pathname+location.search+location.hash);
 </script>
-<link rel="icon" type="image/png" href="./favicon_xeleria.png?v=7">
+<link rel="icon" type="image/png" href="./favicon_xeleria.png?v=8">
 <style>
 :root {
   --bg:#f2f0eb;
@@ -594,11 +594,16 @@ th {
     min-width:760px
   }
 }
+
+.productToolbar{display:grid;grid-template-columns:minmax(260px,1fr) 96px 96px 96px auto;gap:12px;align-items:end;margin-bottom:12px}
+.productActions{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}.productActions input[type=file]{max-width:320px}
+.productsWrap{border:1px solid var(--line);border-radius:14px;overflow:auto;max-height:660px;background:#fff}.productsTable{min-width:1120px}.productsTable th:nth-child(1){width:145px}.productsTable th:nth-child(2){width:250px}.productsTable th:nth-child(3){width:180px}.productsTable th:nth-child(4){width:auto}.productTitle{font-weight:800}.productSub{font-size:12px;color:var(--muted);line-height:1.35}.prodStockBox{display:flex;gap:8px;align-items:end}.prodStockBox input{width:90px}.marketBox{display:grid;grid-template-columns:42px minmax(250px,1fr) 92px 76px 92px 42px;gap:8px;align-items:center;margin:0 0 8px;padding:8px;border:1px solid #eee2c8;border-radius:12px;background:#fffaf0}.marketBox input{padding:7px 8px;border-radius:9px;font-size:12px}.marketBox .id{font-size:11px}.marketBox .pubvar{display:grid;grid-template-columns:minmax(130px,1fr) minmax(90px,120px);gap:6px;white-space:nowrap;overflow:hidden;min-width:0}.marketBox .pubvar span{overflow:hidden;text-overflow:ellipsis}.marketStatus{justify-content:center}.marketStatus.inactive{background:#fef3f2;color:var(--bad)}.productKebab{border:1px solid #eee2c8;border-radius:10px;background:#fff;padding:7px 9px;text-align:center}.productRowStatus{font-size:12px;margin-top:6px;min-height:16px}.gestMenu{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:14px}.gestMenu a{padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#fff;color:#111;text-decoration:none;font-weight:800;text-align:center}.gestMenu a.active{background:var(--brand);border-color:var(--brand2)}.gestMenu a.disabled{opacity:.55}
+@media(max-width:900px){.productToolbar{grid-template-columns:1fr}.productsTable{min-width:980px}}
 </style>
 </head>
 <body>
 <div class="app">
-<aside><div class="brand"><div class="brandTop"><span class="appMark"><img src="./favicon_xeleria.png?v=7" alt="XelerIA"></span><div class="brandName">XelerIA</div><div class="tenantBadge" id="tenantBadge">PC</div></div><p id="tenantSubtitle">Panel operativo</p></div><nav><button class="navBtn active" data-view="inicio">Inicio / Dashboard</button><div class="navTitle">Mercado Libre</div><button class="navBtn" data-view="ml-publicaciones">Publicaciones</button><button class="navBtn" data-view="ml-ventas">Ventas</button><div class="navTitle">Tienda Nube</div><button class="navBtn" data-view="tn-publicaciones">Publicaciones</button><button class="navBtn" data-view="tn-ventas">Ventas</button><div class="navTitle">Gestión</div><button class="navBtn" data-view="inventario">Inventario</button><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="consola">Detalle técnico</button></nav><div class="sidebarFoot">Pantalla: XelerIA 1.0.7-inventario<br>Servidor: <span id="footBackendVer">?</span><br><span class="muted">Cambios externos desactivados</span></div></aside>
+<aside><div class="brand"><div class="brandTop"><span class="appMark"><img src="./favicon_xeleria.png?v=8" alt="XelerIA"></span><div class="brandName">XelerIA</div><div class="tenantBadge" id="tenantBadge">PC</div></div><p id="tenantSubtitle">Panel operativo</p></div><nav><button class="navBtn active" data-view="inicio">Inicio / Dashboard</button><div class="navTitle">Mercado Libre</div><button class="navBtn" data-view="ml-publicaciones">Publicaciones</button><button class="navBtn" data-view="ml-ventas">Ventas</button><div class="navTitle">Tienda Nube</div><button class="navBtn" data-view="tn-publicaciones">Publicaciones</button><button class="navBtn" data-view="tn-ventas">Ventas</button><div class="navTitle">Gestión</div><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="consola">Detalle técnico</button></nav><div class="sidebarFoot">Pantalla: XelerIA 1.0.8-productos<br>Servidor: <span id="footBackendVer">?</span><br><span class="muted">Cambios externos desactivados</span></div></aside>
 <main><div class="topbar"><h2 id="pageTitle">Inicio</h2><div class="crumb" id="pageCrumb">Panel operativo</div></div>
 <section id="inicio" class="view active"><div class="hero"><div class="btnrow" style="justify-content:space-between"><div><h3>Dashboard</h3><p>Resumen operativo de XelerIA. El dashboard informa; no dispara operaciones.</p></div><button class="secondary" onclick="refreshAll()">Actualizar</button></div><div id="homeStatus" class="status"></div></div><div class="grid"><div class="col-3 stat good"><div class="k">Servidor</div><div class="v" id="stApi">?</div><div class="s">Versión <span id="dashBackendVer">?</span></div></div><div class="col-3 stat" id="mlCardMini"><div class="k">Mercado Libre</div><div class="v" id="stML">?</div><div class="s" id="stMLSub">Conexión</div></div><div class="col-3 stat" id="tnCardMini"><div class="k">Tienda Nube</div><div class="v" id="stTN">?</div><div class="s" id="stTNSub">Conexión</div></div><div class="col-3 stat warnline"><div class="k">Cambios externos</div><div class="v">Bloqueado</div><div class="s">No modifica stock/precios en ML/TN</div></div></div><div class="card"><h3>Resumen operativo</h3><div id="snapshotWrap" class="tableWrap"><div class="dashEmpty">Tocá “Actualizar”.</div></div></div></section>
 <section id="ml-publicaciones" class="view"><div class="card"><h3>Mercado Libre · Publicaciones</h3><p>Vista segura: lee publicaciones, no cambia tu inventario.</p><div class="btnrow"><button class="secondary" onclick="readMLItems()">Ver primeras publicaciones</button><button class="primary importBtn" onclick="startStaging('ML')">Configurar inventario ML</button><button class="secondary" onclick="connectML()">Conectar ML</button></div><div id="mlItemsStatus" class="status"></div><div id="mlItemsTable" class="tableWrap"></div></div></section>
@@ -606,31 +611,60 @@ th {
 <section id="ml-ventas" class="view"><div class="card"><h3>Mercado Libre · Ventas</h3><div class="btnrow"><button class="secondary" onclick="readMLOrders(true)">Ver ventas ML</button><button class="primary" onclick="readMLOrders(false)">Importar ventas ML</button></div><div id="mlOrdersStatus" class="status"></div><div id="mlOrdersTable" class="tableWrap"></div></div></section>
 <section id="tn-ventas" class="view"><div class="card"><h3>Tienda Nube · Ventas</h3><div class="btnrow"><button class="secondary" onclick="readTNOrders(true)">Ver ventas TN</button><button class="primary" onclick="readTNOrders(false)">Importar ventas TN</button></div><div id="tnOrdersStatus" class="status"></div><div id="tnOrdersTable" class="tableWrap"></div></div></section>
 <section id="inventario" class="view">
-  <div class="configAnchor">
-    <a href="#" class="active" onclick="return false">Inventario</a>
-    <a href="#" class="muted" onclick="return false">Combos</a>
-    <a href="#" class="muted" onclick="return false">Venta manual</a>
-    <a href="#" class="muted" onclick="return false">Movimientos</a>
-    <a href="#" class="muted" onclick="return false">Sincronización</a>
+  <div class="gestMenu">
+    <a href="#" class="active" onclick="return false">Productos</a>
+    <a href="#" class="disabled" onclick="return productsPending('Combos / Kits')">Combos / Kits</a>
+    <a href="#" class="disabled" onclick="return productsPending('Envío a Full')">Envío a Full</a>
+    <a href="#" class="disabled" onclick="return productsPending('Movimientos de stock')">Movimientos de stock</a>
+    <a href="#" class="disabled" onclick="return productsPending('Clientes ML / TN')">Clientes ML / TN</a>
+    <a href="#" class="disabled" onclick="return productsPending('Base de Conocimiento IA')">Base de Conocimiento IA</a>
+    <a href="#" class="disabled" onclick="return productsPending('ARCA reportes')">ARCA reportes</a>
   </div>
+
   <div class="card">
-    <h3>Inventario</h3>
-    <p>Busca SKUs, consulta publicaciones vinculadas y ajusta stock desde XelerIA. Los cambios crean trabajos de sincronización; no escriben directo en ML/TN.</p>
-    <div class="btnrow" style="margin-bottom:10px">
-      <input id="inventorySearch" placeholder="Buscar por SKU, producto, categoría, proveedor o ubicación" style="min-width:360px;max-width:620px;flex:1;border:1px solid var(--line);border-radius:12px;background:#fff;padding:10px 11px;font:inherit" onkeydown="if(event.key==='Enter')loadInventoryMaster()">
-      <button class="secondary" onclick="loadInventoryMaster()">Buscar</button>
-      <button class="secondary" onclick="inventoryClearSearch()">Ver todo</button>
+    <h3>Gestión · Inventario · Productos</h3>
+    <p>Stock ERP editable + publicaciones TN/ML vinculadas por SKU. Guardar genera trabajos de sincronización; no escribe directo en ML/TN.</p>
+
+    <div class="productToolbar">
+      <div>
+        <label>Buscar SKU / producto</label>
+        <input id="productSearch" placeholder="Ej: CBOLABCA60, virola, suela..." onkeydown="if(event.key==='Enter')loadProducts()">
+      </div>
+      <div>
+        <label>Canal</label>
+        <select id="productChannel">
+          <option value="ALL">Todos</option>
+          <option value="ML">ML</option>
+          <option value="TN">TN</option>
+        </select>
+      </div>
+      <div>
+        <label>Stock <=</label>
+        <input id="productStockLe" inputmode="numeric" placeholder="Ej: 0">
+      </div>
+      <div>
+        <label>Cantidad</label>
+        <select id="productLimit">
+          <option>20</option>
+          <option>50</option>
+          <option>100</option>
+          <option>200</option>
+        </select>
+      </div>
+      <button class="primary" onclick="loadProducts()">Filtrar</button>
     </div>
-    <div id="inventoryStatus" class="status"></div>
-    <div id="inventoryTable" class="tableWrap"><div class="dashEmpty">Tocá “Buscar” para ver inventario.</div></div>
-  </div>
-  <div class="card" id="inventoryDetailCard" style="display:none">
-    <div class="btnrow" style="justify-content:space-between">
-      <h3 id="inventoryDetailTitle" style="margin:0">Detalle SKU</h3>
-      <button class="secondary" onclick="inventoryCloseDetail()">Cerrar detalle</button>
+
+    <div class="productActions">
+      <button class="primary" onclick="return productsPending('Agregar producto')">Agregar producto</button>
+      <button class="primary" onclick="return productsPending('Agregar combo')">Agregar combo</button>
+      <button class="secondary" onclick="return productsPending('Vincular publicaciones')">Vincular publicaciones</button>
+      <button class="secondary" onclick="downloadProductsCsv()">Bajar planilla inventario</button>
+      <input id="productUploadFile" type="file" accept=".csv,.xlsx" disabled>
+      <button class="secondary" onclick="return productsPending('Subir planilla inventario')">Subir planilla inventario</button>
     </div>
-    <div id="inventoryDetailStatus" class="status"></div>
-    <div id="inventoryDetailBody"></div>
+
+    <div id="productsStatus" class="status"></div>
+    <div id="productsTable" class="productsWrap"><div class="dashEmpty">Tocá “Filtrar” para cargar productos.</div></div>
   </div>
 </section>
 <section id="configuracion" class="view">
@@ -1104,154 +1138,133 @@ const btn=$(ch==='ML'?'mlConnectBtn':'tnConnectBtn');card?.classList.toggle('con
 
 async function loadReadiness(){try{const d=await api(`/system-checks/${TENANT_ID}/readiness`);setStatus('inventoryStatus','Verificación consultada.','oktxt');return d}catch(e){setStatus('inventoryStatus','Error en verificación.','badtxt');raw(e)}}
 
-let INVENTORY_ROWS=[];
-let INVENTORY_SELECTED_SKU='';
 
-function inventoryClearSearch(){
-  if($('inventorySearch')) $('inventorySearch').value='';
-  loadInventoryMaster();
+let PRODUCT_ROWS=[];
+
+function productsPending(label){
+  setStatus('productsStatus',`${label}: pendiente para próxima pantalla.`, 'warntxt');
+  setTimeout(()=>setStatus('productsStatus',''),2200);
+  return false;
 }
 
-function inventoryCloseDetail(){
-  INVENTORY_SELECTED_SKU='';
-  if($('inventoryDetailCard')) $('inventoryDetailCard').style.display='none';
+function productStatusPill(status){
+  const s=String(status||'').toLowerCase();
+  if(['active','published','activo','activa'].includes(s)) return '<span class="pill ok">Activa</span>';
+  if(['paused','inactive','pausado','pausada'].includes(s)) return '<span class="pill inactive">Pausada</span>';
+  return `<span class="pill warn">${esc(status||'')}</span>`;
 }
 
-function inventoryTypeLabel(v){
-  const t=String(v||'simple').toLowerCase();
-  if(t==='bundle') return 'Combo';
-  return 'Simple';
+function productsParams(){
+  const q=encodeURIComponent(($('productSearch')?.value||'').trim());
+  const channel=encodeURIComponent(($('productChannel')?.value||'ALL').trim());
+  const stockLe=encodeURIComponent(($('productStockLe')?.value||'').trim());
+  const limit=encodeURIComponent(($('productLimit')?.value||'20').trim());
+  return `q=${q}&channel=${channel}&stock_le=${stockLe}&limit=${limit}`;
+}
+
+async function loadProducts(silent=false){
+  try{
+    if(!silent)setStatus('productsStatus','Cargando productos…');
+    const d=await api(`/products-admin/${TENANT_ID}/products?${productsParams()}`);
+    PRODUCT_ROWS=d.items||[];
+    renderProductsTable(PRODUCT_ROWS);
+    if($('snapshotWrap') && !silent) $('snapshotWrap').innerHTML=$('productsTable')?.innerHTML||'';
+    if(!silent)setStatus('productsStatus',`Inventario: ${PRODUCT_ROWS.length} de ${d.total??PRODUCT_ROWS.length} ítems · Publicaciones visibles: ${d.visible_publications??0}`,'oktxt');
+    return PRODUCT_ROWS;
+  }catch(e){
+    if(!silent)setStatus('productsStatus','Error cargando productos.','badtxt');
+    raw(e);
+    return [];
+  }
 }
 
 async function loadInventoryMaster(silent=false){
+  return await loadProducts(silent);
+}
+
+function renderProductsTable(rows){
+  if(!rows.length){
+    $('productsTable').innerHTML='<div class="dashEmpty">Sin productos para mostrar.</div>';
+    return;
+  }
+  let html='<table class="productsTable"><thead><tr><th>SKU</th><th>Producto</th><th>Stock ERP editable</th><th>Publicaciones / variantes / precio / stock</th><th>⋮</th></tr></thead><tbody>';
+  rows.forEach((r,idx)=>{
+    const listings=r.listings||[];
+    const pubs=listings.length?listings.map((l,j)=>renderProductListingBox(l,idx,j)).join(''):'<div class="dashEmpty" style="padding:10px">Sin publicaciones vinculadas.</div>';
+    html+=`<tr data-product-row="${idx}">
+      <td><b>${esc(r.sku||'')}</b><div class="productSub">${esc(r.item_type||'simple')}</div></td>
+      <td><div class="productTitle">${esc(r.name||r.title||'')}</div><div class="productSub">${esc([r.variant_name,r.category].filter(Boolean).join(' · '))}</div></td>
+      <td>
+        <div class="prodStockBox">
+          <div><input id="prod-stock-${idx}" type="number" step="1" value="${esc(r.stock??0)}"><div class="productSub">actual ERP: ${esc(r.stock??0)}</div></div>
+          <button class="ok" onclick="saveProductRow(${idx})">Guardar</button>
+        </div>
+        <div id="prod-status-${idx}" class="productRowStatus"></div>
+      </td>
+      <td>${pubs}</td>
+      <td><button class="productKebab" onclick="return productsPending('Opciones del producto')">⋮</button></td>
+    </tr>`;
+  });
+  html+='</tbody></table>';
+  $('productsTable').innerHTML=html;
+}
+
+function renderProductListingBox(l,idx,j){
+  const ch=String(l.marketplace||'').toUpperCase();
+  const chClass=ch==='TN'?'ok':'info';
+  const pub=esc(l.external_product_id||'');
+  const vari=esc(l.external_variant_id||'0');
+  return `<div class="marketBox" data-listing-row="${idx}-${j}">
+    <span class="pill ${chClass}">${esc(ch)}</span>
+    <div class="pubvar"><span>Pub: ${pub}</span><span>Var: ${vari||'0'}</span></div>
+    <input id="prod-price-${idx}-${j}" type="number" step="1" value="${esc(l.price??'')}">
+    <input id="prod-lstock-${idx}-${j}" type="number" step="1" value="${esc(l.stock??0)}">
+    ${productStatusPill(l.status)}
+    <button class="productKebab" onclick="return productsPending('Opciones de publicación')">⋮</button>
+  </div>`;
+}
+
+async function saveProductRow(idx){
+  const r=PRODUCT_ROWS[idx];
+  if(!r){return}
   try{
-    const q=encodeURIComponent(($('inventorySearch')?.value||'').trim());
-    if(!silent)setStatus('inventoryStatus','Cargando inventario…');
-    const d=await api(`/inventory-admin/${TENANT_ID}/search?limit=500&q=${q}`);
-    const rows=d.items||[];
-    INVENTORY_ROWS=rows;
-    const html=table(rows,[
-      {key:'sku',label:'SKU'},
-      {key:'name',label:'Producto',render:r=>esc(r.name||r.title||'')},
-      {key:'variant_name',label:'Variante',render:r=>esc(r.variant_name||'')},
-      {key:'category',label:'Categoría',render:r=>esc(r.category||'')},
-      {key:'stock',label:'Stock',render:r=>`<b>${esc(r.stock??0)}</b>`},
-      {key:'item_type',label:'Tipo',render:r=>esc(inventoryTypeLabel(r.item_type))},
-      {key:'channels',label:'Canales',render:r=>esc(r.channels||'—')},
-      {key:'listing_count',label:'Pub.',render:r=>esc(r.listing_count??0)},
-      {key:'action',label:'Acción',render:r=>`<button class="secondary" onclick="inventoryOpenDetail('${esc(String(r.sku||'').replace(/'/g,"\\'"))}')">Detalle</button>`}
-    ],500);
-    if($('inventoryTable'))$('inventoryTable').innerHTML=html;
-    if($('snapshotWrap')&&!silent)$('snapshotWrap').innerHTML=html;
-    if(!silent)setStatus('inventoryStatus',`Inventario cargado: ${rows.length} de ${d.total??rows.length} SKU.`,'oktxt');
-    return rows;
+    const listings=(r.listings||[]).map((l,j)=>({
+      id:l.id,
+      price:$(`prod-price-${idx}-${j}`)?.value,
+      stock:$(`prod-lstock-${idx}-${j}`)?.value
+    }));
+    setStatus(`prod-status-${idx}`,'Guardando…','warntxt');
+    const d=await postJSON(`/products-admin/${TENANT_ID}/products/${encodeURIComponent(r.sku)}/save`,{
+      stock:$(`prod-stock-${idx}`)?.value,
+      listings,
+      notes:'Guardado desde Productos'
+    });
+    setStatus(`prod-status-${idx}`,`Guardado. Jobs: ${d.jobs_created??0}.`,'oktxt');
+    setTimeout(()=>setStatus(`prod-status-${idx}`,''),2200);
   }catch(e){
-    if(!silent)setStatus('inventoryStatus','Error cargando inventario.','badtxt');
+    setStatus(`prod-status-${idx}`,'Error guardando.','badtxt');
     raw(e);
-    return[];
   }
 }
 
-async function inventoryOpenDetail(sku){
-  try{
-    INVENTORY_SELECTED_SKU=sku;
-    if($('inventoryDetailCard'))$('inventoryDetailCard').style.display='block';
-    setStatus('inventoryDetailStatus','Cargando detalle…');
-    const d=await api(`/inventory-admin/${TENANT_ID}/item/${encodeURIComponent(sku)}`);
-    renderInventoryDetail(d);
-    setStatus('inventoryDetailStatus','');
-    $('inventoryDetailCard')?.scrollIntoView({behavior:'smooth',block:'start'});
-  }catch(e){
-    setStatus('inventoryDetailStatus','Error cargando detalle.','badtxt');
-    raw(e);
-  }
-}
-
-function renderInventoryDetail(d){
-  const item=d.item||{};
-  const listings=d.listings||[];
-  const comps=d.components||[];
-  const used=d.used_in_bundles||[];
-  const movs=d.stock_movements||[];
-  const jobs=d.sync_jobs||[];
-  if($('inventoryDetailTitle'))$('inventoryDetailTitle').textContent=`${item.sku||''} · ${item.name||''}`;
-  const listingsHtml=table(listings,[
-    {key:'marketplace',label:'Canal'},
-    {key:'external_product_id',label:'Publicación'},
-    {key:'external_variant_id',label:'Variante'},
-    {key:'title',label:'Título'},
-    {key:'stock',label:'Stock'},
-    {key:'price',label:'Precio',render:r=>r.price?money(r.price):''},
-    {key:'status',label:'Estado'}
-  ],200);
-  const compsHtml=comps.length?table(comps,[
-    {key:'sku',label:'SKU componente',render:r=>esc(r.component?.sku||'')},
-    {key:'name',label:'Producto',render:r=>esc(r.component?.name||'')},
-    {key:'quantity',label:'Cantidad'},
-    {key:'stock',label:'Stock comp.',render:r=>esc(r.component?.stock??'')}
-  ],200):'<div class="dashEmpty">No es combo o no tiene componentes.</div>';
-  const usedHtml=used.length?table(used,[
-    {key:'sku',label:'Combo',render:r=>esc(r.bundle?.sku||'')},
-    {key:'name',label:'Nombre',render:r=>esc(r.bundle?.name||'')},
-    {key:'quantity',label:'Usa cantidad'},
-    {key:'stock',label:'Stock combo',render:r=>esc(r.bundle?.stock??'')}
-  ],200):'<div class="dashEmpty">Este SKU no alimenta combos.</div>';
-  const movsHtml=movs.length?table(movs,[
-    {key:'created_at',label:'Fecha'},
-    {key:'movement_type',label:'Tipo'},
-    {key:'channel',label:'Canal'},
-    {key:'quantity',label:'Cant.'},
-    {key:'previous_stock',label:'Antes'},
-    {key:'new_stock',label:'Después'},
-    {key:'notes',label:'Notas'}
-  ],30):'<div class="dashEmpty">Sin movimientos recientes.</div>';
-  const jobsHtml=jobs.length?table(jobs,[
-    {key:'created_at',label:'Fecha'},
-    {key:'marketplace',label:'Canal'},
-    {key:'listing_id',label:'Publicación'},
-    {key:'target_stock',label:'Stock objetivo'},
-    {key:'status',label:'Estado'},
-    {key:'last_error',label:'Error'}
-  ],30):'<div class="dashEmpty">Sin jobs recientes.</div>';
-  $('inventoryDetailBody').innerHTML=`
-    <div class="grid">
-      <div class="col-4 stat"><div class="k">Stock actual</div><div class="v">${esc(item.stock??0)}</div><div class="s">${esc(inventoryTypeLabel(item.item_type))}</div></div>
-      <div class="col-4 stat"><div class="k">Categoría</div><div class="v" style="font-size:18px">${esc(item.category||'—')}</div><div class="s">Proveedor: ${esc(item.supplier||'—')}</div></div>
-      <div class="col-4 stat"><div class="k">Publicaciones</div><div class="v">${listings.length}</div><div class="s">ML/TN vinculadas</div></div>
-    </div>
-    <div class="card" style="box-shadow:none;margin-top:8px">
-      <h3>Ajustar stock</h3>
-      <div class="btnrow">
-        <input id="inventoryNewStock" type="number" step="1" value="${esc(item.stock??0)}" style="width:160px;border:1px solid var(--line);border-radius:12px;background:#fff;padding:10px 11px;font:inherit">
-        <input id="inventoryStockNotes" placeholder="Motivo / nota" value="Ajuste manual de stock" style="min-width:260px;flex:1;border:1px solid var(--line);border-radius:12px;background:#fff;padding:10px 11px;font:inherit">
-        <button class="secondary" onclick="inventorySetStock(true)">Simular</button>
-        <button class="primary" onclick="inventorySetStock(false)">Guardar stock</button>
-      </div>
-      <div id="inventorySetStockStatus" class="status"></div>
-    </div>
-    <h3>Publicaciones vinculadas</h3>${listingsHtml}
-    <h3 style="margin-top:14px">Componentes del combo</h3>${compsHtml}
-    <h3 style="margin-top:14px">Combos afectados</h3>${usedHtml}
-    <h3 style="margin-top:14px">Movimientos recientes</h3>${movsHtml}
-    <h3 style="margin-top:14px">Jobs de sincronización recientes</h3>${jobsHtml}
-  `;
-}
-
-async function inventorySetStock(dryRun){
-  try{
-    if(!INVENTORY_SELECTED_SKU){setStatus('inventorySetStockStatus','No hay SKU seleccionado.','warntxt');return}
-    const newStock=Number($('inventoryNewStock')?.value||0);
-    const notes=$('inventoryStockNotes')?.value||'Ajuste manual de stock';
-    setStatus('inventorySetStockStatus',dryRun?'Simulando ajuste…':'Guardando ajuste…','warntxt');
-    const d=await postJSON(`/inventory-admin/${TENANT_ID}/stock/set`,{sku:INVENTORY_SELECTED_SKU,new_stock:newStock,notes,dry_run:dryRun,channel:'MANUAL'});
-    const affected=(d.affected_bundles||[]).filter(x=>x&&x.changed).length;
-    const jobs=(d.sync_jobs||[]).length+(d.affected_bundles||[]).reduce((n,x)=>n+((x&&x.sync_jobs)||[]).length,0);
-    setStatus('inventorySetStockStatus',dryRun?`Simulación lista. Combos afectados: ${affected}.`:`Stock guardado. Jobs creados: ${jobs}. Combos recalculados: ${affected}.`,'oktxt');
-    if(!dryRun){await loadInventoryMaster(true);await inventoryOpenDetail(INVENTORY_SELECTED_SKU)}
-  }catch(e){
-    setStatus('inventorySetStockStatus','Error ajustando stock.','badtxt');
-    raw(e);
-  }
+function downloadProductsCsv(){
+  const rows=PRODUCT_ROWS||[];
+  if(!rows.length){productsPending('Bajar planilla inventario');return}
+  const lines=['sku;producto;variante;categoria;stock;tipo;publicaciones'];
+  rows.forEach(r=>{
+    const pubs=(r.listings||[]).map(l=>`${l.marketplace}:${l.external_product_id}:${l.external_variant_id||0}`).join('|');
+    const vals=[r.sku,r.name||'',r.variant_name||'',r.category||'',r.stock??0,r.item_type||'',pubs].map(v=>String(v).replace(/;/g,','));
+    lines.push(vals.join(';'));
+  });
+  const blob=new Blob([lines.join('\n')],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='xeleria_productos.csv';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
 }
 
 function openPublicationMatrix() {
