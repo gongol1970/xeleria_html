@@ -815,6 +815,16 @@ function cfgKey() {
 
 const cfgIds = ['cfgLogo', 'cfgNombreFantasia', 'cfgRazonSocial', 'cfgCuit', 'cfgPtoVta', 'cfgDomicilio', 'cfgNotas', 'cfgCondIva'];
 
+function clearStatusSoon(id, ms = 2200) {
+  setTimeout(() => {
+    const el = $(id);
+    if (el) {
+      el.className = 'status';
+      el.textContent = '';
+    }
+  }, ms);
+}
+
 function normalizeCuitInput() {
   const el = $('cfgCuit');
   if (!el) return '';
@@ -833,19 +843,24 @@ function updateLogoPreview() {
   box.innerHTML = `<img src="${esc(url)}" alt="Logo">`;
 }
 
-function loadUserOptions() {
-  let c = {};
-  try {
-    c = JSON.parse(localStorage.getItem(cfgKey()) || '{}');
-  } catch {}
+function applyLocalConfig(c = {}) {
   for (const id of cfgIds) {
-    if ($(id)) $(id).value = c[id] || $(id).value || '';
+    if ($(id) && c[id] !== undefined && c[id] !== null) $(id).value = c[id] || '';
+  }
+  for (const id of ['cfgAutoML', 'cfgAutoTN']) {
+    if ($(id) && c[id] !== undefined) $(id).checked = !!c[id];
   }
   normalizeCuitInput();
   updateLogoPreview();
-  for (const id of ['cfgAutoML', 'cfgAutoTN']) {
-    if ($(id)) $(id).checked = !!c[id];
-  }
+}
+
+function applyTenantSettings(settings = {}) {
+  if (!settings) return;
+  if ($('cfgNombreFantasia')) $('cfgNombreFantasia').value = settings.display_name || '';
+  if ($('cfgLogo')) $('cfgLogo').value = settings.logo_url || '';
+  if ($('cfgAutoML')) $('cfgAutoML').checked = !!settings.auto_invoice_ml;
+  if ($('cfgAutoTN')) $('cfgAutoTN').checked = !!settings.auto_invoice_tn;
+  updateLogoPreview();
 }
 
 function collectCfg() {
@@ -860,9 +875,47 @@ function collectCfg() {
   return c;
 }
 
-function saveUserOptions() {
-  localStorage.setItem(cfgKey(), JSON.stringify(collectCfg()));
-  setStatus('cfgOptionsStatus', 'Opciones guardadas.', 'oktxt');
+function collectTenantSettingsPayload() {
+  return {
+    display_name: ($('cfgNombreFantasia')?.value || '').trim(),
+    logo_url: ($('cfgLogo')?.value || '').trim(),
+    auto_invoice_ml: !!$('cfgAutoML')?.checked,
+    auto_invoice_tn: !!$('cfgAutoTN')?.checked
+  };
+}
+
+async function loadUserOptions() {
+  let local = {};
+  try {
+    local = JSON.parse(localStorage.getItem(cfgKey()) || '{}');
+  } catch {}
+  applyLocalConfig(local);
+
+  try {
+    const d = await api(`/tenant-settings/${TENANT_ID}`);
+    if (d.settings) {
+      applyTenantSettings(d.settings);
+      const merged = { ...local, ...collectCfg() };
+      localStorage.setItem(cfgKey(), JSON.stringify(merged));
+    }
+  } catch (e) {
+    raw(e);
+    // Fallback intencional: si el backend no responde, dejamos visible la copia local.
+  }
+}
+
+async function saveUserOptions() {
+  const local = collectCfg();
+  localStorage.setItem(cfgKey(), JSON.stringify(local));
+  try {
+    const d = await postJSON(`/tenant-settings/${TENANT_ID}`, collectTenantSettingsPayload());
+    if (d.settings) applyTenantSettings(d.settings);
+    setStatus('cfgOptionsStatus', 'Opciones guardadas.', 'oktxt');
+    clearStatusSoon('cfgOptionsStatus');
+  } catch (e) {
+    setStatus('cfgOptionsStatus', 'Error guardando opciones en servidor. Quedó copia local.', 'badtxt');
+    raw(e);
+  }
 }
 
 function cuitDigits() {
@@ -903,7 +956,7 @@ function saveFiscalData() {
   localStorage.setItem(cfgKey(), JSON.stringify(collectCfg()));
   const el = $('cfgFiscalStatus');
   if (el) {
-    el.textContent = (el.textContent ? el.textContent + ' ' : '') + 'Datos fiscales guardados.';
+    el.textContent = (el.textContent ? el.textContent + ' ' : '') + 'Datos fiscales guardados localmente hasta activar módulo ARCA.';
     el.className = 'small oktxt';
   }
 }
