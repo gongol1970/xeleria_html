@@ -7,7 +7,7 @@
 <script>
 if(location.protocol==='http:'&&location.hostname.endsWith('xeleria.com.ar'))location.replace('https://'+location.host+location.pathname+location.search+location.hash);
 </script>
-<link rel="icon" type="image/png" href="./favicon_xeleria.png?v=9">
+<link rel="icon" type="image/png" href="./favicon_xeleria.png?v=10">
 <style>
 :root {
   --bg:#f2f0eb;
@@ -598,12 +598,17 @@ th {
 .productToolbar{display:grid;grid-template-columns:minmax(260px,1fr) 96px 96px 96px auto;gap:12px;align-items:end;margin-bottom:12px}
 .productActions{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}.productActions input[type=file]{max-width:320px}
 .productsWrap{border:1px solid var(--line);border-radius:14px;overflow:auto;max-height:660px;background:#fff}.productsTable{min-width:1120px}.productsTable th:nth-child(1){width:145px}.productsTable th:nth-child(2){width:250px}.productsTable th:nth-child(3){width:180px}.productsTable th:nth-child(4){width:auto}.productTitle{font-weight:800}.productSub{font-size:12px;color:var(--muted);line-height:1.35}.prodStockBox{display:flex;gap:8px;align-items:end}.prodStockBox input{width:90px}.marketBox{display:grid;grid-template-columns:42px minmax(250px,1fr) 92px 76px 92px 42px;gap:8px;align-items:center;margin:0 0 8px;padding:8px;border:1px solid #eee2c8;border-radius:12px;background:#fffaf0}.marketBox input{padding:7px 8px;border-radius:9px;font-size:12px}.marketBox .id{font-size:11px}.marketBox .pubvar{display:grid;grid-template-columns:minmax(130px,1fr) minmax(90px,120px);gap:6px;white-space:nowrap;overflow:hidden;min-width:0}.marketBox .pubvar span{overflow:hidden;text-overflow:ellipsis}.marketStatus{justify-content:center}.marketStatus.inactive{background:#fef3f2;color:var(--bad)}.productKebab{border:1px solid #eee2c8;border-radius:10px;background:#fff;padding:7px 9px;text-align:center}.productRowStatus{font-size:12px;margin-top:6px;min-height:16px}.gestMenu{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:14px}.gestMenu a{padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#fff;color:#111;text-decoration:none;font-weight:800;text-align:center}.gestMenu a.active{background:var(--brand);border-color:var(--brand2)}.gestMenu a.disabled{opacity:.55}
-@media(max-width:900px){.productToolbar{grid-template-columns:1fr}.productsTable{min-width:980px}}
+
+.comboToolbar{display:grid;grid-template-columns:minmax(260px,1fr) 120px auto;gap:12px;align-items:end;margin-bottom:12px}
+.comboEditor{display:grid;grid-template-columns:160px 1fr 120px 120px auto;gap:10px;align-items:end;margin:12px 0;padding:12px;border:1px solid #eee2c8;border-radius:14px;background:#fffaf0}
+.comboComponents{display:grid;gap:8px;margin:10px 0}.comboComponentRow{display:grid;grid-template-columns:170px minmax(220px,1fr) 90px auto;gap:8px;align-items:center;padding:8px;border:1px solid #eee2c8;border-radius:12px;background:#fff}.comboComponentRow .componentName{font-size:12px;color:var(--muted);line-height:1.25}.comboTable{min-width:1050px}.comboTable th:nth-child(1){width:160px}.comboTable th:nth-child(3){width:160px}.comboTable th:nth-child(5){width:250px}.comboActions{display:flex;gap:8px;flex-wrap:wrap}.comboMiniTable{width:100%;font-size:12px;margin-top:8px}.comboMiniTable th{position:static}.comboSaleBox{display:flex;gap:8px;align-items:end;flex-wrap:wrap;margin-top:8px}.comboSaleBox input{width:95px}.gestPanel{display:none}.gestPanel.active{display:block}
+
+@media(max-width:900px){.productToolbar,.comboToolbar,.comboEditor{grid-template-columns:1fr}.productsTable{min-width:980px}.comboTable{min-width:980px}.comboComponentRow{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div class="app">
-<aside><div class="brand"><div class="brandTop"><span class="appMark"><img src="./favicon_xeleria.png?v=9" alt="XelerIA"></span><div class="brandName">XelerIA</div><div class="tenantBadge" id="tenantBadge">PC</div></div><p id="tenantSubtitle">Panel operativo</p></div><nav><button class="navBtn active" data-view="inicio">Inicio / Dashboard</button><div class="navTitle">Mercado Libre</div><button class="navBtn" data-view="ml-publicaciones">Publicaciones</button><button class="navBtn" data-view="ml-ventas">Ventas</button><div class="navTitle">Tienda Nube</div><button class="navBtn" data-view="tn-publicaciones">Publicaciones</button><button class="navBtn" data-view="tn-ventas">Ventas</button><div class="navTitle">Gestión</div><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="consola">Detalle técnico</button></nav><div class="sidebarFoot">Pantalla: XelerIA 1.0.9-productos<br>Servidor: <span id="footBackendVer">?</span><br><span class="muted">Cambios externos desactivados</span></div></aside>
+<aside><div class="brand"><div class="brandTop"><span class="appMark"><img src="./favicon_xeleria.png?v=10" alt="XelerIA"></span><div class="brandName">XelerIA</div><div class="tenantBadge" id="tenantBadge">PC</div></div><p id="tenantSubtitle">Panel operativo</p></div><nav><button class="navBtn active" data-view="inicio">Inicio / Dashboard</button><div class="navTitle">Mercado Libre</div><button class="navBtn" data-view="ml-publicaciones">Publicaciones</button><button class="navBtn" data-view="ml-ventas">Ventas</button><div class="navTitle">Tienda Nube</div><button class="navBtn" data-view="tn-publicaciones">Publicaciones</button><button class="navBtn" data-view="tn-ventas">Ventas</button><div class="navTitle">Gestión</div><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="consola">Detalle técnico</button></nav><div class="sidebarFoot">Pantalla: XelerIA 1.0.10-combos<br>Servidor: <span id="footBackendVer">?</span><br><span class="muted">Cambios externos desactivados</span></div></aside>
 <main><div class="topbar"><h2 id="pageTitle">Inicio</h2><div class="crumb" id="pageCrumb">Panel operativo</div></div>
 <section id="inicio" class="view active"><div class="hero"><div class="btnrow" style="justify-content:space-between"><div><h3>Dashboard</h3><p>Resumen operativo de XelerIA. El dashboard informa; no dispara operaciones.</p></div><button class="secondary" onclick="refreshAll()">Actualizar</button></div><div id="homeStatus" class="status"></div></div><div class="grid"><div class="col-3 stat good"><div class="k">Servidor</div><div class="v" id="stApi">?</div><div class="s">Versión <span id="dashBackendVer">?</span></div></div><div class="col-3 stat" id="mlCardMini"><div class="k">Mercado Libre</div><div class="v" id="stML">?</div><div class="s" id="stMLSub">Conexión</div></div><div class="col-3 stat" id="tnCardMini"><div class="k">Tienda Nube</div><div class="v" id="stTN">?</div><div class="s" id="stTNSub">Conexión</div></div><div class="col-3 stat warnline"><div class="k">Cambios externos</div><div class="v">Bloqueado</div><div class="s">No modifica stock/precios en ML/TN</div></div></div><div class="card"><h3>Resumen operativo</h3><div id="snapshotWrap" class="tableWrap"><div class="dashEmpty">Tocá “Actualizar”.</div></div></div></section>
 <section id="ml-publicaciones" class="view"><div class="card"><h3>Mercado Libre · Publicaciones</h3><p>Vista segura: lee publicaciones, no cambia tu inventario.</p><div class="btnrow"><button class="secondary" onclick="readMLItems()">Ver primeras publicaciones</button><button class="primary importBtn" onclick="startStaging('ML')">Configurar inventario ML</button><button class="secondary" onclick="connectML()">Conectar ML</button></div><div id="mlItemsStatus" class="status"></div><div id="mlItemsTable" class="tableWrap"></div></div></section>
@@ -612,8 +617,8 @@ th {
 <section id="tn-ventas" class="view"><div class="card"><h3>Tienda Nube · Ventas</h3><div class="btnrow"><button class="secondary" onclick="readTNOrders(true)">Ver ventas TN</button><button class="primary" onclick="readTNOrders(false)">Importar ventas TN</button></div><div id="tnOrdersStatus" class="status"></div><div id="tnOrdersTable" class="tableWrap"></div></div></section>
 <section id="inventario" class="view">
   <div class="gestMenu">
-    <a href="#" class="active" onclick="return false">Productos</a>
-    <a href="#" class="disabled" onclick="return productsPending('Combos / Kits')">Combos / Kits</a>
+    <a href="#" id="gestTabProductos" class="active" onclick="return showGestPanel('productos')">Productos</a>
+    <a href="#" id="gestTabCombos" onclick="return showGestPanel('combos')">Combos / Kits</a>
     <a href="#" class="disabled" onclick="return productsPending('Envío a Full')">Envío a Full</a>
     <a href="#" class="disabled" onclick="return productsPending('Movimientos de stock')">Movimientos de stock</a>
     <a href="#" class="disabled" onclick="return productsPending('Clientes ML / TN')">Clientes ML / TN</a>
@@ -621,50 +626,84 @@ th {
     <a href="#" class="disabled" onclick="return productsPending('ARCA reportes')">ARCA reportes</a>
   </div>
 
-  <div class="card">
-    <h3>Gestión · Inventario · Productos</h3>
-    <p>Stock ERP editable + publicaciones TN/ML vinculadas por SKU. Guardar genera trabajos de sincronización; no escribe directo en ML/TN.</p>
+  <div id="gestPanelProductos" class="gestPanel active">
+    <div class="card">
+      <h3>Gestión · Productos</h3>
+      <p>Stock ERP editable + publicaciones TN/ML vinculadas por SKU. Guardar genera trabajos de sincronización; no escribe directo en ML/TN.</p>
 
-    <div class="productToolbar">
-      <div>
-        <label>Buscar SKU / producto</label>
-        <input id="productSearch" placeholder="Ej: CBOLABCA60, virola, suela..." onkeydown="if(event.key==='Enter')loadProducts()">
+      <div class="productToolbar">
+        <div>
+          <label>Buscar SKU / producto</label>
+          <input id="productSearch" placeholder="Ej: CBOLABCA60, virola, suela..." onkeydown="if(event.key==='Enter')loadProducts()">
+        </div>
+        <div>
+          <label>Canal</label>
+          <select id="productChannel">
+            <option value="ALL">Todos</option>
+            <option value="ML">ML</option>
+            <option value="TN">TN</option>
+          </select>
+        </div>
+        <div>
+          <label>Stock <=</label>
+          <input id="productStockLe" inputmode="numeric" placeholder="Ej: 0">
+        </div>
+        <div>
+          <label>Cantidad</label>
+          <select id="productLimit"><option>20</option><option>50</option><option>100</option><option>200</option></select>
+        </div>
+        <button class="primary" onclick="loadProducts()">Filtrar</button>
       </div>
-      <div>
-        <label>Canal</label>
-        <select id="productChannel">
-          <option value="ALL">Todos</option>
-          <option value="ML">ML</option>
-          <option value="TN">TN</option>
-        </select>
+
+      <div class="productActions">
+        <button class="primary" onclick="return productsPending('Agregar producto')">Agregar producto</button>
+        <button class="primary" onclick="return showGestPanel('combos')">Agregar combo</button>
+        <button class="secondary" onclick="return productsPending('Vincular publicaciones')">Vincular publicaciones</button>
+        <button class="secondary" onclick="downloadProductsCsv()">Bajar planilla inventario</button>
+        <input id="productUploadFile" type="file" accept=".csv,.xlsx" disabled>
+        <button class="secondary" onclick="return productsPending('Subir planilla inventario')">Subir planilla inventario</button>
       </div>
-      <div>
-        <label>Stock <=</label>
-        <input id="productStockLe" inputmode="numeric" placeholder="Ej: 0">
-      </div>
-      <div>
-        <label>Cantidad</label>
-        <select id="productLimit">
-          <option>20</option>
-          <option>50</option>
-          <option>100</option>
-          <option>200</option>
-        </select>
-      </div>
-      <button class="primary" onclick="loadProducts()">Filtrar</button>
+
+      <div id="productsStatus" class="status"></div>
+      <div id="productsTable" class="productsWrap"><div class="dashEmpty">Tocá “Filtrar” para cargar productos.</div></div>
     </div>
+  </div>
 
-    <div class="productActions">
-      <button class="primary" onclick="return productsPending('Agregar producto')">Agregar producto</button>
-      <button class="primary" onclick="return productsPending('Agregar combo')">Agregar combo</button>
-      <button class="secondary" onclick="return productsPending('Vincular publicaciones')">Vincular publicaciones</button>
-      <button class="secondary" onclick="downloadProductsCsv()">Bajar planilla inventario</button>
-      <input id="productUploadFile" type="file" accept=".csv,.xlsx" disabled>
-      <button class="secondary" onclick="return productsPending('Subir planilla inventario')">Subir planilla inventario</button>
+  <div id="gestPanelCombos" class="gestPanel">
+    <div class="card">
+      <h3>Gestión · Combos / Kits</h3>
+      <p>ABM de combos con componentes reales del inventario, cálculo de stock disponible y venta de prueba/manual descontando componentes.</p>
+
+      <div class="comboToolbar">
+        <div>
+          <label>Buscar combo</label>
+          <input id="comboSearch" placeholder="SKU o nombre del combo" onkeydown="if(event.key==='Enter')loadCombos()">
+        </div>
+        <div>
+          <label>Cantidad</label>
+          <select id="comboLimit"><option>20</option><option>50</option><option>100</option><option>200</option></select>
+        </div>
+        <button class="primary" onclick="loadCombos()">Filtrar</button>
+      </div>
+
+      <div class="comboEditor">
+        <div><label>SKU combo</label><input id="comboSku" placeholder="Ej: PCCOMBO2_12"></div>
+        <div><label>Nombre</label><input id="comboName" placeholder="Nombre del combo"></div>
+        <div><label>Costo</label><input id="comboCost" type="number" step="0.01" placeholder="0"></div>
+        <div><label>Visible</label><select id="comboActive"><option value="true">Visible</option><option value="false">Oculta</option></select></div>
+        <button class="primary" onclick="saveComboHeader()">Guardar combo</button>
+      </div>
+
+      <div class="btnrow">
+        <button class="secondary" onclick="clearComboEditor()">Limpiar</button>
+        <button class="secondary" onclick="addComboComponentRow()">Agregar componente</button>
+        <button class="ok" onclick="saveComboComponents()">Guardar componentes</button>
+        <button class="secondary" onclick="recalculateCurrentCombo()">Recalcular stock</button>
+      </div>
+      <div id="comboComponents" class="comboComponents"><div class="dashEmpty">Elegí o creá un combo para cargar componentes.</div></div>
+      <div id="combosStatus" class="status"></div>
+      <div id="combosTable" class="productsWrap"><div class="dashEmpty">Tocá “Filtrar” para cargar combos.</div></div>
     </div>
-
-    <div id="productsStatus" class="status"></div>
-    <div id="productsTable" class="productsWrap"><div class="dashEmpty">Tocá “Filtrar” para cargar productos.</div></div>
   </div>
 </section>
 <section id="configuracion" class="view">
@@ -813,7 +852,7 @@ th {
 <section id="consola" class="view"><div class="card"><h3>Detalle técnico</h3><pre id="rawConsole" class="console">Inicializando…</pre></div></section>
 </main></div>
 <script>
-const FRONT_VERSION = '1.0.5-config';
+const FRONT_VERSION = '1.0.10-combos';
 const API_BASE='https://api.xeleria.com.ar/api';
 const RAW_LIMIT=12000;
 let STAGING_SESSION_ID='';
@@ -1153,6 +1192,8 @@ async function loadReadiness(){try{const d=await api(`/system-checks/${TENANT_ID
 
 
 let PRODUCT_ROWS=[];
+let COMBO_ROWS=[];
+let CURRENT_COMBO=null;
 
 function productsPending(label){
   setStatus('productsStatus',`${label}: pendiente para próxima pantalla.`, 'warntxt');
@@ -1192,6 +1233,7 @@ async function loadProducts(silent=false){
 }
 
 async function loadInventoryMaster(silent=false){
+  if ($('gestPanelCombos')?.classList.contains('active')) return await loadCombos(silent);
   return await loadProducts(silent);
 }
 
@@ -1279,6 +1321,198 @@ function downloadProductsCsv(){
   a.remove();
   URL.revokeObjectURL(url);
 }
+
+
+function showGestPanel(which){
+  const isCombos = which === 'combos';
+  $('gestPanelProductos')?.classList.toggle('active', !isCombos);
+  $('gestPanelCombos')?.classList.toggle('active', isCombos);
+  $('gestTabProductos')?.classList.toggle('active', !isCombos);
+  $('gestTabCombos')?.classList.toggle('active', isCombos);
+  if (isCombos) loadCombos(true); else loadProducts(true);
+  return false;
+}
+
+function comboParams(){
+  const q=encodeURIComponent(($('comboSearch')?.value||'').trim());
+  const limit=encodeURIComponent(($('comboLimit')?.value||'20').trim());
+  return `q=${q}&limit=${limit}`;
+}
+
+async function loadCombos(silent=false){
+  try{
+    if(!silent)setStatus('combosStatus','Cargando combos…');
+    const d=await api(`/bundle-items/${TENANT_ID}?${comboParams()}`);
+    COMBO_ROWS=d.items||[];
+    renderCombosTable(COMBO_ROWS);
+    if(!silent)setStatus('combosStatus',`Combos: ${COMBO_ROWS.length} de ${d.total??COMBO_ROWS.length}`,'oktxt');
+    return COMBO_ROWS;
+  }catch(e){
+    if(!silent)setStatus('combosStatus','Error cargando combos.','badtxt');
+    raw(e);
+    return [];
+  }
+}
+
+function renderCombosTable(rows){
+  if(!rows.length){$('combosTable').innerHTML='<div class="dashEmpty">Sin combos para mostrar.</div>';return}
+  let html='<table class="comboTable"><thead><tr><th>SKU</th><th>Combo</th><th>Stock calculado</th><th>Componentes</th><th>Venta / acciones</th></tr></thead><tbody>';
+  rows.forEach((row,idx)=>{
+    const b=row.bundle||{};
+    const comps=row.components||[];
+    const compText=comps.length?`<table class="comboMiniTable"><thead><tr><th>SKU</th><th>Componente</th><th>Cant.</th><th>Stock</th></tr></thead><tbody>${comps.map(c=>{
+      const it=c.component||{};
+      return `<tr><td><b>${esc(it.sku||'')}</b></td><td>${esc(it.name||'')}</td><td>${esc(c.quantity||0)}</td><td>${esc(it.stock??0)}</td></tr>`;
+    }).join('')}</tbody></table>`:'<div class="dashEmpty" style="padding:10px">Sin componentes.</div>';
+    html+=`<tr>
+      <td><b>${esc(b.sku||'')}</b><div class="productSub">bundle</div><div style="margin-top:6px">${visibilityPill(b.active)}</div></td>
+      <td><div class="productTitle">${esc(b.name||'')}</div><div class="productSub">${esc([b.variant_name,b.category].filter(Boolean).join(' · '))}</div></td>
+      <td><b>${esc(row.available_stock??b.stock??0)}</b><div class="productSub">actual ERP: ${esc(b.stock??0)}</div>${row.changed?'<div class="pill warn">requiere recálculo</div>':''}</td>
+      <td>${compText}</td>
+      <td>
+        <div class="comboActions">
+          <button class="secondary" onclick="editCombo(${idx})">Editar</button>
+          <button class="secondary" onclick="recalculateCombo('${escAttr(b.sku||'')}')">Recalcular</button>
+        </div>
+        <div class="comboSaleBox">
+          <input id="combo-sale-${idx}" type="number" step="1" value="1">
+          <button class="secondary" onclick="simulateComboSale(${idx})">Simular venta</button>
+          <button class="ok" onclick="registerComboSale(${idx})">Registrar venta</button>
+        </div>
+        <div id="combo-row-status-${idx}" class="productRowStatus"></div>
+      </td>
+    </tr>`;
+  });
+  html+='</tbody></table>';
+  $('combosTable').innerHTML=html;
+}
+
+function clearComboEditor(){
+  CURRENT_COMBO=null;
+  ['comboSku','comboName','comboCost'].forEach(id=>{if($(id))$(id).value=''});
+  if($('comboActive'))$('comboActive').value='true';
+  $('comboComponents').innerHTML='<div class="dashEmpty">Elegí o creá un combo para cargar componentes.</div>';
+  setStatus('combosStatus','');
+}
+
+function editCombo(idx){
+  const row=COMBO_ROWS[idx];
+  const b=row?.bundle||{};
+  CURRENT_COMBO=b.sku||null;
+  if($('comboSku'))$('comboSku').value=b.sku||'';
+  if($('comboName'))$('comboName').value=b.name||'';
+  if($('comboCost'))$('comboCost').value=b.cost??'';
+  if($('comboActive'))$('comboActive').value=(b.active===false?'false':'true');
+  renderComboComponentEditor(row.components||[]);
+  setStatus('combosStatus',`Editando combo ${b.sku||''}`,'oktxt');
+}
+
+function renderComboComponentEditor(components){
+  if(!components.length){$('comboComponents').innerHTML='';addComboComponentRow();return}
+  $('comboComponents').innerHTML='';
+  components.forEach(c=>addComboComponentRow((c.component||{}).sku||'', c.quantity||1, (c.component||{}).name||''));
+}
+
+function addComboComponentRow(sku='', qty=1, name=''){
+  if(!$('comboComponents'))return;
+  if($('comboComponents').querySelector('.dashEmpty'))$('comboComponents').innerHTML='';
+  const n=$('comboComponents').querySelectorAll('.comboComponentRow').length;
+  const div=document.createElement('div');
+  div.className='comboComponentRow';
+  div.innerHTML=`<div><label>SKU componente</label><input id="combo-comp-sku-${n}" value="${escAttr(sku)}" placeholder="SKU" onblur="lookupComboComponent(${n})"></div>
+    <div><label>Producto</label><div id="combo-comp-name-${n}" class="componentName">${esc(name||'')}</div></div>
+    <div><label>Cantidad</label><input id="combo-comp-qty-${n}" type="number" step="0.01" value="${escAttr(qty)}"></div>
+    <button class="danger" onclick="this.closest('.comboComponentRow').remove()">Quitar</button>`;
+  $('comboComponents').appendChild(div);
+}
+
+async function lookupComboComponent(n){
+  const sku=($(`combo-comp-sku-${n}`)?.value||'').trim();
+  if(!sku)return;
+  try{
+    const d=await api(`/bundle-items/${TENANT_ID}/component-search?q=${encodeURIComponent(sku)}&limit=10`);
+    const exact=(d.items||[]).find(x=>String(x.sku||'').toUpperCase()===sku.toUpperCase()) || (d.items||[])[0];
+    if(exact){
+      $(`combo-comp-sku-${n}`).value=exact.sku||sku;
+      $(`combo-comp-name-${n}`).textContent=`${exact.name||''} · Stock ${exact.stock??0}`;
+    }
+  }catch(e){raw(e)}
+}
+
+async function saveComboHeader(){
+  const sku=($('comboSku')?.value||'').trim();
+  if(!sku){setStatus('combosStatus','Cargá un SKU de combo.','badtxt');return}
+  try{
+    setStatus('combosStatus','Guardando combo…','warntxt');
+    const d=await postJSON(`/bundle-items/${TENANT_ID}`,{
+      sku,
+      name:($('comboName')?.value||sku).trim(),
+      cost:$('comboCost')?.value||0,
+      active:($('comboActive')?.value!=='false')
+    });
+    CURRENT_COMBO=d.bundle?.sku||sku;
+    setStatus('combosStatus',`Combo guardado: ${CURRENT_COMBO}`,'oktxt');
+    await loadCombos(true);
+  }catch(e){setStatus('combosStatus','Error guardando combo.','badtxt');raw(e)}
+}
+
+function currentComboSku(){return ($('comboSku')?.value||CURRENT_COMBO||'').trim()}
+
+async function saveComboComponents(){
+  const sku=currentComboSku();
+  if(!sku){setStatus('combosStatus','Primero guardá o elegí un combo.','badtxt');return}
+  const components=[...document.querySelectorAll('.comboComponentRow')].map((row,idx)=>({
+    sku:($(`combo-comp-sku-${idx}`)?.value||'').trim(),
+    quantity:$(`combo-comp-qty-${idx}`)?.value||1
+  })).filter(x=>x.sku);
+  if(!components.length){setStatus('combosStatus','Agregá al menos un componente.','badtxt');return}
+  try{
+    setStatus('combosStatus','Guardando componentes…','warntxt');
+    const d=await postJSON(`/bundle-items/${TENANT_ID}/${encodeURIComponent(sku)}/components`,{components});
+    setStatus('combosStatus',`Componentes guardados. Stock disponible: ${d.available_stock}. Jobs: ${(d.sync_jobs||[]).length}`,'oktxt');
+    await loadCombos(true);
+  }catch(e){setStatus('combosStatus','Error guardando componentes.','badtxt');raw(e)}
+}
+
+async function recalculateCurrentCombo(){
+  const sku=currentComboSku();
+  if(!sku){setStatus('combosStatus','Elegí un combo.','badtxt');return}
+  await recalculateCombo(sku);
+}
+
+async function recalculateCombo(sku){
+  try{
+    setStatus('combosStatus',`Recalculando ${sku}…`,'warntxt');
+    const d=await postJSON(`/bundle-items/${TENANT_ID}/${encodeURIComponent(sku)}/recalculate`,{});
+    setStatus('combosStatus',`Recalculado ${sku}. Stock disponible: ${d.available_stock}. Jobs: ${(d.sync_jobs||[]).length}`,'oktxt');
+    await loadCombos(true);
+  }catch(e){setStatus('combosStatus','Error recalculando combo.','badtxt');raw(e)}
+  return false;
+}
+
+async function comboSale(idx,dryRun){
+  const row=COMBO_ROWS[idx];
+  const sku=row?.bundle?.sku;
+  if(!sku)return;
+  const qty=$(`combo-sale-${idx}`)?.value||1;
+  const statusId=`combo-row-status-${idx}`;
+  try{
+    setStatus(statusId,dryRun?'Simulando…':'Registrando venta…','warntxt');
+    const d=await postJSON(`/bundle-items/${TENANT_ID}/${encodeURIComponent(sku)}/component-sale`,{
+      quantity:qty,
+      dry_run:dryRun,
+      channel:'MANUAL',
+      reference_id:`manual-${Date.now()}`
+    });
+    setStatus(statusId, dryRun?`Simulación OK. Movimientos: ${(d.movements||[]).length}`:`Venta registrada. Movimientos: ${(d.movements||[]).length}`, 'oktxt');
+    if(!dryRun) await loadCombos(true);
+    setTimeout(()=>setStatus(statusId,''),2800);
+  }catch(e){setStatus(statusId,dryRun?'Error simulando.':'Error registrando.','badtxt');raw(e)}
+}
+function simulateComboSale(idx){return comboSale(idx,true)}
+function registerComboSale(idx){return comboSale(idx,false)}
+
+function escAttr(v){return esc(v).replace(/'/g,'&#39;')}
 
 function openPublicationMatrix() {
   if ($('syncMatrixWrap')) $('syncMatrixWrap').style.display = 'block';
