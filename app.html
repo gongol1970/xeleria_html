@@ -6,8 +6,205 @@
 <title>XelerIA</title>
 <script>
 if(location.protocol==='http:'&&location.hostname.endsWith('xeleria.com.ar'))location.replace('https://'+location.host+location.pathname+location.search+location.hash);
+
+/* v17 old ERP inventory/combos module port, adapted to XelerIA tenant tables */
+(function(){
+  window.state = window.state || {};
+  state.inventoryItems = state.inventoryItems || [];
+  state.inventory = state.inventory || {offset:0,total:0};
+  state.comboItems = state.comboItems || [];
+  state.pendingBundleDraft = state.pendingBundleDraft || null;
+
+  window.showGestPanel = function(which){
+    const isCombos = which === 'combos';
+    qs('gestPanelProductos')?.classList.toggle('active', !isCombos);
+    qs('gestPanelCombos')?.classList.toggle('active', isCombos);
+    qs('gestTabProductos')?.classList.toggle('active', !isCombos);
+    qs('gestTabCombos')?.classList.toggle('active', isCombos);
+    if(isCombos) loadCombos(); else searchInventory(state.inventory?.offset||0,false);
+    return false;
+  };
+
+  window.debouncedSearch = function(kind){
+    clearTimeout(timers[kind]);
+    timers[kind]=setTimeout(()=>{if(kind==='inv')searchInventory(0,true);if(kind==='combo')loadCombos()},350);
+  };
+
+  window.invLimit = function(){return Number(qs('invLimit')?.value||20)}
+  window.inventoryPagerHtml = function(d){
+    let limit=Number(d.limit||invLimit()||20),offset=Number(d.offset||0),total=Number(d.total||0);
+    let from=total?offset+1:0,to=Math.min(offset+(d.items||[]).length,total||offset+(d.items||[]).length),prev=Math.max(0,offset-limit),next=offset+limit;
+    return `<button class="secondary" ${offset<=0?'disabled':''} onclick="searchInventory(${prev})">Atrás</button><span class="pill">Mostrando ${from}–${to}${total?` de ${total}`:''}</span><button class="secondary" ${d.has_next?'':'disabled'} onclick="searchInventory(${next})">Siguiente</button>`;
+  };
+
+  function statusCast(st){
+    if(st===true)return 'visible';
+    if(st===false)return 'hidden';
+    return String(st||'').toLowerCase();
+  }
+  window.listingStatusLabel = function(st){
+    let s=statusCast(st);
+    if(s==='true'||s.includes('visible')||s.includes('active'))return 'Visible';
+    if(s==='false'||s.includes('hidden')||s.includes('ocult'))return 'Oculta';
+    if(s.includes('inactive')||s.includes('deleted')||s.includes('closed'))return 'Oculta';
+    if(s.includes('paused')||s.includes('pause'))return 'Pausada';
+    return st||'-';
+  };
+  window.listingStatusClass = function(st){
+    let s=statusCast(st);
+    if(s==='true'||s.includes('visible')||s.includes('active'))return 'ok';
+    if(s==='false'||s.includes('hidden')||s.includes('ocult')||s.includes('inactive')||s.includes('deleted')||s.includes('closed'))return 'inactive';
+    if(s.includes('paused')||s.includes('pause'))return 'warn';
+    return 'info';
+  };
+  window.listingMarket = function(l){return String(l.marketplace||l.channel||'').toUpperCase()}
+  window.listingProductId = function(l){return l.external_product_id??l.listing_id??l.item_id??l.product_id??l.external_full_id??''}
+  window.listingVariantId = function(l){return l.external_variant_id??l.variant_id??l.variation_id??''}
+  window.listingPrice = function(l){return l.price??l.marketplace_price??l.target_price??''}
+  window.listingStock = function(l){return l.stock??l.available_quantity??l.marketplace_stock??''}
+  window.listingStatus = function(l){return l.status_label??l.status??l.state??''}
+  window.pubVarBlock = function(pid,vid){return `<div class="mono id pubvar"><span>Pub: ${esc(pid)}</span><span class="idSep">Var: ${esc(vid||0)}</span></div>`}
+
+  window.searchInventory = async function(offset=0,savePref=false){
+    let q=qs('invSearch')?.value.trim()||'',lim=invLimit(),market=qs('invMarket')?.value||'',maxStock=(qs('invMaxStock')?.value||'').trim();
+    state.inventory.offset=offset;setStatus('invStatus','Buscando inventario + publicaciones...');
+    try{
+      let d=await api(`/products-admin/${TENANT_ID}/products?q=${encodeURIComponent(q)}&limit=${encodeURIComponent(lim)}&offset=${encodeURIComponent(offset)}&channel=${encodeURIComponent(market||'ALL')}&stock_le=${encodeURIComponent(maxStock)}`);
+      state.inventoryItems=d.items||[];state.inventory.total=Number(d.total||0);
+      renderInventory();
+      if(qs('invPager'))qs('invPager').innerHTML=inventoryPagerHtml(d);
+      let filtro=(market?` · canal ${market}`:'')+(maxStock!==''?` · stock <= ${maxStock}`:'');
+      setStatus('invStatus',`Inventario: ${state.inventoryItems.length} de ${state.inventory.total} ítems${filtro} · Publicaciones visibles: ${d.visible_publications??0}`,true);
+    }catch(e){setStatus('invStatus','Error inventario: '+(e.message||JSON.stringify(e)),false);raw(e)}
+  };
+
+  window.renderListingsForItem = function(item){
+    let market=qs('invMarket')?.value||'';
+    let arr=(Array.isArray(item.listings)?item.listings:[]).filter(l=>!market||listingMarket(l)===market);
+    if(!arr.length)return '<span class="muted">Sin publicaciones vinculadas para este filtro.</span>';
+    arr.sort((a,b)=>(listingMarket(a)+listingProductId(a)+listingVariantId(a)).localeCompare(listingMarket(b)+listingProductId(b)+listingVariantId(b)));
+    return arr.map((l,idx)=>{
+      let m=listingMarket(l),pid=listingProductId(l),vid=listingVariantId(l),price=listingPrice(l),stock=listingStock(l),st=listingStatus(l),key=esc(`${item.sku}_${idx}`);
+      return `<div class="marketBox"><div><span class="pill ${m==='ML'?'info':'ok'}">${esc(m||'?')}</span></div>${pubVarBlock(pid,vid)}<div><input class="priceInput" id="price_${key}" value="${esc(price)}" title="Precio marketplace"></div><div><input class="stockInput" value="${esc(stock)}" disabled title="Stock marketplace informado"></div><div><span class="pill marketStatus ${listingStatusClass(st)}">${esc(listingStatusLabel(st))}</span></div></div>`;
+    }).join('');
+  };
+
+  window.inventoryStockCell = function(i,idx){
+    let isBundle=String(i.item_type||'').toLowerCase()==='bundle';
+    if(isBundle)return `<div class="invStockBox" style="opacity:.58"><div class="stockControls"><input class="stockInput" type="number" step="1" id="stock_${idx}" value="${esc(i.stock??0)}" disabled title="Stock calculado desde componentes"><span class="small">actual ERP: ${esc(i.stock??0)}</span></div></div><div id="rowStatus_${idx}" class="small">Bundle: stock calculado por componentes.</div>`;
+    return `<div class="invStockBox"><div class="stockControls"><input class="stockInput" type="number" step="1" id="stock_${idx}" value="${esc(i.stock??0)}"><span class="small">actual ERP: ${esc(i.stock??0)}</span></div><button class="ok" onclick="saveInventoryStock(${idx})">Guardar</button></div><div id="rowStatus_${idx}" class="small"></div>`;
+  };
+  window.inventoryActionsCell = function(i,idx){
+    let isBundle=String(i.item_type||'').toLowerCase()==='bundle',sku=esc(i.sku||'');
+    let edit=isBundle?`<button onclick="renderEditBundleTool(${idx})">Modificar combo</button>`:`<button onclick="return productsPending('Modificar producto')">Modificar</button>`;
+    let link=`<button onclick="return productsPending('Vincular publicaciones')">Vincular publicaciones</button>`;
+    return `<details class="kebabMenu"><summary title="Más acciones">⋮</summary><div class="kebabPanel">${edit}${link}</div></details>`;
+  };
+  window.renderInventory = function(){
+    let items=state.inventoryItems||[],tbody='';
+    if(!items.length)tbody='<tr><td colspan="5" class="muted" style="text-align:center;padding:24px">Sin resultados para este filtro.</td></tr>';
+    else tbody=items.map((i,idx)=>`<tr><td><strong class="mono">${esc(i.sku)}</strong><br><span class="small">${esc(i.item_type||'')}</span></td><td>${esc(i.name||'')}<br><span class="small">${esc(i.category||'')}</span></td><td>${inventoryStockCell(i,idx)}</td><td>${renderListingsForItem(i)}</td><td class="actionCell">${inventoryActionsCell(i,idx)}</td></tr>`).join('');
+    qs('invResults').innerHTML=`<table class="inventoryTable"><thead><tr><th>SKU</th><th>Producto</th><th>Stock ERP editable</th><th>Publicaciones / variantes / precio / stock</th><th>⋮</th></tr></thead><tbody>${tbody}</tbody></table>`;
+  };
+  window.saveInventoryStock = async function(idx){
+    let item=state.inventoryItems[idx],el=qs('rowStatus_'+idx);
+    if(!item)return;
+    if(String(item.item_type||'').toLowerCase()==='bundle'){if(el){el.textContent='Bundle: el stock se calcula desde componentes.';el.style.color='var(--muted)'}return}
+    let sku=item.sku,newStock=Number(qs('stock_'+idx).value);
+    if(!Number.isFinite(newStock)){el.textContent='Stock inválido';return}
+    el.textContent='Guardando...';
+    try{
+      let d=await postJSON(`/products-admin/${TENANT_ID}/products/${encodeURIComponent(sku)}/save`,{stock:Math.trunc(newStock),listings:[],notes:'Ajuste desde inventario editable integrado'});
+      item.stock=Math.trunc(newStock);el.textContent='OK: stock guardado. Refrescando vista...';el.style.color='var(--ok)';
+      await searchInventory(state.inventory.offset||0,false);
+      setStatus('invStatus',`Stock guardado para ${sku}. Vista refrescada con el mismo filtro.`,true);
+    }catch(e){el.textContent='Error: '+(e.message||JSON.stringify(e));el.style.color='var(--bad)';raw(e)}
+  };
+
+  window.comboLimit = function(){return Number(qs('comboLimit')?.value||50)}
+  window.loadCombos = async function(){
+    let q=(qs('comboSearch')?.value||'').trim(),lim=comboLimit();
+    setStatus('comboStatus','Buscando combos...');
+    try{
+      let d=await api(`/bundle-items/${TENANT_ID}?q=${encodeURIComponent(q)}&limit=${encodeURIComponent(lim)}`);
+      let rows=(d.items||[]).map(x=>({...(x.bundle||{}),_bundlePayload:x}));
+      state.comboItems=rows;state.inventoryItems=rows;
+      renderCombos();
+      setStatus('comboStatus',`Combos: ${rows.length} de ${d.total||rows.length}${q?' filtrados':''}`,true);
+    }catch(e){setStatus('comboStatus','Error combos: '+(e?.message||JSON.stringify(e)),false);raw(e)}
+  };
+  window.renderCombos = function(){
+    let items=state.comboItems||[],tbody='';
+    if(!items.length)tbody='<tr><td colspan="5" class="muted" style="text-align:center;padding:24px">Sin combos para este filtro.</td></tr>';
+    else tbody=items.map((i,idx)=>`<tr><td><strong class="mono">${esc(i.sku)}</strong><br><span class="small">bundle</span></td><td>${esc(i.name||'')}<br><span class="small">${esc(i.category||'COMBOS')}</span></td><td><strong>${esc(i.stock??0)}</strong><br><span class="small">calculado por componentes</span></td><td>${renderBundleComponentsInline(i._bundlePayload)}</td><td class="actionCell">${inventoryActionsCell(i,idx)}</td></tr>`).join('');
+    qs('comboResults').innerHTML=`<table class="inventoryTable"><thead><tr><th>SKU</th><th>Combo / Kit</th><th>Stock calculado</th><th>Componentes</th><th>⋮</th></tr></thead><tbody>${tbody}</tbody></table>`;
+  };
+  function renderBundleComponentsInline(payload){
+    let comps=(payload&&payload.components)||[];
+    if(!comps.length)return '<span class="muted">Sin componentes.</span>';
+    return `<table class="dashTable"><thead><tr><th>SKU</th><th>Componente</th><th>Cant.</th><th>Stock</th></tr></thead><tbody>${comps.map(c=>{let it=c.component||{};return `<tr><td><b>${esc(it.sku||'')}</b></td><td>${esc(it.name||'')}</td><td>${esc(c.quantity||0)}</td><td>${esc(it.stock??0)}</td></tr>`}).join('')}</tbody></table>`;
+  }
+
+  window.toggleInventoryTool = function(type){ if(type==='bundle') renderBundleTool(); return false; };
+  window.renderEditBundleTool = function(idx){ renderBundleTool(state.comboItems[idx]||state.inventoryItems[idx]||{}); };
+  window.renderBundleTool = function(item={}){
+    showGestPanel('combos');
+    let box=qs('comboTools'); if(!box)return;
+    let payload=item._bundlePayload||{};
+    let comps=(payload.components||[]).map(c=>({sku:c.component?.sku||'',name:c.component?.name||'',quantity:c.quantity||1,stock:c.component?.stock??''}));
+    box.classList.remove('hidden');
+    box.innerHTML=`<div class="bundleTool"><div class="bundleGrid">
+      <div><label>SKU combo</label><input id="comboSku" value="${esc(item.sku||'')}" placeholder="SKU combo"></div>
+      <div><label>Nombre</label><input id="comboName" value="${esc(item.name||'')}" placeholder="Nombre del combo"></div>
+      <div><label>Costo</label><input id="comboCost" type="number" step="0.01" value="${esc(item.cost||0)}"></div>
+    </div>
+    <div class="btnrow" style="margin-top:12px"><button class="secondary" onclick="addBundleComponentLine()">Agregar componente</button><button class="primary" onclick="saveBundleTool()">Guardar combo</button><button class="secondary" onclick="qs('comboTools').classList.add('hidden')">Cerrar</button></div>
+    <div id="bundleLines" style="margin-top:12px"></div><div id="bundleToolStatus" class="status"></div></div>`;
+    (comps.length?comps:[{}]).forEach(c=>addBundleComponentLine(c));
+  };
+  window.addBundleComponentLine = function(d={}){
+    let box=qs('bundleLines'); if(!box)return;
+    let id='bline_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+    let div=document.createElement('div');div.className='bundleComponentLine';div.dataset.validSku=d.sku?'1':'0';
+    div.innerHTML=`<div><label>SKU</label><input class="bSku" value="${esc(d.sku||'')}" oninput="bundleSearchComponent(this)" autocomplete="off"><div class="bundleSuggest"></div></div><div class="fieldRel"><label>Componente</label><input class="bName" value="${esc(d.name||'')}" oninput="bundleSearchComponent(this)" autocomplete="off"><div class="bundleSuggest"></div></div><div><label>Cant.</label><input class="bQty" type="number" step="0.01" min="0.01" value="${esc(d.quantity||1)}"></div><div><label>&nbsp;</label><button class="secondary" onclick="this.closest('.bundleComponentLine').remove()">×</button></div>`;
+    box.appendChild(div);
+  };
+  window.bundleSearchComponent = function(input){
+    clearTimeout(input._t);
+    input._t=setTimeout(async()=>{
+      let line=input.closest('.bundleComponentLine'),q=input.value.trim(),box=line.querySelector('.bundleSuggest');
+      if(!q||q.length<2){box.style.display='none';box.innerHTML='';return}
+      try{
+        let d=await api(`/bundle-items/${TENANT_ID}/component-search?q=${encodeURIComponent(q)}&limit=8`);
+        let items=d.items||[];
+        box.innerHTML=items.map(it=>`<div class="bundleSuggestItem" onclick="pickBundleComponent(this)" data-sku="${esc(it.sku||'')}" data-name="${esc(it.name||'')}"><b>${esc(it.sku||'')}</b> · ${esc(it.name||'')} <span class="muted">Stock ${esc(it.stock??0)}</span></div>`).join('')||'<div class="bundleSuggestItem muted">Sin coincidencias</div>';
+        box.style.display='block';
+      }catch(e){box.innerHTML='<div class="bundleSuggestItem muted">Error buscando componente</div>';box.style.display='block';raw(e)}
+    },280);
+  };
+  window.pickBundleComponent = function(el){
+    let line=el.closest('.bundleComponentLine');
+    line.querySelector('.bSku').value=el.dataset.sku||'';
+    line.querySelector('.bName').value=el.dataset.name||'';
+    line.dataset.validSku='1';
+    line.querySelectorAll('.bundleSuggest').forEach(b=>{b.style.display='none';b.innerHTML=''});
+  };
+  window.saveBundleTool = async function(){
+    let sku=(qs('comboSku')?.value||'').trim(),name=(qs('comboName')?.value||sku).trim();
+    if(!sku){setStatus('bundleToolStatus','Cargá SKU de combo.',false);return}
+    setStatus('bundleToolStatus','Guardando combo...');
+    try{
+      await postJSON(`/bundle-items/${TENANT_ID}`,{sku,name,cost:qs('comboCost')?.value||0,active:true});
+      let components=[...document.querySelectorAll('.bundleComponentLine')].map(line=>({sku:(line.querySelector('.bSku')?.value||'').trim(),quantity:Number(line.querySelector('.bQty')?.value||0)})).filter(x=>x.sku&&x.quantity>0);
+      if(components.length) await postJSON(`/bundle-items/${TENANT_ID}/${encodeURIComponent(sku)}/components`,{components});
+      setStatus('bundleToolStatus','Combo guardado y stock recalculado.',true);
+      await loadCombos();
+    }catch(e){setStatus('bundleToolStatus','Error guardando combo: '+(e.message||JSON.stringify(e)),false);raw(e)}
+  };
+})();
+
 </script>
-<link rel="icon" type="image/png" href="./favicon_xeleria.png?v=15">
+<link rel="icon" type="image/png" href="./favicon_xeleria.png?v=17">
 <style>
 :root {
   --bg:#f2f0eb;
@@ -619,104 +816,108 @@ th {
 .comboComponents{display:grid;gap:10px;margin:12px 0}.comboComponentRow{display:grid;grid-template-columns:220px 100px minmax(420px,1fr) 90px;gap:12px;align-items:end;padding:12px;border:1px solid #eee2c8;border-radius:14px;background:#fff;position:relative}.comboComponentRow label{font-size:12px;font-weight:800;color:#4b3f29}.comboComponentRow input{height:42px;padding:10px 12px;border:2px solid #454545;border-radius:12px;background:#fff;font-size:13px}.comboComponentRow .componentName{font-size:12px;color:var(--muted);line-height:1.3;min-height:42px;border:1px solid #eee2c8;border-radius:12px;background:#fffaf0;padding:10px 12px;display:flex;align-items:center}.comboComponentRow .componentName.ok{color:var(--ok);font-weight:800}.comboComponentRow .componentName.bad{color:var(--bad);font-weight:800}.comboComponentRow button{height:42px;padding:8px 12px;align-self:end}.comboSuggest{grid-column:1/4;position:static;width:100%;max-height:220px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);z-index:30;overflow:auto;margin-top:6px}.comboSuggest button{width:100%;border:0;border-radius:0;background:#fff;color:#111;justify-content:flex-start;text-align:left;padding:10px 12px;height:auto}.comboSuggest button:hover{background:#fffaf0}.comboSuggest .sku{font-weight:900;margin-right:8px}.comboSuggest .desc{font-size:12px;color:var(--muted)}.comboTable{min-width:980px}.comboTable th:nth-child(1){width:170px}.comboTable th:nth-child(3){width:170px}.comboTable th:nth-child(5){width:190px}.comboActions{display:flex;gap:8px;flex-wrap:wrap}.comboMiniTable{width:100%;font-size:12px;margin-top:8px}.comboMiniTable th{position:static}.gestPanel{display:none}.gestPanel.active{display:block}
 
 @media(max-width:900px){.productToolbar,.comboToolbar,.comboEditor{grid-template-columns:1fr}.productsTable{min-width:980px}.comboTable{min-width:980px}.comboComponentRow{grid-template-columns:1fr}.comboSuggest{position:static;width:100%;box-shadow:none;margin-top:6px}}
+
+/* v17 old ERP module port */
+.inventoryFilters{grid-template-columns:repeat(12,1fr);align-items:end}
+.inventoryFilters .col-search{grid-column:span 6}
+.inventoryFilters .col-small{grid-column:span 2}
+.inventoryFilters .col-stockle{grid-column:span 2}
+.inventoryFilters .col-actions{grid-column:span 4}
+.inventoryFilters input,.inventoryFilters select,.inventoryTable input,.marketBox input,.bundleTool input,.bundleTool select{
+  width:100%;
+  border:1px solid #cfc4ad;
+  border-radius:12px;
+  background:#fff;
+  padding:10px 11px;
+  font-size:14px;
+  color:var(--ink);
+  outline:none;
+  box-sizing:border-box;
+}
+.inventoryFilters label,.bundleTool label{text-transform:uppercase;letter-spacing:.04em;font-size:12px;font-weight:800;color:#504b43}
+.inventoryWrap{overflow-x:hidden}
+.inventoryTable{table-layout:fixed;min-width:1040px}
+.inventoryTable th:nth-child(1){width:145px}
+.inventoryTable th:nth-child(2){width:225px}
+.inventoryTable th:nth-child(3){width:170px}
+.inventoryTable th:nth-child(5){width:46px}
+.inventoryTable td{overflow-wrap:anywhere}
+.marketBox{display:grid;grid-template-columns:44px minmax(190px,1fr) 82px 58px 78px;gap:4px;align-items:center;margin-bottom:7px;padding:8px;border:1px solid #eee2c8;border-radius:12px;background:#fffaf0}
+.marketBox input{padding:7px 8px;border-radius:9px;font-size:12px}
+.marketBox .stockInput{width:58px}.marketBox .priceInput{width:82px}.marketBox .id{font-size:11px}
+.marketBox .pubvar{display:grid;grid-template-columns:minmax(122px,1fr) minmax(108px,118px);gap:6px;white-space:nowrap;overflow:hidden;min-width:0}
+.marketBox .pubvar span{overflow:hidden;text-overflow:ellipsis}
+.marketStatus.warn,.marketStatus.inactive{background:transparent!important;padding:0!important;border-radius:0!important;font-weight:950}
+.marketStatus.warn{color:var(--warn)!important}.marketStatus.inactive{color:var(--bad)!important}
+.invStockBox{display:flex;gap:8px;align-items:flex-end;justify-content:flex-end;flex-wrap:wrap;text-align:right}
+.invStockBox input{width:88px}.invStockBox .stockControls{display:flex;flex-direction:column;align-items:flex-end}
+.inventoryPager{margin-top:12px}.actionCell{text-align:center}
+details.kebabMenu{position:relative}details.kebabMenu summary{list-style:none;cursor:pointer;border:1px solid var(--line);border-radius:10px;background:#fffaf0;padding:7px 10px;font-weight:900}details.kebabMenu summary::-webkit-details-marker{display:none}.kebabPanel{position:absolute;right:0;top:34px;min-width:190px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:8px;z-index:50;display:grid;gap:6px}.kebabPanel button{width:100%;justify-content:flex-start}
+.bundleTool{border:1px solid var(--line);border-radius:16px;background:#fffaf0;padding:14px;margin-top:12px}.bundleTool .bundleGrid{display:grid;grid-template-columns:170px minmax(260px,1fr) 120px;gap:10px;align-items:end}.bundleComponentLine{display:grid;grid-template-columns:150px 1fr 90px 44px;gap:8px;align-items:end;margin-top:8px}.bundleSuggest{position:absolute;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);z-index:80;max-height:260px;overflow:auto;width:min(620px,calc(100vw - 360px));display:none}.bundleSuggestItem{padding:9px 11px;border-bottom:1px solid #eee2c8;cursor:pointer}.bundleSuggestItem:hover{background:#fffaf0}.fieldRel{position:relative}
+@media(max-width:1000px){.inventoryFilters .col-search,.inventoryFilters .col-small,.inventoryFilters .col-stockle,.inventoryFilters .col-actions{grid-column:1/-1}.bundleTool .bundleGrid,.bundleComponentLine{grid-template-columns:1fr}.inventoryTable{min-width:900px}}
+
 </style>
 </head>
 <body>
 <div class="app">
-<aside><div class="brand"><div class="brandTop"><span class="appMark"><img src="./favicon_xeleria.png?v=15" alt="XelerIA"></span><div class="brandName">XelerIA</div><div class="tenantBadge" id="tenantBadge">PC</div></div><p id="tenantSubtitle">Panel operativo</p></div><nav><button class="navBtn active" data-view="inicio">Inicio / Dashboard</button><div class="navTitle">Mercado Libre</div><button class="navBtn" data-view="ml-publicaciones">Publicaciones</button><button class="navBtn" data-view="ml-ventas">Ventas</button><div class="navTitle">Tienda Nube</div><button class="navBtn" data-view="tn-publicaciones">Publicaciones</button><button class="navBtn" data-view="tn-ventas">Ventas</button><div class="navTitle">Gestión</div><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="consola">Detalle técnico</button></nav><div class="sidebarFoot">Pantalla: XelerIA 1.0.15-productos-combos<br>Servidor: <span id="footBackendVer">?</span><br><span class="muted">Cambios externos desactivados</span></div></aside>
+<aside><div class="brand"><div class="brandTop"><span class="appMark"><img src="./favicon_xeleria.png?v=17" alt="XelerIA"></span><div class="brandName">XelerIA</div><div class="tenantBadge" id="tenantBadge">PC</div></div><p id="tenantSubtitle">Panel operativo</p></div><nav><button class="navBtn active" data-view="inicio">Inicio / Dashboard</button><div class="navTitle">Mercado Libre</div><button class="navBtn" data-view="ml-publicaciones">Publicaciones</button><button class="navBtn" data-view="ml-ventas">Ventas</button><div class="navTitle">Tienda Nube</div><button class="navBtn" data-view="tn-publicaciones">Publicaciones</button><button class="navBtn" data-view="tn-ventas">Ventas</button><div class="navTitle">Gestión</div><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="consola">Detalle técnico</button></nav><div class="sidebarFoot">Pantalla: XelerIA 1.0.17-old-module-port<br>Servidor: <span id="footBackendVer">?</span><br><span class="muted">Cambios externos desactivados</span></div></aside>
 <main><div class="topbar"><h2 id="pageTitle">Inicio</h2><div class="crumb" id="pageCrumb">Panel operativo</div></div>
 <section id="inicio" class="view active"><div class="hero"><div class="btnrow" style="justify-content:space-between"><div><h3>Dashboard</h3><p>Resumen operativo de XelerIA. El dashboard informa; no dispara operaciones.</p></div><button class="secondary" onclick="refreshAll()">Actualizar</button></div><div id="homeStatus" class="status"></div></div><div class="grid"><div class="col-3 stat good"><div class="k">Servidor</div><div class="v" id="stApi">?</div><div class="s">Versión <span id="dashBackendVer">?</span></div></div><div class="col-3 stat" id="mlCardMini"><div class="k">Mercado Libre</div><div class="v" id="stML">?</div><div class="s" id="stMLSub">Conexión</div></div><div class="col-3 stat" id="tnCardMini"><div class="k">Tienda Nube</div><div class="v" id="stTN">?</div><div class="s" id="stTNSub">Conexión</div></div><div class="col-3 stat warnline"><div class="k">Cambios externos</div><div class="v">Bloqueado</div><div class="s">No modifica stock/precios en ML/TN</div></div></div><div class="card"><h3>Resumen operativo</h3><div id="snapshotWrap" class="tableWrap"><div class="dashEmpty">Tocá “Actualizar”.</div></div></div></section>
 <section id="ml-publicaciones" class="view"><div class="card"><h3>Mercado Libre · Publicaciones</h3><p>Vista segura: lee publicaciones, no cambia tu inventario.</p><div class="btnrow"><button class="secondary" onclick="readMLItems()">Ver primeras publicaciones</button><button class="primary importBtn" onclick="startStaging('ML')">Configurar inventario ML</button><button class="secondary" onclick="connectML()">Conectar ML</button></div><div id="mlItemsStatus" class="status"></div><div id="mlItemsTable" class="tableWrap"></div></div></section>
 <section id="tn-publicaciones" class="view"><div class="card"><h3>Tienda Nube · Publicaciones</h3><p>Vista segura: lee publicaciones, no cambia tu inventario.</p><div class="btnrow"><button class="secondary" onclick="readTNProducts()">Ver primeras publicaciones</button><button class="primary importBtn" onclick="startStaging('TN')">Configurar inventario TN</button><button class="secondary" onclick="connectTN()">Conectar TN</button></div><div id="tnProductsStatus" class="status"></div><div id="tnProductsTable" class="tableWrap"></div></div></section>
 <section id="ml-ventas" class="view"><div class="card"><h3>Mercado Libre · Ventas</h3><div class="btnrow"><button class="secondary" onclick="readMLOrders(true)">Ver ventas ML</button><button class="primary" onclick="readMLOrders(false)">Importar ventas ML</button></div><div id="mlOrdersStatus" class="status"></div><div id="mlOrdersTable" class="tableWrap"></div></div></section>
 <section id="tn-ventas" class="view"><div class="card"><h3>Tienda Nube · Ventas</h3><div class="btnrow"><button class="secondary" onclick="readTNOrders(true)">Ver ventas TN</button><button class="primary" onclick="readTNOrders(false)">Importar ventas TN</button></div><div id="tnOrdersStatus" class="status"></div><div id="tnOrdersTable" class="tableWrap"></div></div></section>
+
 <section id="inventario" class="view">
-  <div class="gestMenu">
+  <div class="gestMenu erpOldGestMenu">
     <a href="#" id="gestTabProductos" class="active" onclick="return showGestPanel('productos')">Productos</a>
     <a href="#" id="gestTabCombos" onclick="return showGestPanel('combos')">Combos / Kits</a>
-    <a href="#" class="disabled" onclick="return productsPending('Envío a Full')">Envío a Full</a>
-    <a href="#" class="disabled" onclick="return productsPending('Movimientos de stock')">Movimientos de stock</a>
-    <a href="#" class="disabled" onclick="return productsPending('Clientes ML / TN')">Clientes ML / TN</a>
-    <a href="#" class="disabled" onclick="return productsPending('Base de Conocimiento IA')">Base de Conocimiento IA</a>
-    <a href="#" class="disabled" onclick="return productsPending('ARCA reportes')">ARCA reportes</a>
+    <a href="#" class="disabled">Envío a Full</a>
+    <a href="#" class="disabled">Movimientos de stock</a>
+    <a href="#" class="disabled">Clientes ML / TN</a>
+    <a href="#" class="disabled">Base de Conocimiento IA</a>
+    <a href="#" class="disabled">ARCA reportes</a>
   </div>
 
   <div id="gestPanelProductos" class="gestPanel active">
     <div class="card">
-      <h3>Gestión · Productos</h3>
+      <h3>Gestión · productos</h3>
       <p>Stock ERP editable + publicaciones TN/ML vinculadas por SKU. Guardar genera trabajos de sincronización; no escribe directo en ML/TN.</p>
-
-      <div class="productToolbar">
-        <div>
-          <label>Buscar SKU / producto</label>
-          <input id="productSearch" placeholder="Ej: CBOLABCA60, virola, suela..." onkeydown="if(event.key==='Enter')filterProducts()">
-        </div>
-        <div>
-          <label>Canal</label>
-          <select id="productChannel">
-            <option value="ALL">Todos</option>
-            <option value="ML">ML</option>
-            <option value="TN">TN</option>
-          </select>
-        </div>
-        <div>
-          <label>Stock <=</label>
-          <input id="productStockLe" inputmode="numeric" placeholder="Ej: 0">
-        </div>
-        <div>
-          <label>Cantidad</label>
-          <select id="productLimit" onchange="filterProducts()"><option>20</option><option>50</option><option>100</option><option>200</option></select>
-        </div>
-        <button class="primary" onclick="filterProducts()">Filtrar</button>
+      <div class="grid inventoryFilters">
+        <div class="col-search"><label>Buscar SKU / producto</label><input id="invSearch" oninput="debouncedSearch('inv')" placeholder="Ej: LCBOLABCA60, virola, suela..."></div>
+        <div class="col-small"><label>Canal</label><select id="invMarket" onchange="searchInventory(0,true)"><option value="">Todos</option><option>TN</option><option>ML</option></select></div>
+        <div class="col-stockle"><label>Stock &lt;=</label><input id="invMaxStock" type="number" step="1" placeholder="Ej: 0" oninput="debouncedSearch('inv')"></div>
+        <div class="col-small"><label>Cantidad</label><select id="invLimit" class="limitSelect" onchange="searchInventory(0,true)"><option selected>20</option><option>40</option><option>80</option><option>100</option></select></div>
+        <div class="col-small"><label>&nbsp;</label><button onclick="searchInventory(0,true)">Filtrar</button></div>
+        <div class="col-12"><div class="btnrow" style="margin-top:4px">
+          <button class="primary" onclick="return productsPending('Agregar producto')">Agregar producto</button>
+          <button class="primary" onclick="return showGestPanel('combos')">Agregar combo</button>
+          <button class="secondary" onclick="return productsPending('Vincular publicaciones')">Vincular publicaciones</button>
+          <button class="secondary" onclick="downloadProductsCsv()">Bajar planilla inventario</button>
+          <input type="file" id="csvFile" accept=".csv" style="max-width:340px" disabled>
+          <button class="secondary" onclick="return productsPending('Subir planilla inventario')">Subir planilla inventario</button>
+        </div></div>
       </div>
-
-      <div class="productActions">
-        <button class="primary" onclick="return productsPending('Agregar producto')">Agregar producto</button>
-        <button class="primary" onclick="return showGestPanel('combos')">Agregar combo</button>
-        <button class="secondary" onclick="return productsPending('Vincular publicaciones')">Vincular publicaciones</button>
-        <button class="secondary" onclick="downloadProductsCsv()">Bajar planilla inventario</button>
-        <input id="productUploadFile" type="file" accept=".csv,.xlsx" disabled>
-        <button class="secondary" onclick="return productsPending('Subir planilla inventario')">Subir planilla inventario</button>
-      </div>
-
-      <div id="productsStatus" class="status"></div>
-      <div id="productsTable" class="productsWrap"><div class="dashEmpty">Tocá “Filtrar” para cargar productos.</div></div>
+      <div id="inventoryTools" class="hidden" style="margin-top:12px"></div>
+      <div id="invStatus" class="status"></div>
+      <div id="invResults" class="tableWrap inventoryWrap" style="margin-top:12px"></div>
+      <div id="invPager" class="btnrow inventoryPager"></div>
     </div>
   </div>
 
   <div id="gestPanelCombos" class="gestPanel">
     <div class="card">
       <h3>Gestión · Combos / Kits</h3>
-      <p>ABM de combos y de sus componentes. El combo se recalcula automáticamente al guardar componentes.</p>
-
-      <div class="comboToolbar">
-        <div>
-          <label>Buscar combo</label>
-          <input id="comboSearch" placeholder="SKU o nombre del combo" onkeydown="if(event.key==='Enter')loadCombos()">
-        </div>
-        <div>
-          <label>Cantidad</label>
-          <select id="comboLimit"><option>20</option><option>50</option><option>100</option><option>200</option></select>
-        </div>
-        <button class="primary" onclick="loadCombos()">Filtrar</button>
+      <p>Alta, edición y baja de combos. El stock del combo se calcula desde sus componentes.</p>
+      <div class="grid inventoryFilters">
+        <div class="col-search"><label>Buscar combo</label><input id="comboSearch" oninput="debouncedSearch('combo')" placeholder="SKU, producto o componente"></div>
+        <div class="col-small"><label>Cantidad</label><select id="comboLimit" onchange="loadCombos()"><option>20</option><option selected>50</option><option>100</option><option>200</option></select></div>
+        <div class="col-actions"><label>&nbsp;</label><div class="btnrow"><button onclick="loadCombos()">Buscar</button><button class="primary" onclick="toggleInventoryTool('bundle')">Agregar combo</button></div></div>
       </div>
-
-      <div class="comboEditor">
-        <div><label>SKU combo</label><input id="comboSku" placeholder="Ej: PCCOMBO2_12"></div>
-        <div><label>Nombre</label><input id="comboName" placeholder="Nombre del combo"></div>
-        <div><label>Costo</label><input id="comboCost" type="number" step="0.01" placeholder="0"></div>
-        <button class="primary" onclick="saveComboAll()">Guardar combo</button>
-      </div>
-
-      <div class="btnrow">
-        <button class="secondary" onclick="clearComboEditor()">Limpiar</button>
-        <button class="secondary" onclick="addComboComponentRow()">Agregar componente</button>
-        <button class="ok" onclick="saveComboComponents()">Guardar componentes</button>
-        <button class="secondary" onclick="recalculateCurrentCombo()">Recalcular stock</button>
-      </div>
-      <div id="comboComponents" class="comboComponents"><div class="dashEmpty">Elegí o creá un combo para cargar componentes.</div></div>
+      <div id="comboTools" class="hidden" style="margin-top:12px"></div>
+      <div id="comboStatus" class="status"></div>
       <div id="combosStatus" class="status"></div>
-      <div id="combosTable" class="productsWrap"><div class="dashEmpty">Tocá “Filtrar” para cargar combos.</div></div>
+      <div id="comboResults" class="tableWrap inventoryWrap" style="margin-top:12px"></div>
     </div>
   </div>
 </section>
@@ -1817,6 +2018,203 @@ const rows=d.items||[];$('tnOrdersTable').innerHTML=table(rows,[{key:'external_o
 loadUserOptions();
 closePublicationMatrix('La configuración está cerrada. Tocá “Configurar inventario” para empezar.');
 refreshAll();
+
+/* v17 old ERP inventory/combos module port, adapted to XelerIA tenant tables */
+(function(){
+  window.state = window.state || {};
+  state.inventoryItems = state.inventoryItems || [];
+  state.inventory = state.inventory || {offset:0,total:0};
+  state.comboItems = state.comboItems || [];
+  state.pendingBundleDraft = state.pendingBundleDraft || null;
+
+  window.showGestPanel = function(which){
+    const isCombos = which === 'combos';
+    qs('gestPanelProductos')?.classList.toggle('active', !isCombos);
+    qs('gestPanelCombos')?.classList.toggle('active', isCombos);
+    qs('gestTabProductos')?.classList.toggle('active', !isCombos);
+    qs('gestTabCombos')?.classList.toggle('active', isCombos);
+    if(isCombos) loadCombos(); else searchInventory(state.inventory?.offset||0,false);
+    return false;
+  };
+
+  window.debouncedSearch = function(kind){
+    clearTimeout(timers[kind]);
+    timers[kind]=setTimeout(()=>{if(kind==='inv')searchInventory(0,true);if(kind==='combo')loadCombos()},350);
+  };
+
+  window.invLimit = function(){return Number(qs('invLimit')?.value||20)}
+  window.inventoryPagerHtml = function(d){
+    let limit=Number(d.limit||invLimit()||20),offset=Number(d.offset||0),total=Number(d.total||0);
+    let from=total?offset+1:0,to=Math.min(offset+(d.items||[]).length,total||offset+(d.items||[]).length),prev=Math.max(0,offset-limit),next=offset+limit;
+    return `<button class="secondary" ${offset<=0?'disabled':''} onclick="searchInventory(${prev})">Atrás</button><span class="pill">Mostrando ${from}–${to}${total?` de ${total}`:''}</span><button class="secondary" ${d.has_next?'':'disabled'} onclick="searchInventory(${next})">Siguiente</button>`;
+  };
+
+  function statusCast(st){
+    if(st===true)return 'visible';
+    if(st===false)return 'hidden';
+    return String(st||'').toLowerCase();
+  }
+  window.listingStatusLabel = function(st){
+    let s=statusCast(st);
+    if(s==='true'||s.includes('visible')||s.includes('active'))return 'Visible';
+    if(s==='false'||s.includes('hidden')||s.includes('ocult'))return 'Oculta';
+    if(s.includes('inactive')||s.includes('deleted')||s.includes('closed'))return 'Oculta';
+    if(s.includes('paused')||s.includes('pause'))return 'Pausada';
+    return st||'-';
+  };
+  window.listingStatusClass = function(st){
+    let s=statusCast(st);
+    if(s==='true'||s.includes('visible')||s.includes('active'))return 'ok';
+    if(s==='false'||s.includes('hidden')||s.includes('ocult')||s.includes('inactive')||s.includes('deleted')||s.includes('closed'))return 'inactive';
+    if(s.includes('paused')||s.includes('pause'))return 'warn';
+    return 'info';
+  };
+  window.listingMarket = function(l){return String(l.marketplace||l.channel||'').toUpperCase()}
+  window.listingProductId = function(l){return l.external_product_id??l.listing_id??l.item_id??l.product_id??l.external_full_id??''}
+  window.listingVariantId = function(l){return l.external_variant_id??l.variant_id??l.variation_id??''}
+  window.listingPrice = function(l){return l.price??l.marketplace_price??l.target_price??''}
+  window.listingStock = function(l){return l.stock??l.available_quantity??l.marketplace_stock??''}
+  window.listingStatus = function(l){return l.status_label??l.status??l.state??''}
+  window.pubVarBlock = function(pid,vid){return `<div class="mono id pubvar"><span>Pub: ${esc(pid)}</span><span class="idSep">Var: ${esc(vid||0)}</span></div>`}
+
+  window.searchInventory = async function(offset=0,savePref=false){
+    let q=qs('invSearch')?.value.trim()||'',lim=invLimit(),market=qs('invMarket')?.value||'',maxStock=(qs('invMaxStock')?.value||'').trim();
+    state.inventory.offset=offset;setStatus('invStatus','Buscando inventario + publicaciones...');
+    try{
+      let d=await api(`/products-admin/${TENANT_ID}/products?q=${encodeURIComponent(q)}&limit=${encodeURIComponent(lim)}&offset=${encodeURIComponent(offset)}&channel=${encodeURIComponent(market||'ALL')}&stock_le=${encodeURIComponent(maxStock)}`);
+      state.inventoryItems=d.items||[];state.inventory.total=Number(d.total||0);
+      renderInventory();
+      if(qs('invPager'))qs('invPager').innerHTML=inventoryPagerHtml(d);
+      let filtro=(market?` · canal ${market}`:'')+(maxStock!==''?` · stock <= ${maxStock}`:'');
+      setStatus('invStatus',`Inventario: ${state.inventoryItems.length} de ${state.inventory.total} ítems${filtro} · Publicaciones visibles: ${d.visible_publications??0}`,true);
+    }catch(e){setStatus('invStatus','Error inventario: '+(e.message||JSON.stringify(e)),false);raw(e)}
+  };
+
+  window.renderListingsForItem = function(item){
+    let market=qs('invMarket')?.value||'';
+    let arr=(Array.isArray(item.listings)?item.listings:[]).filter(l=>!market||listingMarket(l)===market);
+    if(!arr.length)return '<span class="muted">Sin publicaciones vinculadas para este filtro.</span>';
+    arr.sort((a,b)=>(listingMarket(a)+listingProductId(a)+listingVariantId(a)).localeCompare(listingMarket(b)+listingProductId(b)+listingVariantId(b)));
+    return arr.map((l,idx)=>{
+      let m=listingMarket(l),pid=listingProductId(l),vid=listingVariantId(l),price=listingPrice(l),stock=listingStock(l),st=listingStatus(l),key=esc(`${item.sku}_${idx}`);
+      return `<div class="marketBox"><div><span class="pill ${m==='ML'?'info':'ok'}">${esc(m||'?')}</span></div>${pubVarBlock(pid,vid)}<div><input class="priceInput" id="price_${key}" value="${esc(price)}" title="Precio marketplace"></div><div><input class="stockInput" value="${esc(stock)}" disabled title="Stock marketplace informado"></div><div><span class="pill marketStatus ${listingStatusClass(st)}">${esc(listingStatusLabel(st))}</span></div></div>`;
+    }).join('');
+  };
+
+  window.inventoryStockCell = function(i,idx){
+    let isBundle=String(i.item_type||'').toLowerCase()==='bundle';
+    if(isBundle)return `<div class="invStockBox" style="opacity:.58"><div class="stockControls"><input class="stockInput" type="number" step="1" id="stock_${idx}" value="${esc(i.stock??0)}" disabled title="Stock calculado desde componentes"><span class="small">actual ERP: ${esc(i.stock??0)}</span></div></div><div id="rowStatus_${idx}" class="small">Bundle: stock calculado por componentes.</div>`;
+    return `<div class="invStockBox"><div class="stockControls"><input class="stockInput" type="number" step="1" id="stock_${idx}" value="${esc(i.stock??0)}"><span class="small">actual ERP: ${esc(i.stock??0)}</span></div><button class="ok" onclick="saveInventoryStock(${idx})">Guardar</button></div><div id="rowStatus_${idx}" class="small"></div>`;
+  };
+  window.inventoryActionsCell = function(i,idx){
+    let isBundle=String(i.item_type||'').toLowerCase()==='bundle',sku=esc(i.sku||'');
+    let edit=isBundle?`<button onclick="renderEditBundleTool(${idx})">Modificar combo</button>`:`<button onclick="return productsPending('Modificar producto')">Modificar</button>`;
+    let link=`<button onclick="return productsPending('Vincular publicaciones')">Vincular publicaciones</button>`;
+    return `<details class="kebabMenu"><summary title="Más acciones">⋮</summary><div class="kebabPanel">${edit}${link}</div></details>`;
+  };
+  window.renderInventory = function(){
+    let items=state.inventoryItems||[],tbody='';
+    if(!items.length)tbody='<tr><td colspan="5" class="muted" style="text-align:center;padding:24px">Sin resultados para este filtro.</td></tr>';
+    else tbody=items.map((i,idx)=>`<tr><td><strong class="mono">${esc(i.sku)}</strong><br><span class="small">${esc(i.item_type||'')}</span></td><td>${esc(i.name||'')}<br><span class="small">${esc(i.category||'')}</span></td><td>${inventoryStockCell(i,idx)}</td><td>${renderListingsForItem(i)}</td><td class="actionCell">${inventoryActionsCell(i,idx)}</td></tr>`).join('');
+    qs('invResults').innerHTML=`<table class="inventoryTable"><thead><tr><th>SKU</th><th>Producto</th><th>Stock ERP editable</th><th>Publicaciones / variantes / precio / stock</th><th>⋮</th></tr></thead><tbody>${tbody}</tbody></table>`;
+  };
+  window.saveInventoryStock = async function(idx){
+    let item=state.inventoryItems[idx],el=qs('rowStatus_'+idx);
+    if(!item)return;
+    if(String(item.item_type||'').toLowerCase()==='bundle'){if(el){el.textContent='Bundle: el stock se calcula desde componentes.';el.style.color='var(--muted)'}return}
+    let sku=item.sku,newStock=Number(qs('stock_'+idx).value);
+    if(!Number.isFinite(newStock)){el.textContent='Stock inválido';return}
+    el.textContent='Guardando...';
+    try{
+      let d=await postJSON(`/products-admin/${TENANT_ID}/products/${encodeURIComponent(sku)}/save`,{stock:Math.trunc(newStock),listings:[],notes:'Ajuste desde inventario editable integrado'});
+      item.stock=Math.trunc(newStock);el.textContent='OK: stock guardado. Refrescando vista...';el.style.color='var(--ok)';
+      await searchInventory(state.inventory.offset||0,false);
+      setStatus('invStatus',`Stock guardado para ${sku}. Vista refrescada con el mismo filtro.`,true);
+    }catch(e){el.textContent='Error: '+(e.message||JSON.stringify(e));el.style.color='var(--bad)';raw(e)}
+  };
+
+  window.comboLimit = function(){return Number(qs('comboLimit')?.value||50)}
+  window.loadCombos = async function(){
+    let q=(qs('comboSearch')?.value||'').trim(),lim=comboLimit();
+    setStatus('comboStatus','Buscando combos...');
+    try{
+      let d=await api(`/bundle-items/${TENANT_ID}?q=${encodeURIComponent(q)}&limit=${encodeURIComponent(lim)}`);
+      let rows=(d.items||[]).map(x=>({...(x.bundle||{}),_bundlePayload:x}));
+      state.comboItems=rows;state.inventoryItems=rows;
+      renderCombos();
+      setStatus('comboStatus',`Combos: ${rows.length} de ${d.total||rows.length}${q?' filtrados':''}`,true);
+    }catch(e){setStatus('comboStatus','Error combos: '+(e?.message||JSON.stringify(e)),false);raw(e)}
+  };
+  window.renderCombos = function(){
+    let items=state.comboItems||[],tbody='';
+    if(!items.length)tbody='<tr><td colspan="5" class="muted" style="text-align:center;padding:24px">Sin combos para este filtro.</td></tr>';
+    else tbody=items.map((i,idx)=>`<tr><td><strong class="mono">${esc(i.sku)}</strong><br><span class="small">bundle</span></td><td>${esc(i.name||'')}<br><span class="small">${esc(i.category||'COMBOS')}</span></td><td><strong>${esc(i.stock??0)}</strong><br><span class="small">calculado por componentes</span></td><td>${renderBundleComponentsInline(i._bundlePayload)}</td><td class="actionCell">${inventoryActionsCell(i,idx)}</td></tr>`).join('');
+    qs('comboResults').innerHTML=`<table class="inventoryTable"><thead><tr><th>SKU</th><th>Combo / Kit</th><th>Stock calculado</th><th>Componentes</th><th>⋮</th></tr></thead><tbody>${tbody}</tbody></table>`;
+  };
+  function renderBundleComponentsInline(payload){
+    let comps=(payload&&payload.components)||[];
+    if(!comps.length)return '<span class="muted">Sin componentes.</span>';
+    return `<table class="dashTable"><thead><tr><th>SKU</th><th>Componente</th><th>Cant.</th><th>Stock</th></tr></thead><tbody>${comps.map(c=>{let it=c.component||{};return `<tr><td><b>${esc(it.sku||'')}</b></td><td>${esc(it.name||'')}</td><td>${esc(c.quantity||0)}</td><td>${esc(it.stock??0)}</td></tr>`}).join('')}</tbody></table>`;
+  }
+
+  window.toggleInventoryTool = function(type){ if(type==='bundle') renderBundleTool(); return false; };
+  window.renderEditBundleTool = function(idx){ renderBundleTool(state.comboItems[idx]||state.inventoryItems[idx]||{}); };
+  window.renderBundleTool = function(item={}){
+    showGestPanel('combos');
+    let box=qs('comboTools'); if(!box)return;
+    let payload=item._bundlePayload||{};
+    let comps=(payload.components||[]).map(c=>({sku:c.component?.sku||'',name:c.component?.name||'',quantity:c.quantity||1,stock:c.component?.stock??''}));
+    box.classList.remove('hidden');
+    box.innerHTML=`<div class="bundleTool"><div class="bundleGrid">
+      <div><label>SKU combo</label><input id="comboSku" value="${esc(item.sku||'')}" placeholder="SKU combo"></div>
+      <div><label>Nombre</label><input id="comboName" value="${esc(item.name||'')}" placeholder="Nombre del combo"></div>
+      <div><label>Costo</label><input id="comboCost" type="number" step="0.01" value="${esc(item.cost||0)}"></div>
+    </div>
+    <div class="btnrow" style="margin-top:12px"><button class="secondary" onclick="addBundleComponentLine()">Agregar componente</button><button class="primary" onclick="saveBundleTool()">Guardar combo</button><button class="secondary" onclick="qs('comboTools').classList.add('hidden')">Cerrar</button></div>
+    <div id="bundleLines" style="margin-top:12px"></div><div id="bundleToolStatus" class="status"></div></div>`;
+    (comps.length?comps:[{}]).forEach(c=>addBundleComponentLine(c));
+  };
+  window.addBundleComponentLine = function(d={}){
+    let box=qs('bundleLines'); if(!box)return;
+    let id='bline_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+    let div=document.createElement('div');div.className='bundleComponentLine';div.dataset.validSku=d.sku?'1':'0';
+    div.innerHTML=`<div><label>SKU</label><input class="bSku" value="${esc(d.sku||'')}" oninput="bundleSearchComponent(this)" autocomplete="off"><div class="bundleSuggest"></div></div><div class="fieldRel"><label>Componente</label><input class="bName" value="${esc(d.name||'')}" oninput="bundleSearchComponent(this)" autocomplete="off"><div class="bundleSuggest"></div></div><div><label>Cant.</label><input class="bQty" type="number" step="0.01" min="0.01" value="${esc(d.quantity||1)}"></div><div><label>&nbsp;</label><button class="secondary" onclick="this.closest('.bundleComponentLine').remove()">×</button></div>`;
+    box.appendChild(div);
+  };
+  window.bundleSearchComponent = function(input){
+    clearTimeout(input._t);
+    input._t=setTimeout(async()=>{
+      let line=input.closest('.bundleComponentLine'),q=input.value.trim(),box=line.querySelector('.bundleSuggest');
+      if(!q||q.length<2){box.style.display='none';box.innerHTML='';return}
+      try{
+        let d=await api(`/bundle-items/${TENANT_ID}/component-search?q=${encodeURIComponent(q)}&limit=8`);
+        let items=d.items||[];
+        box.innerHTML=items.map(it=>`<div class="bundleSuggestItem" onclick="pickBundleComponent(this)" data-sku="${esc(it.sku||'')}" data-name="${esc(it.name||'')}"><b>${esc(it.sku||'')}</b> · ${esc(it.name||'')} <span class="muted">Stock ${esc(it.stock??0)}</span></div>`).join('')||'<div class="bundleSuggestItem muted">Sin coincidencias</div>';
+        box.style.display='block';
+      }catch(e){box.innerHTML='<div class="bundleSuggestItem muted">Error buscando componente</div>';box.style.display='block';raw(e)}
+    },280);
+  };
+  window.pickBundleComponent = function(el){
+    let line=el.closest('.bundleComponentLine');
+    line.querySelector('.bSku').value=el.dataset.sku||'';
+    line.querySelector('.bName').value=el.dataset.name||'';
+    line.dataset.validSku='1';
+    line.querySelectorAll('.bundleSuggest').forEach(b=>{b.style.display='none';b.innerHTML=''});
+  };
+  window.saveBundleTool = async function(){
+    let sku=(qs('comboSku')?.value||'').trim(),name=(qs('comboName')?.value||sku).trim();
+    if(!sku){setStatus('bundleToolStatus','Cargá SKU de combo.',false);return}
+    setStatus('bundleToolStatus','Guardando combo...');
+    try{
+      await postJSON(`/bundle-items/${TENANT_ID}`,{sku,name,cost:qs('comboCost')?.value||0,active:true});
+      let components=[...document.querySelectorAll('.bundleComponentLine')].map(line=>({sku:(line.querySelector('.bSku')?.value||'').trim(),quantity:Number(line.querySelector('.bQty')?.value||0)})).filter(x=>x.sku&&x.quantity>0);
+      if(components.length) await postJSON(`/bundle-items/${TENANT_ID}/${encodeURIComponent(sku)}/components`,{components});
+      setStatus('bundleToolStatus','Combo guardado y stock recalculado.',true);
+      await loadCombos();
+    }catch(e){setStatus('bundleToolStatus','Error guardando combo: '+(e.message||JSON.stringify(e)),false);raw(e)}
+  };
+})();
+
 </script>
 </body>
 </html>
