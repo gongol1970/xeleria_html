@@ -7,7 +7,7 @@
 <script>
 if(location.protocol==='http:'&&location.hostname.endsWith('xeleria.com.ar'))location.replace('https://'+location.host+location.pathname+location.search+location.hash);
 </script>
-<link rel="icon" type="image/png" href="./favicon_xeleria.png?v=8">
+<link rel="icon" type="image/png" href="./favicon_xeleria.png?v=9">
 <style>
 :root {
   --bg:#f2f0eb;
@@ -603,7 +603,7 @@ th {
 </head>
 <body>
 <div class="app">
-<aside><div class="brand"><div class="brandTop"><span class="appMark"><img src="./favicon_xeleria.png?v=8" alt="XelerIA"></span><div class="brandName">XelerIA</div><div class="tenantBadge" id="tenantBadge">PC</div></div><p id="tenantSubtitle">Panel operativo</p></div><nav><button class="navBtn active" data-view="inicio">Inicio / Dashboard</button><div class="navTitle">Mercado Libre</div><button class="navBtn" data-view="ml-publicaciones">Publicaciones</button><button class="navBtn" data-view="ml-ventas">Ventas</button><div class="navTitle">Tienda Nube</div><button class="navBtn" data-view="tn-publicaciones">Publicaciones</button><button class="navBtn" data-view="tn-ventas">Ventas</button><div class="navTitle">Gestión</div><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="consola">Detalle técnico</button></nav><div class="sidebarFoot">Pantalla: XelerIA 1.0.8-productos<br>Servidor: <span id="footBackendVer">?</span><br><span class="muted">Cambios externos desactivados</span></div></aside>
+<aside><div class="brand"><div class="brandTop"><span class="appMark"><img src="./favicon_xeleria.png?v=9" alt="XelerIA"></span><div class="brandName">XelerIA</div><div class="tenantBadge" id="tenantBadge">PC</div></div><p id="tenantSubtitle">Panel operativo</p></div><nav><button class="navBtn active" data-view="inicio">Inicio / Dashboard</button><div class="navTitle">Mercado Libre</div><button class="navBtn" data-view="ml-publicaciones">Publicaciones</button><button class="navBtn" data-view="ml-ventas">Ventas</button><div class="navTitle">Tienda Nube</div><button class="navBtn" data-view="tn-publicaciones">Publicaciones</button><button class="navBtn" data-view="tn-ventas">Ventas</button><div class="navTitle">Gestión</div><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="consola">Detalle técnico</button></nav><div class="sidebarFoot">Pantalla: XelerIA 1.0.9-productos<br>Servidor: <span id="footBackendVer">?</span><br><span class="muted">Cambios externos desactivados</span></div></aside>
 <main><div class="topbar"><h2 id="pageTitle">Inicio</h2><div class="crumb" id="pageCrumb">Panel operativo</div></div>
 <section id="inicio" class="view active"><div class="hero"><div class="btnrow" style="justify-content:space-between"><div><h3>Dashboard</h3><p>Resumen operativo de XelerIA. El dashboard informa; no dispara operaciones.</p></div><button class="secondary" onclick="refreshAll()">Actualizar</button></div><div id="homeStatus" class="status"></div></div><div class="grid"><div class="col-3 stat good"><div class="k">Servidor</div><div class="v" id="stApi">?</div><div class="s">Versión <span id="dashBackendVer">?</span></div></div><div class="col-3 stat" id="mlCardMini"><div class="k">Mercado Libre</div><div class="v" id="stML">?</div><div class="s" id="stMLSub">Conexión</div></div><div class="col-3 stat" id="tnCardMini"><div class="k">Tienda Nube</div><div class="v" id="stTN">?</div><div class="s" id="stTNSub">Conexión</div></div><div class="col-3 stat warnline"><div class="k">Cambios externos</div><div class="v">Bloqueado</div><div class="s">No modifica stock/precios en ML/TN</div></div></div><div class="card"><h3>Resumen operativo</h3><div id="snapshotWrap" class="tableWrap"><div class="dashEmpty">Tocá “Actualizar”.</div></div></div></section>
 <section id="ml-publicaciones" class="view"><div class="card"><h3>Mercado Libre · Publicaciones</h3><p>Vista segura: lee publicaciones, no cambia tu inventario.</p><div class="btnrow"><button class="secondary" onclick="readMLItems()">Ver primeras publicaciones</button><button class="primary importBtn" onclick="startStaging('ML')">Configurar inventario ML</button><button class="secondary" onclick="connectML()">Conectar ML</button></div><div id="mlItemsStatus" class="status"></div><div id="mlItemsTable" class="tableWrap"></div></div></section>
@@ -840,6 +840,19 @@ function esc(v){return String(v??'').replace(/[&<>\"]/g,s=>({'&':'&amp;','<':'&l
 
 function money(v){return Number(v||0).toLocaleString('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:0})}
 
+function boolLabel(v){
+  if(v===true || String(v).toLowerCase()==='true') return 'Visible';
+  if(v===false || String(v).toLowerCase()==='false') return 'Oculta';
+  return v;
+}
+
+function formatCell(v){return esc(boolLabel(v))}
+
+function visibilityPill(v){
+  const visible = v===true || String(v).toLowerCase()==='true';
+  return visible ? '<span class="pill ok">Visible</span>' : '<span class="pill inactive">Oculta</span>';
+}
+
 function pill(ok,text,cls=''){return `<span class="pill ${ok?'ok':cls||'bad'}">${esc(text)}</span>`}
 
 function setStatus(id,msg,cls=''){const el=$(id);if(!el)return;el.className='status '+cls;el.textContent=msg}
@@ -870,7 +883,7 @@ function postJSON(path,body){return api(path,{method:'POST',headers:{'Content-Ty
 
 function table(rows,cols,max=120){if(!rows||!rows.length)return '<div class="dashEmpty">Sin datos.</div>';
 const visible=rows.slice(0,max);
-const tail=rows.length>max?`<div class="dashEmpty">Mostrando ${max} de ${rows.length} filas.</div>`:'';return `<table><thead><tr>${cols.map(c=>`<th>${esc(c.label)}</th>`).join('')}</tr></thead><tbody>${visible.map(r=>`<tr>${cols.map(c=>`<td>${c.render?c.render(r):esc(r[c.key])}</td>`).join('')}</tr>`).join('')}</tbody></table>${tail}`}
+const tail=rows.length>max?`<div class="dashEmpty">Mostrando ${max} de ${rows.length} filas.</div>`:'';return `<table><thead><tr>${cols.map(c=>`<th>${esc(c.label)}</th>`).join('')}</tr></thead><tbody>${visible.map(r=>`<tr>${cols.map(c=>`<td>${c.render?c.render(r):formatCell(r[c.key])}</td>`).join('')}</tr>`).join('')}</tbody></table>${tail}`}
 
 function showView(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));$(id)?.classList.add('active');
 document.querySelectorAll('.navBtn').forEach(b=>b.classList.toggle('active',b.dataset.view===id));
@@ -1169,7 +1182,7 @@ async function loadProducts(silent=false){
     PRODUCT_ROWS=d.items||[];
     renderProductsTable(PRODUCT_ROWS);
     if($('snapshotWrap') && !silent) $('snapshotWrap').innerHTML=$('productsTable')?.innerHTML||'';
-    if(!silent)setStatus('productsStatus',`Inventario: ${PRODUCT_ROWS.length} de ${d.total??PRODUCT_ROWS.length} ítems · Publicaciones visibles: ${d.visible_publications??0}`,'oktxt');
+    if(!silent)setStatus('productsStatus',`Productos: ${PRODUCT_ROWS.length} de ${d.total??PRODUCT_ROWS.length} ítems · Publicaciones visibles: ${d.visible_publications??0}`,'oktxt');
     return PRODUCT_ROWS;
   }catch(e){
     if(!silent)setStatus('productsStatus','Error cargando productos.','badtxt');
@@ -1192,7 +1205,7 @@ function renderProductsTable(rows){
     const listings=r.listings||[];
     const pubs=listings.length?listings.map((l,j)=>renderProductListingBox(l,idx,j)).join(''):'<div class="dashEmpty" style="padding:10px">Sin publicaciones vinculadas.</div>';
     html+=`<tr data-product-row="${idx}">
-      <td><b>${esc(r.sku||'')}</b><div class="productSub">${esc(r.item_type||'simple')}</div></td>
+      <td><b>${esc(r.sku||'')}</b><div class="productSub">${esc(r.item_type||'simple')}</div><div style="margin-top:6px">${visibilityPill(r.active)}</div></td>
       <td><div class="productTitle">${esc(r.name||r.title||'')}</div><div class="productSub">${esc([r.variant_name,r.category].filter(Boolean).join(' · '))}</div></td>
       <td>
         <div class="prodStockBox">
