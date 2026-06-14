@@ -347,6 +347,7 @@ button:disabled {
   background:var(--review);
   color:#7a5a00
 }
+.pill.inactive{background:#fef3f2;color:var(--bad)}
 .configAnchor {
   display:flex;
   gap:8px;
@@ -626,7 +627,7 @@ th {
 .inventoryFilters .col-small{grid-column:span 2}
 .inventoryFilters .col-stockle{grid-column:span 2}
 .inventoryFilters .col-actions{grid-column:span 4}
-.inventoryFilters input,.inventoryFilters select,.inventoryTable input,.marketBox input,.bundleTool input,.bundleTool select{
+.inventoryFilters input,.inventoryFilters select,.inventoryTable input,.marketBox input,.bundleTool input,.bundleTool select,.productTool input,.productTool select{
   width:100%;
   border:1px solid #cfc4ad;
   border-radius:12px;
@@ -637,7 +638,7 @@ th {
   outline:none;
   box-sizing:border-box;
 }
-.inventoryFilters label,.bundleTool label{text-transform:uppercase;letter-spacing:.04em;font-size:12px;font-weight:800;color:#504b43}
+.inventoryFilters label,.bundleTool label,.productTool label{text-transform:uppercase;letter-spacing:.04em;font-size:12px;font-weight:800;color:#504b43}
 .inventoryWrap{overflow-x:hidden}
 .inventoryTable{table-layout:fixed;min-width:1040px}
 .inventoryTable th:nth-child(1){width:145px}
@@ -669,6 +670,14 @@ th {
 .invStockBox input{width:88px}.invStockBox .stockControls{display:flex;flex-direction:column;align-items:flex-end}
 .inventoryPager{margin-top:12px}.actionCell{text-align:center}
 details.kebabMenu{position:relative}details.kebabMenu summary{list-style:none;cursor:pointer;border:1px solid var(--line);border-radius:10px;background:#fffaf0;padding:7px 10px;font-weight:900}details.kebabMenu summary::-webkit-details-marker{display:none}.kebabPanel{position:absolute;right:0;top:34px;min-width:190px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:8px;z-index:50;display:grid;gap:6px}.kebabPanel button{width:100%;justify-content:flex-start}
+
+.productTool{border:1px solid var(--line);border-radius:16px;background:#fffaf0;padding:14px;margin-top:12px}
+.productTool .productGrid{display:grid;grid-template-columns:170px minmax(300px,1fr) minmax(180px,260px) minmax(170px,240px) 120px 120px;gap:10px;align-items:end}
+.productListingLines{margin-top:12px;display:grid;gap:8px}
+.productListingLine{display:grid;grid-template-columns:82px minmax(130px,1fr) minmax(90px,120px) 105px 92px 118px 44px;gap:8px;align-items:end}
+.productListingLine .plHidden{display:none}
+.productTool .toolSub{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.35}
+@media(max-width:1200px){.productTool .productGrid,.productListingLine{grid-template-columns:1fr}}
 .bundleTool{border:1px solid var(--line);border-radius:16px;background:#fffaf0;padding:14px;margin-top:12px}.bundleTool .bundleGrid{display:grid;grid-template-columns:170px minmax(260px,1fr) 120px;gap:10px;align-items:end}.bundleComponentLine{display:grid;grid-template-columns:150px 1fr 90px 44px;gap:8px;align-items:end;margin-top:8px}.bundleSuggest{position:absolute;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);z-index:80;max-height:260px;overflow:auto;width:min(620px,calc(100vw - 360px));display:none}.bundleSuggestItem{padding:9px 11px;border-bottom:1px solid #eee2c8;cursor:pointer}.bundleSuggestItem:hover{background:#fffaf0}.fieldRel{position:relative}
 @media(max-width:1000px){.inventoryFilters .col-search,.inventoryFilters .col-small,.inventoryFilters .col-stockle,.inventoryFilters .col-actions{grid-column:1/-1}.bundleTool .bundleGrid,.bundleComponentLine{grid-template-columns:1fr}.inventoryTable{min-width:900px}}
 
@@ -676,7 +685,7 @@ details.kebabMenu{position:relative}details.kebabMenu summary{list-style:none;cu
 </head>
 <body>
 <div class="app">
-<aside><div class="brand"><div class="brandTop"><span class="appMark"><img src="./favicon_xeleria.png?v=18" alt="XelerIA"></span><div class="brandName">XelerIA</div><div class="tenantBadge" id="tenantBadge">PC</div></div><p id="tenantSubtitle">Panel operativo</p></div><nav><button class="navBtn active" data-view="inicio">Inicio / Dashboard</button><div class="navTitle">Mercado Libre</div><button class="navBtn" data-view="ml-publicaciones">Publicaciones</button><button class="navBtn" data-view="ml-ventas">Ventas</button><div class="navTitle">Tienda Nube</div><button class="navBtn" data-view="tn-publicaciones">Publicaciones</button><button class="navBtn" data-view="tn-ventas">Ventas</button><div class="navTitle">Gestión</div><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="consola">Detalle técnico</button></nav><div class="sidebarFoot">Pantalla: XelerIA 1.0.19-combos-ui-polish<br>Servidor: <span id="footBackendVer">?</span><br><span class="muted">Cambios externos desactivados</span></div></aside>
+<aside><div class="brand"><div class="brandTop"><span class="appMark"><img src="./favicon_xeleria.png?v=18" alt="XelerIA"></span><div class="brandName">XelerIA</div><div class="tenantBadge" id="tenantBadge">PC</div></div><p id="tenantSubtitle">Panel operativo</p></div><nav><button class="navBtn active" data-view="inicio">Inicio / Dashboard</button><div class="navTitle">Mercado Libre</div><button class="navBtn" data-view="ml-publicaciones">Publicaciones</button><button class="navBtn" data-view="ml-ventas">Ventas</button><div class="navTitle">Tienda Nube</div><button class="navBtn" data-view="tn-publicaciones">Publicaciones</button><button class="navBtn" data-view="tn-ventas">Ventas</button><div class="navTitle">Gestión</div><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="consola">Detalle técnico</button></nav><div class="sidebarFoot">Pantalla: XelerIA 1.0.20-products-simple-port<br>Servidor: <span id="footBackendVer">?</span><br><span class="muted">Cambios externos desactivados</span></div></aside>
 <main><div class="topbar"><h2 id="pageTitle">Inicio</h2><div class="crumb" id="pageCrumb">Panel operativo</div></div>
 <section id="inicio" class="view active"><div class="hero"><div class="btnrow" style="justify-content:space-between"><div><h3>Dashboard</h3><p>Resumen operativo de XelerIA. El dashboard informa; no dispara operaciones.</p></div><button class="secondary" onclick="refreshAll()">Actualizar</button></div><div id="homeStatus" class="status"></div></div><div class="grid"><div class="col-3 stat good"><div class="k">Servidor</div><div class="v" id="stApi">?</div><div class="s">Versión <span id="dashBackendVer">?</span></div></div><div class="col-3 stat" id="mlCardMini"><div class="k">Mercado Libre</div><div class="v" id="stML">?</div><div class="s" id="stMLSub">Conexión</div></div><div class="col-3 stat" id="tnCardMini"><div class="k">Tienda Nube</div><div class="v" id="stTN">?</div><div class="s" id="stTNSub">Conexión</div></div><div class="col-3 stat warnline"><div class="k">Cambios externos</div><div class="v">Bloqueado</div><div class="s">No modifica stock/precios en ML/TN</div></div></div><div class="card"><h3>Resumen operativo</h3><div id="snapshotWrap" class="tableWrap"><div class="dashEmpty">Tocá “Actualizar”.</div></div></div></section>
 <section id="ml-publicaciones" class="view"><div class="card"><h3>Mercado Libre · Publicaciones</h3><p>Vista segura: lee publicaciones, no cambia tu inventario.</p><div class="btnrow"><button class="secondary" onclick="readMLItems()">Ver primeras publicaciones</button><button class="primary importBtn" onclick="startStaging('ML')">Configurar inventario ML</button><button class="secondary" onclick="connectML()">Conectar ML</button></div><div id="mlItemsStatus" class="status"></div><div id="mlItemsTable" class="tableWrap"></div></div></section>
@@ -706,9 +715,9 @@ details.kebabMenu{position:relative}details.kebabMenu summary{list-style:none;cu
         <div class="col-small"><label>Cantidad</label><select id="invLimit" class="limitSelect" onchange="searchInventory(0,true)"><option selected>20</option><option>40</option><option>80</option><option>100</option></select></div>
         <div class="col-small"><label>&nbsp;</label><button onclick="searchInventory(0,true)">Filtrar</button></div>
         <div class="col-12"><div class="btnrow" style="margin-top:4px">
-          <button class="primary" onclick="return productsPending('Agregar producto')">Agregar producto</button>
+          <button class="primary" onclick="renderProductTool();return false;">Agregar producto</button>
           <button class="primary" onclick="return showGestPanel('combos')">Agregar combo</button>
-          <button class="secondary" onclick="return productsPending('Vincular publicaciones')">Vincular publicaciones</button>
+          <button class="secondary" onclick="showProductLinkHint();return false;">Vincular publicaciones</button>
           <button class="secondary" onclick="downloadProductsCsv()">Bajar planilla inventario</button>
           <input type="file" id="csvFile" accept=".csv" style="max-width:340px" disabled>
           <button class="secondary" onclick="return productsPending('Subir planilla inventario')">Subir planilla inventario</button>
@@ -883,7 +892,7 @@ details.kebabMenu{position:relative}details.kebabMenu summary{list-style:none;cu
 <section id="consola" class="view"><div class="card"><h3>Detalle técnico</h3><pre id="rawConsole" class="console">Inicializando…</pre></div></section>
 </main></div>
 <script>
-const FRONT_VERSION = '1.0.19-combos-ui-polish';
+const FRONT_VERSION = '1.0.20-products-simple-port';
 const API_BASE='https://api.xeleria.com.ar/api';
 const RAW_LIMIT=12000;
 let STAGING_SESSION_ID='';
@@ -1898,7 +1907,7 @@ refreshAll();
     let q=qs('invSearch')?.value.trim()||'',lim=invLimit(),market=qs('invMarket')?.value||'',maxStock=(qs('invMaxStock')?.value||'').trim();
     state.inventory.offset=offset;setStatus('invStatus','Buscando inventario + publicaciones...');
     try{
-      let d=await api(`/products-admin/${TENANT_ID}/products?q=${encodeURIComponent(q)}&limit=${encodeURIComponent(lim)}&offset=${encodeURIComponent(offset)}&channel=${encodeURIComponent(market||'ALL')}&stock_le=${encodeURIComponent(maxStock)}`);
+      let d=await api(`/products-admin/${TENANT_ID}/products?q=${encodeURIComponent(q)}&limit=${encodeURIComponent(lim)}&offset=${encodeURIComponent(offset)}&channel=${encodeURIComponent(market||'ALL')}&stock_le=${encodeURIComponent(maxStock)}&item_type=simple`);
       state.inventoryItems=d.items||[];state.inventory.total=Number(d.total||0);
       renderInventory();
       if(qs('invPager'))qs('invPager').innerHTML=inventoryPagerHtml(d);
@@ -2132,7 +2141,7 @@ refreshAll();
     state.inventory.offset=offset;
     safeSetStatus('invStatus','Buscando inventario + publicaciones...');
     try{
-      let d=await api(`/products-admin/${TENANT_ID}/products?q=${encodeURIComponent(q)}&limit=${encodeURIComponent(lim)}&offset=${encodeURIComponent(offset)}&channel=${encodeURIComponent(market||'ALL')}&stock_le=${encodeURIComponent(maxStock)}`);
+      let d=await api(`/products-admin/${TENANT_ID}/products?q=${encodeURIComponent(q)}&limit=${encodeURIComponent(lim)}&offset=${encodeURIComponent(offset)}&channel=${encodeURIComponent(market||'ALL')}&stock_le=${encodeURIComponent(maxStock)}&item_type=simple`);
       state.inventoryItems=d.items||[];
       state.inventory.total=Number(d.total||0);
       renderInventory();
@@ -2145,19 +2154,73 @@ refreshAll();
     }
   };
 
-  window.renderListingsForItem = function(item){
+  function marketplaceStatusLabel(st, market){
+    let s=statusCast(st);
+    let m=String(market||'').toUpperCase();
+    if(m==='ML'){
+      if(s.includes('paused')||s.includes('pause'))return 'Pausado';
+      if(s==='true'||s.includes('active')||s.includes('published'))return 'Activa';
+      return st||'-';
+    }
+    if(m==='TN'){
+      if(s==='false'||s.includes('hidden')||s.includes('ocult')||s.includes('inactive')||s.includes('deleted')||s.includes('closed'))return 'Oculto';
+      if(s==='true'||s.includes('visible')||s.includes('active')||s.includes('published'))return 'Visible';
+      return st||'-';
+    }
+    if(s==='true'||s.includes('visible')||s.includes('active'))return 'Visible';
+    if(s==='false'||s.includes('hidden')||s.includes('ocult'))return 'Oculto';
+    if(s.includes('paused')||s.includes('pause'))return 'Pausado';
+    return st||'-';
+  }
+
+  window.listingStatusLabel = function(st, market){ return marketplaceStatusLabel(st, market); };
+
+  function marketplaceStatusOption(st, market){
+    let s=statusCast(st);
+    let m=String(market||'').toUpperCase();
+    if(m==='ML'){
+      if(s.includes('paused')||s.includes('pause'))return 'paused';
+      if(s.includes('active')||s.includes('published')||s==='true')return 'active';
+      return String(st||'');
+    }
+    if(s.includes('hidden')||s.includes('ocult')||s==='false')return 'hidden';
+    if(s.includes('visible')||s.includes('active')||s.includes('published')||s==='true')return 'visible';
+    return String(st||'');
+  }
+
+  function simpleProductType(i){ return String(i.item_type||'simple').toLowerCase(); }
+
+  window.renderListingsForItem = function(item,rowIdx){
     let market=qs('invMarket')?.value||'';
     let arr=(Array.isArray(item.listings)?item.listings:[]).filter(l=>!market||listingMarket(l)===market);
     if(!arr.length)return '<span class="muted">Sin publicaciones vinculadas para este filtro.</span>';
     arr.sort((a,b)=>(listingMarket(a)+listingProductId(a)+listingVariantId(a)).localeCompare(listingMarket(b)+listingProductId(b)+listingVariantId(b)));
     return arr.map((l,idx)=>{
-      let m=listingMarket(l), pid=listingProductId(l), vid=listingVariantId(l), price=listingPrice(l), stock=listingStock(l), st=listingStatus(l), key=esc(`${item.sku}_${idx}`);
-      return `<div class="marketBox"><div><span class="pill ${m==='ML'?'info':'ok'}">${esc(m||'?')}</span></div>${pubVarBlock(pid,vid)}<div><input class="priceInput" id="price_${key}" value="${esc(price)}" title="Precio marketplace"></div><div><input class="stockInput" value="${esc(stock)}" disabled title="Stock marketplace informado"></div><div><span class="pill marketStatus ${listingStatusClass(st)}">${esc(listingStatusLabel(st))}</span></div></div>`;
+      let m=listingMarket(l), pid=listingProductId(l), vid=listingVariantId(l), price=listingPrice(l), stock=listingStock(l), st=listingStatus(l);
+      return `<div class="marketBox"><div><span class="pill ${m==='ML'?'info':'ok'}">${esc(m||'?')}</span></div>${pubVarBlock(pid,vid)}<div><input class="priceInput" id="price_${rowIdx}_${idx}" value="${esc(price)}" title="Precio marketplace"></div><div><input class="stockInput" id="lstk_${rowIdx}_${idx}" value="${esc(stock)}" disabled title="Stock marketplace informado"></div><div><span class="pill marketStatus ${listingStatusClass(st)}">${esc(listingStatusLabel(st,m))}</span></div></div>`;
     }).join('');
   };
 
+  function collectListingsForRow(item,rowIdx){
+    return (Array.isArray(item.listings)?item.listings:[]).map((l,j)=>{
+      let m=listingMarket(l);
+      return {
+        id:l.id||null,
+        marketplace:m,
+        channel:m,
+        external_product_id:listingProductId(l)||null,
+        external_variant_id:listingVariantId(l)||null,
+        listing_id:listingProductId(l)||null,
+        variant_id:listingVariantId(l)||null,
+        price:qs(`price_${rowIdx}_${j}`)?.value ?? listingPrice(l),
+        stock:listingStock(l),
+        status:listingStatus(l)||null
+      };
+    });
+  }
+
   window.inventoryStockCell = function(i,idx){
-    let isBundle=String(i.item_type||'').toLowerCase()==='bundle';
+    let isBundle=simpleProductType(i)==='bundle';
     if(isBundle){
       return `<div class="invStockBox" style="opacity:.58"><div class="stockControls"><input class="stockInput" type="number" step="1" id="stock_${idx}" value="${esc(i.stock??0)}" disabled title="Stock calculado desde componentes"><span class="small">actual ERP: ${esc(i.stock??0)}</span></div></div><div id="rowStatus_${idx}" class="small">Bundle: stock calculado por componentes.</div>`;
     }
@@ -2165,18 +2228,18 @@ refreshAll();
   };
 
   window.inventoryActionsCell = function(i,idx){
-    let isBundle=String(i.item_type||'').toLowerCase()==='bundle';
-    let edit=isBundle?`<button onclick="renderEditBundleTool(${idx})">Modificar combo</button>`:`<button onclick="return productsPending('Modificar producto')">Modificar</button>`;
-    let link=`<button onclick="return productsPending('Vincular publicaciones')">Vincular publicaciones</button>`;
+    let isBundle=simpleProductType(i)==='bundle';
+    let edit=isBundle?`<button onclick="renderEditBundleTool(${idx})">Modificar combo</button>`:`<button onclick="renderEditProductTool(${idx})">Modificar producto</button>`;
+    let link=isBundle?'':`<button onclick="renderLinkProductTool(${idx})">Vincular publicaciones</button>`;
     return `<details class="kebabMenu"><summary title="Más acciones">⋮</summary><div class="kebabPanel">${edit}${link}</div></details>`;
   };
 
   window.renderInventory = function(){
     let items=state.inventoryItems||[], tbody='';
     if(!items.length){
-      tbody='<tr><td colspan="5" class="muted" style="text-align:center;padding:24px">Sin resultados para este filtro.</td></tr>';
+      tbody='<tr><td colspan="5" class="muted" style="text-align:center;padding:24px">Sin productos simples para este filtro.</td></tr>';
     }else{
-      tbody=items.map((i,idx)=>`<tr><td><strong class="mono">${esc(i.sku)}</strong><br><span class="small">${esc(i.item_type||'')}</span></td><td>${esc(i.name||'')}<br><span class="small">${esc(i.category||'')}</span></td><td>${inventoryStockCell(i,idx)}</td><td>${renderListingsForItem(i)}</td><td class="actionCell">${inventoryActionsCell(i,idx)}</td></tr>`).join('');
+      tbody=items.map((i,idx)=>`<tr><td><strong class="mono">${esc(i.sku)}</strong><br><span class="small">${esc(i.item_type||'simple')}</span></td><td>${esc(i.name||i.title||'')}<br><span class="small">${esc([i.variant_name,i.category].filter(Boolean).join(' · '))}</span></td><td>${inventoryStockCell(i,idx)}</td><td>${renderListingsForItem(i,idx)}</td><td class="actionCell">${inventoryActionsCell(i,idx)}</td></tr>`).join('');
     }
     qs('invResults').innerHTML=`<table class="inventoryTable"><thead><tr><th>SKU</th><th>Producto</th><th>Stock ERP editable</th><th>Publicaciones / variantes / precio / stock</th><th>⋮</th></tr></thead><tbody>${tbody}</tbody></table>`;
   };
@@ -2184,21 +2247,159 @@ refreshAll();
   window.saveInventoryStock = async function(idx){
     let item=state.inventoryItems[idx], el=qs('rowStatus_'+idx);
     if(!item)return;
-    if(String(item.item_type||'').toLowerCase()==='bundle'){
+    if(simpleProductType(item)==='bundle'){
       if(el){el.textContent='Bundle: el stock se calcula desde componentes.';el.style.color='var(--muted)';}
       return;
     }
-    let sku=item.sku, newStock=Number(qs('stock_'+idx).value);
+    let sku=item.sku, newStock=Number(qs('stock_'+idx)?.value);
     if(!Number.isFinite(newStock)){ if(el)el.textContent='Stock inválido'; return; }
     if(el)el.textContent='Guardando...';
     try{
-      let d=await postJSON(`/products-admin/${TENANT_ID}/products/${encodeURIComponent(sku)}/save`,{stock:Math.trunc(newStock),listings:[],notes:'Ajuste desde inventario editable integrado'});
+      let payload={
+        sku,
+        name:item.name||item.title||'',
+        variant_name:item.variant_name||'',
+        category:item.category||'',
+        cost:item.cost??0,
+        stock:Math.trunc(newStock),
+        item_type:'simple',
+        active:item.active!==false,
+        listings:collectListingsForRow(item,idx),
+        notes:'Ajuste desde Productos simples'
+      };
+      let d=await postJSON(`/products-admin/${TENANT_ID}/products/${encodeURIComponent(sku)}/save`,payload);
       item.stock=Math.trunc(newStock);
-      if(el){el.textContent='OK: stock guardado. Refrescando vista...';el.style.color='var(--ok)';}
+      if(el){el.textContent=`OK: producto guardado. Jobs: ${d.jobs_created??(d.sync_jobs||[]).length??0}`;el.style.color='var(--ok)';}
       await searchInventory(state.inventory.offset||0,false);
-      safeSetStatus('invStatus',`Stock guardado para ${sku}. Vista refrescada con el mismo filtro.`,true);
+      safeSetStatus('invStatus',`Producto guardado para ${sku}. Vista refrescada con el mismo filtro.`,true);
     }catch(e){
       if(el){el.textContent='Error: '+(e.message||JSON.stringify(e));el.style.color='var(--bad)';}
+      safeRaw(e);
+    }
+  };
+
+  window.showProductLinkHint = function(){
+    safeSetStatus('invStatus','Para vincular publicaciones: abrí el ⋮ del producto y elegí “Vincular publicaciones”.',true);
+    return false;
+  };
+
+  window.renderEditProductTool = function(idx){
+    renderProductTool(state.inventoryItems[idx]||{});
+  };
+
+  window.renderLinkProductTool = function(idx){
+    const item=state.inventoryItems[idx]||{};
+    renderProductTool(item,true);
+    const lines=qs('productListingLines');
+    if(lines && !lines.querySelector('.productListingLine')) addProductListingLine({marketplace:qs('invMarket')?.value||'TN'});
+    setTimeout(()=>qs('productListingLines')?.scrollIntoView({behavior:'smooth',block:'center'}),80);
+  };
+
+  window.closeProductTool = function(){
+    const box=qs('inventoryTools');
+    if(box){box.classList.add('hidden');box.innerHTML='';}
+  };
+
+  window.renderProductTool = function(item={}, focusListings=false){
+    showGestPanel('productos');
+    const box=qs('inventoryTools');
+    if(!box)return;
+    const isEdit=!!item.sku;
+    box.classList.remove('hidden');
+    box.innerHTML=`<div class="productTool">
+      <div class="productGrid">
+        <input id="productOldSku" type="hidden" value="${escAttr(item.sku||'')}">
+        <div><label>SKU</label><input id="productSku" value="${escAttr(item.sku||'')}" placeholder="SKU producto simple"></div>
+        <div><label>Nombre</label><input id="productName" value="${escAttr(item.name||item.title||'')}" placeholder="Nombre del producto"></div>
+        <div><label>Variante</label><input id="productVariant" value="${escAttr(item.variant_name||'')}" placeholder="Color / medida / variante"></div>
+        <div><label>Categoría</label><input id="productCategory" value="${escAttr(item.category||'')}" placeholder="Categoría"></div>
+        <div><label>Stock</label><input id="productStock" type="number" step="1" value="${escAttr(item.stock??0)}"></div>
+        <div><label>Costo</label><input id="productCost" type="number" step="0.01" value="${escAttr(item.cost??0)}"></div>
+      </div>
+      <div class="btnrow" style="margin-top:12px">
+        <label class="checkLine" style="margin:0"><input id="productActive" type="checkbox" ${(item.active!==false)?'checked':''}> Activo</label>
+        <button class="secondary" onclick="addProductListingLine()">Agregar publicación</button>
+        <button class="primary" onclick="saveProductTool()">Guardar producto</button>
+        <button class="secondary" onclick="closeProductTool()">Cerrar</button>
+      </div>
+      <div class="toolSub">Guarda en <b>inventory_items</b> y, si hay publicaciones cargadas, en <b>marketplace_listings</b>. Todo viaja con tenant_id: <span class="mono">${esc(TENANT_ID)}</span>.</div>
+      <div id="productListingLines" class="productListingLines"></div>
+      <div id="productToolStatus" class="status"></div>
+    </div>`;
+    (Array.isArray(item.listings)?item.listings:[]).forEach(l=>addProductListingLine(l));
+    if(focusListings && !(item.listings||[]).length) addProductListingLine({marketplace:qs('invMarket')?.value||'TN'});
+    setTimeout(()=>box.scrollIntoView({behavior:'smooth',block:'start'}),60);
+    safeSetStatus('invStatus',isEdit?`Editando producto ${item.sku}`:'Alta de producto simple',true);
+  };
+
+  window.addProductListingLine = function(d={}){
+    const box=qs('productListingLines');
+    if(!box)return;
+    const line=document.createElement('div');
+    line.className='productListingLine';
+    const ch=String(d.marketplace||d.channel||'TN').toUpperCase();
+    const st=marketplaceStatusOption(d.status_label??d.status??d.state??(ch==='ML'?'active':'visible'),ch);
+    line.innerHTML=`<input class="plId plHidden" value="${escAttr(d.id||'')}">
+      <div><label>Canal</label><select class="plChannel"><option ${ch==='TN'?'selected':''}>TN</option><option ${ch==='ML'?'selected':''}>ML</option></select></div>
+      <div><label>Publicación</label><input class="plListing" value="${escAttr(listingProductId(d)||'')}" placeholder="ID publicación"></div>
+      <div><label>Variante</label><input class="plVariant" value="${escAttr(listingVariantId(d)||'0')}" placeholder="0"></div>
+      <div><label>Precio</label><input class="plPrice" type="number" step="1" value="${escAttr(listingPrice(d)||'')}"></div>
+      <div><label>Stock</label><input class="plStock" type="number" step="1" value="${escAttr(listingStock(d)||0)}"></div>
+      <div><label>Estado</label><select class="plStatus"><option value="visible" ${st==='visible'?'selected':''}>Visible</option><option value="hidden" ${st==='hidden'?'selected':''}>Oculto</option><option value="active" ${st==='active'?'selected':''}>Activa</option><option value="paused" ${st==='paused'?'selected':''}>Pausado</option></select></div>
+      <div><label>&nbsp;</label><button class="secondary" onclick="this.closest('.productListingLine').remove()">×</button></div>`;
+    box.appendChild(line);
+  };
+
+  function collectProductToolListings(){
+    return [...document.querySelectorAll('#productListingLines .productListingLine')].map(line=>{
+      const channel=(line.querySelector('.plChannel')?.value||'').trim().toUpperCase();
+      const listing=(line.querySelector('.plListing')?.value||'').trim();
+      const variant=(line.querySelector('.plVariant')?.value||'').trim();
+      if(!channel || !listing)return null;
+      return {
+        id:(line.querySelector('.plId')?.value||'').trim()||null,
+        marketplace:channel,
+        channel,
+        external_product_id:listing,
+        external_variant_id:variant||'0',
+        listing_id:listing,
+        variant_id:variant||'0',
+        price:line.querySelector('.plPrice')?.value||null,
+        stock:line.querySelector('.plStock')?.value||0,
+        status:line.querySelector('.plStatus')?.value||null
+      };
+    }).filter(Boolean);
+  }
+
+  window.saveProductTool = async function(){
+    const oldSku=(qs('productOldSku')?.value||'').trim();
+    const sku=(qs('productSku')?.value||'').trim();
+    if(!sku){safeSetStatus('productToolStatus','Cargá SKU del producto.',false);return;}
+    const stock=Number(qs('productStock')?.value||0);
+    if(!Number.isFinite(stock)){safeSetStatus('productToolStatus','Stock inválido.',false);return;}
+    const payload={
+      sku,
+      old_sku:oldSku||sku,
+      name:(qs('productName')?.value||sku).trim(),
+      title:(qs('productName')?.value||sku).trim(),
+      variant_name:(qs('productVariant')?.value||'').trim(),
+      category:(qs('productCategory')?.value||'').trim(),
+      cost:qs('productCost')?.value||0,
+      stock:Math.trunc(stock),
+      item_type:'simple',
+      active:!!qs('productActive')?.checked,
+      listings:collectProductToolListings(),
+      notes:'Guardado desde Productos simples'
+    };
+    safeSetStatus('productToolStatus','Guardando producto simple...', 'warntxt');
+    try{
+      const d=await postJSON(`/products-admin/${TENANT_ID}/products/${encodeURIComponent(oldSku||sku)}/save`,payload);
+      safeSetStatus('productToolStatus',`Producto guardado. Jobs: ${d.jobs_created??(d.sync_jobs||[]).length??0}`,true);
+      closeProductTool();
+      await searchInventory(state.inventory.offset||0,false);
+      safeSetStatus('invStatus',`Producto simple guardado: ${sku}`,true);
+    }catch(e){
+      safeSetStatus('productToolStatus','Error guardando producto simple.',false);
       safeRaw(e);
     }
   };
