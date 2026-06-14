@@ -410,7 +410,7 @@ button:disabled {
 .logoLine {
   display:flex;
   gap:12px;
-  align-items:flex-end
+  align-items:center
 }
 .logoPreview {
   width:78px;
@@ -433,21 +433,27 @@ button:disabled {
   object-fit:contain
 }
 .logoControls {
-  flex:1;
-  display:grid;
-  grid-template-columns:1fr auto;
-  gap:8px;
-  align-items:end
+  flex:0 0 auto;
+  display:flex;
+  align-items:center
 }
 .inlineChecks {
   display:flex;
-  gap:18px;
+  gap:24px;
   align-items:center;
   flex-wrap:wrap
 }
 .inlineChecks .checkLine {
   margin:0;
-  color:var(--ink)
+  color:var(--ink);
+  line-height:1.25;
+  display:inline-flex;
+  align-items:center;
+  gap:8px
+}
+.inlineChecks .checkLine input {
+  margin:0;
+  flex:0 0 auto
 }
 table {
   width:100%;
@@ -615,8 +621,8 @@ th {
           <label>Logo del comercio</label>
           <div class="logoLine">
             <div class="logoPreview" id="cfgLogoPreview"><span>Logo</span></div>
+            <input id="cfgLogo" type="hidden">
             <div class="logoControls">
-              <input id="cfgLogo" placeholder="Archivo o dirección del logo" oninput="updateLogoPreview()">
               <button class="secondary" onclick="alert('Subida de logo pendiente.')">Subir logo</button>
             </div>
           </div>
@@ -1060,8 +1066,8 @@ async function applyStaging() {
     const d = await postJSON(`/import-staging/${TENANT_ID}/apply`, { session_id: STAGING_SESSION_ID, rows });
     STAGING_SESSION_ID = '';
     PUBLICATION_ROWS = [];
-    setStatus('syncMatrixStatus', `Cambios guardados. Inventario: ${d.applied_inventory}; publicaciones: ${d.applied_listings}; no encontradas: ${d.missing_marked ?? 0}.`, 'oktxt');
     await loadInventoryMaster(true);
+    setStatus('syncMatrixStatus', '');
   } catch (e) {
     openPublicationMatrix();
     setStatus('syncMatrixStatus', 'Error guardando cambios.', 'badtxt');
@@ -1082,7 +1088,7 @@ async function cancelStaging() {
     await post(`/import-staging/${TENANT_ID}/cancel?session_id=${encodeURIComponent(STAGING_SESSION_ID)}`);
     STAGING_SESSION_ID = '';
     PUBLICATION_ROWS = [];
-    closePublicationMatrix('Configuración cancelada. No se modificó tu inventario.');
+    closePublicationMatrix('');
   } catch (e) {
     setStatus('syncMatrixStatus', 'Error cancelando.', 'badtxt');
     raw(e);
