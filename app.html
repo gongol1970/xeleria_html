@@ -4,10 +4,582 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>XelerIA</title>
-<script>if(location.protocol==='http:'&&location.hostname.endsWith('xeleria.com.ar'))location.replace('https://'+location.host+location.pathname+location.search+location.hash);</script>
+<script>
+if(location.protocol==='http:'&&location.hostname.endsWith('xeleria.com.ar'))location.replace('https://'+location.host+location.pathname+location.search+location.hash);
+</script>
 <link rel="icon" type="image/png" href="./favicon_xeleria.png?v=1">
 <style>
-:root{--bg:#f2f0eb;--surface:#fffdf8;--ink:#171717;--muted:#5f5a52;--line:#ded4be;--brand:#dcc58f;--brand2:#cdb272;--dark:#101010;--ok:#067647;--bad:#b42318;--warn:#9a6700;--new:#eefbe8;--missing:#fdecec;--review:#fff8c5;--radius:18px;--shadow:0 10px 30px rgba(17,17,17,.08)}*{box-sizing:border-box}body,button,input,select,textarea{font-family:Tahoma,Arial,sans-serif}body{margin:0;background:var(--bg);color:var(--ink);font-size:14px}.app{display:flex;min-height:100vh}aside{position:fixed;inset:0 auto 0 0;width:282px;background:linear-gradient(180deg,#101010,#191919);color:#fff;display:flex;flex-direction:column;z-index:20;box-shadow:8px 0 28px rgba(0,0,0,.18)}.brand{padding:22px 18px 16px;border-bottom:1px solid rgba(220,197,143,.25)}.brandTop{display:grid;grid-template-columns:58px 1fr auto;gap:12px;align-items:center}.appMark{width:58px;height:58px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}.appMark img{width:112%;height:112%;object-fit:cover}.brandName{font-size:24px;font-weight:950}.tenantBadge{min-width:54px;height:38px;border-radius:10px;background:rgba(255,255,255,.08);border:1px solid rgba(220,197,143,.25);display:flex;align-items:center;justify-content:center;color:#d8d0c0;font-size:10px;font-weight:900}.brand p{margin:10px 0 0;color:#d8d0c0;font-size:12px}nav{padding:14px 12px;overflow:auto;flex:1}.navBtn,.navTitle{width:100%;border:0;background:transparent;color:#eee;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;text-align:left;font-weight:700}.navTitle{color:#d5c6a2;font-size:12px;text-transform:uppercase;letter-spacing:.08em;margin-top:8px}.navBtn{cursor:pointer}.navBtn:hover{background:rgba(220,197,143,.11)}.navBtn.active{background:var(--brand);color:#111}.sidebarFoot{padding:10px 18px;border-top:1px solid rgba(220,197,143,.25);font-size:11px;line-height:1.35;color:#cfc7ba}main{margin-left:282px;width:calc(100% - 282px);padding:22px 26px 60px}.topbar{margin-bottom:18px}.topbar h2{margin:0;font-size:28px}.crumb{color:var(--muted);font-size:13px;margin-top:4px}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.col-3{grid-column:span 3}.col-4{grid-column:span 4}.col-6{grid-column:span 6}.col-12{grid-column:span 12}.card,.stat,.hero{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;margin-bottom:14px}.hero{background:linear-gradient(135deg,#fffdf8,#efe3c5);border-radius:24px}.card h3,.hero h3{margin:0 0 10px}.card p,.hero p{margin:6px 0;color:var(--muted)}button,.btn{border:0;border-radius:12px;background:var(--dark);color:#fff;padding:10px 13px;font-weight:800;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap}button:not(.secondary):not(.primary):not(.danger):hover{background:#2b2b2b;color:#fff}button:not(:disabled):focus,button:not(:disabled):focus-visible,.btn:not(:disabled):focus,.btn:not(:disabled):focus-visible{outline:3px solid var(--brand);outline-offset:2px}.primary{background:var(--brand2);color:#111}.primary:hover{background:#d9bf7d;color:#111}.secondary{background:#fff;color:#111;border:1px solid var(--line)}.secondary:hover{background:#fffaf0;color:#111}.danger{background:#fff;color:var(--bad);border:1px solid #f5b5ad}.danger:hover{background:#fff3f2;color:var(--bad)}button:disabled{background:#e7dfcf!important;color:#8a8172!important;border:1px solid #d8ccb5!important;cursor:not-allowed!important}.btnrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.view{display:none}.view.active{display:block}.status{min-height:24px;color:var(--muted);margin-top:10px}.oktxt{color:var(--ok)!important;font-weight:800}.badtxt{color:var(--bad)!important;font-weight:800}.warntxt{color:var(--warn)!important;font-weight:800}.small,.muted{font-size:12px;color:var(--muted)}.stat .k{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800}.stat .v{font-size:28px;font-weight:900;margin-top:5px}.stat .s{font-size:12px;color:var(--muted);margin-top:3px}.good{border-left:6px solid var(--ok)}.alert{border-left:6px solid var(--bad)}.warnline{border-left:6px solid var(--warn)}.connectCard{border-left:6px solid var(--line)}.connectCard.connected{border-left-color:var(--ok);opacity:.82}.pill{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;font-size:12px;font-weight:800;background:#efe7d5;color:#453d31}.pill.ok{background:#ecfdf3;color:var(--ok)}.pill.bad{background:#fef3f2;color:var(--bad)}.pill.warn{background:var(--review);color:#7a5a00}.configAnchor{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}.configAnchor a{padding:8px 10px;border:1px solid var(--line);border-radius:999px;background:#fff;color:#111;text-decoration:none;font-weight:800;font-size:12px}.formGrid{display:grid;grid-template-columns:repeat(12,1fr);gap:10px}.field{grid-column:span 6}.field.third{grid-column:span 4}.field.full{grid-column:1/-1}.field label{display:block;font-size:12px;color:var(--muted);font-weight:900;margin:0 0 5px}.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);border-radius:12px;background:#fff;padding:10px 11px;font:inherit}.field textarea{min-height:74px;resize:vertical}.checkLine{display:flex;gap:9px;align-items:center;margin:8px 0;color:var(--muted);font-weight:700}.checkLine input{width:18px;height:18px;accent-color:#111}.billingBox{border:1px dashed var(--line);border-radius:14px;padding:12px;background:#fffaf0}table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;overflow:hidden;font-size:13px}th,td{border-bottom:1px solid #eee2c8;padding:8px 9px;text-align:left;vertical-align:top}th{background:#151515;color:#fff;position:sticky;top:0;z-index:1}.tableWrap,.syncMatrixWrap{border:1px solid var(--line);border-radius:14px;overflow:auto;max-height:680px;background:#fff}.dashEmpty{border:1px dashed var(--line);border-radius:16px;padding:18px;text-align:center;color:var(--muted);background:#fffaf0}.console{white-space:pre-wrap;background:#111;color:#e8e2d4;border-radius:14px;padding:14px;max-height:560px;overflow:auto}.syncMatrix{min-width:980px;border-radius:0;font-size:12px}.syncMatrix th{text-align:center;padding:7px 7px}.syncMatrix td{padding:7px 7px}.skuCell{width:130px;font-weight:950}.pubCell{min-width:330px;white-space:pre-line;line-height:1.28}.choiceCell{width:58px;text-align:center}.choiceCell input{width:16px;height:16px;accent-color:#111}.emptyPub{color:#777;font-style:italic}.newPub{background:var(--new)!important}.missingPub{background:var(--missing)!important}.reviewPub{background:var(--review)!important}.legend{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}.sw{width:16px;height:16px;border-radius:4px;border:1px solid var(--line);display:inline-block}.stickySave{position:sticky;bottom:0;background:linear-gradient(180deg,rgba(255,253,248,.86),#fffdf8);border-top:1px solid var(--line);padding:12px;margin:12px -18px -18px;border-radius:0 0 var(--radius) var(--radius)}@media(max-width:900px){aside{position:relative;width:100%;height:auto}main{margin-left:0;width:100%;padding:16px 12px 70px}.app{display:block}.col-3,.col-4,.col-6,.col-12,.field,.field.third{grid-column:1/-1}table{min-width:760px}}
+:root {
+  --bg:#f2f0eb;
+  --surface:#fffdf8;
+  --ink:#171717;
+  --muted:#5f5a52;
+  --line:#ded4be;
+  --brand:#dcc58f;
+  --brand2:#cdb272;
+  --dark:#101010;
+  --ok:#067647;
+  --bad:#b42318;
+  --warn:#9a6700;
+  --new:#eefbe8;
+  --missing:#fdecec;
+  --review:#fff8c5;
+  --radius:18px;
+  --shadow:0 10px 30px rgba(17,17,17,.08)
+}
+* {
+  box-sizing:border-box
+}
+body,button,input,select,textarea {
+  font-family:Tahoma,Arial,sans-serif
+}
+body {
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-size:14px
+}
+.app {
+  display:flex;
+  min-height:100vh
+}
+aside {
+  position:fixed;
+  inset:0 auto 0 0;
+  width:282px;
+  background:linear-gradient(180deg,#101010,#191919);
+  color:#fff;
+  display:flex;
+  flex-direction:column;
+  z-index:20;
+  box-shadow:8px 0 28px rgba(0,0,0,.18)
+}
+.brand {
+  padding:22px 18px 16px;
+  border-bottom:1px solid rgba(220,197,143,.25)
+}
+.brandTop {
+  display:grid;
+  grid-template-columns:58px 1fr auto;
+  gap:12px;
+  align-items:center
+}
+.appMark {
+  width:58px;
+  height:58px;
+  border-radius:50%;
+  background:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden
+}
+.appMark img {
+  width:112%;
+  height:112%;
+  object-fit:cover
+}
+.brandName {
+  font-size:24px;
+  font-weight:950
+}
+.tenantBadge {
+  min-width:54px;
+  height:38px;
+  border-radius:10px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(220,197,143,.25);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#d8d0c0;
+  font-size:10px;
+  font-weight:900
+}
+.brand p {
+  margin:10px 0 0;
+  color:#d8d0c0;
+  font-size:12px
+}
+nav {
+  padding:14px 12px;
+  overflow:auto;
+  flex:1
+}
+.navBtn,.navTitle {
+  width:100%;
+  border:0;
+  background:transparent;
+  color:#eee;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 12px;
+  border-radius:12px;
+  text-align:left;
+  font-weight:700
+}
+.navTitle {
+  color:#d5c6a2;
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  margin-top:8px
+}
+.navBtn {
+  cursor:pointer
+}
+.navBtn:hover {
+  background:rgba(220,197,143,.11)
+}
+.navBtn.active {
+  background:var(--brand);
+  color:#111
+}
+.sidebarFoot {
+  padding:10px 18px;
+  border-top:1px solid rgba(220,197,143,.25);
+  font-size:11px;
+  line-height:1.35;
+  color:#cfc7ba
+}
+main {
+  margin-left:282px;
+  width:calc(100% - 282px);
+  padding:22px 26px 60px
+}
+.topbar {
+  margin-bottom:18px
+}
+.topbar h2 {
+  margin:0;
+  font-size:28px
+}
+.crumb {
+  color:var(--muted);
+  font-size:13px;
+  margin-top:4px
+}
+.grid {
+  display:grid;
+  grid-template-columns:repeat(12,1fr);
+  gap:14px
+}
+.col-3 {
+  grid-column:span 3
+}
+.col-4 {
+  grid-column:span 4
+}
+.col-6 {
+  grid-column:span 6
+}
+.col-12 {
+  grid-column:span 12
+}
+.card,.stat,.hero {
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:18px;
+  margin-bottom:14px
+}
+.hero {
+  background:linear-gradient(135deg,#fffdf8,#efe3c5);
+  border-radius:24px
+}
+.card h3,.hero h3 {
+  margin:0 0 10px
+}
+.card p,.hero p {
+  margin:6px 0;
+  color:var(--muted)
+}
+button,.btn {
+  border:0;
+  border-radius:12px;
+  background:var(--dark);
+  color:#fff;
+  padding:10px 13px;
+  font-weight:800;
+  cursor:pointer;
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  white-space:nowrap
+}
+button:not(.secondary):not(.primary):not(.danger):hover {
+  background:#2b2b2b;
+  color:#fff
+}
+button:not(:disabled):focus,button:not(:disabled):focus-visible,.btn:not(:disabled):focus,.btn:not(:disabled):focus-visible {
+  outline:3px solid var(--brand);
+  outline-offset:2px
+}
+.primary {
+  background:var(--brand2);
+  color:#111
+}
+.primary:hover {
+  background:#d9bf7d;
+  color:#111
+}
+.secondary {
+  background:#fff;
+  color:#111;
+  border:1px solid var(--line)
+}
+.secondary:hover {
+  background:#fffaf0;
+  color:#111
+}
+.danger {
+  background:#fff;
+  color:var(--bad);
+  border:1px solid #f5b5ad
+}
+.danger:hover {
+  background:#fff3f2;
+  color:var(--bad)
+}
+button:disabled {
+  background:#e7dfcf!important;
+  color:#8a8172!important;
+  border:1px solid #d8ccb5!important;
+  cursor:not-allowed!important
+}
+.btnrow {
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center
+}
+.view {
+  display:none
+}
+.view.active {
+  display:block
+}
+.status {
+  min-height:24px;
+  color:var(--muted);
+  margin-top:10px
+}
+.oktxt {
+  color:var(--ok)!important;
+  font-weight:800
+}
+.badtxt {
+  color:var(--bad)!important;
+  font-weight:800
+}
+.warntxt {
+  color:var(--warn)!important;
+  font-weight:800
+}
+.small,.muted {
+  font-size:12px;
+  color:var(--muted)
+}
+.stat .k {
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color:var(--muted);
+  font-weight:800
+}
+.stat .v {
+  font-size:28px;
+  font-weight:900;
+  margin-top:5px
+}
+.stat .s {
+  font-size:12px;
+  color:var(--muted);
+  margin-top:3px
+}
+.good {
+  border-left:6px solid var(--ok)
+}
+.alert {
+  border-left:6px solid var(--bad)
+}
+.warnline {
+  border-left:6px solid var(--warn)
+}
+.connectCard {
+  border-left:6px solid var(--line)
+}
+.connectCard.connected {
+  border-left-color:var(--ok);
+  opacity:.82
+}
+.pill {
+  display:inline-flex;
+  align-items:center;
+  border-radius:999px;
+  padding:4px 8px;
+  font-size:12px;
+  font-weight:800;
+  background:#efe7d5;
+  color:#453d31
+}
+.pill.ok {
+  background:#ecfdf3;
+  color:var(--ok)
+}
+.pill.bad {
+  background:#fef3f2;
+  color:var(--bad)
+}
+.pill.warn {
+  background:var(--review);
+  color:#7a5a00
+}
+.configAnchor {
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin:0 0 14px
+}
+.configAnchor a {
+  padding:8px 10px;
+  border:1px solid var(--line);
+  border-radius:999px;
+  background:#fff;
+  color:#111;
+  text-decoration:none;
+  font-weight:800;
+  font-size:12px
+}
+.formGrid {
+  display:grid;
+  grid-template-columns:repeat(12,1fr);
+  gap:10px
+}
+.field {
+  grid-column:span 6
+}
+.field.third {
+  grid-column:span 4
+}
+.field.full {
+  grid-column:1/-1
+}
+.field label {
+  display:block;
+  font-size:12px;
+  color:var(--muted);
+  font-weight:900;
+  margin:0 0 5px
+}
+.field input,.field select,.field textarea {
+  width:100%;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:#fff;
+  padding:10px 11px;
+  font:inherit
+}
+.field textarea {
+  min-height:74px;
+  resize:vertical
+}
+.checkLine {
+  display:flex;
+  gap:9px;
+  align-items:center;
+  margin:8px 0;
+  color:var(--muted);
+  font-weight:700
+}
+.checkLine input {
+  width:18px;
+  height:18px;
+  accent-color:#111
+}
+.billingBox {
+  border:1px dashed var(--line);
+  border-radius:14px;
+  padding:12px;
+  background:#fffaf0
+}
+.logoLine {
+  display:flex;
+  gap:12px;
+  align-items:flex-end
+}
+.logoPreview {
+  width:78px;
+  height:78px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  color:var(--muted);
+  font-weight:900;
+  font-size:12px;
+  flex:0 0 auto
+}
+.logoPreview img {
+  width:100%;
+  height:100%;
+  object-fit:contain
+}
+.logoControls {
+  flex:1;
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:8px;
+  align-items:end
+}
+.inlineChecks {
+  display:flex;
+  gap:18px;
+  align-items:center;
+  flex-wrap:wrap
+}
+.inlineChecks .checkLine {
+  margin:0;
+  color:var(--ink)
+}
+table {
+  width:100%;
+  border-collapse:collapse;
+  background:#fff;
+  border-radius:14px;
+  overflow:hidden;
+  font-size:13px
+}
+th,td {
+  border-bottom:1px solid #eee2c8;
+  padding:8px 9px;
+  text-align:left;
+  vertical-align:top
+}
+th {
+  background:#151515;
+  color:#fff;
+  position:sticky;
+  top:0;
+  z-index:1
+}
+.tableWrap,.syncMatrixWrap {
+  border:1px solid var(--line);
+  border-radius:14px;
+  overflow:auto;
+  max-height:680px;
+  background:#fff
+}
+.dashEmpty {
+  border:1px dashed var(--line);
+  border-radius:16px;
+  padding:18px;
+  text-align:center;
+  color:var(--muted);
+  background:#fffaf0
+}
+.console {
+  white-space:pre-wrap;
+  background:#111;
+  color:#e8e2d4;
+  border-radius:14px;
+  padding:14px;
+  max-height:560px;
+  overflow:auto
+}
+.syncMatrix {
+  min-width:980px;
+  border-radius:0;
+  font-size:12px
+}
+.syncMatrix th {
+  text-align:center;
+  padding:7px 7px
+}
+.syncMatrix td {
+  padding:7px 7px
+}
+.skuCell {
+  width:130px;
+  font-weight:950
+}
+.pubCell {
+  min-width:330px;
+  white-space:pre-line;
+  line-height:1.28
+}
+.choiceCell {
+  width:58px;
+  text-align:center
+}
+.choiceCell input {
+  width:16px;
+  height:16px;
+  accent-color:#111
+}
+.emptyPub {
+  color:#777;
+  font-style:italic
+}
+.newPub {
+  background:var(--new)!important
+}
+.missingPub {
+  background:var(--missing)!important
+}
+.reviewPub {
+  background:var(--review)!important
+}
+.legend {
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:10px 0
+}
+.sw {
+  width:16px;
+  height:16px;
+  border-radius:4px;
+  border:1px solid var(--line);
+  display:inline-block
+}
+.stickySave {
+  position:sticky;
+  bottom:0;
+  background:linear-gradient(180deg,rgba(255,253,248,.86),#fffdf8);
+  border-top:1px solid var(--line);
+  padding:12px;
+  margin:12px -18px -18px;
+  border-radius:0 0 var(--radius) var(--radius)
+}
+@media(max-width:900px) {
+  aside {
+    position:relative;
+    width:100%;
+    height:auto
+  }
+  main {
+    margin-left:0;
+    width:100%;
+    padding:16px 12px 70px
+  }
+.app {
+    display:block
+  }
+.col-3,.col-4,.col-6,.col-12,.field,.field.third {
+    grid-column:1/-1
+  }
+  table {
+    min-width:760px
+  }
+}
 </style>
 </head>
 <body>
@@ -15,20 +587,530 @@
 <aside><div class="brand"><div class="brandTop"><span class="appMark"><img src="./favicon_xeleria.png?v=1" alt="XelerIA"></span><div class="brandName">XelerIA</div><div class="tenantBadge" id="tenantBadge">PC</div></div><p id="tenantSubtitle">Panel operativo</p></div><nav><button class="navBtn active" data-view="inicio">Inicio / Dashboard</button><div class="navTitle">Mercado Libre</div><button class="navBtn" data-view="ml-publicaciones">Publicaciones</button><button class="navBtn" data-view="ml-ventas">Ventas</button><div class="navTitle">Tienda Nube</div><button class="navBtn" data-view="tn-publicaciones">Publicaciones</button><button class="navBtn" data-view="tn-ventas">Ventas</button><div class="navTitle">Gestión</div><button class="navBtn" data-view="inventario">Inventario</button><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="consola">Detalle técnico</button></nav><div class="sidebarFoot">Pantalla: XelerIA 1.0<br>Servidor: <span id="footBackendVer">?</span><br><span class="muted">Cambios externos desactivados</span></div></aside>
 <main><div class="topbar"><h2 id="pageTitle">Inicio</h2><div class="crumb" id="pageCrumb">Panel operativo</div></div>
 <section id="inicio" class="view active"><div class="hero"><div class="btnrow" style="justify-content:space-between"><div><h3>Dashboard</h3><p>Resumen operativo de XelerIA. El dashboard informa; no dispara operaciones.</p></div><button class="secondary" onclick="refreshAll()">Actualizar</button></div><div id="homeStatus" class="status"></div></div><div class="grid"><div class="col-3 stat good"><div class="k">Servidor</div><div class="v" id="stApi">?</div><div class="s">Versión <span id="dashBackendVer">?</span></div></div><div class="col-3 stat" id="mlCardMini"><div class="k">Mercado Libre</div><div class="v" id="stML">?</div><div class="s" id="stMLSub">Conexión</div></div><div class="col-3 stat" id="tnCardMini"><div class="k">Tienda Nube</div><div class="v" id="stTN">?</div><div class="s" id="stTNSub">Conexión</div></div><div class="col-3 stat warnline"><div class="k">Cambios externos</div><div class="v">Bloqueado</div><div class="s">No modifica stock/precios en ML/TN</div></div></div><div class="card"><h3>Resumen operativo</h3><div id="snapshotWrap" class="tableWrap"><div class="dashEmpty">Tocá “Actualizar”.</div></div></div></section>
-<section id="ml-publicaciones" class="view"><div class="card"><h3>Mercado Libre · Publicaciones</h3><p>Vista segura: lee publicaciones, no cambia tu inventario.</p><div class="btnrow"><button class="secondary" onclick="readMLItems()">Ver primeras publicaciones</button><button class="primary importBtn" onclick="startStaging('ML')">Buscar publicaciones ML</button><button class="secondary" onclick="connectML()">Conectar ML</button></div><div id="mlItemsStatus" class="status"></div><div id="mlItemsTable" class="tableWrap"></div></div></section>
-<section id="tn-publicaciones" class="view"><div class="card"><h3>Tienda Nube · Publicaciones</h3><p>Vista segura: lee publicaciones, no cambia tu inventario.</p><div class="btnrow"><button class="secondary" onclick="readTNProducts()">Ver primeras publicaciones</button><button class="primary importBtn" onclick="startStaging('TN')">Buscar publicaciones TN</button><button class="secondary" onclick="connectTN()">Conectar TN</button></div><div id="tnProductsStatus" class="status"></div><div id="tnProductsTable" class="tableWrap"></div></div></section>
+<section id="ml-publicaciones" class="view"><div class="card"><h3>Mercado Libre · Publicaciones</h3><p>Vista segura: lee publicaciones, no cambia tu inventario.</p><div class="btnrow"><button class="secondary" onclick="readMLItems()">Ver primeras publicaciones</button><button class="primary importBtn" onclick="startStaging('ML')">Configurar inventario ML</button><button class="secondary" onclick="connectML()">Conectar ML</button></div><div id="mlItemsStatus" class="status"></div><div id="mlItemsTable" class="tableWrap"></div></div></section>
+<section id="tn-publicaciones" class="view"><div class="card"><h3>Tienda Nube · Publicaciones</h3><p>Vista segura: lee publicaciones, no cambia tu inventario.</p><div class="btnrow"><button class="secondary" onclick="readTNProducts()">Ver primeras publicaciones</button><button class="primary importBtn" onclick="startStaging('TN')">Configurar inventario TN</button><button class="secondary" onclick="connectTN()">Conectar TN</button></div><div id="tnProductsStatus" class="status"></div><div id="tnProductsTable" class="tableWrap"></div></div></section>
 <section id="ml-ventas" class="view"><div class="card"><h3>Mercado Libre · Ventas</h3><div class="btnrow"><button class="secondary" onclick="readMLOrders(true)">Ver ventas ML</button><button class="primary" onclick="readMLOrders(false)">Importar ventas ML</button></div><div id="mlOrdersStatus" class="status"></div><div id="mlOrdersTable" class="tableWrap"></div></div></section>
 <section id="tn-ventas" class="view"><div class="card"><h3>Tienda Nube · Ventas</h3><div class="btnrow"><button class="secondary" onclick="readTNOrders(true)">Ver ventas TN</button><button class="primary" onclick="readTNOrders(false)">Importar ventas TN</button></div><div id="tnOrdersStatus" class="status"></div><div id="tnOrdersTable" class="tableWrap"></div></div></section>
 <section id="inventario" class="view"><div class="card"><h3>Inventario principal</h3><div class="btnrow"><button class="secondary" onclick="loadInventoryMaster()">Ver inventario</button><button class="secondary" onclick="loadReadiness()">Verificación</button></div><div id="inventoryStatus" class="status"></div><div id="inventoryTable" class="tableWrap"></div></div></section>
-<section id="configuracion" class="view"><div class="configAnchor"><a href="#opcionesUsuario">Opciones del usuario</a><a href="#datosUsuario">Datos fiscales</a><a href="#facturacionApp">Facturación XelerIA</a><a href="#migracion">Buscar publicaciones</a></div><div class="grid"><div class="col-12 card" id="opcionesUsuario"><h3>Opciones del usuario</h3><p>Preferencias operativas de la cuenta.</p><div class="formGrid"><div class="field"><label>Nombre visible</label><input id="cfgNombreFantasia" placeholder="Ej: Planeta Casa"></div><div class="field"><label>Logo del comercio</label><input id="cfgLogo" placeholder="Archivo o dirección del logo"></div><div class="field"><label>Canal principal</label><select id="cfgCanalPrincipal"><option value="ML">Mercado Libre</option><option value="TN">Tienda Nube</option><option value="AMBOS">Ambos</option></select></div><div class="field"><label>&nbsp;</label><button class="secondary" onclick="alert('Subida de logo pendiente.')">Subir logo</button></div><div class="field full"><label>Facturación automática por canal</label><label class="checkLine"><input type="checkbox" id="cfgAutoML"> Emitir factura automática para ventas Mercado Libre</label><label class="checkLine"><input type="checkbox" id="cfgAutoTN"> Emitir factura automática para ventas Tienda Nube</label></div></div><div class="btnrow"><button class="secondary" onclick="saveUserOptions()">Guardar opciones</button></div><div id="cfgOptionsStatus" class="status"></div></div><div class="col-12 card" id="datosUsuario"><h3>Datos fiscales</h3><p>Datos necesarios para facturar ventas del usuario.</p><div class="formGrid"><div class="field"><label>CUIT</label><input id="cfgCuit" placeholder="Ej: 30-00000000-0" onblur="validateFiscal()"></div><div class="field"><label>Razón social</label><input id="cfgRazonSocial"></div><div class="field"><label>Condición IVA</label><select id="cfgCondIva"><option>Responsable Inscripto</option><option>Monotributo</option><option>Exento</option><option>Consumidor Final</option></select></div><div class="field"><label>Punto de venta ARCA</label><input id="cfgPtoVta" placeholder="Ej: 6"></div><div class="field full"><label>Domicilio fiscal</label><input id="cfgDomicilio"></div><div class="field full"><label>Observaciones internas</label><textarea id="cfgNotas"></textarea></div></div><div class="btnrow"><button class="secondary" onclick="validateFiscal()">Revisar CUIT</button><button class="secondary" onclick="saveFiscalData()">Guardar datos fiscales</button><span id="cfgFiscalStatus" class="small"></span></div></div><div class="col-12 card" id="facturacionApp"><h3>Facturación XelerIA</h3><div class="grid"><div class="col-4"><div class="billingBox"><b>Plan actual</b><p>Prueba / Beta</p></div></div><div class="col-4"><div class="billingBox"><b>Pago Mercado Pago</b><p>Botón reservado para pago.</p><button class="primary" onclick="alert('Pago pendiente de conectar.')">Pagar con Mercado Pago</button></div></div><div class="col-4"><div class="billingBox"><b>Facturas XelerIA</b><p>Descarga de facturas emitidas por el uso de la app.</p><button class="secondary" onclick="alert('Reporte pendiente.')">Ver facturas</button></div></div></div></div><div class="col-12 card" id="migracion"><h3>Buscar publicaciones</h3><p>XelerIA revisa tus canales y te muestra qué cambios conviene guardar.</p><div class="grid"><div class="col-6 card connectCard" id="mlConnectCard"><h3>Mercado Libre</h3><p id="mlConnectText">Estado: consultando…</p><button id="mlConnectBtn" class="primary" onclick="connectML()">Conectar ML</button></div><div class="col-6 card connectCard" id="tnConnectCard"><h3>Tienda Nube</h3><p id="tnConnectText">Estado: consultando…</p><button id="tnConnectBtn" class="primary" onclick="connectTN()">Conectar TN</button></div></div><div class="btnrow" style="margin:12px 0 8px"><button class="secondary importBtn" onclick="startStaging('ML')">Buscar en ML</button><button class="secondary importBtn" onclick="startStaging('TN')">Buscar en TN</button><button class="primary importBtn" onclick="startStaging('ALL')">Buscar en ambos</button></div><div class="legend"><span><i class="sw" style="background:var(--new)"></i> Publicación nueva</span><span><i class="sw" style="background:var(--missing)"></i> Antes existía y ahora no aparece</span><span><i class="sw" style="background:var(--review)"></i> Necesita revisión</span></div><div id="syncMatrixStatus" class="status">La revisión está cerrada. Tocá “Buscar” para empezar.</div><div id="syncMatrixWrap" class="syncMatrixWrap" style="display:none"><div class="dashEmpty">Sin revisión abierta.</div></div><div class="stickySave" id="classificationActions" style="display:none"><div class="btnrow"><button class="primary" id="saveMatrixBtn" onclick="applyStaging()">Guardar cambios</button><button class="danger" id="cancelMatrixBtn" onclick="cancelStaging()">Cancelar</button><span class="small">Guardar aplica lo revisado. Cancelar no cambia nada.</span></div></div></div></div></section>
+<section id="configuracion" class="view">
+  <div class="configAnchor">
+    <a href="#opcionesUsuario">Opciones del usuario</a>
+    <a href="#datosUsuario">Datos fiscales</a>
+    <a href="#facturacionApp">Facturación XelerIA</a>
+    <a href="#migracion">Configurar inventario</a>
+  </div>
+
+  <div class="grid">
+    <div class="col-12 card" id="opcionesUsuario">
+      <h3>Opciones del usuario</h3>
+      <p>Preferencias operativas de la cuenta.</p>
+
+      <div class="formGrid">
+        <div class="field">
+          <label>Nombre visible</label>
+          <input id="cfgNombreFantasia" placeholder="Ej: Planeta Casa">
+        </div>
+
+        <div class="field">
+          <label>Logo del comercio</label>
+          <div class="logoLine">
+            <div class="logoPreview" id="cfgLogoPreview"><span>Logo</span></div>
+            <div class="logoControls">
+              <input id="cfgLogo" placeholder="Archivo o dirección del logo" oninput="updateLogoPreview()">
+              <button class="secondary" onclick="alert('Subida de logo pendiente.')">Subir logo</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="field full">
+          <label>Facturación automática por canal</label>
+          <div class="inlineChecks">
+            <label class="checkLine"><input type="checkbox" id="cfgAutoML"> Emitir factura automática para ventas Mercado Libre</label>
+            <label class="checkLine"><input type="checkbox" id="cfgAutoTN"> Emitir factura automática para ventas Tienda Nube</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="btnrow">
+        <button class="secondary" onclick="saveUserOptions()">Guardar opciones</button>
+      </div>
+      <div id="cfgOptionsStatus" class="status"></div>
+    </div>
+
+    <div class="col-12 card" id="datosUsuario">
+      <h3>Datos fiscales</h3>
+      <p>Datos necesarios para facturar ventas del usuario.</p>
+
+      <div class="formGrid">
+        <div class="field">
+          <label>CUIT</label>
+          <input id="cfgCuit" inputmode="numeric" pattern="[0-9]*" maxlength="11" placeholder="Ej: 30712345678" oninput="normalizeCuitInput()" onblur="validateFiscal()">
+        </div>
+        <div class="field">
+          <label>Razón social</label>
+          <input id="cfgRazonSocial">
+        </div>
+        <div class="field">
+          <label>Condición IVA</label>
+          <select id="cfgCondIva">
+            <option>Responsable Inscripto</option>
+            <option>Monotributo</option>
+            <option>Exento</option>
+            <option>Consumidor Final</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Punto de venta ARCA</label>
+          <input id="cfgPtoVta" inputmode="numeric" pattern="[0-9]*" placeholder="Ej: 6">
+        </div>
+        <div class="field full">
+          <label>Domicilio fiscal</label>
+          <input id="cfgDomicilio">
+        </div>
+        <div class="field full">
+          <label>Observaciones internas</label>
+          <textarea id="cfgNotas"></textarea>
+        </div>
+      </div>
+
+      <div class="btnrow">
+        <button class="secondary" onclick="validateFiscal()">Revisar CUIT</button>
+        <button class="secondary" onclick="saveFiscalData()">Guardar datos fiscales</button>
+        <span id="cfgFiscalStatus" class="small"></span>
+      </div>
+    </div>
+
+    <div class="col-12 card" id="facturacionApp">
+      <h3>Facturación XelerIA</h3>
+      <div class="grid">
+        <div class="col-4">
+          <div class="billingBox"><b>Plan actual</b><p>Standard</p></div>
+        </div>
+        <div class="col-4">
+          <div class="billingBox"><b>Pago Mercado Pago</b><p>Botón reservado para pago.</p><button class="primary" onclick="alert('Pago pendiente de conectar.')">Pagar con Mercado Pago</button></div>
+        </div>
+        <div class="col-4">
+          <div class="billingBox"><b>Facturas XelerIA</b><p>Descarga de facturas emitidas por el uso de la app.</p><button class="secondary" onclick="alert('Reporte pendiente.')">Ver facturas</button></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 card" id="migracion">
+      <h3>Configurar inventario</h3>
+      <p>XelerIA revisa tus canales y te muestra qué cambios conviene guardar.</p>
+
+      <div class="grid">
+        <div class="col-6 card connectCard" id="mlConnectCard">
+          <h3>Mercado Libre</h3>
+          <p id="mlConnectText">Estado: consultando…</p>
+          <button id="mlConnectBtn" class="primary" onclick="connectML()">Conectar ML</button>
+        </div>
+        <div class="col-6 card connectCard" id="tnConnectCard">
+          <h3>Tienda Nube</h3>
+          <p id="tnConnectText">Estado: consultando…</p>
+          <button id="tnConnectBtn" class="primary" onclick="connectTN()">Conectar TN</button>
+        </div>
+      </div>
+
+      <div class="btnrow" style="margin:12px 0 8px">
+        <button class="secondary importBtn" onclick="startStaging('ML')">Configurar desde ML</button>
+        <button class="secondary importBtn" onclick="startStaging('TN')">Configurar desde TN</button>
+      </div>
+
+      <div class="legend">
+        <span><i class="sw" style="background:var(--new)"></i> Publicación nueva</span>
+        <span><i class="sw" style="background:var(--missing)"></i> Publicaciones no encontradas</span>
+        <span><i class="sw" style="background:var(--review)"></i> Necesita revisión</span>
+      </div>
+
+      <div id="syncMatrixStatus" class="status">La configuración está cerrada. Tocá “Configurar inventario” para empezar.</div>
+      <div id="syncMatrixWrap" class="syncMatrixWrap" style="display:none"><div class="dashEmpty">Sin revisión abierta.</div></div>
+      <div class="stickySave" id="classificationActions" style="display:none">
+        <div class="btnrow">
+          <button class="primary" id="saveMatrixBtn" onclick="applyStaging()">Guardar cambios</button>
+          <button class="danger" id="cancelMatrixBtn" onclick="cancelStaging()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 <section id="consola" class="view"><div class="card"><h3>Detalle técnico</h3><pre id="rawConsole" class="console">Inicializando…</pre></div></section>
 </main></div>
 <script>
-const API_BASE='https://api.xeleria.com.ar/api';const RAW_LIMIT=12000;let STAGING_SESSION_ID='';const hashParams=new URLSearchParams((location.hash||'').replace(/^#/,''));const incomingSession=hashParams.get('session');if(incomingSession){localStorage.setItem('xeleria_session',incomingSession);history.replaceState(null,'',location.pathname+location.search)}function xeleriaSessionToken(){return localStorage.getItem('xeleria_session')||''}function readXeleriaSessionPayload(){const token=xeleriaSessionToken();if(!token||!token.includes('.'))return null;try{const body=token.split('.')[0];const padded=body+'='.repeat((4-body.length%4)%4);return JSON.parse(atob(padded.replace(/-/g,'+').replace(/_/g,'/')))}catch(e){return null}}const xeleriaSessionPayload=readXeleriaSessionPayload();const DEFAULT_TENANT_ID='fbfa89c2-b377-49b3-9d18-d7d313c01db1';const params=new URLSearchParams(location.search);if(params.get('tenant')){localStorage.setItem('xeleria_tenant_id',params.get('tenant'));history.replaceState(null,'',location.pathname)}let TENANT_ID=(xeleriaSessionPayload&&xeleriaSessionPayload.tenant_id)||localStorage.getItem('xeleria_tenant_id')||DEFAULT_TENANT_ID;if(xeleriaSessionPayload&&xeleriaSessionPayload.tenant_id)localStorage.setItem('xeleria_tenant_id',xeleriaSessionPayload.tenant_id);let INTEGRATIONS={};let PUBLICATION_ROWS=[];const $=id=>document.getElementById(id);const ownerKey=()=>localStorage.getItem('xeleria_owner_key')||'';function esc(v){return String(v??'').replace(/[&<>\"]/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[s]))}function money(v){return Number(v||0).toLocaleString('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:0})}function pill(ok,text,cls=''){return `<span class="pill ${ok?'ok':cls||'bad'}">${esc(text)}</span>`}function setStatus(id,msg,cls=''){const el=$(id);if(!el)return;el.className='status '+cls;el.textContent=msg}function cleanLabel(v){if(!v)return'';if(typeof v==='object')return v.es||v.pt||v.en||Object.values(v)[0]||'';const s=String(v);const m=s.match(/['\"]es['\"]\s*:\s*['\"]([^'\"]+)/);return m?m[1]:s}function compact(value){if(!value||typeof value!=='object'||Array.isArray(value))return value;const out={...value};for(const k of Object.keys(out)){if(Array.isArray(out[k])&&out[k].length>10){const n=out[k].length;out[k]=out[k].slice(0,10);out[k].push({truncated:`${n-10} filas más`})}}return out}function raw(value){const el=$('rawConsole');if(!el)return;let text=typeof value==='string'?value:JSON.stringify(compact(value),null,2);if(text.length>RAW_LIMIT)text=text.slice(0,RAW_LIMIT)+'\n...\n[truncado para no colgar la página]';el.textContent=text}function clearRaw(msg=''){const el=$('rawConsole');if(el)el.textContent=msg}function authHeaders(extra={}){const headers={...extra};const session=xeleriaSessionToken();if(session){headers.Authorization=`Bearer ${session}`;return headers}if(ownerKey())headers['x-xeleria-owner-key']=ownerKey();return headers}async function api(path,options={}){clearRaw(`Consultando ${path}…`);const res=await fetch(`${API_BASE}${path}`,{...options,headers:authHeaders(options.headers||{})});const text=await res.text();let data;try{data=JSON.parse(text)}catch{data={raw:text}};if(!res.ok)throw{status:res.status,data};raw(data);return data}function post(path){return api(path,{method:'POST'})}function postJSON(path,body){return api(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})}function table(rows,cols,max=120){if(!rows||!rows.length)return '<div class="dashEmpty">Sin datos.</div>';const visible=rows.slice(0,max);const tail=rows.length>max?`<div class="dashEmpty">Mostrando ${max} de ${rows.length} filas.</div>`:'';return `<table><thead><tr>${cols.map(c=>`<th>${esc(c.label)}</th>`).join('')}</tr></thead><tbody>${visible.map(r=>`<tr>${cols.map(c=>`<td>${c.render?c.render(r):esc(r[c.key])}</td>`).join('')}</tr>`).join('')}</tbody></table>${tail}`}function showView(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));$(id)?.classList.add('active');document.querySelectorAll('.navBtn').forEach(b=>b.classList.toggle('active',b.dataset.view===id));const title=document.querySelector(`.navBtn[data-view="${id}"]`)?.textContent?.trim()||'XelerIA';$('pageTitle').textContent=title;$('pageCrumb').textContent='XelerIA';if(id==='configuracion')loadUserOptions()}document.querySelectorAll('.navBtn[data-view]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));function setImportBusy(busy){document.querySelectorAll('.importBtn').forEach(b=>b.disabled=busy);['saveMatrixBtn','cancelMatrixBtn'].forEach(id=>{if($(id))$(id).disabled=busy})}function connectML(){if(INTEGRATIONS.ML?.connected){alert('Ya conectado a Mercado Libre.');return}if(!ownerKey()){alert('Cargá el código beta privado desde inicio.html.');return}location.href=`${API_BASE}/oauth/ml/start/${encodeURIComponent(TENANT_ID)}?owner_key=${encodeURIComponent(ownerKey())}`}function connectTN(){if(INTEGRATIONS.TN?.connected){alert('Ya conectado a Tienda Nube.');return}if(!ownerKey()){alert('Cargá el código beta privado desde inicio.html.');return}location.href=`${API_BASE}/oauth/tn/start/${encodeURIComponent(TENANT_ID)}?owner_key=${encodeURIComponent(ownerKey())}`}
-function cfgKey(){return `xeleria_cfg_${TENANT_ID}`}const cfgIds=['cfgLogo','cfgNombreFantasia','cfgRazonSocial','cfgCuit','cfgPtoVta','cfgDomicilio','cfgNotas','cfgCondIva','cfgCanalPrincipal'];function loadUserOptions(){let c={};try{c=JSON.parse(localStorage.getItem(cfgKey())||'{}')}catch{}for(const id of cfgIds){if($(id))$(id).value=c[id]||$(id).value||''}for(const id of ['cfgAutoML','cfgAutoTN']){if($(id))$(id).checked=!!c[id]}}function collectCfg(){const c={};for(const id of cfgIds){if($(id))c[id]=$(id).value||''}for(const id of ['cfgAutoML','cfgAutoTN']){if($(id))c[id]=!!$(id).checked}return c}function saveUserOptions(){localStorage.setItem(cfgKey(),JSON.stringify(collectCfg()));setStatus('cfgOptionsStatus','Opciones guardadas.','oktxt')}function cuitDigits(){return ($('cfgCuit')?.value||'').replace(/\D/g,'')}function validCuit(digits){if(!/^\d{11}$/.test(digits))return false;const mult=[5,4,3,2,7,6,5,4,3,2];let sum=0;for(let i=0;i<10;i++)sum+=Number(digits[i])*mult[i];let mod=11-(sum%11);if(mod===11)mod=0;if(mod===10)mod=9;return mod===Number(digits[10])}function validateFiscal(){const d=cuitDigits();const el=$('cfgFiscalStatus');if(!el)return false;if(!d){el.textContent='';return false}if(validCuit(d)){el.textContent='CUIT válido. Revisá razón social y condición IVA antes de guardar.';el.className='small oktxt';return true}el.textContent='CUIT inválido o incompleto.';el.className='small badtxt';return false}function saveFiscalData(){validateFiscal();localStorage.setItem(cfgKey(),JSON.stringify(collectCfg()));const el=$('cfgFiscalStatus');if(el){el.textContent=(el.textContent?el.textContent+' ':'')+'Datos fiscales guardados.';el.className='small oktxt'}}
-async function refreshAll(){try{setStatus('homeStatus','Consultando servidor…');const v=await api('/version');$('stApi').textContent='OK';$('dashBackendVer').textContent=v.version||'?';$('footBackendVer').textContent=v.version||'?';setStatus('homeStatus','Servidor en línea.','oktxt');await Promise.allSettled([loadIntegrations(),loadDashboard(),loadInventoryMaster(true)])}catch(e){$('stApi').textContent='Error';setStatus('homeStatus','Error del servidor. Ver detalle técnico.','badtxt');raw(e)}}async function loadDashboard(){try{return await api(`/dashboard/${TENANT_ID}/summary`)}catch(e){raw(e)}}async function loadIntegrations(){try{const d=await api(`/integrations-status/${TENANT_ID}`);INTEGRATIONS=d.integrations||{};renderIntegration('ML',INTEGRATIONS.ML);renderIntegration('TN',INTEGRATIONS.TN);const tenant=cleanLabel(INTEGRATIONS.TN?.account_label)||cleanLabel(INTEGRATIONS.ML?.account_label)||'XelerIA';$('tenantSubtitle').textContent=tenant;$('tenantBadge').textContent=(tenant||'XE').slice(0,2).toUpperCase()}catch(e){raw(e)}}function renderIntegration(ch,it={}){const ok=!!it.connected;const card=$(ch==='ML'?'mlConnectCard':'tnConnectCard');const mini=$(ch==='ML'?'mlCardMini':'tnCardMini');const btn=$(ch==='ML'?'mlConnectBtn':'tnConnectBtn');card?.classList.toggle('connected',ok);mini?.classList.toggle('good',ok);mini?.classList.toggle('alert',!ok);$(ch==='ML'?'stML':'stTN').textContent=ok?'OK':'NO';$(ch==='ML'?'stMLSub':'stTNSub').textContent=cleanLabel(it.account_label)||it.status||'sin conectar';$(ch==='ML'?'mlConnectText':'tnConnectText').innerHTML=`Estado: ${ok?pill(true,'conectado'):pill(false,'no conectado')} ${esc(cleanLabel(it.account_label)||it.external_account_id||'')}`;if(btn){btn.disabled=ok;btn.textContent=ok?`${ch} conectado`:`Conectar ${ch}`}}async function loadReadiness(){try{const d=await api(`/system-checks/${TENANT_ID}/readiness`);setStatus('inventoryStatus','Verificación consultada.','oktxt');return d}catch(e){setStatus('inventoryStatus','Error en verificación.','badtxt');raw(e)}}async function loadInventoryMaster(silent=false){try{if(!silent)setStatus('inventoryStatus','Cargando inventario…');const d=await api(`/admin-compat/${TENANT_ID}/inventory-master?limit=500`);const rows=d.items||d.rows||d.data||[];const html=table(rows,[{key:'sku',label:'SKU'},{key:'title',label:'Producto',render:r=>esc(r.title||r.name)},{key:'master_stock',label:'Stock',render:r=>esc(r.master_stock??r.stock??'')},{key:'marketplace',label:'Canal'},{key:'listing_id',label:'Publicación',render:r=>esc(r.listing_id||r.external_product_id||'')},{key:'variant_id',label:'Variante',render:r=>esc(r.variant_id||r.external_variant_id||'')},{key:'price',label:'Precio',render:r=>r.price?money(r.price):''},{key:'status',label:'Estado'}]);$('inventoryTable').innerHTML=html;$('snapshotWrap').innerHTML=html;if(!silent)setStatus('inventoryStatus',`Inventario cargado: ${rows.length} filas.`,'oktxt');return rows}catch(e){if(!silent)setStatus('inventoryStatus','Error cargando inventario.','badtxt');raw(e);return[]}}
-function openPublicationMatrix(){if($('syncMatrixWrap'))$('syncMatrixWrap').style.display='block';if($('classificationActions'))$('classificationActions').style.display='block'}function closePublicationMatrix(msg='Revisión cerrada.'){if($('syncMatrixWrap')){$('syncMatrixWrap').style.display='none';$('syncMatrixWrap').innerHTML='<div class="dashEmpty">Sin revisión abierta.</div>'}if($('classificationActions'))$('classificationActions').style.display='none';setStatus('syncMatrixStatus',msg)}async function startStaging(ch){try{setImportBusy(true);setStatus('syncMatrixStatus','Buscando publicaciones… No se modificó tu inventario.','warntxt');const d=await post(`/import-staging/${TENANT_ID}/start?marketplace=${encodeURIComponent(ch)}`);STAGING_SESSION_ID=d.session_id;await loadStagingMatrix();await loadInventoryMaster(true)}catch(e){setStatus('syncMatrixStatus','Error buscando publicaciones. Ver detalle técnico.','badtxt');raw(e)}finally{setImportBusy(false)}}async function loadStagingMatrix(){if(!STAGING_SESSION_ID){closePublicationMatrix('La revisión está cerrada. Tocá “Buscar” para empezar.');return}openPublicationMatrix();setStatus('syncMatrixStatus','Preparando revisión…');const d=await api(`/import-staging/${TENANT_ID}/matrix?session_id=${encodeURIComponent(STAGING_SESSION_ID)}`);PUBLICATION_ROWS=d.rows||[];renderPublicationMatrix();setStatus('syncMatrixStatus',`Revisión lista: ${PUBLICATION_ROWS.length} SKU. Guardar aplica, Cancelar no cambia nada.`,'oktxt')}function renderPublicationMatrix(){const rows=PUBLICATION_ROWS;if(!rows.length){$('syncMatrixWrap').innerHTML='<div class="dashEmpty">Sin publicaciones para revisar.</div>';return}let html='<table class="syncMatrix"><thead><tr><th>SKU</th><th>Tienda Nube</th><th>Simple</th><th>Combo</th><th>Mercado Libre</th><th>Simple</th><th>Combo</th></tr></thead><tbody>';rows.forEach((r,idx)=>{html+=`<tr><td class="skuCell">${esc(r.sku)}</td>${channelCells(r,'tn',idx)}${channelCells(r,'ml',idx)}</tr>`});html+='</tbody></table>';$('syncMatrixWrap').innerHTML=html}function channelCells(row,ch,idx){const c=row[ch]||{};const label=ch.toUpperCase();const sku=String(row.sku||'');const status=c.match_status||'';const pending=sku.startsWith('PEND_ML_')||sku.startsWith('PEND_TN_')||c.needs_sku_review||status==='pending_sku'||status==='sku_conflict';if(!c.exists){const cls=status==='missing_in_marketplace'?'missingPub':'';const txt=status==='missing_in_marketplace'?`Sin publicación ${label}\nAntes existía y ahora no aparece`:`Sin publicación ${label}`;return `<td class="pubCell emptyPub ${cls}">${esc(txt)}</td><td class="choiceCell">—</td><td class="choiceCell">—</td>`}const simple=c.mode!=='bundle'?'checked':'';const bundle=c.mode==='bundle'?'checked':'';let cls='';let note='';if(status==='new'){cls='newPub';note='\nPublicación nueva'}if(pending){cls='reviewPub';note='\nNecesita revisión'}return `<td class="pubCell ${cls}">${esc((c.label||c.title||'')+note)}</td><td class="choiceCell"><input type="radio" name="mode-${idx}-${ch}" value="simple" ${simple}></td><td class="choiceCell"><input type="radio" name="mode-${idx}-${ch}" value="bundle" ${bundle}></td>`}function selectedRows(){return PUBLICATION_ROWS.map((r,idx)=>{const out={sku:r.sku};['tn','ml'].forEach(ch=>{const c=r[ch]||{};if(c.exists){const selected=document.querySelector(`input[name="mode-${idx}-${ch}"]:checked`);out[ch]={listing_id:c.listing_id||null,variant_id:c.variant_id||null,mode:selected?selected.value:'simple'}}});return out})}async function applyStaging(){try{if(!STAGING_SESSION_ID){setStatus('syncMatrixStatus','No hay revisión abierta.','warntxt');return}setImportBusy(true);if($('syncMatrixWrap'))$('syncMatrixWrap').style.display='none';if($('classificationActions'))$('classificationActions').style.display='none';const rows=selectedRows();setStatus('syncMatrixStatus',`Guardando cambios… ${rows.length} filas.`, 'warntxt');const d=await postJSON(`/import-staging/${TENANT_ID}/apply`,{session_id:STAGING_SESSION_ID,rows});STAGING_SESSION_ID='';PUBLICATION_ROWS=[];setStatus('syncMatrixStatus',`Cambios guardados. Inventario: ${d.applied_inventory}; publicaciones: ${d.applied_listings}; pendientes: ${(d.skipped||[]).length}.`,'oktxt');await loadInventoryMaster(true)}catch(e){openPublicationMatrix();setStatus('syncMatrixStatus','Error guardando cambios.','badtxt');raw(e)}finally{setImportBusy(false)}}async function cancelStaging(){try{if(!STAGING_SESSION_ID){closePublicationMatrix('No hay revisión abierta.');return}setImportBusy(true);await post(`/import-staging/${TENANT_ID}/cancel?session_id=${encodeURIComponent(STAGING_SESSION_ID)}`);STAGING_SESSION_ID='';PUBLICATION_ROWS=[];closePublicationMatrix('Revisión cancelada. No se modificó tu inventario.')}catch(e){setStatus('syncMatrixStatus','Error cancelando.','badtxt');raw(e)}finally{setImportBusy(false)}}
-async function readMLItems(){try{setStatus('mlItemsStatus','Leyendo publicaciones ML…');const d=await post(`/ml-reader/${TENANT_ID}/items?limit=30&offset=0&dry_run=true`);const rows=d.items||[];$('mlItemsTable').innerHTML=table(rows,[{key:'sku',label:'SKU'},{key:'sku_source',label:'Origen SKU'},{key:'needs_sku_review',label:'Revisión',render:r=>r.needs_sku_review?pill(false,'revisar','warn'):''},{key:'item_id',label:'Publicación'},{key:'variation_id',label:'Variante'},{key:'title',label:'Título'},{key:'stock',label:'Stock'},{key:'price',label:'Precio',render:r=>money(r.price)},{key:'status',label:'Estado'}]);setStatus('mlItemsStatus',`Vista ML: ${rows.length} filas. Pendientes SKU: ${d.pending_sku_rows??0}.`,'oktxt')}catch(e){setStatus('mlItemsStatus','Error leyendo publicaciones ML.','badtxt');raw(e)}}async function readTNProducts(){try{setStatus('tnProductsStatus','Leyendo publicaciones TN…');const d=await post(`/tn-reader/${TENANT_ID}/products?page=1&per_page=30&dry_run=true`);const rows=d.items||[];$('tnProductsTable').innerHTML=table(rows,[{key:'sku',label:'SKU'},{key:'product_id',label:'Producto'},{key:'variant_id',label:'Variante'},{key:'title',label:'Título'},{key:'stock',label:'Stock'},{key:'price',label:'Precio',render:r=>money(r.price)}]);setStatus('tnProductsStatus',`Vista TN: ${rows.length} filas.`,'oktxt')}catch(e){setStatus('tnProductsStatus','Error leyendo publicaciones TN.','badtxt');raw(e)}}async function readMLOrders(dry=true){try{setStatus('mlOrdersStatus',dry?'Leyendo ventas ML…':'Importando ventas ML…');const path=dry?`/ml-reader/${TENANT_ID}/orders?limit=30&offset=0`:`/ml-reader/${TENANT_ID}/orders?limit=30&offset=0&dry_run=false`;const d=dry?await api(path):await post(path);const rows=d.items||[];$('mlOrdersTable').innerHTML=table(rows,[{key:'external_order_id',label:'Orden'},{key:'status',label:'Estado'},{key:'customer_name',label:'Cliente'},{key:'items',label:'Items'},{key:'total',label:'Total',render:r=>money(r.total)}]);setStatus('mlOrdersStatus',`Ventas ML: ${rows.length}.`,'oktxt')}catch(e){setStatus('mlOrdersStatus','Error ventas ML.','badtxt');raw(e)}}async function readTNOrders(dry=true){try{setStatus('tnOrdersStatus',dry?'Leyendo ventas TN…':'Importando ventas TN…');const path=dry?`/tn-reader/${TENANT_ID}/orders?per_page=30&page=1`:`/tn-reader/${TENANT_ID}/orders?per_page=30&page=1&dry_run=false`;const d=dry?await api(path):await post(path);const rows=d.items||[];$('tnOrdersTable').innerHTML=table(rows,[{key:'external_order_id',label:'Orden'},{key:'status',label:'Estado'},{key:'payment_status',label:'Pago'},{key:'shipping_status',label:'Envío'},{key:'customer_name',label:'Cliente'},{key:'items',label:'Items'},{key:'total',label:'Total',render:r=>money(r.total)}]);setStatus('tnOrdersStatus',`Ventas TN: ${rows.length}.`,'oktxt')}catch(e){setStatus('tnOrdersStatus','Error ventas TN.','badtxt');raw(e)}}localStorage.setItem('xeleria_tenant_id',TENANT_ID);loadUserOptions();closePublicationMatrix('La revisión está cerrada. Tocá “Buscar” para empezar.');refreshAll();
+const API_BASE='https://api.xeleria.com.ar/api';
+const RAW_LIMIT=12000;
+let STAGING_SESSION_ID='';
+const hashParams=new URLSearchParams((location.hash||'').replace(/^#/,''));
+const incomingSession=hashParams.get('session');if(incomingSession){localStorage.setItem('xeleria_session',incomingSession);history.replaceState(null,'',location.pathname+location.search)}
+
+function xeleriaSessionToken(){return localStorage.getItem('xeleria_session')||''}
+
+function readXeleriaSessionPayload(){const token=xeleriaSessionToken();if(!token||!token.includes('.'))return null;try{const body=token.split('.')[0];
+const padded=body+'='.repeat((4-body.length%4)%4);return JSON.parse(atob(padded.replace(/-/g,'+').replace(/_/g,'/')))}catch(e){return null}}
+
+const xeleriaSessionPayload=readXeleriaSessionPayload();
+const DEFAULT_TENANT_ID='fbfa89c2-b377-49b3-9d18-d7d313c01db1';
+const params=new URLSearchParams(location.search);if(params.get('tenant')){localStorage.setItem('xeleria_tenant_id',params.get('tenant'));history.replaceState(null,'',location.pathname)}
+
+let TENANT_ID=(xeleriaSessionPayload&&xeleriaSessionPayload.tenant_id)||localStorage.getItem('xeleria_tenant_id')||DEFAULT_TENANT_ID;if(xeleriaSessionPayload&&xeleriaSessionPayload.tenant_id)localStorage.setItem('xeleria_tenant_id',xeleriaSessionPayload.tenant_id);
+let INTEGRATIONS={};
+let PUBLICATION_ROWS=[];
+const $=id=>document.getElementById(id);
+const ownerKey=()=>localStorage.getItem('xeleria_owner_key')||'';
+
+function esc(v){return String(v??'').replace(/[&<>\"]/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[s]))}
+
+function money(v){return Number(v||0).toLocaleString('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:0})}
+
+function pill(ok,text,cls=''){return `<span class="pill ${ok?'ok':cls||'bad'}">${esc(text)}</span>`}
+
+function setStatus(id,msg,cls=''){const el=$(id);if(!el)return;el.className='status '+cls;el.textContent=msg}
+
+function cleanLabel(v){if(!v)return'';if(typeof v==='object')return v.es||v.pt||v.en||Object.values(v)[0]||'';
+const s=String(v);
+const m=s.match(/['\"]es['\"]\s*:\s*['\"]([^'\"]+)/);return m?m[1]:s}
+
+function compact(value){if(!value||typeof value!=='object'||Array.isArray(value))return value;
+const out={...value};for(const k of Object.keys(out)){if(Array.isArray(out[k])&&out[k].length>10){const n=out[k].length;out[k]=out[k].slice(0,10);out[k].push({truncated:`${n-10} filas más`})}}return out}
+
+function raw(value){const el=$('rawConsole');if(!el)return;
+let text=typeof value==='string'?value:JSON.stringify(compact(value),null,2);if(text.length>RAW_LIMIT)text=text.slice(0,RAW_LIMIT)+'\n...\n[truncado para no colgar la página]';el.textContent=text}
+
+function clearRaw(msg=''){const el=$('rawConsole');if(el)el.textContent=msg}
+
+function authHeaders(extra={}){const headers={...extra};
+const session=xeleriaSessionToken();if(session){headers.Authorization=`Bearer ${session}`;return headers}if(ownerKey())headers['x-xeleria-owner-key']=ownerKey();return headers}
+
+async function api(path,options={}){clearRaw(`Consultando ${path}…`);
+const res=await fetch(`${API_BASE}${path}`,{...options,headers:authHeaders(options.headers||{})});
+const text=await res.text();
+let data;try{data=JSON.parse(text)}catch{data={raw:text}};if(!res.ok)throw{status:res.status,data};raw(data);return data}
+
+function post(path){return api(path,{method:'POST'})}
+
+function postJSON(path,body){return api(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})}
+
+function table(rows,cols,max=120){if(!rows||!rows.length)return '<div class="dashEmpty">Sin datos.</div>';
+const visible=rows.slice(0,max);
+const tail=rows.length>max?`<div class="dashEmpty">Mostrando ${max} de ${rows.length} filas.</div>`:'';return `<table><thead><tr>${cols.map(c=>`<th>${esc(c.label)}</th>`).join('')}</tr></thead><tbody>${visible.map(r=>`<tr>${cols.map(c=>`<td>${c.render?c.render(r):esc(r[c.key])}</td>`).join('')}</tr>`).join('')}</tbody></table>${tail}`}
+
+function showView(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));$(id)?.classList.add('active');
+document.querySelectorAll('.navBtn').forEach(b=>b.classList.toggle('active',b.dataset.view===id));
+const title=document.querySelector(`.navBtn[data-view="${id}"]`)?.textContent?.trim()||'XelerIA';$('pageTitle').textContent=title;$('pageCrumb').textContent='XelerIA';if(id==='configuracion')loadUserOptions()}document.querySelectorAll('.navBtn[data-view]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));
+
+function setImportBusy(busy){document.querySelectorAll('.importBtn').forEach(b=>b.disabled=busy);['saveMatrixBtn','cancelMatrixBtn'].forEach(id=>{if($(id))$(id).disabled=busy})}
+
+function connectML(){if(INTEGRATIONS.ML?.connected){alert('Ya conectado a Mercado Libre.');return}if(!ownerKey()){alert('Cargá el código beta privado desde inicio.html.');return}location.href=`${API_BASE}/oauth/ml/start/${encodeURIComponent(TENANT_ID)}?owner_key=${encodeURIComponent(ownerKey())}`}
+
+function connectTN(){if(INTEGRATIONS.TN?.connected){alert('Ya conectado a Tienda Nube.');return}if(!ownerKey()){alert('Cargá el código beta privado desde inicio.html.');return}location.href=`${API_BASE}/oauth/tn/start/${encodeURIComponent(TENANT_ID)}?owner_key=${encodeURIComponent(ownerKey())}`}
+function cfgKey() {
+  return `xeleria_cfg_${TENANT_ID}`;
+}
+
+const cfgIds = ['cfgLogo', 'cfgNombreFantasia', 'cfgRazonSocial', 'cfgCuit', 'cfgPtoVta', 'cfgDomicilio', 'cfgNotas', 'cfgCondIva'];
+
+function normalizeCuitInput() {
+  const el = $('cfgCuit');
+  if (!el) return '';
+  el.value = (el.value || '').replace(/\D/g, '').slice(0, 11);
+  return el.value;
+}
+
+function updateLogoPreview() {
+  const box = $('cfgLogoPreview');
+  const url = ($('cfgLogo')?.value || '').trim();
+  if (!box) return;
+  if (!url) {
+    box.innerHTML = '<span>Logo</span>';
+    return;
+  }
+  box.innerHTML = `<img src="${esc(url)}" alt="Logo">`;
+}
+
+function loadUserOptions() {
+  let c = {};
+  try {
+    c = JSON.parse(localStorage.getItem(cfgKey()) || '{}');
+  } catch {}
+  for (const id of cfgIds) {
+    if ($(id)) $(id).value = c[id] || $(id).value || '';
+  }
+  normalizeCuitInput();
+  updateLogoPreview();
+  for (const id of ['cfgAutoML', 'cfgAutoTN']) {
+    if ($(id)) $(id).checked = !!c[id];
+  }
+}
+
+function collectCfg() {
+  normalizeCuitInput();
+  const c = {};
+  for (const id of cfgIds) {
+    if ($(id)) c[id] = $(id).value || '';
+  }
+  for (const id of ['cfgAutoML', 'cfgAutoTN']) {
+    if ($(id)) c[id] = !!$(id).checked;
+  }
+  return c;
+}
+
+function saveUserOptions() {
+  localStorage.setItem(cfgKey(), JSON.stringify(collectCfg()));
+  setStatus('cfgOptionsStatus', 'Opciones guardadas.', 'oktxt');
+}
+
+function cuitDigits() {
+  return normalizeCuitInput();
+}
+
+function validCuit(digits) {
+  if (!/^\d{11}$/.test(digits)) return false;
+  const mult = [5, 4, 3, 2, 7, 6, 5, 4, 3, 2];
+  let sum = 0;
+  for (let i = 0; i < 10; i++) sum += Number(digits[i]) * mult[i];
+  let mod = 11 - (sum % 11);
+  if (mod === 11) mod = 0;
+  if (mod === 10) mod = 9;
+  return mod === Number(digits[10]);
+}
+
+function validateFiscal() {
+  const d = cuitDigits();
+  const el = $('cfgFiscalStatus');
+  if (!el) return false;
+  if (!d) {
+    el.textContent = '';
+    return false;
+  }
+  if (validCuit(d)) {
+    el.textContent = 'CUIT válido. Falta consultar datos fiscales ARCA desde backend.';
+    el.className = 'small oktxt';
+    return true;
+  }
+  el.textContent = 'CUIT inválido o incompleto.';
+  el.className = 'small badtxt';
+  return false;
+}
+
+function saveFiscalData() {
+  validateFiscal();
+  localStorage.setItem(cfgKey(), JSON.stringify(collectCfg()));
+  const el = $('cfgFiscalStatus');
+  if (el) {
+    el.textContent = (el.textContent ? el.textContent + ' ' : '') + 'Datos fiscales guardados.';
+    el.className = 'small oktxt';
+  }
+}
+
+async function refreshAll(){try{setStatus('homeStatus','Consultando servidor…');
+const v=await api('/version');$('stApi').textContent='OK';$('dashBackendVer').textContent=v.version||'?';$('footBackendVer').textContent=v.version||'?';setStatus('homeStatus','Servidor en línea.','oktxt');await Promise.allSettled([loadIntegrations(),loadDashboard(),loadInventoryMaster(true)])}catch(e){$('stApi').textContent='Error';setStatus('homeStatus','Error del servidor. Ver detalle técnico.','badtxt');raw(e)}}
+
+async function loadDashboard(){try{return await api(`/dashboard/${TENANT_ID}/summary`)}catch(e){raw(e)}}
+
+async function loadIntegrations(){try{const d=await api(`/integrations-status/${TENANT_ID}`);INTEGRATIONS=d.integrations||{};renderIntegration('ML',INTEGRATIONS.ML);renderIntegration('TN',INTEGRATIONS.TN);
+const tenant=cleanLabel(INTEGRATIONS.TN?.account_label)||cleanLabel(INTEGRATIONS.ML?.account_label)||'XelerIA';$('tenantSubtitle').textContent=tenant;$('tenantBadge').textContent=(tenant||'XE').slice(0,2).toUpperCase()}catch(e){raw(e)}}
+
+function renderIntegration(ch,it={}){const ok=!!it.connected;
+const card=$(ch==='ML'?'mlConnectCard':'tnConnectCard');
+const mini=$(ch==='ML'?'mlCardMini':'tnCardMini');
+const btn=$(ch==='ML'?'mlConnectBtn':'tnConnectBtn');card?.classList.toggle('connected',ok);mini?.classList.toggle('good',ok);mini?.classList.toggle('alert',!ok);$(ch==='ML'?'stML':'stTN').textContent=ok?'OK':'NO';$(ch==='ML'?'stMLSub':'stTNSub').textContent=cleanLabel(it.account_label)||it.status||'sin conectar';$(ch==='ML'?'mlConnectText':'tnConnectText').innerHTML=`Estado: ${ok?pill(true,'conectado'):pill(false,'no conectado')} ${esc(cleanLabel(it.account_label)||it.external_account_id||'')}`;if(btn){btn.disabled=ok;btn.textContent=ok?`${ch} conectado`:`Conectar ${ch}`}}
+
+async function loadReadiness(){try{const d=await api(`/system-checks/${TENANT_ID}/readiness`);setStatus('inventoryStatus','Verificación consultada.','oktxt');return d}catch(e){setStatus('inventoryStatus','Error en verificación.','badtxt');raw(e)}}
+
+async function loadInventoryMaster(silent=false){try{if(!silent)setStatus('inventoryStatus','Cargando inventario…');
+const d=await api(`/admin-compat/${TENANT_ID}/inventory-master?limit=500`);
+const rows=d.items||d.rows||d.data||[];
+const html=table(rows,[{key:'sku',label:'SKU'},{key:'title',label:'Producto',render:r=>esc(r.title||r.name)},{key:'master_stock',label:'Stock',render:r=>esc(r.master_stock??r.stock??'')},{key:'marketplace',label:'Canal'},{key:'listing_id',label:'Publicación',render:r=>esc(r.listing_id||r.external_product_id||'')},{key:'variant_id',label:'Variante',render:r=>esc(r.variant_id||r.external_variant_id||'')},{key:'price',label:'Precio',render:r=>r.price?money(r.price):''},{key:'status',label:'Estado'}]);$('inventoryTable').innerHTML=html;$('snapshotWrap').innerHTML=html;if(!silent)setStatus('inventoryStatus',`Inventario cargado: ${rows.length} filas.`,'oktxt');return rows}catch(e){if(!silent)setStatus('inventoryStatus','Error cargando inventario.','badtxt');raw(e);return[]}}
+function openPublicationMatrix() {
+  if ($('syncMatrixWrap')) $('syncMatrixWrap').style.display = 'block';
+  if ($('classificationActions')) $('classificationActions').style.display = 'block';
+}
+
+function closePublicationMatrix(msg = 'Configuración cerrada.') {
+  if ($('syncMatrixWrap')) {
+    $('syncMatrixWrap').style.display = 'none';
+    $('syncMatrixWrap').innerHTML = '<div class="dashEmpty">Sin revisión abierta.</div>';
+  }
+  if ($('classificationActions')) $('classificationActions').style.display = 'none';
+  setStatus('syncMatrixStatus', msg);
+}
+
+function startElapsedStatus(id, prefix, cls = 'warntxt') {
+  const started = Date.now();
+  const tick = () => {
+    const elapsed = Math.floor((Date.now() - started) / 1000);
+    const mm = String(Math.floor(elapsed / 60)).padStart(2, '0');
+    const ss = String(elapsed % 60).padStart(2, '0');
+    setStatus(id, `${prefix}… ${mm}:${ss}`, cls);
+  };
+  tick();
+  return setInterval(tick, 1000);
+}
+
+async function startStaging(ch) {
+  let timer = null;
+  try {
+    setImportBusy(true);
+    timer = startElapsedStatus('syncMatrixStatus', 'Importando publicaciones');
+    const d = await post(`/import-staging/${TENANT_ID}/start?marketplace=${encodeURIComponent(ch)}`);
+    STAGING_SESSION_ID = d.session_id;
+    await loadStagingMatrix();
+  } catch (e) {
+    setStatus('syncMatrixStatus', 'Error importando publicaciones. Ver detalle técnico.', 'badtxt');
+    raw(e);
+  } finally {
+    if (timer) clearInterval(timer);
+    setImportBusy(false);
+  }
+}
+
+async function loadStagingMatrix() {
+  if (!STAGING_SESSION_ID) {
+    closePublicationMatrix('La configuración está cerrada. Tocá “Configurar inventario” para empezar.');
+    return;
+  }
+  openPublicationMatrix();
+  setStatus('syncMatrixStatus', 'Preparando revisión…');
+  const d = await api(`/import-staging/${TENANT_ID}/matrix?session_id=${encodeURIComponent(STAGING_SESSION_ID)}`);
+  PUBLICATION_ROWS = d.rows || [];
+  renderPublicationMatrix();
+  const skuCount = d.sku_count ?? PUBLICATION_ROWS.length;
+  const pubCount = d.publication_count ?? countVisiblePublications(PUBLICATION_ROWS);
+  setStatus('syncMatrixStatus', `Importación realizada: ${skuCount} SKU, ${pubCount} publicaciones`, 'oktxt');
+}
+
+function countVisiblePublications(rows) {
+  const keys = new Set();
+  for (const row of rows || []) {
+    for (const ch of ['tn', 'ml']) {
+      const c = row[ch] || {};
+      if (c.exists && c.listing_id) keys.add(`${ch}:${c.listing_id}:${c.variant_id || ''}`);
+    }
+  }
+  return keys.size;
+}
+
+function renderPublicationMatrix() {
+  const rows = PUBLICATION_ROWS;
+  if (!rows.length) {
+    $('syncMatrixWrap').innerHTML = '<div class="dashEmpty">Sin publicaciones para revisar.</div>';
+    return;
+  }
+  let html = '<table class="syncMatrix"><thead><tr><th>SKU</th><th>Tienda Nube</th><th>Simple</th><th>Combo</th><th>Mercado Libre</th><th>Simple</th><th>Combo</th></tr></thead><tbody>';
+  rows.forEach((r, idx) => {
+    html += `<tr><td class="skuCell">${esc(r.sku)}</td>${channelCells(r, 'tn', idx)}${channelCells(r, 'ml', idx)}</tr>`;
+  });
+  html += '</tbody></table>';
+  $('syncMatrixWrap').innerHTML = html;
+}
+
+function channelCells(row, ch, idx) {
+  const c = row[ch] || {};
+  const label = ch.toUpperCase();
+  const sku = String(row.sku || '');
+  const status = c.match_status || '';
+  const pending = sku.startsWith('PEND_ML_') || sku.startsWith('PEND_TN_') || c.needs_sku_review || status === 'pending_sku' || status === 'sku_conflict';
+
+  if (!c.exists) {
+    const cls = status === 'missing_in_marketplace' ? 'missingPub' : '';
+    const txt = status === 'missing_in_marketplace' ? `Sin publicación ${label}
+Publicación no encontrada` : `Sin publicación ${label}`;
+    return `<td class="pubCell emptyPub ${cls}">${esc(txt)}</td><td class="choiceCell">—</td><td class="choiceCell">—</td>`;
+  }
+
+  const simple = c.mode !== 'bundle' ? 'checked' : '';
+  const bundle = c.mode === 'bundle' ? 'checked' : '';
+  let cls = '';
+  if (status === 'new') cls = 'newPub';
+  if (pending) cls = 'reviewPub';
+
+  return `<td class="pubCell ${cls}">${esc(c.label || c.title || '')}</td><td class="choiceCell"><input type="radio" name="mode-${idx}-${ch}" value="simple" ${simple}></td><td class="choiceCell"><input type="radio" name="mode-${idx}-${ch}" value="bundle" ${bundle}></td>`;
+}
+
+function selectedRows() {
+  return PUBLICATION_ROWS.map((r, idx) => {
+    const out = { sku: r.sku };
+    ['tn', 'ml'].forEach(ch => {
+      const c = r[ch] || {};
+      if (c.exists) {
+        const selected = document.querySelector(`input[name="mode-${idx}-${ch}"]:checked`);
+        out[ch] = {
+          listing_id: c.listing_id || null,
+          variant_id: c.variant_id || null,
+          mode: selected ? selected.value : 'simple'
+        };
+      }
+    });
+    return out;
+  });
+}
+
+async function applyStaging() {
+  let timer = null;
+  try {
+    if (!STAGING_SESSION_ID) {
+      setStatus('syncMatrixStatus', 'No hay revisión abierta.', 'warntxt');
+      return;
+    }
+    setImportBusy(true);
+    if ($('syncMatrixWrap')) $('syncMatrixWrap').style.display = 'none';
+    if ($('classificationActions')) $('classificationActions').style.display = 'none';
+    const rows = selectedRows();
+    timer = startElapsedStatus('syncMatrixStatus', 'Guardando cambios');
+    const d = await postJSON(`/import-staging/${TENANT_ID}/apply`, { session_id: STAGING_SESSION_ID, rows });
+    STAGING_SESSION_ID = '';
+    PUBLICATION_ROWS = [];
+    setStatus('syncMatrixStatus', `Cambios guardados. Inventario: ${d.applied_inventory}; publicaciones: ${d.applied_listings}; no encontradas: ${d.missing_marked ?? 0}.`, 'oktxt');
+    await loadInventoryMaster(true);
+  } catch (e) {
+    openPublicationMatrix();
+    setStatus('syncMatrixStatus', 'Error guardando cambios.', 'badtxt');
+    raw(e);
+  } finally {
+    if (timer) clearInterval(timer);
+    setImportBusy(false);
+  }
+}
+
+async function cancelStaging() {
+  try {
+    if (!STAGING_SESSION_ID) {
+      closePublicationMatrix('No hay revisión abierta.');
+      return;
+    }
+    setImportBusy(true);
+    await post(`/import-staging/${TENANT_ID}/cancel?session_id=${encodeURIComponent(STAGING_SESSION_ID)}`);
+    STAGING_SESSION_ID = '';
+    PUBLICATION_ROWS = [];
+    closePublicationMatrix('Configuración cancelada. No se modificó tu inventario.');
+  } catch (e) {
+    setStatus('syncMatrixStatus', 'Error cancelando.', 'badtxt');
+    raw(e);
+  } finally {
+    setImportBusy(false);
+  }
+}
+
+async function readMLItems(){try{setStatus('mlItemsStatus','Leyendo publicaciones ML…');
+const d=await post(`/ml-reader/${TENANT_ID}/items?limit=30&offset=0&dry_run=true`);
+const rows=d.items||[];$('mlItemsTable').innerHTML=table(rows,[{key:'sku',label:'SKU'},{key:'sku_source',label:'Origen SKU'},{key:'needs_sku_review',label:'Revisión',render:r=>r.needs_sku_review?pill(false,'revisar','warn'):''},{key:'item_id',label:'Publicación'},{key:'variation_id',label:'Variante'},{key:'title',label:'Título'},{key:'stock',label:'Stock'},{key:'price',label:'Precio',render:r=>money(r.price)},{key:'status',label:'Estado'}]);setStatus('mlItemsStatus',`Vista ML: ${rows.length} filas. Pendientes SKU: ${d.pending_sku_rows??0}.`,'oktxt')}catch(e){setStatus('mlItemsStatus','Error leyendo publicaciones ML.','badtxt');raw(e)}}
+
+async function readTNProducts(){try{setStatus('tnProductsStatus','Leyendo publicaciones TN…');
+const d=await post(`/tn-reader/${TENANT_ID}/products?page=1&per_page=30&dry_run=true`);
+const rows=d.items||[];$('tnProductsTable').innerHTML=table(rows,[{key:'sku',label:'SKU'},{key:'product_id',label:'Producto'},{key:'variant_id',label:'Variante'},{key:'title',label:'Título'},{key:'stock',label:'Stock'},{key:'price',label:'Precio',render:r=>money(r.price)}]);setStatus('tnProductsStatus',`Vista TN: ${rows.length} filas.`,'oktxt')}catch(e){setStatus('tnProductsStatus','Error leyendo publicaciones TN.','badtxt');raw(e)}}
+
+async function readMLOrders(dry=true){try{setStatus('mlOrdersStatus',dry?'Leyendo ventas ML…':'Importando ventas ML…');
+const path=dry?`/ml-reader/${TENANT_ID}/orders?limit=30&offset=0`:`/ml-reader/${TENANT_ID}/orders?limit=30&offset=0&dry_run=false`;
+const d=dry?await api(path):await post(path);
+const rows=d.items||[];$('mlOrdersTable').innerHTML=table(rows,[{key:'external_order_id',label:'Orden'},{key:'status',label:'Estado'},{key:'customer_name',label:'Cliente'},{key:'items',label:'Items'},{key:'total',label:'Total',render:r=>money(r.total)}]);setStatus('mlOrdersStatus',`Ventas ML: ${rows.length}.`,'oktxt')}catch(e){setStatus('mlOrdersStatus','Error ventas ML.','badtxt');raw(e)}}
+
+async function readTNOrders(dry=true){try{setStatus('tnOrdersStatus',dry?'Leyendo ventas TN…':'Importando ventas TN…');
+const path=dry?`/tn-reader/${TENANT_ID}/orders?per_page=30&page=1`:`/tn-reader/${TENANT_ID}/orders?per_page=30&page=1&dry_run=false`;
+const d=dry?await api(path):await post(path);
+const rows=d.items||[];$('tnOrdersTable').innerHTML=table(rows,[{key:'external_order_id',label:'Orden'},{key:'status',label:'Estado'},{key:'payment_status',label:'Pago'},{key:'shipping_status',label:'Envío'},{key:'customer_name',label:'Cliente'},{key:'items',label:'Items'},{key:'total',label:'Total',render:r=>money(r.total)}]);setStatus('tnOrdersStatus',`Ventas TN: ${rows.length}.`,'oktxt')}catch(e){setStatus('tnOrdersStatus','Error ventas TN.','badtxt');raw(e)}}localStorage.setItem('xeleria_tenant_id',TENANT_ID);
+loadUserOptions();
+closePublicationMatrix('La configuración está cerrada. Tocá “Configurar inventario” para empezar.');
+refreshAll();
 </script>
 </body>
 </html>
