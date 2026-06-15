@@ -709,7 +709,7 @@ details.kebabMenu{position:relative}details.kebabMenu summary{list-style:none;cu
 @media(max-width:900px){#tn-publicaciones .col-8,#tn-publicaciones .col-2,#tn-ventas .col-8,#tn-ventas .col-2{grid-column:1/-1!important}}
 
 
-/* v1.0.34: publicaciones ML/TN unificadas */
+/* v1.0.35: estados por marketplace y alineación publicaciones */
 #ml-publicaciones .grid,#tn-publicaciones .grid{display:grid!important;grid-template-columns:repeat(12,1fr)!important;gap:14px!important;align-items:end!important}
 #ml-publicaciones .col-8,#tn-publicaciones .col-8{grid-column:span 8!important}
 #ml-publicaciones .col-2,#tn-publicaciones .col-2{grid-column:span 2!important}
@@ -717,22 +717,25 @@ details.kebabMenu{position:relative}details.kebabMenu summary{list-style:none;cu
 #ml-publicaciones input,#ml-publicaciones select,#tn-publicaciones input,#tn-publicaciones select{width:100%!important;height:44px!important;border:1px solid #cfc4ad!important;border-radius:12px!important;background:#fff!important;padding:10px 11px!important;font-size:14px!important;color:var(--ink)!important;outline:none!important;box-sizing:border-box!important}
 #ml-publicaciones button,#tn-publicaciones button{border-radius:12px!important;min-height:44px!important;padding:10px 14px!important;font-weight:800!important}
 #ml-publicaciones .card,#tn-publicaciones .card{max-width:none!important}
-.pubReportTable{table-layout:fixed;min-width:1160px}
-.pubReportTable th:nth-child(1),.pubReportTable td:nth-child(1){width:170px}
-.pubReportTable th:nth-child(2),.pubReportTable td:nth-child(2){width:420px}
-.pubReportTable th:nth-child(3),.pubReportTable td:nth-child(3){width:110px}
+.pubReportTable{table-layout:fixed;min-width:1100px}
+.pubReportTable th:nth-child(1),.pubReportTable td:nth-child(1){width:165px}
+.pubReportTable th:nth-child(2),.pubReportTable td:nth-child(2){width:480px}
+.pubReportTable th:nth-child(3),.pubReportTable td:nth-child(3){width:88px}
 .pubReportTable th:nth-child(4),.pubReportTable td:nth-child(4){width:auto}
+.pubReportTable td{overflow:hidden}
 .pubProductName{font-weight:800;line-height:1.22}
 .pubProductSub{font-size:12px;color:var(--muted);line-height:1.25;margin-top:2px}
-.pubReportTable .marketBox{grid-template-columns:42px minmax(280px,1fr) 110px 90px 100px!important}
-.pubReportTable .marketBox .pubvar{grid-template-columns:minmax(140px,1fr) minmax(110px,130px)}
+.pubReportTable .marketBox{width:100%;max-width:100%;grid-template-columns:42px minmax(0,1fr) 96px 54px 84px!important;gap:8px;overflow:hidden}
+.pubReportTable .marketBox>div{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.pubReportTable .marketBox .pubvar{grid-template-columns:minmax(0,1fr) minmax(86px,108px);gap:6px}
+.pubReportTable .marketStatus{white-space:nowrap;justify-content:center;min-width:0;padding-left:8px;padding-right:8px}
 @media(max-width:900px){#ml-publicaciones .col-8,#ml-publicaciones .col-2,#tn-publicaciones .col-8,#tn-publicaciones .col-2{grid-column:1/-1!important}}
 
 </style>
 </head>
 <body>
 <div class="app">
-<aside><div class="brand"><div class="brandTop"><span class="appMark"><img src="./favicon_xeleria.png?v=18" alt="XelerIA"></span><div class="brandName">XelerIA</div><div class="tenantBadge" id="tenantBadge">PC</div></div><p id="tenantSubtitle">Panel operativo</p></div><nav><button class="navBtn active" data-view="inicio">Inicio / Dashboard</button><div class="navTitle">Mercado Libre</div><button class="navBtn" data-view="ml-publicaciones">Publicaciones</button><button class="navBtn" data-view="ml-ventas">Ventas</button><div class="navTitle">Tienda Nube</div><button class="navBtn" data-view="tn-publicaciones">Publicaciones</button><button class="navBtn" data-view="tn-ventas">Ventas</button><div class="navTitle">Gestión</div><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="consola">Detalle técnico</button></nav><div class="sidebarFoot">Pantalla: XelerIA 1.0.34-publications-unified-layout<br>Servidor: <span id="footBackendVer">?</span><br><span class="muted">Cambios externos desactivados</span></div></aside>
+<aside><div class="brand"><div class="brandTop"><span class="appMark"><img src="./favicon_xeleria.png?v=18" alt="XelerIA"></span><div class="brandName">XelerIA</div><div class="tenantBadge" id="tenantBadge">PC</div></div><p id="tenantSubtitle">Panel operativo</p></div><nav><button class="navBtn active" data-view="inicio">Inicio / Dashboard</button><div class="navTitle">Mercado Libre</div><button class="navBtn" data-view="ml-publicaciones">Publicaciones</button><button class="navBtn" data-view="ml-ventas">Ventas</button><div class="navTitle">Tienda Nube</div><button class="navBtn" data-view="tn-publicaciones">Publicaciones</button><button class="navBtn" data-view="tn-ventas">Ventas</button><div class="navTitle">Gestión</div><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="consola">Detalle técnico</button></nav><div class="sidebarFoot">Pantalla: XelerIA 1.0.35-publication-status-align<br>Servidor: <span id="footBackendVer">?</span><br><span class="muted">Cambios externos desactivados</span></div></aside>
 <main><div class="topbar"><h2 id="pageTitle">Inicio</h2><div class="crumb" id="pageCrumb">Panel operativo</div></div>
 <section id="inicio" class="view active"><div class="hero"><div class="btnrow" style="justify-content:space-between"><div><h3>Dashboard</h3><p>Resumen operativo de XelerIA. El dashboard informa; no dispara operaciones.</p></div><button class="secondary" onclick="refreshAll()">Actualizar</button></div><div id="homeStatus" class="status"></div></div><div class="grid"><div class="col-3 stat good"><div class="k">Servidor</div><div class="v" id="stApi">?</div><div class="s">Versión <span id="dashBackendVer">?</span></div></div><div class="col-3 stat" id="mlCardMini"><div class="k">Mercado Libre</div><div class="v" id="stML">?</div><div class="s" id="stMLSub">Conexión</div></div><div class="col-3 stat" id="tnCardMini"><div class="k">Tienda Nube</div><div class="v" id="stTN">?</div><div class="s" id="stTNSub">Conexión</div></div><div class="col-3 stat warnline"><div class="k">Cambios externos</div><div class="v">Bloqueado</div><div class="s">No modifica stock/precios en ML/TN</div></div></div><div class="card"><h3>Resumen operativo</h3><div id="snapshotWrap" class="tableWrap"><div class="dashEmpty">Tocá “Actualizar”.</div></div></div></section>
 <section id="ml-publicaciones" class="view"><div class="card"><h3>Mercado Libre · Publicaciones</h3><div class="grid"><div class="col-8"><label>Buscar publicación ML</label><input id="mlPubSearch" oninput="debouncedPublications('ML')" placeholder="SKU, producto, publicación, variante, título"></div><div class="col-2"><label>Mostrar</label><select id="mlPubLimit" onchange="loadPublicationsReport('ML',0)"><option selected>20</option><option>40</option><option>50</option></select></div><div class="col-2"><label>&nbsp;</label><button class="secondary" onclick="clearPublicationsSearch('ML')">Limpiar</button></div><div class="col-12"><div class="btnrow" style="margin-top:0"><button class="secondary" onclick="loadPublicationsReport('ML',0,true)">Actualizar vista</button></div></div></div><div id="mlPubStatus" class="status"></div><div id="mlPubResults" style="margin-top:12px"></div><div id="mlPubPager" class="btnrow" style="margin-top:12px"></div></div></section>
@@ -939,7 +942,7 @@ details.kebabMenu{position:relative}details.kebabMenu summary{list-style:none;cu
 <section id="consola" class="view"><div class="card"><h3>Detalle técnico</h3><pre id="rawConsole" class="console">Inicializando…</pre></div></section>
 </main></div>
 <script>
-const FRONT_VERSION = '1.0.30-tn-db-publications';
+const FRONT_VERSION = '1.0.35-publication-status-align';
 const API_BASE='https://api.xeleria.com.ar/api';
 const RAW_LIMIT=12000;
 let STAGING_SESSION_ID='';
@@ -1932,21 +1935,31 @@ function listingStatus(l){
   if(pub!==undefined)return pub;
   return '';
 }
-function listingStatusLabel(st){
-  if(st===true)return 'Activa';
-  if(st===false)return 'Oculta';
+function listingStatusLabel(st,market){
+  const m=String(market||'').toUpperCase();
+  if(st===true)return m==='ML'?'Activo':'Visible';
+  if(st===false)return m==='ML'?'Pausado':'Oculto';
   let s=normalizar(st);
   if(!s)return '-';
-  if(['true','1','visible','published','active','activa','activo','yes','si','sí'].includes(s))return 'Activa';
-  if(['false','0','hidden','oculta','oculto','unpublished','inactive','deleted','closed','paused','pausado','pausada','archived'].includes(s))return 'Oculta';
-  if(s.includes('ocult')||s.includes('hidden')||s.includes('unpublish')||s.includes('inactive')||s.includes('deleted')||s.includes('closed')||s.includes('paused'))return 'Oculta';
-  if(s.includes('visible')||s.includes('published')||s.includes('active'))return 'Activa';
+  if(m==='ML'){
+    if(s.includes('paused')||s.includes('pause')||s.includes('pausad'))return 'Pausado';
+    if(s.includes('closed')||s.includes('inactive')||s.includes('deleted')||s.includes('hidden')||s.includes('ocult')||s==='false'||s==='0')return 'Pausado';
+    if(['true','1','active','activo','activa','published','yes','si','sí'].includes(s)||s.includes('active')||s.includes('published'))return 'Activo';
+    return String(st||'-');
+  }
+  if(m==='TN'){
+    if(s.includes('hidden')||s.includes('ocult')||s.includes('unpublish')||s.includes('inactive')||s.includes('deleted')||s.includes('closed')||s==='false'||s==='0')return 'Oculto';
+    if(['true','1','visible','published','active','activa','activo','yes','si','sí'].includes(s)||s.includes('visible')||s.includes('published')||s.includes('active'))return 'Visible';
+    return String(st||'-');
+  }
+  if(['true','1','visible','published','active','activa','activo','yes','si','sí'].includes(s))return 'Visible';
+  if(['false','0','hidden','oculta','oculto','unpublished','inactive','deleted','closed','paused','pausado','pausada','archived'].includes(s))return 'Oculto';
   return String(st||'-');
 }
-function listingStatusClass(st){
-  let label=normalizar(listingStatusLabel(st));
-  if(label.includes('oculta')||label.includes('pausada'))return 'inactive';
-  if(label.includes('visible')||label.includes('activa')||label.includes('activa'))return 'ok';
+function listingStatusClass(st,market){
+  let label=normalizar(listingStatusLabel(st,market));
+  if(label.includes('oculto')||label.includes('pausado'))return market==='ML'?'warn':'inactive';
+  if(label.includes('visible')||label.includes('activo'))return 'ok';
   return 'info';
 }
 function publicationSearchText(item,market){
@@ -1978,7 +1991,7 @@ function renderReadonlyListingsForItem(item,market){
   return arr.map(l=>{
     let st=listingStatus(l);
     let pid=listingProductId(l),vid=listingVariantId(l);
-    return `<div class="marketBox"><div><span class="pill ${market==='ML'?'info':'ok'}">${esc(market)}</span></div><div class="mono id pubvar"><span>Pub: ${esc(pid)}</span><span class="idSep">${vid?'Var: '+esc(vid):''}</span></div><div><strong>${money(listingPrice(l))}</strong></div><div><strong>${esc(listingStock(l))}</strong></div><div><span class="pill marketStatus ${listingStatusClass(st)}">${esc(listingStatusLabel(st))}</span></div></div>`;
+    return `<div class="marketBox"><div><span class="pill ${market==='ML'?'info':'ok'}">${esc(market)}</span></div><div class="mono id pubvar"><span>Pub: ${esc(pid)}</span><span class="idSep">${vid?'Var: '+esc(vid):''}</span></div><div><strong>${money(listingPrice(l))}</strong></div><div><strong>${esc(listingStock(l))}</strong></div><div><span class="pill marketStatus ${listingStatusClass(st,market)}">${esc(listingStatusLabel(st,market))}</span></div></div>`;
   }).join('');
 }
 function renderPublicationsReadonly(market,items){
@@ -2146,7 +2159,7 @@ refreshAll();
     arr.sort((a,b)=>(listingMarket(a)+listingProductId(a)+listingVariantId(a)).localeCompare(listingMarket(b)+listingProductId(b)+listingVariantId(b)));
     return arr.map((l,idx)=>{
       let m=listingMarket(l),pid=listingProductId(l),vid=listingVariantId(l),price=listingPrice(l),stock=listingStock(l),st=listingStatus(l),key=esc(`${item.sku}_${idx}`);
-      return `<div class="marketBox"><div><span class="pill ${m==='ML'?'info':'ok'}">${esc(m||'?')}</span></div>${pubVarBlock(pid,vid)}<div><input class="priceInput" id="price_${key}" value="${esc(price)}" title="Precio marketplace"></div><div><input class="stockInput" value="${esc(stock)}" disabled title="Stock marketplace informado"></div><div><span class="pill marketStatus ${listingStatusClass(st)}">${esc(listingStatusLabel(st))}</span></div></div>`;
+      return `<div class="marketBox"><div><span class="pill ${m==='ML'?'info':'ok'}">${esc(m||'?')}</span></div>${pubVarBlock(pid,vid)}<div><input class="priceInput" id="price_${key}" value="${esc(price)}" title="Precio marketplace"></div><div><input class="stockInput" value="${esc(stock)}" disabled title="Stock marketplace informado"></div><div><span class="pill marketStatus ${listingStatusClass(st,market)}">${esc(listingStatusLabel(st,market))}</span></div></div>`;
     }).join('');
   };
 
