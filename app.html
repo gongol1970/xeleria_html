@@ -686,6 +686,16 @@ details.kebabMenu{position:relative}details.kebabMenu summary{list-style:none;cu
 .bundleTool{border:1px solid var(--line);border-radius:16px;background:#fffaf0;padding:14px;margin-top:12px}.bundleTool .bundleGrid{display:grid;grid-template-columns:170px minmax(260px,1fr) 120px;gap:10px;align-items:end}.bundleComponentLine{display:grid;grid-template-columns:150px 1fr 90px 44px;gap:8px;align-items:end;margin-top:8px}.bundleSuggest{position:absolute;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);z-index:80;max-height:260px;overflow:auto;width:min(620px,calc(100vw - 360px));display:none}.bundleSuggestItem{padding:9px 11px;border-bottom:1px solid #eee2c8;cursor:pointer}.bundleSuggestItem:hover{background:#fffaf0}.fieldRel{position:relative}
 @media(max-width:1000px){.inventoryFilters .col-search,.inventoryFilters .col-small,.inventoryFilters .col-stockle,.inventoryFilters .col-actions{grid-column:1/-1}.bundleTool .bundleGrid,.bundleComponentLine{grid-template-columns:1fr}.inventoryTable{min-width:900px}}
 
+
+/* v1.0.25: old ERP sales layout grid */
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.col-2{grid-column:span 2}.col-3{grid-column:span 3}.col-4{grid-column:span 4}.col-5{grid-column:span 5}.col-6{grid-column:span 6}.col-8{grid-column:span 8}.col-10{grid-column:span 10}.col-12{grid-column:span 12}
+@media(max-width:900px){.col-2,.col-3,.col-4,.col-5,.col-6,.col-8,.col-10,.col-12{grid-column:1/-1}.orderHead{grid-template-columns:1fr!important}.lineItem{grid-template-columns:1fr!important}}
+#ml-ventas .grid{display:grid!important;grid-template-columns:repeat(12,1fr)!important;gap:14px!important;align-items:end!important}
+#ml-ventas .col-8{grid-column:span 8!important}#ml-ventas .col-2{grid-column:span 2!important}
+#ml-ventas input,#ml-ventas select{width:100%;height:44px;border:1px solid #cfc4ad;border-radius:12px;background:#fff;padding:10px 11px;font-size:14px;color:var(--ink);outline:none;box-sizing:border-box}
+#ml-ventas .btnrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+#ml-ventas .card{max-width:none!important}
+
 </style>
 </head>
 <body>
@@ -897,7 +907,7 @@ details.kebabMenu{position:relative}details.kebabMenu summary{list-style:none;cu
 <section id="consola" class="view"><div class="card"><h3>Detalle técnico</h3><pre id="rawConsole" class="console">Inicializando…</pre></div></section>
 </main></div>
 <script>
-const FRONT_VERSION = '1.0.24-ml-sales-old-ui';
+const FRONT_VERSION = '1.0.25-ml-sales-capture-old-layout';
 const API_BASE='https://api.xeleria.com.ar/api';
 const RAW_LIMIT=12000;
 let STAGING_SESSION_ID='';
@@ -1867,7 +1877,7 @@ function debouncedSales(ch){clearTimeout(window.__xeleriaSalesTimers['sales_'+ch
 function clearSalesSearch(ch){let el=$((ch||'ML').toLowerCase()+'VentasSearch');if(el)el.value='';loadRecent(ch,0)}
 function mlPagerHtml(ch,d){let limit=Number(d.limit||salesLimit(ch)||20),offset=Number(d.offset||0),total=Number(d.total||0);let from=total?offset+1:0;let to=Math.min(offset+(d.items||[]).length,total||offset+(d.items||[]).length);let prev=Math.max(0,offset-limit);let next=offset+limit;let prevDisabled=offset<=0?'disabled':'';let nextDisabled=!d.has_more?'disabled':'';return `<button class="secondary" ${prevDisabled} onclick="loadRecent('${ch}',${prev})">Anterior</button><span class="pill">Mostrando ${from}–${to}${total?` de ${total}`:''}</span><button class="secondary" ${nextDisabled} onclick="loadRecent('${ch}',${next})">Siguiente</button>`}
 async function refreshShippingPending(ch){let sid='mlVentasStatus';if(ch!=='ML')return;if(!confirm('Refrescar estados de envío no entregados de Mercado Libre?\n\nSe consultan solo ventas recientes no terminales.'))return;mlSetStatus(sid,'Refrescando estados no entregados...');try{let d=await post(`/ml-sales/${TENANT_ID}/refresh_shipping_pending?limit=50&days=30&scan_limit=250`);mlSetStatus(sid,`Refresh ML: ${d.refreshed_count||0} actualizadas, ${d.error_count||0} errores`,!d.error_count);await loadRecent('ML',0)}catch(e){mlSetStatus(sid,'Error refresh envíos: '+(e.message||e.detail||JSON.stringify(e)),false);raw(e)}}
-async function loadRecent(ch,offset=0){if(ch!=='ML')return;let sid='mlVentasStatus',tid='mlVentasTable',pid='mlVentasPager';let lim=salesLimit(ch);let q=salesSearch(ch);window.__xeleriaSalesState.ML.offset=offset;mlSetStatus(sid,'Consultando...');try{let d=await api(`/ml-sales/${TENANT_ID}/recent?limit=${encodeURIComponent(lim)}&offset=${encodeURIComponent(offset)}&exclude_tests=true&q=${encodeURIComponent(q)}`);let arr=d.items||[];$(tid).innerHTML=mlOrdersTable(arr);if($(pid))$(pid).innerHTML=mlPagerHtml(ch,{...d,items:arr});mlSetStatus(sid,`OK: ${d.total||0} ventas${q?' filtradas':''}`,true)}catch(e){let msg=(e&&e.message)?e.message:(e?.data?.detail||e?.detail||JSON.stringify(e));mlSetStatus(sid,'Error: '+msg,false);raw(e)}}
+async function loadRecent(ch,offset=0){if(ch!=='ML')return;let sid='mlVentasStatus',tid='mlVentasTable',pid='mlVentasPager';let lim=salesLimit(ch);let q=salesSearch(ch);window.__xeleriaSalesState.ML.offset=offset;mlSetStatus(sid,'Capturando ventas ML recientes...');let cap=null;try{cap=await post(`/ml-reader/${TENANT_ID}/orders?limit=${encodeURIComponent(Math.min(lim,20))}&offset=0&dry_run=false`)}catch(e){cap={ok:false,error:e?.message||e?.data?.detail||e?.detail||JSON.stringify(e)};raw({stage:'ml_capture_before_recent',error:e})}mlSetStatus(sid,'Consultando ventas capturadas...');try{let d=await api(`/ml-sales/${TENANT_ID}/recent?limit=${encodeURIComponent(lim)}&offset=${encodeURIComponent(offset)}&exclude_tests=true&q=${encodeURIComponent(q)}`);let arr=d.items||[];$(tid).innerHTML=mlOrdersTable(arr);if($(pid))$(pid).innerHTML=mlPagerHtml(ch,{...d,items:arr});let capMsg='';if(cap){if(cap.ok!==false)capMsg=` · captura: ${cap.saved?.length??cap.saved_count??cap.found_orders??0}`;else capMsg=' · captura con revisión'}mlSetStatus(sid,`OK: ${d.total||0} ventas${q?' filtradas':''}${capMsg}`,true)}catch(e){let msg=(e&&e.message)?e.message:(e?.data?.detail||e?.detail||JSON.stringify(e));mlSetStatus(sid,'Error: '+msg,false);raw(e)}}
 async function readMLOrders(dry=true){return loadRecent('ML',0)}
 
 
