@@ -685,7 +685,7 @@ details.kebabMenu{position:relative}details.kebabMenu summary{list-style:none;cu
 </head>
 <body>
 <div class="app">
-<aside><div class="brand"><div class="brandTop"><span class="appMark"><img src="./favicon_xeleria.png?v=18" alt="XelerIA"></span><div class="brandName">XelerIA</div><div class="tenantBadge" id="tenantBadge">PC</div></div><p id="tenantSubtitle">Panel operativo</p></div><nav><button class="navBtn active" data-view="inicio">Inicio / Dashboard</button><div class="navTitle">Mercado Libre</div><button class="navBtn" data-view="ml-publicaciones">Publicaciones</button><button class="navBtn" data-view="ml-ventas">Ventas</button><div class="navTitle">Tienda Nube</div><button class="navBtn" data-view="tn-publicaciones">Publicaciones</button><button class="navBtn" data-view="tn-ventas">Ventas</button><div class="navTitle">Gestión</div><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="consola">Detalle técnico</button></nav><div class="sidebarFoot">Pantalla: XelerIA 1.0.22-product-search-combo-links<br>Servidor: <span id="footBackendVer">?</span><br><span class="muted">Cambios externos desactivados</span></div></aside>
+<aside><div class="brand"><div class="brandTop"><span class="appMark"><img src="./favicon_xeleria.png?v=18" alt="XelerIA"></span><div class="brandName">XelerIA</div><div class="tenantBadge" id="tenantBadge">PC</div></div><p id="tenantSubtitle">Panel operativo</p></div><nav><button class="navBtn active" data-view="inicio">Inicio / Dashboard</button><div class="navTitle">Mercado Libre</div><button class="navBtn" data-view="ml-publicaciones">Publicaciones</button><button class="navBtn" data-view="ml-ventas">Ventas</button><div class="navTitle">Tienda Nube</div><button class="navBtn" data-view="tn-publicaciones">Publicaciones</button><button class="navBtn" data-view="tn-ventas">Ventas</button><div class="navTitle">Gestión</div><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="consola">Detalle técnico</button></nav><div class="sidebarFoot">Pantalla: XelerIA 1.0.23-product-search-combo-links<br>Servidor: <span id="footBackendVer">?</span><br><span class="muted">Cambios externos desactivados</span></div></aside>
 <main><div class="topbar"><h2 id="pageTitle">Inicio</h2><div class="crumb" id="pageCrumb">Panel operativo</div></div>
 <section id="inicio" class="view active"><div class="hero"><div class="btnrow" style="justify-content:space-between"><div><h3>Dashboard</h3><p>Resumen operativo de XelerIA. El dashboard informa; no dispara operaciones.</p></div><button class="secondary" onclick="refreshAll()">Actualizar</button></div><div id="homeStatus" class="status"></div></div><div class="grid"><div class="col-3 stat good"><div class="k">Servidor</div><div class="v" id="stApi">?</div><div class="s">Versión <span id="dashBackendVer">?</span></div></div><div class="col-3 stat" id="mlCardMini"><div class="k">Mercado Libre</div><div class="v" id="stML">?</div><div class="s" id="stMLSub">Conexión</div></div><div class="col-3 stat" id="tnCardMini"><div class="k">Tienda Nube</div><div class="v" id="stTN">?</div><div class="s" id="stTNSub">Conexión</div></div><div class="col-3 stat warnline"><div class="k">Cambios externos</div><div class="v">Bloqueado</div><div class="s">No modifica stock/precios en ML/TN</div></div></div><div class="card"><h3>Resumen operativo</h3><div id="snapshotWrap" class="tableWrap"><div class="dashEmpty">Tocá “Actualizar”.</div></div></div></section>
 <section id="ml-publicaciones" class="view"><div class="card"><h3>Mercado Libre · Publicaciones</h3><p>Vista segura: lee publicaciones, no cambia tu inventario.</p><div class="btnrow"><button class="secondary" onclick="readMLItems()">Ver primeras publicaciones</button><button class="primary importBtn" onclick="startStaging('ML')">Configurar inventario ML</button><button class="secondary" onclick="connectML()">Conectar ML</button></div><div id="mlItemsStatus" class="status"></div><div id="mlItemsTable" class="tableWrap"></div></div></section>
@@ -892,7 +892,7 @@ details.kebabMenu{position:relative}details.kebabMenu summary{list-style:none;cu
 <section id="consola" class="view"><div class="card"><h3>Detalle técnico</h3><pre id="rawConsole" class="console">Inicializando…</pre></div></section>
 </main></div>
 <script>
-const FRONT_VERSION = '1.0.22-product-search-combo-links';
+const FRONT_VERSION = '1.0.23-product-search-combo-links';
 const API_BASE='https://api.xeleria.com.ar/api';
 const RAW_LIMIT=12000;
 let STAGING_SESSION_ID='';
@@ -1995,6 +1995,7 @@ refreshAll();
 
   window.toggleInventoryTool = function(type){ if(type==='bundle') renderBundleTool(); return false; };
   window.renderEditBundleTool = function(idx){ renderBundleTool(state.comboItems[idx]||state.inventoryItems[idx]||{}); };
+  window.cancelBundleTool = function(){let box=qs('comboTools');if(box){box.classList.add('hidden');box.innerHTML='';}safeSetStatus? safeSetStatus('comboStatus','Edición cancelada.',true) : setStatus('comboStatus','Edición cancelada.',true);return false;};
   window.renderBundleTool = function(item={}){
     showGestPanel('combos');
     let box=qs('comboTools'); if(!box)return;
@@ -2007,8 +2008,7 @@ refreshAll();
       <div><label>Nombre</label><input id="comboName" value="${esc(item.name||'')}" placeholder="Nombre del combo"></div>
       <div><label>Costo</label><input id="comboCost" type="number" step="0.01" value="${esc(item.cost||0)}"></div>
     </div>
-    <div class="btnrow" style="margin-top:12px"><button class="secondary" onclick="addBundleComponentLine()">Agregar componente</button><button class="secondary" onclick="addBundleListingLine()">Agregar publicación</button><button class="primary" onclick="saveBundleTool()">Guardar combo</button><button class="secondary" onclick="qs('comboTools').classList.add('hidden')">Cerrar</button></div>
-    <div class="toolSub">Las publicaciones vinculadas de ML/TN se guardan en <b>marketplace_listings</b> para este combo.</div>
+    <div class="btnrow" style="margin-top:12px"><button class="secondary" onclick="addBundleComponentLine()">Agregar componente</button><button class="secondary" onclick="addBundleListingLine()">Agregar publicación</button><button class="primary" onclick="saveBundleTool()">Guardar combo</button><button class="secondary" onclick="cancelBundleTool();return false;">Cancelar</button></div>
     <div id="bundleLines" style="margin-top:12px"></div>
     <div id="bundleListingLines" class="productListingLines" style="margin-top:12px"></div>
     <div id="bundleToolStatus" class="status"></div></div>`;
@@ -2158,9 +2158,13 @@ refreshAll();
       renderInventory();
       if(qs('invPager')) qs('invPager').innerHTML=inventoryPagerHtml(d);
       let filtro=(market?` · canal ${market}`:'')+(maxStock!==''?` · stock <= ${maxStock}`:'');
-      safeSetStatus('invStatus',`Inventario: ${state.inventoryItems.length} de ${state.inventory.total} ítems${filtro} · Publicaciones visibles: ${d.visible_publications??0}`,true);
+      if(q && !state.inventoryItems.length){
+        safeSetStatus('invStatus','No se encontró ese SKU como producto simple',false);
+      }else{
+        safeSetStatus('invStatus',`Inventario: ${state.inventoryItems.length} de ${state.inventory.total} ítems${filtro} · Publicaciones visibles: ${d.visible_publications??0}`,true);
+      }
     }catch(e){
-      safeSetStatus('invStatus','Error inventario: '+(e.message||JSON.stringify(e)),false);
+      safeSetStatus('invStatus',q?'No se encontró ese SKU como producto simple':'Error inventario: '+(e.message||JSON.stringify(e)),false);
       safeRaw(e);
     }
   };
@@ -2372,9 +2376,9 @@ refreshAll();
         marketplace:channel,
         channel,
         external_product_id:listing,
-        external_variant_id:variant||'0',
+        external_variant_id:variant||null,
         listing_id:listing,
-        variant_id:variant||'0',
+        variant_id:variant||null,
         price:line.querySelector('.plPrice')?.value||null,
         stock:line.querySelector('.plStock')?.value||0,
         status:line.querySelector('.plStatus')?.value||null
@@ -2470,6 +2474,8 @@ refreshAll();
     renderBundleTool(state.comboItems[idx]||state.inventoryItems?.[idx]||{});
   };
 
+  window.cancelBundleTool = function(){let box=qs('comboTools');if(box){box.classList.add('hidden');box.innerHTML='';}safeSetStatus('comboStatus','Edición cancelada.',true);return false;};
+
   window.renderBundleTool = function(item={}, focusListings=false){
     showGestPanel('combos');
     let box=qs('comboTools');
@@ -2483,8 +2489,7 @@ refreshAll();
       <div><label>Nombre</label><input id="comboName" value="${esc(item.name||'')}" placeholder="Nombre del combo"></div>
       <div><label>Costo</label><input id="comboCost" type="number" step="0.01" value="${esc(item.cost||0)}"></div>
     </div>
-    <div class="btnrow" style="margin-top:12px"><button class="secondary" onclick="addBundleComponentLine()">Agregar componente</button><button class="secondary" onclick="addBundleListingLine()">Agregar publicación</button><button class="primary" onclick="saveBundleTool()">Guardar combo</button><button class="secondary" onclick="qs('comboTools').classList.add('hidden')">Cerrar</button></div>
-    <div class="toolSub">Las publicaciones vinculadas de ML/TN se guardan en <b>marketplace_listings</b> para este combo.</div>
+    <div class="btnrow" style="margin-top:12px"><button class="secondary" onclick="addBundleComponentLine()">Agregar componente</button><button class="secondary" onclick="addBundleListingLine()">Agregar publicación</button><button class="primary" onclick="saveBundleTool()">Guardar combo</button><button class="secondary" onclick="cancelBundleTool();return false;">Cancelar</button></div>
     <div id="bundleLines" style="margin-top:12px"></div>
     <div id="bundleListingLines" class="productListingLines" style="margin-top:12px"></div>
     <div id="bundleToolStatus" class="status"></div></div>`;
@@ -2537,15 +2542,58 @@ refreshAll();
     line.className='productListingLine bundleListingLine';
     const ch=String(d.marketplace||d.channel||'TN').toUpperCase();
     const st=marketplaceStatusOption(d.status_label??d.status??d.state??(ch==='ML'?'active':'visible'),ch);
+    const title=d.title||d.name||'';
     line.innerHTML=`<input class="plId plHidden" value="${escAttr(d.id||'')}">
-      <div><label>Canal</label><select class="plChannel"><option ${ch==='TN'?'selected':''}>TN</option><option ${ch==='ML'?'selected':''}>ML</option></select></div>
-      <div><label>Publicación</label><input class="plListing" value="${escAttr(listingProductId(d)||'')}" placeholder="ID publicación"></div>
-      <div><label>Variante</label><input class="plVariant" value="${escAttr(listingVariantId(d)||'0')}" placeholder="0"></div>
+      <input class="plListing plHidden" value="${escAttr(listingProductId(d)||'')}">
+      <input class="plVariant plHidden" value="${escAttr(listingVariantId(d)||'')}">
+      <div><label>Canal</label><select class="plChannel" onchange="resetPublicationLine(this.closest('.bundleListingLine'))"><option ${ch==='TN'?'selected':''}>TN</option><option ${ch==='ML'?'selected':''}>ML</option></select></div>
+      <div class="fieldRel pubSearchField"><label>Buscar publicación huérfana</label><input class="plSearch" value="${escAttr(title)}" placeholder="Empezá a escribir título o producto" autocomplete="off" oninput="searchBundlePublication(this)" onfocus="searchBundlePublication(this)"><div class="bundleSuggest pubSuggest"></div></div>
       <div><label>Precio</label><input class="plPrice" type="number" step="1" value="${escAttr(listingPrice(d)||'')}"></div>
       <div><label>Stock</label><input class="plStock" type="number" step="1" value="${escAttr(listingStock(d)||0)}"></div>
       <div><label>Estado</label><select class="plStatus"><option value="visible" ${st==='visible'?'selected':''}>Visible</option><option value="hidden" ${st==='hidden'?'selected':''}>Oculto</option><option value="active" ${st==='active'?'selected':''}>Activa</option><option value="paused" ${st==='paused'?'selected':''}>Pausado</option></select></div>
       <div><label>&nbsp;</label><button class="secondary" onclick="this.closest('.bundleListingLine').remove()">×</button></div>`;
     box.appendChild(line);
+  };
+
+  window.resetPublicationLine = function(line){
+    if(!line)return;
+    ['plId','plListing','plVariant'].forEach(cls=>{const el=line.querySelector('.'+cls); if(el)el.value='';});
+    const search=line.querySelector('.plSearch'); if(search)search.value='';
+    const sug=line.querySelector('.pubSuggest'); if(sug){sug.style.display='none';sug.innerHTML='';}
+  };
+
+  window.searchBundlePublication = function(input){
+    clearTimeout(input._t);
+    input._t=setTimeout(async()=>{
+      const line=input.closest('.bundleListingLine');
+      const q=(input.value||'').trim();
+      const box=line.querySelector('.pubSuggest');
+      const ch=(line.querySelector('.plChannel')?.value||'ALL').trim().toUpperCase();
+      line.querySelector('.plListing').value='';
+      line.querySelector('.plVariant').value='';
+      if(!q || q.length<2){box.style.display='none';box.innerHTML='';return;}
+      try{
+        const d=await api(`/bundle-items/${TENANT_ID}/publication-search?q=${encodeURIComponent(q)}&marketplace=${encodeURIComponent(ch)}&limit=8`);
+        const items=d.items||[];
+        box.innerHTML=items.map((it,idx)=>`<div class="bundleSuggestItem" onclick="pickBundlePublication(this)" data-i="${idx}" data-marketplace="${escAttr(it.marketplace||ch)}" data-product="${escAttr(it.external_product_id||'')}" data-variant="${escAttr(it.external_variant_id||'')}" data-title="${escAttr(it.title||'')}" data-price="${escAttr(it.price??'')}" data-stock="${escAttr(it.stock??0)}" data-status="${escAttr(it.status||'')}"><b>${esc(it.title||'Sin título')}</b><br><span class="muted">${esc(it.marketplace||ch)} · Stock ${esc(it.stock??0)} · ${esc(it.status_label||it.status||'')}</span></div>`).join('')||'<div class="bundleSuggestItem muted">Sin publicaciones huérfanas para ese texto</div>';
+        box.style.display='block';
+      }catch(e){box.innerHTML='<div class="bundleSuggestItem muted">Error buscando publicaciones huérfanas</div>';box.style.display='block';safeRaw(e)}
+    },280);
+  };
+
+  window.pickBundlePublication = function(el){
+    const line=el.closest('.bundleListingLine');
+    const ch=el.dataset.marketplace||line.querySelector('.plChannel')?.value||'TN';
+    line.querySelector('.plChannel').value=ch;
+    line.querySelector('.plId').value='';
+    line.querySelector('.plListing').value=el.dataset.product||'';
+    line.querySelector('.plVariant').value=el.dataset.variant||'';
+    line.querySelector('.plSearch').value=el.dataset.title||'Publicación seleccionada';
+    line.querySelector('.plPrice').value=el.dataset.price||'';
+    line.querySelector('.plStock').value=el.dataset.stock||0;
+    const status=marketplaceStatusOption(el.dataset.status||'',ch);
+    if(status) line.querySelector('.plStatus').value=status;
+    line.querySelectorAll('.pubSuggest').forEach(b=>{b.style.display='none';b.innerHTML='';});
   };
 
   function collectBundleToolListings(){
@@ -2559,9 +2607,9 @@ refreshAll();
         marketplace:channel,
         channel,
         external_product_id:listing,
-        external_variant_id:variant||'0',
+        external_variant_id:variant||null,
         listing_id:listing,
-        variant_id:variant||'0',
+        variant_id:variant||null,
         price:line.querySelector('.plPrice')?.value||null,
         stock:line.querySelector('.plStock')?.value||0,
         status:line.querySelector('.plStatus')?.value||null
