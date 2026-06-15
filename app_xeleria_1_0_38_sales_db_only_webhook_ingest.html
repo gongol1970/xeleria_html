@@ -1,0 +1,3078 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>XelerIA</title>
+<script>
+if(location.protocol==='http:'&&location.hostname.endsWith('xeleria.com.ar'))location.replace('https://'+location.host+location.pathname+location.search+location.hash);
+</script>
+<link rel="icon" type="image/png" href="./favicon_xeleria.png?v=18">
+<style>
+:root {
+  --bg:#f2f0eb;
+  --surface:#fffdf8;
+  --ink:#171717;
+  --muted:#5f5a52;
+  --line:#ded4be;
+  --brand:#dcc58f;
+  --brand2:#cdb272;
+  --dark:#101010;
+  --ok:#067647;
+  --bad:#b42318;
+  --warn:#9a6700;
+  --new:#eefbe8;
+  --missing:#fdecec;
+  --review:#fff8c5;
+  --radius:18px;
+  --shadow:0 10px 30px rgba(17,17,17,.08)
+}
+* {
+  box-sizing:border-box
+}
+body,button,input,select,textarea {
+  font-family:Tahoma,Arial,sans-serif
+}
+body {
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-size:14px
+}
+.app {
+  display:flex;
+  min-height:100vh
+}
+aside {
+  position:fixed;
+  inset:0 auto 0 0;
+  width:282px;
+  background:linear-gradient(180deg,#101010,#191919);
+  color:#fff;
+  display:flex;
+  flex-direction:column;
+  z-index:20;
+  box-shadow:8px 0 28px rgba(0,0,0,.18)
+}
+.brand {
+  padding:22px 18px 16px;
+  border-bottom:1px solid rgba(220,197,143,.25)
+}
+.brandTop {
+  display:grid;
+  grid-template-columns:58px 1fr auto;
+  gap:12px;
+  align-items:center
+}
+.appMark {
+  width:58px;
+  height:58px;
+  border-radius:50%;
+  background:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden
+}
+.appMark img {
+  width:112%;
+  height:112%;
+  object-fit:cover
+}
+.brandName {
+  font-size:24px;
+  font-weight:950
+}
+.tenantBadge {
+  width:54px;
+  height:38px;
+  border-radius:10px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(220,197,143,.25);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#d8d0c0;
+  font-size:10px;
+  font-weight:900;
+  overflow:hidden
+}
+.tenantBadge img {
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  display:block;
+  background:#fff
+}
+.brand p {
+  margin:10px 0 0;
+  color:#d8d0c0;
+  font-size:12px
+}
+nav {
+  padding:14px 12px;
+  overflow:auto;
+  flex:1
+}
+.navBtn,.navTitle {
+  width:100%;
+  border:0;
+  background:transparent;
+  color:#eee;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 12px;
+  border-radius:12px;
+  text-align:left;
+  font-weight:700
+}
+.navTitle {
+  color:#d5c6a2;
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  margin-top:8px
+}
+.navBtn {
+  cursor:pointer
+}
+.navBtn:hover {
+  background:rgba(220,197,143,.11)
+}
+.navBtn.active {
+  background:var(--brand);
+  color:#111
+}
+.sidebarFoot {
+  padding:10px 18px;
+  border-top:1px solid rgba(220,197,143,.25);
+  font-size:11px;
+  line-height:1.35;
+  color:#cfc7ba
+}
+main {
+  margin-left:282px;
+  width:calc(100% - 282px);
+  padding:22px 26px 60px
+}
+.topbar {
+  margin-bottom:18px
+}
+.topbar h2 {
+  margin:0;
+  font-size:28px
+}
+.crumb {
+  color:var(--muted);
+  font-size:13px;
+  margin-top:4px
+}
+.grid {
+  display:grid;
+  grid-template-columns:repeat(12,1fr);
+  gap:14px
+}
+.col-3 {
+  grid-column:span 3
+}
+.col-4 {
+  grid-column:span 4
+}
+.col-6 {
+  grid-column:span 6
+}
+.col-12 {
+  grid-column:span 12
+}
+.card,.stat,.hero {
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:18px;
+  margin-bottom:14px
+}
+.hero {
+  background:linear-gradient(135deg,#fffdf8,#efe3c5);
+  border-radius:24px
+}
+.card h3,.hero h3 {
+  margin:0 0 10px
+}
+.card p,.hero p {
+  margin:6px 0;
+  color:var(--muted)
+}
+button,.btn {
+  border:0;
+  border-radius:12px;
+  background:var(--dark);
+  color:#fff;
+  padding:10px 13px;
+  font-weight:800;
+  cursor:pointer;
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  white-space:nowrap
+}
+button:not(.secondary):not(.primary):not(.danger):hover {
+  background:#2b2b2b;
+  color:#fff
+}
+button:not(:disabled):focus,button:not(:disabled):focus-visible,.btn:not(:disabled):focus,.btn:not(:disabled):focus-visible {
+  outline:3px solid var(--brand);
+  outline-offset:2px
+}
+.primary {
+  background:var(--brand2);
+  color:#111
+}
+.primary:hover {
+  background:#d9bf7d;
+  color:#111
+}
+.secondary {
+  background:#fff;
+  color:#111;
+  border:1px solid var(--line)
+}
+.secondary:hover {
+  background:#fffaf0;
+  color:#111
+}
+.danger {
+  background:#fff;
+  color:var(--bad);
+  border:1px solid #f5b5ad
+}
+.danger:hover {
+  background:#fff3f2;
+  color:var(--bad)
+}
+button:disabled {
+  background:#e7dfcf!important;
+  color:#8a8172!important;
+  border:1px solid #d8ccb5!important;
+  cursor:not-allowed!important
+}
+.btnrow {
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center
+}
+.view {
+  display:none
+}
+.view.active {
+  display:block
+}
+.status {
+  min-height:24px;
+  color:var(--muted);
+  margin-top:10px
+}
+.oktxt {
+  color:var(--ok)!important;
+  font-weight:800
+}
+.badtxt {
+  color:var(--bad)!important;
+  font-weight:800
+}
+.warntxt {
+  color:var(--warn)!important;
+  font-weight:800
+}
+.small,.muted {
+  font-size:12px;
+  color:var(--muted)
+}
+.stat .k {
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color:var(--muted);
+  font-weight:800
+}
+.stat .v {
+  font-size:28px;
+  font-weight:900;
+  margin-top:5px
+}
+.stat .s {
+  font-size:12px;
+  color:var(--muted);
+  margin-top:3px
+}
+.good {
+  border-left:6px solid var(--ok)
+}
+.alert {
+  border-left:6px solid var(--bad)
+}
+.warnline {
+  border-left:6px solid var(--warn)
+}
+.connectCard {
+  border-left:6px solid var(--line)
+}
+.connectCard.connected {
+  border-left-color:var(--ok);
+  opacity:.82
+}
+.pill {
+  display:inline-flex;
+  align-items:center;
+  border-radius:999px;
+  padding:4px 8px;
+  font-size:12px;
+  font-weight:800;
+  background:#efe7d5;
+  color:#453d31
+}
+.pill.ok {
+  background:#ecfdf3;
+  color:var(--ok)
+}
+.pill.bad {
+  background:#fef3f2;
+  color:var(--bad)
+}
+.pill.warn {
+  background:var(--review);
+  color:#7a5a00
+}
+.pill.inactive{background:#fef3f2;color:var(--bad)}
+.configAnchor {
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin:0 0 14px
+}
+.configAnchor a {
+  padding:8px 10px;
+  border:1px solid var(--line);
+  border-radius:999px;
+  background:#fff;
+  color:#111;
+  text-decoration:none;
+  font-weight:800;
+  font-size:12px
+}
+.formGrid {
+  display:grid;
+  grid-template-columns:repeat(12,1fr);
+  gap:10px
+}
+.field {
+  grid-column:span 6
+}
+.field.third {
+  grid-column:span 4
+}
+.field.full {
+  grid-column:1/-1
+}
+.field label {
+  display:block;
+  font-size:12px;
+  color:var(--muted);
+  font-weight:900;
+  margin:0 0 5px
+}
+.field input,.field select,.field textarea {
+  width:100%;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:#fff;
+  padding:10px 11px;
+  font:inherit
+}
+.field textarea {
+  min-height:74px;
+  resize:vertical
+}
+.checkLine {
+  display:flex;
+  gap:9px;
+  align-items:center;
+  margin:8px 0;
+  color:var(--muted);
+  font-weight:700
+}
+.checkLine input {
+  width:18px;
+  height:18px;
+  accent-color:#111
+}
+.billingBox {
+  border:1px dashed var(--line);
+  border-radius:14px;
+  padding:12px;
+  background:#fffaf0
+}
+.logoLine {
+  display:flex;
+  gap:12px;
+  align-items:center
+}
+.logoPreview {
+  width:78px;
+  height:78px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  color:var(--muted);
+  font-weight:900;
+  font-size:12px;
+  flex:0 0 auto
+}
+.logoPreview img {
+  width:100%;
+  height:100%;
+  object-fit:contain
+}
+.logoControls {
+  flex:0 0 auto;
+  display:flex;
+  align-items:center
+}
+.inlineChecks {
+  display:flex;
+  gap:24px;
+  align-items:center;
+  flex-wrap:wrap
+}
+.inlineChecks .checkLine {
+  margin:0;
+  color:var(--ink);
+  line-height:1.25;
+  display:inline-flex;
+  align-items:center;
+  gap:8px
+}
+.inlineChecks .checkLine input {
+  margin:0;
+  flex:0 0 auto
+}
+table {
+  width:100%;
+  border-collapse:collapse;
+  background:#fff;
+  border-radius:14px;
+  overflow:hidden;
+  font-size:13px
+}
+th,td {
+  border-bottom:1px solid #eee2c8;
+  padding:8px 9px;
+  text-align:left;
+  vertical-align:top
+}
+th {
+  background:#151515;
+  color:#fff;
+  position:sticky;
+  top:0;
+  z-index:1
+}
+.tableWrap,.syncMatrixWrap {
+  border:1px solid var(--line);
+  border-radius:14px;
+  overflow:auto;
+  max-height:680px;
+  background:#fff
+}
+.dashEmpty {
+  border:1px dashed var(--line);
+  border-radius:16px;
+  padding:18px;
+  text-align:center;
+  color:var(--muted);
+  background:#fffaf0
+}
+.console {
+  white-space:pre-wrap;
+  background:#111;
+  color:#e8e2d4;
+  border-radius:14px;
+  padding:14px;
+  max-height:560px;
+  overflow:auto
+}
+.syncMatrix {
+  min-width:980px;
+  border-radius:0;
+  font-size:12px
+}
+.syncMatrix th {
+  text-align:center;
+  padding:7px 7px
+}
+.syncMatrix td {
+  padding:7px 7px
+}
+.skuCell {
+  width:130px;
+  font-weight:950
+}
+.pubCell {
+  min-width:330px;
+  white-space:pre-line;
+  line-height:1.28
+}
+.choiceCell {
+  width:58px;
+  text-align:center
+}
+.choiceCell input {
+  width:16px;
+  height:16px;
+  accent-color:#111
+}
+.emptyPub {
+  color:#777;
+  font-style:italic
+}
+.newPub {
+  background:var(--new)!important
+}
+.missingPub {
+  background:var(--missing)!important
+}
+.reviewPub {
+  background:var(--review)!important
+}
+.legend {
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:10px 0
+}
+.sw {
+  width:16px;
+  height:16px;
+  border-radius:4px;
+  border:1px solid var(--line);
+  display:inline-block
+}
+.stickySave {
+  position:sticky;
+  bottom:0;
+  background:linear-gradient(180deg,rgba(255,253,248,.86),#fffdf8);
+  border-top:1px solid var(--line);
+  padding:12px;
+  margin:12px -18px -18px;
+  border-radius:0 0 var(--radius) var(--radius)
+}
+
+/* ML sales old ERP visual port */
+.orderCard{border:1px solid var(--line);border-radius:16px;background:#fff;margin:8px 0;overflow:hidden}.orderHead{padding:9px 14px;background:#fffaf0;border-bottom:1px solid #eee2c8;display:grid;grid-template-columns:1.15fr 1.25fr .9fr .8fr auto;gap:10px;align-items:center}.orderLines{padding:6px 14px}.lineItem{display:grid;grid-template-columns:170px 1fr 70px 90px 105px;gap:10px;padding:3px 0;border-bottom:1px dashed #eee2c8;align-items:center}.lineItem,.lineItem *{font-family:Tahoma,Arial,sans-serif!important;font-size:12px!important;line-height:1.18}.lineItem:last-child{border-bottom:0}.orderPayStatus{display:block;margin-left:0;color:var(--muted);font-size:12px}.shippingPill{margin-left:-10px;padding-left:10px!important;padding-right:10px!important}.shippingAction{display:block;margin-top:4px;font-size:12px}.shippingAction.pending{color:var(--bad);font-weight:900}.shippingAction.delivered{color:var(--ink);font-weight:400}.shippingAction.other{color:#3730a3;font-weight:900}.logisticsAction{display:block;margin-top:4px;color:var(--warn);font-size:12px;font-weight:900}.invoiceStatusIcon{font-size:22px;line-height:1;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:10px}.invoiceStatusIcon.issued{background:#ecfdf5;color:#047857}.invoiceStatusIcon.draft{background:#fff7ed;color:#b54708}.invoiceStatusIcon.none{background:#fff1f2;color:#b91c1c}.invoiceMiniWrap{display:flex;justify-content:flex-end;align-items:center}.invoiceMiniWrap a{text-decoration:none}.orderLogisticsBlock{line-height:1.55}.actionSale{border-left:5px solid var(--bad);box-shadow:0 8px 18px rgba(181,71,8,.12)}.actionBadge{display:inline-flex;margin-top:4px;border-radius:999px;background:#fff7ed;color:var(--warn);font-size:11px;font-weight:900;padding:3px 7px}.smallBtn{font-size:12px!important;padding:8px 10px!important}
+@media(max-width:900px){.orderHead{grid-template-columns:1fr}.lineItem{grid-template-columns:1fr}}
+
+@media(max-width:900px) {
+  aside {
+    position:relative;
+    width:100%;
+    height:auto
+  }
+  main {
+    margin-left:0;
+    width:100%;
+    padding:16px 12px 70px
+  }
+.app {
+    display:block
+  }
+.col-3,.col-4,.col-6,.col-12,.field,.field.third {
+    grid-column:1/-1
+  }
+  table {
+    min-width:760px
+  }
+}
+
+.productToolbar{display:grid;grid-template-columns:minmax(360px,1fr) 110px 110px 110px auto;gap:14px;align-items:end;margin-bottom:14px}
+
+.productToolbar input,.productToolbar select,.prodStockBox input,.marketBox input{
+  height:42px;
+  padding:10px 12px;
+  border:2px solid #454545;
+  border-radius:12px;
+  background:#fff;
+  font-size:13px;
+}
+.productToolbar label{font-size:12px;font-weight:800;color:#4b3f29}
+.prodStockBox input{width:110px}
+.marketBox input{width:100%;min-width:0}
+.productPager{display:flex;gap:10px;align-items:center;justify-content:flex-end;margin:12px 0 0}
+.productPager button{padding:9px 14px}
+.productPager .pageInfo{font-weight:800;color:#4b3f29}
+.productActions{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}.productActions input[type=file]{max-width:320px}
+.productsWrap{border:1px solid var(--line);border-radius:14px;overflow:auto;max-height:660px;background:#fff}.productsTable{min-width:1120px}.productsTable th:nth-child(1){width:145px}.productsTable th:nth-child(2){width:250px}.productsTable th:nth-child(3){width:180px}.productsTable th:nth-child(4){width:auto}.productTitle{font-weight:800}.productSub{font-size:12px;color:var(--muted);line-height:1.35}.prodStockBox{display:flex;gap:8px;align-items:end}.prodStockBox input{width:90px}.marketBox{display:grid;grid-template-columns:42px minmax(250px,1fr) 110px 90px 100px 42px;gap:10px;align-items:center;margin:0 0 8px;padding:8px;border:1px solid #eee2c8;border-radius:12px;background:#fffaf0}.marketBox input{padding:7px 8px;border-radius:9px;font-size:12px}.marketBox .id{font-size:11px}.marketBox .pubvar{display:grid;grid-template-columns:minmax(130px,1fr) minmax(90px,120px);gap:6px;white-space:nowrap;overflow:hidden;min-width:0}.marketBox .pubvar span{overflow:hidden;text-overflow:ellipsis}.marketStatus{justify-content:center}.marketStatus.inactive{background:#fef3f2;color:var(--bad)}.productKebab{border:1px solid #eee2c8;border-radius:10px;background:#fff;padding:7px 9px;text-align:center}.productRowStatus{font-size:12px;margin-top:6px;min-height:16px}.gestMenu{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:14px}.gestMenu a{padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#fff;color:#111;text-decoration:none;font-weight:800;text-align:center}.gestMenu a.active{background:var(--brand);border-color:var(--brand2)}.gestMenu a.disabled{opacity:.55}
+
+.comboToolbar{display:grid;grid-template-columns:minmax(360px,1fr) 120px auto;gap:14px;align-items:end;margin-bottom:14px}
+.comboEditor{display:grid;grid-template-columns:220px minmax(420px,1fr) 130px auto;gap:14px;align-items:end;margin:14px 0;padding:14px;border:1px solid #eee2c8;border-radius:14px;background:#fffaf0}.comboEditor input,.comboEditor select{height:42px;padding:10px 12px;border:2px solid #454545;border-radius:12px;background:#fff;font-size:13px}.comboEditor label{font-size:12px;font-weight:800;color:#4b3f29}
+.comboComponents{display:grid;gap:10px;margin:12px 0}.comboComponentRow{display:grid;grid-template-columns:220px 100px minmax(420px,1fr) 90px;gap:12px;align-items:end;padding:12px;border:1px solid #eee2c8;border-radius:14px;background:#fff;position:relative}.comboComponentRow label{font-size:12px;font-weight:800;color:#4b3f29}.comboComponentRow input{height:42px;padding:10px 12px;border:2px solid #454545;border-radius:12px;background:#fff;font-size:13px}.comboComponentRow .componentName{font-size:12px;color:var(--muted);line-height:1.3;min-height:42px;border:1px solid #eee2c8;border-radius:12px;background:#fffaf0;padding:10px 12px;display:flex;align-items:center}.comboComponentRow .componentName.ok{color:var(--ok);font-weight:800}.comboComponentRow .componentName.bad{color:var(--bad);font-weight:800}.comboComponentRow button{height:42px;padding:8px 12px;align-self:end}.comboSuggest{grid-column:1/4;position:static;width:100%;max-height:220px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);z-index:30;overflow:auto;margin-top:6px}.comboSuggest button{width:100%;border:0;border-radius:0;background:#fff;color:#111;justify-content:flex-start;text-align:left;padding:10px 12px;height:auto}.comboSuggest button:hover{background:#fffaf0}.comboSuggest .sku{font-weight:900;margin-right:8px}.comboSuggest .desc{font-size:12px;color:var(--muted)}.comboTable{min-width:980px}.comboTable th:nth-child(1){width:170px}.comboTable th:nth-child(3){width:170px}.comboTable th:nth-child(5){width:190px}.comboActions{display:flex;gap:8px;flex-wrap:wrap}.comboMiniTable{width:100%;font-size:12px;margin-top:8px}.comboMiniTable th{position:static}.gestPanel{display:none}.gestPanel.active{display:block}
+
+@media(max-width:900px){.productToolbar,.comboToolbar,.comboEditor{grid-template-columns:1fr}.productsTable{min-width:980px}.comboTable{min-width:980px}.comboComponentRow{grid-template-columns:1fr}.comboSuggest{position:static;width:100%;box-shadow:none;margin-top:6px}}
+
+/* v17 old ERP module port */
+.inventoryFilters{grid-template-columns:repeat(12,1fr);align-items:end}
+.inventoryFilters .col-search{grid-column:span 6}
+.inventoryFilters .col-small{grid-column:span 2}
+.inventoryFilters .col-stockle{grid-column:span 2}
+.inventoryFilters .col-actions{grid-column:span 4}
+.inventoryFilters input,.inventoryFilters select,.inventoryTable input,.marketBox input,.bundleTool input,.bundleTool select,.productTool input,.productTool select{
+  width:100%;
+  border:1px solid #cfc4ad;
+  border-radius:12px;
+  background:#fff;
+  padding:10px 11px;
+  font-size:14px;
+  color:var(--ink);
+  outline:none;
+  box-sizing:border-box;
+}
+.inventoryFilters label,.bundleTool label,.productTool label{text-transform:uppercase;letter-spacing:.04em;font-size:12px;font-weight:800;color:#504b43}
+.inventoryWrap{overflow-x:hidden}
+.inventoryTable{table-layout:fixed;min-width:1040px}
+.inventoryTable th:nth-child(1){width:145px}
+.inventoryTable th:nth-child(2){width:225px}
+.inventoryTable th:nth-child(3){width:170px}
+.inventoryTable th:nth-child(5){width:46px}
+.inventoryTable td{overflow-wrap:anywhere}
+.comboOldTable{min-width:1080px}
+.comboOldTable th:nth-child(1){width:175px}
+.comboOldTable th:nth-child(2){width:305px}
+.comboOldTable th:nth-child(3){width:92px}
+.comboOldTable th:nth-child(5){width:46px}
+.comboOldTable td:nth-child(3){text-align:center}
+.comboCompTable{table-layout:fixed;margin-top:0;font-size:12px;border-radius:10px}
+.comboCompTable th{position:static}
+.comboCompTable th:nth-child(1),.comboCompTable td:nth-child(1){width:150px}
+.comboCompTable th:nth-child(3),.comboCompTable td:nth-child(3){width:52px;text-align:center}
+.comboCompTable th:nth-child(4),.comboCompTable td:nth-child(4){width:62px;text-align:center}
+.comboCompTable th:nth-child(2),.comboCompTable td:nth-child(2){width:auto}
+.comboCompTable td{padding:7px 8px}
+.marketBox{display:grid;grid-template-columns:44px minmax(190px,1fr) 82px 58px 78px;gap:4px;align-items:center;margin-bottom:7px;padding:8px;border:1px solid #eee2c8;border-radius:12px;background:#fffaf0}
+.marketBox input{padding:7px 8px;border-radius:9px;font-size:12px}
+.marketBox .stockInput{width:58px}.marketBox .priceInput{width:82px}.marketBox .id{font-size:11px}
+.marketBox .pubvar{display:grid;grid-template-columns:minmax(122px,1fr) minmax(108px,118px);gap:6px;white-space:nowrap;overflow:hidden;min-width:0}
+.marketBox .pubvar span{overflow:hidden;text-overflow:ellipsis}
+.marketStatus.warn,.marketStatus.inactive{background:transparent!important;padding:0!important;border-radius:0!important;font-weight:950}
+.marketStatus.warn{color:var(--warn)!important}.marketStatus.inactive{color:var(--bad)!important}
+.invStockBox{display:flex;gap:8px;align-items:flex-end;justify-content:flex-end;flex-wrap:wrap;text-align:right}
+.invStockBox input{width:88px}.invStockBox .stockControls{display:flex;flex-direction:column;align-items:flex-end}
+.inventoryPager{margin-top:12px}.actionCell{text-align:center}
+details.kebabMenu{position:relative}details.kebabMenu summary{list-style:none;cursor:pointer;border:1px solid var(--line);border-radius:10px;background:#fffaf0;padding:7px 10px;font-weight:900}details.kebabMenu summary::-webkit-details-marker{display:none}.kebabPanel{position:absolute;right:0;top:34px;min-width:190px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:8px;z-index:50;display:grid;gap:6px}.kebabPanel button{width:100%;justify-content:flex-start}
+
+.productTool{border:1px solid var(--line);border-radius:16px;background:#fffaf0;padding:14px;margin-top:12px}
+.productTool .productGrid{display:grid;grid-template-columns:170px minmax(300px,1fr) minmax(180px,260px) minmax(170px,240px) 120px 120px;gap:10px;align-items:end}
+.productListingLines{margin-top:12px;display:grid;gap:8px}
+.productListingLine{display:grid;grid-template-columns:82px minmax(130px,1fr) minmax(90px,120px) 105px 92px 118px 44px;gap:8px;align-items:end}
+.productListingLine .plHidden{display:none}
+.productTool .toolSub{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.35}
+@media(max-width:1200px){.productTool .productGrid,.productListingLine{grid-template-columns:1fr}}
+.bundleTool{border:1px solid var(--line);border-radius:16px;background:#fffaf0;padding:14px;margin-top:12px}.bundleTool .bundleGrid{display:grid;grid-template-columns:170px minmax(260px,1fr) 120px;gap:10px;align-items:end}.bundleComponentLine{display:grid;grid-template-columns:150px 1fr 90px 44px;gap:8px;align-items:end;margin-top:8px}.bundleSuggest{position:absolute;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);z-index:80;max-height:260px;overflow:auto;width:min(620px,calc(100vw - 360px));display:none}.bundleSuggestItem{padding:9px 11px;border-bottom:1px solid #eee2c8;cursor:pointer}.bundleSuggestItem:hover{background:#fffaf0}.fieldRel{position:relative}
+@media(max-width:1000px){.inventoryFilters .col-search,.inventoryFilters .col-small,.inventoryFilters .col-stockle,.inventoryFilters .col-actions{grid-column:1/-1}.bundleTool .bundleGrid,.bundleComponentLine{grid-template-columns:1fr}.inventoryTable{min-width:900px}}
+
+
+/* v1.0.25: old ERP sales layout grid */
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.col-2{grid-column:span 2}.col-3{grid-column:span 3}.col-4{grid-column:span 4}.col-5{grid-column:span 5}.col-6{grid-column:span 6}.col-8{grid-column:span 8}.col-10{grid-column:span 10}.col-12{grid-column:span 12}
+@media(max-width:900px){.col-2,.col-3,.col-4,.col-5,.col-6,.col-8,.col-10,.col-12{grid-column:1/-1}.orderHead{grid-template-columns:1fr!important}.lineItem{grid-template-columns:1fr!important}}
+#ml-ventas .grid{display:grid!important;grid-template-columns:repeat(12,1fr)!important;gap:14px!important;align-items:end!important}
+#ml-ventas .col-8{grid-column:span 8!important}#ml-ventas .col-2{grid-column:span 2!important}
+#ml-ventas input,#ml-ventas select{width:100%;height:44px;border:1px solid #cfc4ad;border-radius:12px;background:#fff;padding:10px 11px;font-size:14px;color:var(--ink);outline:none;box-sizing:border-box}
+#ml-ventas .btnrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+#ml-ventas .card{max-width:none!important}
+
+/* v1.0.29: TN publicaciones/ventas old ERP toolbar sizing */
+#tn-publicaciones .grid,#tn-ventas .grid{display:grid!important;grid-template-columns:repeat(12,1fr)!important;gap:14px!important;align-items:end!important}
+#tn-publicaciones .col-8,#tn-ventas .col-8{grid-column:span 8!important}
+#tn-publicaciones .col-2,#tn-ventas .col-2{grid-column:span 2!important}
+#tn-publicaciones label,#tn-ventas label{display:block!important;font-size:12px!important;font-weight:800!important;color:#504b43!important;margin-bottom:6px!important;text-transform:uppercase!important;letter-spacing:.04em!important}
+#tn-publicaciones input,#tn-publicaciones select,#tn-ventas input,#tn-ventas select{width:100%!important;height:44px!important;border:1px solid #cfc4ad!important;border-radius:12px!important;background:#fff!important;padding:10px 11px!important;font-size:14px!important;color:var(--ink)!important;outline:none!important;box-sizing:border-box!important}
+#tn-publicaciones button,#tn-ventas button{border-radius:12px!important;min-height:44px!important;padding:10px 14px!important;font-weight:800!important}
+#tn-publicaciones .btnrow,#tn-ventas .btnrow{display:flex!important;gap:10px!important;flex-wrap:wrap!important;align-items:center!important}
+#tn-publicaciones .card,#tn-ventas .card{max-width:none!important}
+#tn-publicaciones .orderHead{grid-template-columns:1.05fr 1.35fr .7fr .7fr auto!important}
+@media(max-width:900px){#tn-publicaciones .col-8,#tn-publicaciones .col-2,#tn-ventas .col-8,#tn-ventas .col-2{grid-column:1/-1!important}}
+
+
+/* v1.0.38: ventas ML/TN desde DB; captura queda en webhook/poller */
+#ml-publicaciones .grid,#tn-publicaciones .grid{display:grid!important;grid-template-columns:repeat(12,1fr)!important;gap:14px!important;align-items:end!important}
+#ml-publicaciones .col-8,#tn-publicaciones .col-8{grid-column:span 8!important}
+#ml-publicaciones .col-2,#tn-publicaciones .col-2{grid-column:span 2!important}
+#ml-publicaciones label,#tn-publicaciones label{display:block!important;font-size:12px!important;font-weight:800!important;color:#504b43!important;margin-bottom:6px!important;text-transform:uppercase!important;letter-spacing:.04em!important}
+#ml-publicaciones input,#ml-publicaciones select,#tn-publicaciones input,#tn-publicaciones select{width:100%!important;height:44px!important;border:1px solid #cfc4ad!important;border-radius:12px!important;background:#fff!important;padding:10px 11px!important;font-size:14px!important;color:var(--ink)!important;outline:none!important;box-sizing:border-box!important}
+#ml-publicaciones button,#tn-publicaciones button{border-radius:12px!important;min-height:44px!important;padding:10px 14px!important;font-weight:800!important}
+#ml-publicaciones .card,#tn-publicaciones .card{max-width:none!important}
+.pubReportTable{table-layout:fixed;min-width:1160px}
+.pubReportTable th:nth-child(1),.pubReportTable td:nth-child(1){width:170px}
+.pubReportTable th:nth-child(2),.pubReportTable td:nth-child(2){width:420px}
+.pubReportTable th:nth-child(3),.pubReportTable td:nth-child(3){width:110px}
+.pubReportTable th:nth-child(4),.pubReportTable td:nth-child(4){width:auto}
+.pubProductName{font-weight:800;line-height:1.22}
+.pubProductSub{font-size:12px;color:var(--muted);line-height:1.25;margin-top:2px}
+.pubReportTable .marketBox{grid-template-columns:42px minmax(280px,1fr) 110px 90px 100px!important}
+.pubReportTable .marketBox .pubvar{grid-template-columns:minmax(140px,1fr) minmax(110px,130px)}
+@media(max-width:900px){#ml-publicaciones .col-8,#ml-publicaciones .col-2,#tn-publicaciones .col-8,#tn-publicaciones .col-2{grid-column:1/-1!important}}
+
+</style>
+</head>
+<body>
+<div class="app">
+<aside><div class="brand"><div class="brandTop"><span class="appMark"><img src="./favicon_xeleria.png?v=18" alt="XelerIA"></span><div class="brandName">XelerIA</div><div class="tenantBadge" id="tenantBadge">PC</div></div><p id="tenantSubtitle">Panel operativo</p></div><nav><button class="navBtn active" data-view="inicio">Inicio / Dashboard</button><div class="navTitle">Mercado Libre</div><button class="navBtn" data-view="ml-publicaciones">Publicaciones</button><button class="navBtn" data-view="ml-ventas">Ventas</button><div class="navTitle">Tienda Nube</div><button class="navBtn" data-view="tn-publicaciones">Publicaciones</button><button class="navBtn" data-view="tn-ventas">Ventas</button><div class="navTitle">Gestión</div><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="consola">Detalle técnico</button></nav><div class="sidebarFoot">Pantalla: XelerIA 1.0.38-sales-db-only-webhook-ingest<br>Servidor: <span id="footBackendVer">?</span><br><span class="muted">Cambios externos desactivados</span></div></aside>
+<main><div class="topbar"><h2 id="pageTitle">Inicio</h2><div class="crumb" id="pageCrumb">Panel operativo</div></div>
+<section id="inicio" class="view active"><div class="hero"><div class="btnrow" style="justify-content:space-between"><div><h3>Dashboard</h3><p>Resumen operativo de XelerIA. El dashboard informa; no dispara operaciones.</p></div><button class="secondary" onclick="refreshAll()">Actualizar</button></div><div id="homeStatus" class="status"></div></div><div class="grid"><div class="col-3 stat good"><div class="k">Servidor</div><div class="v" id="stApi">?</div><div class="s">Versión <span id="dashBackendVer">?</span></div></div><div class="col-3 stat" id="mlCardMini"><div class="k">Mercado Libre</div><div class="v" id="stML">?</div><div class="s" id="stMLSub">Conexión</div></div><div class="col-3 stat" id="tnCardMini"><div class="k">Tienda Nube</div><div class="v" id="stTN">?</div><div class="s" id="stTNSub">Conexión</div></div><div class="col-3 stat warnline"><div class="k">Cambios externos</div><div class="v">Bloqueado</div><div class="s">No modifica stock/precios en ML/TN</div></div></div><div class="card"><h3>Resumen operativo</h3><div id="snapshotWrap" class="tableWrap"><div class="dashEmpty">Tocá “Actualizar”.</div></div></div></section>
+<section id="ml-publicaciones" class="view"><div class="card"><h3>Mercado Libre · Publicaciones</h3><div class="grid"><div class="col-8"><label>Buscar publicación ML</label><input id="mlPubSearch" oninput="debouncedPublications('ML')" placeholder="SKU, producto, publicación, variante, título"></div><div class="col-2"><label>Mostrar</label><select id="mlPubLimit" onchange="loadPublicationsReport('ML',0)"><option selected>20</option><option>40</option><option>50</option></select></div><div class="col-2"><label>&nbsp;</label><button class="secondary" onclick="clearPublicationsSearch('ML')">Limpiar</button></div><div class="col-12"><div class="btnrow" style="margin-top:0"><button class="secondary" onclick="loadPublicationsReport('ML',0,true)">Actualizar vista</button></div></div></div><div id="mlPubStatus" class="status"></div><div id="mlPubResults" style="margin-top:12px"></div><div id="mlPubPager" class="btnrow" style="margin-top:12px"></div></div></section>
+<section id="tn-publicaciones" class="view"><div class="card"><h3>Tienda Nube · Publicaciones</h3><div class="grid"><div class="col-8"><label>Buscar publicación TN</label><input id="tnPubSearch" oninput="debouncedPublications('TN')" placeholder="SKU, producto, publicación, variante, título"></div><div class="col-2"><label>Mostrar</label><select id="tnPubLimit" onchange="loadPublicationsReport('TN',0)"><option selected>20</option><option>40</option><option>50</option></select></div><div class="col-2"><label>&nbsp;</label><button class="secondary" onclick="clearPublicationsSearch('TN')">Limpiar</button></div><div class="col-12"><div class="btnrow" style="margin-top:0"><button class="secondary" onclick="loadPublicationsReport('TN',0,true)">Actualizar vista</button></div></div></div><div id="tnPubStatus" class="status"></div><div id="tnPubResults" style="margin-top:12px"></div><div id="tnPubPager" class="btnrow" style="margin-top:12px"></div></div></section>
+<section id="ml-ventas" class="view"><div class="card"><h3>Mercado Libre · Ventas capturadas</h3><div class="grid"><div class="col-8"><label>Buscar venta ML</label><input id="mlVentasSearch" oninput="debouncedSales('ML')" placeholder="Nombre, SKU, venta, orden API, producto"></div><div class="col-2"><label>Mostrar</label><select id="mlVentasLimit" onchange="loadRecent('ML',0)"><option selected>20</option><option>40</option><option>50</option></select></div><div class="col-2"><label>&nbsp;</label><button class="secondary" onclick="clearSalesSearch('ML')">Limpiar</button></div></div><div class="btnrow" style="margin-top:10px"><button class="secondary" onclick="loadRecent('ML',0)">Actualizar</button></div><div id="mlVentasStatus" class="status"></div><div id="mlVentasTable" style="margin-top:12px"></div><div id="mlVentasPager" class="btnrow" style="margin-top:12px"></div></div></section>
+<section id="tn-ventas" class="view"><div class="card"><h3>Tienda Nube · Ventas capturadas</h3><div class="grid"><div class="col-8"><label>Buscar venta TN</label><input id="tnVentasSearch" oninput="debouncedSales('TN')" placeholder="Nombre, SKU, número, orden API, producto"></div><div class="col-2"><label>Mostrar</label><select id="tnVentasLimit" onchange="loadRecent('TN',0)"><option selected>20</option><option>40</option><option>50</option></select></div><div class="col-2"><label>&nbsp;</label><button class="secondary" onclick="clearSalesSearch('TN')">Limpiar</button></div></div><div class="btnrow" style="margin-top:10px"><button class="secondary" onclick="loadRecent('TN',0)">Actualizar</button></div><div id="tnVentasStatus" class="status"></div><div id="tnVentasTable" style="margin-top:12px"></div><div id="tnVentasPager" class="btnrow" style="margin-top:12px"></div></div></section>
+
+<section id="inventario" class="view">
+  <div class="gestMenu erpOldGestMenu">
+    <a href="#" id="gestTabProductos" class="active" onclick="return showGestPanel('productos')">Productos</a>
+    <a href="#" id="gestTabCombos" onclick="return showGestPanel('combos')">Combos / Kits</a>
+    <a href="#" class="disabled">Envío a Full</a>
+    <a href="#" class="disabled">Movimientos de stock</a>
+    <a href="#" class="disabled">Clientes ML / TN</a>
+    <a href="#" class="disabled">Base de Conocimiento IA</a>
+    <a href="#" class="disabled">ARCA reportes</a>
+  </div>
+
+  <div id="gestPanelProductos" class="gestPanel active">
+    <div class="card">
+      <h3>Gestión · productos</h3>
+      <p>Stock ERP editable + publicaciones TN/ML vinculadas por SKU. Guardar genera trabajos de sincronización; no escribe directo en ML/TN.</p>
+      <div class="grid inventoryFilters">
+        <div class="col-search"><label>Buscar SKU / producto</label><input id="invSearch" oninput="debouncedSearch('inv')" placeholder="Ej: LCBOLABCA60, virola, suela..."></div>
+        <div class="col-small"><label>Canal</label><select id="invMarket" onchange="searchInventory(0,true)"><option value="">Todos</option><option>TN</option><option>ML</option></select></div>
+        <div class="col-stockle"><label>Stock &lt;=</label><input id="invMaxStock" type="number" step="1" placeholder="Ej: 0" oninput="debouncedSearch('inv')"></div>
+        <div class="col-small"><label>Cantidad</label><select id="invLimit" class="limitSelect" onchange="searchInventory(0,true)"><option selected>20</option><option>40</option><option>80</option><option>100</option></select></div>
+        <div class="col-small"><label>&nbsp;</label><button onclick="searchInventory(0,true)">Filtrar</button></div>
+        <div class="col-12"><div class="btnrow" style="margin-top:4px">
+          <button class="primary" onclick="renderProductTool();return false;">Agregar producto</button>
+          <button class="primary" onclick="return showGestPanel('combos')">Agregar combo</button>
+          <button class="secondary" onclick="showProductLinkHint();return false;">Vincular publicaciones</button>
+          <button class="secondary" onclick="downloadProductsCsv()">Bajar planilla inventario</button>
+          <input type="file" id="csvFile" accept=".csv" style="max-width:340px" disabled>
+          <button class="secondary" onclick="return productsPending('Subir planilla inventario')">Subir planilla inventario</button>
+        </div></div>
+      </div>
+      <div id="inventoryTools" class="hidden" style="margin-top:12px"></div>
+      <div id="invStatus" class="status"></div>
+      <div id="invResults" class="tableWrap inventoryWrap" style="margin-top:12px"></div>
+      <div id="invPager" class="btnrow inventoryPager"></div>
+    </div>
+  </div>
+
+  <div id="gestPanelCombos" class="gestPanel">
+    <div class="card">
+      <h3>Gestión · Combos / Kits</h3>
+      <p>Alta, edición y baja de combos. El stock del combo se calcula desde sus componentes.</p>
+      <div class="grid inventoryFilters">
+        <div class="col-search"><label>Buscar combo</label><input id="comboSearch" oninput="debouncedSearch('combo')" placeholder="SKU, producto o componente"></div>
+        <div class="col-small"><label>Cantidad</label><select id="comboLimit" onchange="loadCombos()"><option>20</option><option selected>50</option><option>100</option><option>200</option></select></div>
+        <div class="col-actions"><label>&nbsp;</label><div class="btnrow"><button onclick="loadCombos()">Buscar</button><button class="primary" onclick="toggleInventoryTool('bundle')">Agregar combo</button></div></div>
+      </div>
+      <div id="comboTools" class="hidden" style="margin-top:12px"></div>
+      <div id="comboStatus" class="status"></div>
+      <div id="combosStatus" class="status"></div>
+      <div id="comboResults" class="tableWrap inventoryWrap" style="margin-top:12px"></div>
+    </div>
+  </div>
+</section>
+<section id="configuracion" class="view">
+  <div class="configAnchor">
+    <a href="#opcionesUsuario">Opciones del usuario</a>
+    <a href="#datosUsuario">Datos fiscales</a>
+    <a href="#facturacionApp">Facturación XelerIA</a>
+    <a href="#migracion">Configurar inventario</a>
+  </div>
+
+  <div class="grid">
+    <div class="col-12 card" id="opcionesUsuario">
+      <h3>Opciones del usuario</h3>
+      <p>Preferencias operativas de la cuenta.</p>
+
+      <div class="formGrid">
+        <div class="field">
+          <label>Nombre visible</label>
+          <input id="cfgNombreFantasia" placeholder="Ej: Planeta Casa">
+        </div>
+
+        <div class="field">
+          <label>Logo del comercio</label>
+          <div class="logoLine">
+            <div class="logoPreview" id="cfgLogoPreview"><span>Logo</span></div>
+            <input id="cfgLogo" type="hidden">
+            <input id="cfgLogoFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none" onchange="handleLogoFileSelected(event)">
+            <div class="logoControls">
+              <button class="secondary" onclick="chooseLogoFile()">Subir logo</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="field full">
+          <label>Facturación automática por canal</label>
+          <div class="inlineChecks">
+            <label class="checkLine"><input type="checkbox" id="cfgAutoML"> Emitir factura automática para ventas Mercado Libre</label>
+            <label class="checkLine"><input type="checkbox" id="cfgAutoTN"> Emitir factura automática para ventas Tienda Nube</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="btnrow">
+        <button class="secondary" onclick="saveUserOptions()">Guardar opciones</button>
+      </div>
+      <div id="cfgOptionsStatus" class="status"></div>
+    </div>
+
+    <div class="col-12 card" id="datosUsuario">
+      <h3>Datos fiscales</h3>
+      <p>Datos necesarios para facturar ventas del usuario.</p>
+
+      <div class="formGrid">
+        <div class="field">
+          <label>CUIT</label>
+          <input id="cfgCuit" inputmode="numeric" pattern="[0-9]*" maxlength="11" placeholder="Ej: 30712345678" oninput="normalizeCuitInput()" onblur="validateFiscal()">
+        </div>
+        <div class="field">
+          <label>Razón social</label>
+          <input id="cfgRazonSocial">
+        </div>
+        <div class="field">
+          <label>Condición IVA</label>
+          <select id="cfgCondIva">
+            <option>Responsable Inscripto</option>
+            <option>Monotributo</option>
+            <option>Exento</option>
+            <option>Consumidor Final</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Punto de venta ARCA</label>
+          <input id="cfgPtoVta" inputmode="numeric" pattern="[0-9]*" placeholder="Ej: 6">
+        </div>
+        <div class="field full">
+          <label>Domicilio fiscal</label>
+          <input id="cfgDomicilio">
+        </div>
+        <div class="field full">
+          <label>Observaciones internas</label>
+          <textarea id="cfgNotas"></textarea>
+        </div>
+      </div>
+
+      <div class="btnrow">
+        <button class="secondary" onclick="validateFiscal()">Revisar CUIT</button>
+        <button class="secondary" onclick="saveFiscalData()">Guardar datos fiscales</button>
+        <span id="cfgFiscalStatus" class="small"></span>
+      </div>
+    </div>
+
+    <div class="col-12 card" id="facturacionApp">
+      <h3>Facturación XelerIA</h3>
+      <div class="grid">
+        <div class="col-4">
+          <div class="billingBox"><b>Plan actual</b><p>Standard</p></div>
+        </div>
+        <div class="col-4">
+          <div class="billingBox"><b>Pago Mercado Pago</b><p>Botón reservado para pago.</p><button class="primary" onclick="alert('Pago pendiente de conectar.')">Pagar con Mercado Pago</button></div>
+        </div>
+        <div class="col-4">
+          <div class="billingBox"><b>Facturas XelerIA</b><p>Descarga de facturas emitidas por el uso de la app.</p><button class="secondary" onclick="alert('Reporte pendiente.')">Ver facturas</button></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 card" id="migracion">
+      <h3>Configurar inventario</h3>
+      <p>XelerIA revisa tus canales y te muestra qué cambios conviene guardar.</p>
+
+      <div class="grid">
+        <div class="col-6 card connectCard" id="mlConnectCard">
+          <h3>Mercado Libre</h3>
+          <p id="mlConnectText">Estado: consultando…</p>
+          <button id="mlConnectBtn" class="primary" onclick="connectML()">Conectar ML</button>
+        </div>
+        <div class="col-6 card connectCard" id="tnConnectCard">
+          <h3>Tienda Nube</h3>
+          <p id="tnConnectText">Estado: consultando…</p>
+          <button id="tnConnectBtn" class="primary" onclick="connectTN()">Conectar TN</button>
+        </div>
+      </div>
+
+      <div class="btnrow" style="margin:12px 0 8px">
+        <button class="secondary importBtn" onclick="startStaging('ML')">Configurar desde ML</button>
+        <button class="secondary importBtn" onclick="startStaging('TN')">Configurar desde TN</button>
+      </div>
+
+      <div class="legend">
+        <span><i class="sw" style="background:var(--new)"></i> Publicación nueva</span>
+        <span><i class="sw" style="background:var(--missing)"></i> Publicaciones no encontradas</span>
+        <span><i class="sw" style="background:var(--review)"></i> Necesita revisión</span>
+      </div>
+
+      <div id="syncMatrixStatus" class="status">La configuración está cerrada. Tocá “Configurar inventario” para empezar.</div>
+      <div id="syncMatrixWrap" class="syncMatrixWrap" style="display:none"><div class="dashEmpty">Sin revisión abierta.</div></div>
+      <div class="stickySave" id="classificationActions" style="display:none">
+        <div class="btnrow">
+          <button class="primary" id="saveMatrixBtn" onclick="applyStaging()">Guardar cambios</button>
+          <button class="danger" id="cancelMatrixBtn" onclick="cancelStaging()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<section id="consola" class="view"><div class="card"><h3>Detalle técnico</h3><pre id="rawConsole" class="console">Inicializando…</pre></div></section>
+</main></div>
+<script>
+const FRONT_VERSION = '1.0.38-sales-db-only-webhook-ingest';
+const API_BASE='https://api.xeleria.com.ar/api';
+const RAW_LIMIT=12000;
+let STAGING_SESSION_ID='';
+const hashParams=new URLSearchParams((location.hash||'').replace(/^#/,''));
+const incomingSession=hashParams.get('session');if(incomingSession){localStorage.setItem('xeleria_session',incomingSession);history.replaceState(null,'',location.pathname+location.search)}
+
+function xeleriaSessionToken(){return localStorage.getItem('xeleria_session')||''}
+
+function readXeleriaSessionPayload(){const token=xeleriaSessionToken();if(!token||!token.includes('.'))return null;try{const body=token.split('.')[0];
+const padded=body+'='.repeat((4-body.length%4)%4);return JSON.parse(atob(padded.replace(/-/g,'+').replace(/_/g,'/')))}catch(e){return null}}
+
+const xeleriaSessionPayload=readXeleriaSessionPayload();
+const DEFAULT_TENANT_ID='fbfa89c2-b377-49b3-9d18-d7d313c01db1';
+const params=new URLSearchParams(location.search);if(params.get('tenant')){localStorage.setItem('xeleria_tenant_id',params.get('tenant'));history.replaceState(null,'',location.pathname)}
+
+let TENANT_ID=(xeleriaSessionPayload&&xeleriaSessionPayload.tenant_id)||localStorage.getItem('xeleria_tenant_id')||DEFAULT_TENANT_ID;if(xeleriaSessionPayload&&xeleriaSessionPayload.tenant_id)localStorage.setItem('xeleria_tenant_id',xeleriaSessionPayload.tenant_id);
+let INTEGRATIONS={};
+let TENANT_SETTINGS={};
+let PUBLICATION_ROWS=[];
+const $=id=>document.getElementById(id);
+const ownerKey=()=>localStorage.getItem('xeleria_owner_key')||'';
+
+function esc(v){return String(v??'').replace(/[&<>\"]/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[s]))}
+
+function money(v){return Number(v||0).toLocaleString('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:0})}
+
+function boolLabel(v){
+  if(v===true || String(v).toLowerCase()==='true') return 'Visible';
+  if(v===false || String(v).toLowerCase()==='false') return 'Oculta';
+  return v;
+}
+
+function formatCell(v){return esc(boolLabel(v))}
+
+function visibilityPill(v){
+  const visible = v===true || String(v).toLowerCase()==='true';
+  return visible ? '<span class="pill ok">Visible</span>' : '<span class="pill inactive">Oculta</span>';
+}
+
+function pill(ok,text,cls=''){return `<span class="pill ${ok?'ok':cls||'bad'}">${esc(text)}</span>`}
+
+function setStatus(id,msg,cls=''){const el=$(id);if(!el)return;el.className='status '+cls;el.textContent=msg}
+
+function cleanLabel(v){if(!v)return'';if(typeof v==='object')return v.es||v.pt||v.en||Object.values(v)[0]||'';
+const s=String(v);
+const m=s.match(/['\"]es['\"]\s*:\s*['\"]([^'\"]+)/);return m?m[1]:s}
+
+function normalizar(v){
+  return String(v??'')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g,'')
+    .toLowerCase()
+    .trim();
+}
+function dateAR(v){
+  if(!v)return '';
+  try{return new Date(v).toLocaleString('es-AR',{dateStyle:'short',timeStyle:'short',hour12:false})}
+  catch(_){return String(v)}
+}
+
+function compact(value){if(!value||typeof value!=='object'||Array.isArray(value))return value;
+const out={...value};for(const k of Object.keys(out)){if(Array.isArray(out[k])&&out[k].length>10){const n=out[k].length;out[k]=out[k].slice(0,10);out[k].push({truncated:`${n-10} filas más`})}}return out}
+
+function raw(value){const el=$('rawConsole');if(!el)return;
+let text=typeof value==='string'?value:JSON.stringify(compact(value),null,2);if(text.length>RAW_LIMIT)text=text.slice(0,RAW_LIMIT)+'\n...\n[truncado para no colgar la página]';el.textContent=text}
+
+function clearRaw(msg=''){const el=$('rawConsole');if(el)el.textContent=msg}
+
+function authHeaders(extra={}){const headers={...extra};
+const session=xeleriaSessionToken();if(session){headers.Authorization=`Bearer ${session}`;return headers}if(ownerKey())headers['x-xeleria-owner-key']=ownerKey();return headers}
+
+async function api(path,options={}){clearRaw(`Consultando ${path}…`);
+const res=await fetch(`${API_BASE}${path}`,{...options,headers:authHeaders(options.headers||{})});
+const text=await res.text();
+let data;try{data=JSON.parse(text)}catch{data={raw:text}};if(!res.ok)throw{status:res.status,data};raw(data);return data}
+
+function post(path){return api(path,{method:'POST'})}
+
+function postJSON(path,body){return api(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})}
+
+function table(rows,cols,max=120){if(!rows||!rows.length)return '<div class="dashEmpty">Sin datos.</div>';
+const visible=rows.slice(0,max);
+const tail=rows.length>max?`<div class="dashEmpty">Mostrando ${max} de ${rows.length} filas.</div>`:'';return `<table><thead><tr>${cols.map(c=>`<th>${esc(c.label)}</th>`).join('')}</tr></thead><tbody>${visible.map(r=>`<tr>${cols.map(c=>`<td>${c.render?c.render(r):formatCell(r[c.key])}</td>`).join('')}</tr>`).join('')}</tbody></table>${tail}`}
+
+function showView(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));$(id)?.classList.add('active');
+document.querySelectorAll('.navBtn').forEach(b=>b.classList.toggle('active',b.dataset.view===id));
+const title=document.querySelector(`.navBtn[data-view="${id}"]`)?.textContent?.trim()||'XelerIA';$('pageTitle').textContent=title;$('pageCrumb').textContent='XelerIA';if(id==='configuracion')loadUserOptions();if(id==='inventario')loadInventoryMaster(true);if(id==='ml-publicaciones')enterPublications('ML');if(id==='ml-ventas')loadRecent('ML',0);if(id==='tn-publicaciones')enterPublications('TN');if(id==='tn-ventas')loadRecent('TN',0)}document.querySelectorAll('.navBtn[data-view]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));
+
+function setImportBusy(busy){document.querySelectorAll('.importBtn').forEach(b=>b.disabled=busy);['saveMatrixBtn','cancelMatrixBtn'].forEach(id=>{if($(id))$(id).disabled=busy})}
+
+function connectML(){if(INTEGRATIONS.ML?.connected){alert('Ya conectado a Mercado Libre.');return}if(!ownerKey()){alert('Cargá el código beta privado desde inicio.html.');return}location.href=`${API_BASE}/oauth/ml/start/${encodeURIComponent(TENANT_ID)}?owner_key=${encodeURIComponent(ownerKey())}`}
+
+function connectTN(){if(INTEGRATIONS.TN?.connected){alert('Ya conectado a Tienda Nube.');return}if(!ownerKey()){alert('Cargá el código beta privado desde inicio.html.');return}location.href=`${API_BASE}/oauth/tn/start/${encodeURIComponent(TENANT_ID)}?owner_key=${encodeURIComponent(ownerKey())}`}
+function cfgKey() {
+  return `xeleria_cfg_${TENANT_ID}`;
+}
+
+const cfgIds = ['cfgLogo', 'cfgNombreFantasia', 'cfgRazonSocial', 'cfgCuit', 'cfgPtoVta', 'cfgDomicilio', 'cfgNotas', 'cfgCondIva'];
+
+function clearStatusSoon(id, ms = 2200) {
+  setTimeout(() => {
+    const el = $(id);
+    if (el) {
+      el.className = 'status';
+      el.textContent = '';
+    }
+  }, ms);
+}
+
+function normalizeCuitInput() {
+  const el = $('cfgCuit');
+  if (!el) return '';
+  el.value = (el.value || '').replace(/\D/g, '').slice(0, 11);
+  return el.value;
+}
+
+function updateLogoPreview() {
+  const box = $('cfgLogoPreview');
+  const url = ($('cfgLogo')?.value || '').trim();
+  if (!box) return;
+  if (!url) {
+    box.innerHTML = '<span>Logo</span>';
+    return;
+  }
+  box.innerHTML = `<img src="${esc(url)}" alt="Logo">`;
+}
+
+function chooseLogoFile() {
+  const input = $('cfgLogoFile');
+  if (input) input.click();
+}
+
+function resizeLogoFileTo500(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('No pude leer el archivo del logo.'));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('No pude procesar la imagen del logo.'));
+      img.onload = () => {
+        const size = 500;
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, size, size);
+        const ratio = Math.min(size / img.width, size / img.height);
+        const w = Math.max(1, Math.round(img.width * ratio));
+        const h = Math.max(1, Math.round(img.height * ratio));
+        const x = Math.round((size - w) / 2);
+        const y = Math.round((size - h) / 2);
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, x, y, w, h);
+        resolve(canvas.toDataURL('image/png'));
+      };
+      img.src = String(reader.result || '');
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handleLogoFileSelected(ev) {
+  const file = ev?.target?.files?.[0];
+  if (!file) return;
+  if (!/^image\//.test(file.type || '')) {
+    setStatus('cfgOptionsStatus', 'El logo debe ser una imagen.', 'badtxt');
+    clearStatusSoon('cfgOptionsStatus');
+    return;
+  }
+  try {
+    setStatus('cfgOptionsStatus', 'Procesando logo 500×500…', 'warntxt');
+    const resizedDataUrl = await resizeLogoFileTo500(file);
+    if ($('cfgLogo')) $('cfgLogo').value = resizedDataUrl;
+    updateLogoPreview();
+    await saveUserOptions();
+  } catch (e) {
+    setStatus('cfgOptionsStatus', e?.message || 'No pude procesar el logo.', 'badtxt');
+    clearStatusSoon('cfgOptionsStatus', 3500);
+  } finally {
+    if (ev?.target) ev.target.value = '';
+  }
+}
+
+
+function initialsFromName(name) {
+  const parts = String(name || 'XelerIA').trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return 'XE';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[1][0]).toUpperCase();
+}
+
+function renderTenantBrand() {
+  const name = (TENANT_SETTINGS?.display_name || '').trim()
+    || cleanLabel(INTEGRATIONS.TN?.account_label)
+    || cleanLabel(INTEGRATIONS.ML?.account_label)
+    || 'XelerIA';
+  const logo = (TENANT_SETTINGS?.logo_url || '').trim();
+  if ($('tenantSubtitle')) $('tenantSubtitle').textContent = name;
+  if ($('tenantBadge')) {
+    if (logo) {
+      $('tenantBadge').innerHTML = `<img src="${esc(logo)}" alt="${esc(name)}">`;
+      $('tenantBadge').title = name;
+    } else {
+      $('tenantBadge').textContent = initialsFromName(name);
+      $('tenantBadge').title = name;
+    }
+  }
+}
+
+function applyLocalConfig(c = {}) {
+  for (const id of cfgIds) {
+    if ($(id) && c[id] !== undefined && c[id] !== null) $(id).value = c[id] || '';
+  }
+  for (const id of ['cfgAutoML', 'cfgAutoTN']) {
+    if ($(id) && c[id] !== undefined) $(id).checked = !!c[id];
+  }
+  normalizeCuitInput();
+  updateLogoPreview();
+}
+
+function applyTenantSettings(settings = {}) {
+  if (!settings) return;
+  TENANT_SETTINGS = {
+    ...TENANT_SETTINGS,
+    display_name: settings.display_name || '',
+    logo_url: settings.logo_url || '',
+    auto_invoice_ml: !!settings.auto_invoice_ml,
+    auto_invoice_tn: !!settings.auto_invoice_tn
+  };
+  if ($('cfgNombreFantasia')) $('cfgNombreFantasia').value = TENANT_SETTINGS.display_name || '';
+  if ($('cfgLogo')) $('cfgLogo').value = TENANT_SETTINGS.logo_url || '';
+  if ($('cfgAutoML')) $('cfgAutoML').checked = !!TENANT_SETTINGS.auto_invoice_ml;
+  if ($('cfgAutoTN')) $('cfgAutoTN').checked = !!TENANT_SETTINGS.auto_invoice_tn;
+  updateLogoPreview();
+  renderTenantBrand();
+}
+
+function collectCfg() {
+  normalizeCuitInput();
+  const c = {};
+  for (const id of cfgIds) {
+    if ($(id)) c[id] = $(id).value || '';
+  }
+  for (const id of ['cfgAutoML', 'cfgAutoTN']) {
+    if ($(id)) c[id] = !!$(id).checked;
+  }
+  return c;
+}
+
+function collectTenantSettingsPayload() {
+  return {
+    display_name: ($('cfgNombreFantasia')?.value || '').trim(),
+    logo_url: ($('cfgLogo')?.value || '').trim(),
+    auto_invoice_ml: !!$('cfgAutoML')?.checked,
+    auto_invoice_tn: !!$('cfgAutoTN')?.checked
+  };
+}
+
+async function loadUserOptions() {
+  let local = {};
+  try {
+    local = JSON.parse(localStorage.getItem(cfgKey()) || '{}');
+  } catch {}
+  applyLocalConfig(local);
+
+  try {
+    const d = await api(`/tenant-settings/${TENANT_ID}`);
+    if (d.settings) {
+      applyTenantSettings(d.settings);
+      const merged = { ...local, ...collectCfg() };
+      localStorage.setItem(cfgKey(), JSON.stringify(merged));
+    }
+  } catch (e) {
+    raw(e);
+    // Fallback intencional: si el backend no responde, dejamos visible la copia local.
+  }
+}
+
+async function saveUserOptions() {
+  const local = collectCfg();
+  localStorage.setItem(cfgKey(), JSON.stringify(local));
+  try {
+    const d = await postJSON(`/tenant-settings/${TENANT_ID}`, collectTenantSettingsPayload());
+    if (d.settings) applyTenantSettings(d.settings);
+    setStatus('cfgOptionsStatus', 'Opciones guardadas.', 'oktxt');
+    clearStatusSoon('cfgOptionsStatus');
+  } catch (e) {
+    setStatus('cfgOptionsStatus', 'Error guardando opciones en servidor. Quedó copia local.', 'badtxt');
+    raw(e);
+  }
+}
+
+function cuitDigits() {
+  return normalizeCuitInput();
+}
+
+function validCuit(digits) {
+  if (!/^\d{11}$/.test(digits)) return false;
+  const mult = [5, 4, 3, 2, 7, 6, 5, 4, 3, 2];
+  let sum = 0;
+  for (let i = 0; i < 10; i++) sum += Number(digits[i]) * mult[i];
+  let mod = 11 - (sum % 11);
+  if (mod === 11) mod = 0;
+  if (mod === 10) mod = 9;
+  return mod === Number(digits[10]);
+}
+
+function validateFiscal() {
+  const d = cuitDigits();
+  const el = $('cfgFiscalStatus');
+  if (!el) return false;
+  if (!d) {
+    el.textContent = '';
+    return false;
+  }
+  if (validCuit(d)) {
+    el.textContent = 'CUIT válido. Falta consultar datos fiscales ARCA desde backend.';
+    el.className = 'small oktxt';
+    return true;
+  }
+  el.textContent = 'CUIT inválido o incompleto.';
+  el.className = 'small badtxt';
+  return false;
+}
+
+function saveFiscalData() {
+  validateFiscal();
+  localStorage.setItem(cfgKey(), JSON.stringify(collectCfg()));
+  const el = $('cfgFiscalStatus');
+  if (el) {
+    el.textContent = (el.textContent ? el.textContent + ' ' : '') + 'Datos fiscales guardados localmente hasta activar módulo ARCA.';
+    el.className = 'small oktxt';
+  }
+}
+
+async function refreshAll(){try{setStatus('homeStatus','Consultando servidor…');
+const v=await api('/version');$('stApi').textContent='OK';$('dashBackendVer').textContent=v.version||'?';$('footBackendVer').textContent=v.version||'?';setStatus('homeStatus','Servidor en línea.','oktxt');await Promise.allSettled([loadIntegrations(),loadDashboard(),loadInventoryMaster(true)])}catch(e){$('stApi').textContent='Error';setStatus('homeStatus','Error del servidor. Ver detalle técnico.','badtxt');raw(e)}}
+
+async function loadDashboard(){try{return await api(`/dashboard/${TENANT_ID}/summary`)}catch(e){raw(e)}}
+
+async function loadIntegrations(){try{const d=await api(`/integrations-status/${TENANT_ID}`);INTEGRATIONS=d.integrations||{};renderIntegration('ML',INTEGRATIONS.ML);renderIntegration('TN',INTEGRATIONS.TN);renderTenantBrand()}catch(e){raw(e)}}
+
+function renderIntegration(ch,it={}){const ok=!!it.connected;
+const card=$(ch==='ML'?'mlConnectCard':'tnConnectCard');
+const mini=$(ch==='ML'?'mlCardMini':'tnCardMini');
+const btn=$(ch==='ML'?'mlConnectBtn':'tnConnectBtn');card?.classList.toggle('connected',ok);mini?.classList.toggle('good',ok);mini?.classList.toggle('alert',!ok);$(ch==='ML'?'stML':'stTN').textContent=ok?'OK':'NO';$(ch==='ML'?'stMLSub':'stTNSub').textContent=cleanLabel(it.account_label)||it.status||'sin conectar';$(ch==='ML'?'mlConnectText':'tnConnectText').innerHTML=`Estado: ${ok?pill(true,'conectado'):pill(false,'no conectado')} ${esc(cleanLabel(it.account_label)||it.external_account_id||'')}`;if(btn){btn.disabled=ok;btn.textContent=ok?`${ch} conectado`:`Conectar ${ch}`}}
+
+async function loadReadiness(){try{const d=await api(`/system-checks/${TENANT_ID}/readiness`);setStatus('inventoryStatus','Verificación consultada.','oktxt');return d}catch(e){setStatus('inventoryStatus','Error en verificación.','badtxt');raw(e)}}
+
+
+let PRODUCT_ROWS=[];
+let PRODUCT_OFFSET=0;
+let PRODUCT_LAST_META={total:0,limit:20,offset:0,has_prev:false,has_next:false};
+let COMBO_ROWS=[];
+let CURRENT_COMBO=null;
+
+function productsPending(label){
+  setStatus('productsStatus',`${label}: pendiente para próxima pantalla.`, 'warntxt');
+  setTimeout(()=>setStatus('productsStatus',''),2200);
+  return false;
+}
+
+function productStatusPill(status){
+  if(status===true) return '<span class="pill ok">Visible</span>';
+  if(status===false) return '<span class="pill inactive">Oculta</span>';
+  const s=String(status||'').toLowerCase();
+  if(['true','visible','active','published','activo','activa'].includes(s)) return '<span class="pill ok">Visible</span>';
+  if(['false','hidden','oculta','oculto','paused','inactive','pausado','pausada'].includes(s)) return '<span class="pill inactive">Oculta</span>';
+  return `<span class="pill warn">${esc(status||'')}</span>`;
+}
+
+function productsParams(){
+  const q=encodeURIComponent(($('productSearch')?.value||'').trim());
+  const channel=encodeURIComponent(($('productChannel')?.value||'ALL').trim());
+  const stockLe=encodeURIComponent(($('productStockLe')?.value||'').trim());
+  const limit=Number(($('productLimit')?.value||'20').trim()) || 20;
+  return `q=${q}&channel=${channel}&stock_le=${stockLe}&limit=${encodeURIComponent(limit)}&offset=${encodeURIComponent(PRODUCT_OFFSET)}`;
+}
+function filterProducts(){
+  PRODUCT_OFFSET=0;
+  return loadProducts();
+}
+function productPage(delta){
+  const limit=Number(PRODUCT_LAST_META.limit||$('productLimit')?.value||20) || 20;
+  PRODUCT_OFFSET=Math.max(0,(Number(PRODUCT_OFFSET)||0)+(delta*limit));
+  return loadProducts();
+}
+
+async function loadProducts(silent=false){
+  try{
+    if(!silent)setStatus('productsStatus','Cargando productos…');
+    const d=await api(`/products-admin/${TENANT_ID}/products?${productsParams()}`);
+    PRODUCT_ROWS=d.items||[];
+    PRODUCT_LAST_META={total:d.total??PRODUCT_ROWS.length,limit:d.limit??Number($('productLimit')?.value||20),offset:d.offset??PRODUCT_OFFSET,has_prev:!!d.has_prev,has_next:!!d.has_next};
+    renderProductsTable(PRODUCT_ROWS);
+    if($('snapshotWrap') && !silent) $('snapshotWrap').innerHTML=$('productsTable')?.innerHTML||'';
+    if(!silent)setStatus('productsStatus',`Productos: ${PRODUCT_LAST_META.offset+1}-${PRODUCT_LAST_META.offset+PRODUCT_ROWS.length} de ${PRODUCT_LAST_META.total} ítems · Publicaciones visibles: ${d.visible_publications??0}`,'oktxt');
+    return PRODUCT_ROWS;
+  }catch(e){
+    if(!silent)setStatus('productsStatus','Error cargando productos.','badtxt');
+    raw(e);
+    return [];
+  }
+}
+
+async function loadInventoryMaster(silent=false){
+  if ($('gestPanelCombos')?.classList.contains('active')) return await loadCombos(silent);
+  return await loadProducts(silent);
+}
+
+function renderProductsTable(rows){
+  if(!rows.length){
+    $('productsTable').innerHTML='<div class="dashEmpty">Sin productos para mostrar.</div>'+renderProductPager();
+    return;
+  }
+  let html='<table class="productsTable"><thead><tr><th>SKU</th><th>Producto</th><th>Stock ERP editable</th><th>Publicaciones / variantes / precio / stock</th><th>⋮</th></tr></thead><tbody>';
+  rows.forEach((r,idx)=>{
+    const listings=r.listings||[];
+    const pubs=listings.length?listings.map((l,j)=>renderProductListingBox(l,idx,j)).join(''):'<div class="dashEmpty" style="padding:10px">Sin publicaciones vinculadas.</div>';
+    html+=`<tr data-product-row="${idx}">
+      <td><b>${esc(r.sku||'')}</b><div class="productSub">${esc(r.item_type||'simple')}</div><div style="margin-top:6px">${productStatusPill(r.active_label??r.active)}</div></td>
+      <td><div class="productTitle">${esc(r.name||r.title||'')}</div><div class="productSub">${esc([r.variant_name,r.category].filter(Boolean).join(' · '))}</div></td>
+      <td>
+        <div class="prodStockBox">
+          <div><input id="prod-stock-${idx}" type="number" step="1" value="${esc(r.stock??0)}"><div class="productSub">actual ERP: ${esc(r.stock??0)}</div></div>
+          <button class="ok" onclick="saveProductRow(${idx})">Guardar</button>
+        </div>
+        <div id="prod-status-${idx}" class="productRowStatus"></div>
+      </td>
+      <td>${pubs}</td>
+      <td><button class="productKebab" onclick="return productsPending('Opciones del producto')">⋮</button></td>
+    </tr>`;
+  });
+  html+='</tbody></table>'+renderProductPager();
+  $('productsTable').innerHTML=html;
+}
+function renderProductPager(){
+  const m=PRODUCT_LAST_META||{};
+  const total=Number(m.total||0), limit=Number(m.limit||20), offset=Number(m.offset||0);
+  const from=total?offset+1:0, to=Math.min(offset+(PRODUCT_ROWS?.length||0), total);
+  return `<div class="productPager">
+    <button class="secondary" ${m.has_prev?'':'disabled'} onclick="productPage(-1)">Anterior</button>
+    <span class="pageInfo">${from}-${to} de ${total}</span>
+    <button class="secondary" ${m.has_next?'':'disabled'} onclick="productPage(1)">Siguiente</button>
+  </div>`;
+}
+
+function renderProductListingBox(l,idx,j){
+  const ch=String(l.marketplace||'').toUpperCase();
+  const chClass=ch==='TN'?'ok':'info';
+  const pub=esc(l.external_product_id||'');
+  const vari=esc(l.external_variant_id||'0');
+  return `<div class="marketBox" data-listing-row="${idx}-${j}">
+    <span class="pill ${chClass}">${esc(ch)}</span>
+    <div class="pubvar"><span>Pub: ${pub}</span><span>Var: ${vari||'0'}</span></div>
+    <input id="prod-price-${idx}-${j}" type="number" step="1" value="${esc(l.price??'')}">
+    <input id="prod-lstock-${idx}-${j}" type="number" step="1" value="${esc(l.stock??0)}">
+    ${productStatusPill(l.status_label??l.status)}
+    <button class="productKebab" onclick="return productsPending('Opciones de publicación')">⋮</button>
+  </div>`;
+}
+
+async function saveProductRow(idx){
+  const r=PRODUCT_ROWS[idx];
+  if(!r){return}
+  try{
+    const listings=(r.listings||[]).map((l,j)=>({
+      id:l.id,
+      price:$(`prod-price-${idx}-${j}`)?.value,
+      stock:$(`prod-lstock-${idx}-${j}`)?.value
+    }));
+    setStatus(`prod-status-${idx}`,'Guardando…','warntxt');
+    const d=await postJSON(`/products-admin/${TENANT_ID}/products/${encodeURIComponent(r.sku)}/save`,{
+      stock:$(`prod-stock-${idx}`)?.value,
+      listings,
+      notes:'Guardado desde Productos'
+    });
+    setStatus(`prod-status-${idx}`,`Guardado. Jobs: ${d.jobs_created??0}.`,'oktxt');
+    setTimeout(()=>setStatus(`prod-status-${idx}`,''),2200);
+  }catch(e){
+    setStatus(`prod-status-${idx}`,'Error guardando.','badtxt');
+    raw(e);
+  }
+}
+
+function downloadProductsCsv(){
+  const rows=PRODUCT_ROWS||[];
+  if(!rows.length){productsPending('Bajar planilla inventario');return}
+  const lines=['sku;producto;variante;categoria;stock;tipo;publicaciones'];
+  rows.forEach(r=>{
+    const pubs=(r.listings||[]).map(l=>`${l.marketplace}:${l.external_product_id}:${l.external_variant_id||0}`).join('|');
+    const vals=[r.sku,r.name||'',r.variant_name||'',r.category||'',r.stock??0,r.item_type||'',pubs].map(v=>String(v).replace(/;/g,','));
+    lines.push(vals.join(';'));
+  });
+  const blob=new Blob([lines.join('\n')],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='xeleria_productos.csv';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+
+function showGestPanel(which){
+  const isCombos = which === 'combos';
+  $('gestPanelProductos')?.classList.toggle('active', !isCombos);
+  $('gestPanelCombos')?.classList.toggle('active', isCombos);
+  $('gestTabProductos')?.classList.toggle('active', !isCombos);
+  $('gestTabCombos')?.classList.toggle('active', isCombos);
+  if (isCombos) loadCombos(true); else loadProducts(true);
+  return false;
+}
+
+function comboParams(){
+  const q=encodeURIComponent(($('comboSearch')?.value||'').trim());
+  const limit=encodeURIComponent(($('comboLimit')?.value||'20').trim());
+  return `q=${q}&limit=${limit}`;
+}
+
+async function loadCombos(silent=false){
+  try{
+    if(!silent)setStatus('combosStatus','Cargando combos…');
+    const d=await api(`/bundle-items/${TENANT_ID}?${comboParams()}`);
+    COMBO_ROWS=d.items||[];
+    renderCombosTable(COMBO_ROWS);
+    if(!silent)setStatus('combosStatus',`Combos: ${COMBO_ROWS.length} de ${d.total??COMBO_ROWS.length}`,'oktxt');
+    return COMBO_ROWS;
+  }catch(e){
+    if(!silent)setStatus('combosStatus','Error cargando combos.','badtxt');
+    raw(e);
+    return [];
+  }
+}
+
+function renderCombosTable(rows){
+  if(!rows.length){$('combosTable').innerHTML='<div class="dashEmpty">Sin combos para mostrar.</div>';return}
+  let html='<table class="comboTable"><thead><tr><th>SKU</th><th>Combo</th><th>Stock</th><th>Componentes</th><th>Acciones</th></tr></thead><tbody>';
+  rows.forEach((row,idx)=>{
+    const b=row.bundle||{};
+    const comps=row.components||[];
+    const compText=comps.length?`<table class="comboCompTable"><thead><tr><th>SKU</th><th>Componente</th><th>Cant.</th><th>Stock</th></tr></thead><tbody>${comps.map(c=>{
+      const it=c.component||{};
+      return `<tr><td><b>${esc(it.sku||'')}</b></td><td>${esc(it.name||'')}</td><td>${esc(c.quantity||0)}</td><td>${esc(it.stock??0)}</td></tr>`;
+    }).join('')}</tbody></table>`:'<div class="dashEmpty" style="padding:10px">Sin componentes.</div>';
+    html+=`<tr>
+      <td><b>${esc(b.sku||'')}</b></td>
+      <td><div class="productTitle">${esc(b.name||'')}</div></td>
+      <td><b>${esc(row.available_stock??b.stock??0)}</b></td>
+      <td>${compText}</td>
+      <td>
+        <div class="comboActions">
+          <button class="secondary" onclick="editCombo(${idx})">Editar</button>
+          <button class="secondary" onclick="recalculateCombo('${escAttr(b.sku||'')}')">Recalcular</button>
+        </div>
+        <div id="combo-row-status-${idx}" class="productRowStatus"></div>
+      </td>
+    </tr>`;
+  });
+  html+='</tbody></table>';
+  $('combosTable').innerHTML=html;
+}
+
+function clearComboEditor(){
+  closeAllComboSuggests();
+  CURRENT_COMBO=null;
+  ['comboSku','comboName','comboCost'].forEach(id=>{if($(id))$(id).value=''});
+  $('comboComponents').innerHTML='<div class="dashEmpty">Elegí o creá un combo para cargar componentes.</div>';
+  setStatus('combosStatus','');
+}
+
+function editCombo(idx){
+  closeAllComboSuggests();
+  const row=COMBO_ROWS[idx];
+  const b=row?.bundle||{};
+  CURRENT_COMBO=b.sku||null;
+  if($('comboSku'))$('comboSku').value=b.sku||'';
+  if($('comboName'))$('comboName').value=b.name||'';
+  if($('comboCost'))$('comboCost').value=b.cost??'';
+  renderComboComponentEditor(row.components||[]);
+  setStatus('combosStatus',`Editando combo ${b.sku||''}`,'oktxt');
+  setTimeout(()=>$('comboSku')?.scrollIntoView({behavior:'smooth',block:'start'}),0);
+}
+
+function renderComboComponentEditor(components){
+  if(!components.length){$('comboComponents').innerHTML='';addComboComponentRow();return}
+  $('comboComponents').innerHTML='';
+  components.forEach(c=>{const it=c.component||{}; addComboComponentRow(it.sku||'', c.quantity||1, it.name||'', it.stock??'');});
+}
+
+let COMBO_LOOKUP_TIMERS = {};
+function closeAllComboSuggests(){
+  document.querySelectorAll('.comboSuggest').forEach(box=>{
+    box.classList.add('hidden');
+    box.innerHTML='';
+  });
+}
+
+function addComboComponentRow(sku='', qty=1, name='', stock=''){
+  closeAllComboSuggests();
+  if(!$('comboComponents'))return;
+  if($('comboComponents').querySelector('.dashEmpty'))$('comboComponents').innerHTML='';
+  const n=Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  const div=document.createElement('div');
+  div.className='comboComponentRow';
+  div.dataset.validSku = sku ? '1' : '0';
+  div.dataset.selectedSku = sku || '';
+  const desc = name ? `${name}${stock!=='' ? ' · Stock '+stock : ''}` : 'Buscá y elegí un componente simple real';
+  div.innerHTML=`<div><label>SKU componente</label><input class="comboCompSku" id="combo-comp-sku-${n}" value="${escAttr(sku)}" placeholder="Escribí SKU o nombre" autocomplete="off" oninput="comboComponentChanged(this)" onblur="setTimeout(()=>closeComboSuggest(this),180)"><div class="comboSuggest hidden"></div></div>
+    <div><label>Cantidad</label><input class="comboCompQty" type="number" step="0.01" min="0.01" value="${escAttr(qty)}"></div>
+    <div><label>Descripción</label><div class="componentName ${sku?'ok':''}">${esc(desc)}</div></div>
+    <button class="danger" onclick="this.closest('.comboComponentRow').remove();return false;">Quitar</button>`;
+  $('comboComponents').appendChild(div);
+}
+function comboComponentChanged(input){
+  const row=input.closest('.comboComponentRow');
+  row.dataset.validSku='0';
+  row.dataset.selectedSku='';
+  const desc=row.querySelector('.componentName');
+  if(desc){desc.className='componentName';desc.textContent='Buscando componente simple…'}
+  const key=input.id;
+  clearTimeout(COMBO_LOOKUP_TIMERS[key]);
+  COMBO_LOOKUP_TIMERS[key]=setTimeout(()=>lookupComboComponentInput(input),260);
+}
+function closeComboSuggest(input){
+  const row=input.closest('.comboComponentRow');
+  row?.querySelector('.comboSuggest')?.classList.add('hidden');
+}
+function selectComboComponent(input,item){
+  const row=input.closest('.comboComponentRow');
+  input.value=item.sku||'';
+  row.dataset.validSku='1';
+  row.dataset.selectedSku=item.sku||'';
+  const desc=row.querySelector('.componentName');
+  if(desc){desc.className='componentName ok';desc.textContent=`${item.name||''} · Stock ${item.stock??0}`}
+  const box=row.querySelector('.comboSuggest');
+  if(box){box.classList.add('hidden'); box.innerHTML='';}
+}
+async function lookupComboComponentInput(input){
+  const q=(input.value||'').trim();
+  const row=input.closest('.comboComponentRow');
+  const box=row.querySelector('.comboSuggest');
+  const desc=row.querySelector('.componentName');
+  if(!q){ if(desc){desc.className='componentName';desc.textContent='Buscá y elegí un componente simple real'}; if(box){box.classList.add('hidden');box.innerHTML=''}; return; }
+  try{
+    const d=await api(`/bundle-items/${TENANT_ID}/component-search?q=${encodeURIComponent(q)}&limit=8`);
+    const items=d.items||[];
+    if(!items.length){
+      if(desc){desc.className='componentName bad';desc.textContent='No encontré componente simple con ese SKU/nombre'}
+      if(box){box.classList.add('hidden');box.innerHTML='';}
+      return;
+    }
+    const exact=items.find(x=>String(x.sku||'').toUpperCase()===q.toUpperCase());
+    if(exact){ selectComboComponent(input, exact); return; }
+    if(box){
+      box.innerHTML=items.map((it,i)=>`<button type="button" data-i="${i}"><span class="sku">${esc(it.sku||'')}</span><span>${esc(it.name||'')}</span><div class="desc">Stock ${esc(it.stock??0)} · ${esc(it.category||'')}</div></button>`).join('');
+      [...box.querySelectorAll('button')].forEach((b,i)=>b.onclick=()=>selectComboComponent(input,items[i]));
+      box.classList.remove('hidden');
+    }
+    if(desc){desc.className='componentName';desc.textContent='Elegí un componente de la lista'}
+  }catch(e){ if(desc){desc.className='componentName bad';desc.textContent='Error buscando componente en backend'}; raw(e) }
+}
+async function lookupComboComponent(n){
+  const input=$(`combo-comp-sku-${n}`);
+  if(input) await lookupComboComponentInput(input);
+}
+
+async function saveComboHeader(){
+  const sku=($('comboSku')?.value||'').trim();
+  if(!sku){setStatus('combosStatus','Cargá un SKU de combo.','badtxt');return null}
+  const d=await postJSON(`/bundle-items/${TENANT_ID}`,{
+    sku,
+    name:($('comboName')?.value||sku).trim(),
+    cost:$('comboCost')?.value||0,
+    active:true
+  });
+  CURRENT_COMBO=d.bundle?.sku||sku;
+  return d;
+}
+async function saveComboAll(){
+  closeAllComboSuggests();
+  try{
+    setStatus('combosStatus','Guardando combo…','warntxt');
+    await saveComboHeader();
+    const rows=[...document.querySelectorAll('.comboComponentRow')];
+    const hasComponents=rows.some(row=>(row.querySelector('.comboCompSku')?.value||'').trim());
+    if(hasComponents){
+      await saveComboComponents(true);
+    }else{
+      setStatus('combosStatus',`Combo guardado: ${CURRENT_COMBO}`,'oktxt');
+      await loadCombos(true);
+    }
+  }catch(e){setStatus('combosStatus','Error guardando combo.','badtxt');raw(e)}
+}
+
+function currentComboSku(){return ($('comboSku')?.value||CURRENT_COMBO||'').trim()}
+
+async function saveComboComponents(silentHeader=false){
+  closeAllComboSuggests();
+  const sku=currentComboSku();
+  if(!sku){setStatus('combosStatus','Primero guardá o elegí un combo.','badtxt');return}
+  const rows=[...document.querySelectorAll('.comboComponentRow')];
+  const components=[];
+  for(const row of rows){
+    const input=row.querySelector('.comboCompSku');
+    const qtyInput=row.querySelector('.comboCompQty');
+    const typed=(input?.value||'').trim();
+    if(!typed) continue;
+    const valid=row.dataset.validSku==='1' && String(row.dataset.selectedSku||'').toUpperCase()===typed.toUpperCase();
+    if(!valid){
+      const desc=row.querySelector('.componentName');
+      if(desc){desc.className='componentName bad';desc.textContent='Elegí un componente válido de la lista'}
+      setStatus('combosStatus',`Componente inválido: ${typed}. Elegilo del filtro.`, 'badtxt');
+      return;
+    }
+    const quantity=Number(qtyInput?.value||0);
+    if(!(quantity>0)){
+      setStatus('combosStatus',`Cantidad inválida para ${typed}.`, 'badtxt');
+      return;
+    }
+    components.push({sku:typed, quantity});
+  }
+  if(!components.length){setStatus('combosStatus','Agregá al menos un componente.','badtxt');return}
+  try{
+    setStatus('combosStatus','Guardando componentes y recalculando stock…','warntxt');
+    const d=await postJSON(`/bundle-items/${TENANT_ID}/${encodeURIComponent(sku)}/components`,{components});
+    setStatus('combosStatus',`Componentes guardados y stock recalculado: ${d.available_stock}. Jobs: ${(d.sync_jobs||[]).length}`,'oktxt');
+    await loadCombos(true);
+  }catch(e){setStatus('combosStatus','Error guardando componentes. Revisá que los componentes sean simples reales.','badtxt');raw(e)}
+}
+
+async function recalculateCurrentCombo(){
+  const sku=currentComboSku();
+  if(!sku){setStatus('combosStatus','Elegí un combo.','badtxt');return}
+  await recalculateCombo(sku);
+}
+
+async function recalculateCombo(sku){
+  try{
+    setStatus('combosStatus',`Recalculando ${sku}…`,'warntxt');
+    const d=await postJSON(`/bundle-items/${TENANT_ID}/${encodeURIComponent(sku)}/recalculate`,{});
+    setStatus('combosStatus',`Recalculado ${sku}. Stock disponible: ${d.available_stock}. Jobs: ${(d.sync_jobs||[]).length}`,'oktxt');
+    await loadCombos(true);
+  }catch(e){setStatus('combosStatus','Error recalculando combo.','badtxt');raw(e)}
+  return false;
+}
+
+async function comboSale(idx,dryRun){
+  const row=COMBO_ROWS[idx];
+  const sku=row?.bundle?.sku;
+  if(!sku)return;
+  const qty=$(`combo-sale-${idx}`)?.value||1;
+  const statusId=`combo-row-status-${idx}`;
+  try{
+    setStatus(statusId,dryRun?'Simulando…':'Registrando venta…','warntxt');
+    const d=await postJSON(`/bundle-items/${TENANT_ID}/${encodeURIComponent(sku)}/component-sale`,{
+      quantity:qty,
+      dry_run:dryRun,
+      channel:'MANUAL',
+      reference_id:`manual-${Date.now()}`
+    });
+    setStatus(statusId, dryRun?`Simulación OK. Movimientos: ${(d.movements||[]).length}`:`Venta registrada. Movimientos: ${(d.movements||[]).length}`, 'oktxt');
+    if(!dryRun) await loadCombos(true);
+    setTimeout(()=>setStatus(statusId,''),2800);
+  }catch(e){setStatus(statusId,dryRun?'Error simulando.':'Error registrando.','badtxt');raw(e)}
+}
+function simulateComboSale(idx){return comboSale(idx,true)}
+function registerComboSale(idx){return comboSale(idx,false)}
+
+function escAttr(v){return esc(v).replace(/'/g,'&#39;')}
+
+function openPublicationMatrix() {
+  if ($('syncMatrixWrap')) $('syncMatrixWrap').style.display = 'block';
+  if ($('classificationActions')) $('classificationActions').style.display = 'block';
+}
+
+function closePublicationMatrix(msg = 'Configuración cerrada.') {
+  if ($('syncMatrixWrap')) {
+    $('syncMatrixWrap').style.display = 'none';
+    $('syncMatrixWrap').innerHTML = '<div class="dashEmpty">Sin revisión abierta.</div>';
+  }
+  if ($('classificationActions')) $('classificationActions').style.display = 'none';
+  setStatus('syncMatrixStatus', msg);
+}
+
+function startElapsedStatus(id, prefix, cls = 'warntxt') {
+  const started = Date.now();
+  const tick = () => {
+    const elapsed = Math.floor((Date.now() - started) / 1000);
+    const mm = String(Math.floor(elapsed / 60)).padStart(2, '0');
+    const ss = String(elapsed % 60).padStart(2, '0');
+    setStatus(id, `${prefix}… ${mm}:${ss}`, cls);
+  };
+  tick();
+  return setInterval(tick, 1000);
+}
+
+async function startStaging(ch) {
+  let timer = null;
+  try {
+    setImportBusy(true);
+    timer = startElapsedStatus('syncMatrixStatus', 'Importando publicaciones');
+    const d = await post(`/import-staging/${TENANT_ID}/start?marketplace=${encodeURIComponent(ch)}`);
+    STAGING_SESSION_ID = d.session_id;
+    await loadStagingMatrix();
+  } catch (e) {
+    setStatus('syncMatrixStatus', 'Error importando publicaciones. Ver detalle técnico.', 'badtxt');
+    raw(e);
+  } finally {
+    if (timer) clearInterval(timer);
+    setImportBusy(false);
+  }
+}
+
+async function loadStagingMatrix() {
+  if (!STAGING_SESSION_ID) {
+    closePublicationMatrix('La configuración está cerrada. Tocá “Configurar inventario” para empezar.');
+    return;
+  }
+  openPublicationMatrix();
+  setStatus('syncMatrixStatus', 'Preparando revisión…');
+  const d = await api(`/import-staging/${TENANT_ID}/matrix?session_id=${encodeURIComponent(STAGING_SESSION_ID)}`);
+  PUBLICATION_ROWS = d.rows || [];
+  renderPublicationMatrix();
+  const skuCount = d.sku_count ?? PUBLICATION_ROWS.length;
+  const pubCount = d.publication_count ?? countVisiblePublications(PUBLICATION_ROWS);
+  setStatus('syncMatrixStatus', `Importación realizada: ${skuCount} SKU, ${pubCount} publicaciones`, 'oktxt');
+}
+
+function countVisiblePublications(rows) {
+  const keys = new Set();
+  for (const row of rows || []) {
+    for (const ch of ['tn', 'ml']) {
+      const c = row[ch] || {};
+      if (c.exists && c.listing_id) keys.add(`${ch}:${c.listing_id}:${c.variant_id || ''}`);
+    }
+  }
+  return keys.size;
+}
+
+function renderPublicationMatrix() {
+  const rows = PUBLICATION_ROWS;
+  if (!rows.length) {
+    $('syncMatrixWrap').innerHTML = '<div class="dashEmpty">Sin publicaciones para revisar.</div>';
+    return;
+  }
+  let html = '<table class="syncMatrix"><thead><tr><th>SKU</th><th>Tienda Nube</th><th>Simple</th><th>Combo</th><th>Mercado Libre</th><th>Simple</th><th>Combo</th></tr></thead><tbody>';
+  rows.forEach((r, idx) => {
+    html += `<tr><td class="skuCell">${esc(r.sku)}</td>${channelCells(r, 'tn', idx)}${channelCells(r, 'ml', idx)}</tr>`;
+  });
+  html += '</tbody></table>';
+  $('syncMatrixWrap').innerHTML = html;
+}
+
+function channelCells(row, ch, idx) {
+  const c = row[ch] || {};
+  const label = ch.toUpperCase();
+  const sku = String(row.sku || '');
+  const status = c.match_status || '';
+  const pending = sku.startsWith('PEND_ML_') || sku.startsWith('PEND_TN_') || c.needs_sku_review || status === 'pending_sku' || status === 'sku_conflict';
+
+  if (!c.exists) {
+    const cls = status === 'missing_in_marketplace' ? 'missingPub' : '';
+    const txt = status === 'missing_in_marketplace' ? `Sin publicación ${label}
+Publicación no encontrada` : `Sin publicación ${label}`;
+    return `<td class="pubCell emptyPub ${cls}">${esc(txt)}</td><td class="choiceCell">—</td><td class="choiceCell">—</td>`;
+  }
+
+  const simple = c.mode !== 'bundle' ? 'checked' : '';
+  const bundle = c.mode === 'bundle' ? 'checked' : '';
+  let cls = '';
+  if (status === 'new') cls = 'newPub';
+  if (pending) cls = 'reviewPub';
+
+  return `<td class="pubCell ${cls}">${esc(c.label || c.title || '')}</td><td class="choiceCell"><input type="radio" name="mode-${idx}-${ch}" value="simple" ${simple}></td><td class="choiceCell"><input type="radio" name="mode-${idx}-${ch}" value="bundle" ${bundle}></td>`;
+}
+
+function selectedRows() {
+  return PUBLICATION_ROWS.map((r, idx) => {
+    const out = { sku: r.sku };
+    ['tn', 'ml'].forEach(ch => {
+      const c = r[ch] || {};
+      if (c.exists) {
+        const selected = document.querySelector(`input[name="mode-${idx}-${ch}"]:checked`);
+        out[ch] = {
+          listing_id: c.listing_id || null,
+          variant_id: c.variant_id || null,
+          mode: selected ? selected.value : 'simple'
+        };
+      }
+    });
+    return out;
+  });
+}
+
+async function applyStaging() {
+  let timer = null;
+  try {
+    if (!STAGING_SESSION_ID) {
+      setStatus('syncMatrixStatus', 'No hay revisión abierta.', 'warntxt');
+      return;
+    }
+    setImportBusy(true);
+    if ($('syncMatrixWrap')) $('syncMatrixWrap').style.display = 'none';
+    if ($('classificationActions')) $('classificationActions').style.display = 'none';
+    const rows = selectedRows();
+    timer = startElapsedStatus('syncMatrixStatus', 'Guardando cambios');
+    const d = await postJSON(`/import-staging/${TENANT_ID}/apply`, { session_id: STAGING_SESSION_ID, rows });
+    STAGING_SESSION_ID = '';
+    PUBLICATION_ROWS = [];
+    await loadInventoryMaster(true);
+    setStatus('syncMatrixStatus', '');
+  } catch (e) {
+    openPublicationMatrix();
+    setStatus('syncMatrixStatus', 'Error guardando cambios.', 'badtxt');
+    raw(e);
+  } finally {
+    if (timer) clearInterval(timer);
+    setImportBusy(false);
+  }
+}
+
+async function cancelStaging() {
+  try {
+    if (!STAGING_SESSION_ID) {
+      closePublicationMatrix('No hay revisión abierta.');
+      return;
+    }
+    setImportBusy(true);
+    await post(`/import-staging/${TENANT_ID}/cancel?session_id=${encodeURIComponent(STAGING_SESSION_ID)}`);
+    STAGING_SESSION_ID = '';
+    PUBLICATION_ROWS = [];
+    closePublicationMatrix('');
+  } catch (e) {
+    setStatus('syncMatrixStatus', 'Error cancelando.', 'badtxt');
+    raw(e);
+  } finally {
+    setImportBusy(false);
+  }
+}
+
+
+function pubCfg(market){
+  const key=market==='ML'?'ml':'tn';
+  const label=market==='ML'?'ML':'TN';
+  return {
+    key,label,
+    searchId:key+'PubSearch',
+    limitId:key+'PubLimit',
+    statusId:key+'PubStatus',
+    resultsId:key+'PubResults',
+    pagerId:key+'PubPager'
+  };
+}
+function enterPublications(market){
+  const c=pubCfg(market);
+  try{
+    if($(c.resultsId))$(c.resultsId).innerHTML='<div class="card"><p>Actualizando publicaciones '+c.label+'…</p></div>';
+    if($(c.pagerId))$(c.pagerId).innerHTML='';
+    setStatus(c.statusId,'Actualizando publicaciones '+c.label+'…');
+  }catch{}
+  loadPublicationsReport(market,0,true);
+}
+function pubLimit(market){const c=pubCfg(market);return Number($(c.limitId)?.value||20)}
+function pubSearch(market){const c=pubCfg(market);return ($(c.searchId)?.value||'').trim()}
+window.__xeleriaPubTimers=window.__xeleriaPubTimers||{};
+window.__xeleriaPubState=window.__xeleriaPubState||{offsets:{ML:0,TN:0},master:null,masterAt:0};
+function debouncedPublications(market){clearTimeout(window.__xeleriaPubTimers[market]);window.__xeleriaPubTimers[market]=setTimeout(()=>loadPublicationsReport(market,0,false),350)}
+function clearPublicationsSearch(market){const c=pubCfg(market);let el=$(c.searchId);if(el)el.value='';loadPublicationsReport(market,0,true)}
+function listingMarket(l){return String(l?.marketplace||l?.channel||'').toUpperCase().trim()}
+function listingProductId(l){return String(l?.external_product_id||l?.product_id||l?.listing_id||l?.item_id||'').trim()}
+function listingVariantId(l){return String(l?.external_variant_id||l?.variant_id||l?.variation_id||'').trim()}
+function listingPrice(l){return Number(l?.price??l?.raw_data?.price??0)}
+function listingStock(l){return l?.stock??l?.available_quantity??l?.raw_data?.stock??l?.raw_data?.variants?.[0]?.stock??''}
+function tnListingPublishedRaw(l){
+  const raw=l?.raw_data||{};
+  if(l?.published!==undefined)return l.published;
+  if(raw?.published!==undefined)return raw.published;
+  if(raw?.product?.published!==undefined)return raw.product.published;
+  if(raw?.published_at!==undefined)return !!raw.published_at;
+  return undefined;
+}
+function listingStatus(l){
+  const explicit=l?.status_label??l?.publication_status??l?.status;
+  if(explicit!==undefined&&explicit!==null&&String(explicit).trim()!=='')return explicit;
+  const pub=tnListingPublishedRaw(l);
+  if(pub!==undefined)return pub;
+  return '';
+}
+function listingStatusLabel(st,market){
+  const m=String(market||'').toUpperCase();
+  if(st===true)return m==='ML'?'Activo':'Visible';
+  if(st===false)return m==='ML'?'Pausado':'Oculto';
+  let s=normalizar(st);
+  if(!s)return '-';
+  if(m==='ML'){
+    if(s.includes('paused')||s.includes('pause')||s.includes('pausad'))return 'Pausado';
+    if(s.includes('closed')||s.includes('inactive')||s.includes('deleted')||s.includes('hidden')||s.includes('ocult')||s==='false'||s==='0')return 'Pausado';
+    if(['true','1','active','activo','activa','published','yes','si','sí'].includes(s)||s.includes('active')||s.includes('published'))return 'Activo';
+    return String(st||'-');
+  }
+  if(m==='TN'){
+    if(s.includes('hidden')||s.includes('ocult')||s.includes('unpublish')||s.includes('inactive')||s.includes('deleted')||s.includes('closed')||s==='false'||s==='0')return 'Oculto';
+    if(['true','1','visible','published','active','activa','activo','yes','si','sí'].includes(s)||s.includes('visible')||s.includes('published')||s.includes('active'))return 'Visible';
+    return String(st||'-');
+  }
+  if(['true','1','visible','published','active','activa','activo','yes','si','sí'].includes(s))return 'Visible';
+  if(['false','0','hidden','oculta','oculto','unpublished','inactive','deleted','closed','paused','pausado','pausada','archived'].includes(s))return 'Oculto';
+  return String(st||'-');
+}
+function listingStatusClass(st,market){
+  let label=normalizar(listingStatusLabel(st,market));
+  if(label.includes('oculto')||label.includes('pausado'))return market==='ML'?'warn':'inactive';
+  if(label.includes('visible')||label.includes('activo'))return 'ok';
+  return 'info';
+}
+function publicationSearchText(item,market){
+  const parts=[item.sku,item.name,item.title,item.variant_name,item.category,item.stock,item.master_stock];
+  (item.listings||[]).filter(l=>listingMarket(l)===market).forEach(l=>{
+    parts.push(l.sku,l.title,l.external_product_id,l.external_variant_id,l.status,l.status_label,l.price,l.stock,l.available_quantity,l.url,l.permalink);
+    const raw=l.raw_data||{};
+    parts.push(raw.name,raw.title,raw.canonical_url,raw.url,raw.published,raw.id);
+  });
+  return normalizar(parts.filter(v=>v!==undefined&&v!==null).join(' '));
+}
+function buildPublicationItems(master,market){
+  const inv=Array.isArray(master.inventory_items)?master.inventory_items:[];
+  const listings=(Array.isArray(master.marketplace_listings)?master.marketplace_listings:[]).filter(l=>listingMarket(l)===market);
+  const bySku={};
+  inv.forEach(i=>{if(i&&i.sku)bySku[String(i.sku)]={...i,listings:[]}});
+  listings.forEach(l=>{
+    const sku=String(l.sku||'').trim();
+    if(!sku)return;
+    if(!bySku[sku])bySku[sku]={sku,name:l.title||'',title:l.title||'',stock:l.stock??l.available_quantity??'',item_type:'',listings:[]};
+    bySku[sku].listings.push(l);
+  });
+  return Object.values(bySku).filter(i=>(i.listings||[]).some(l=>listingMarket(l)===market)).sort((a,b)=>String(a.sku||'').localeCompare(String(b.sku||'')));
+}
+function renderReadonlyListingsForItem(item,market){
+  let arr=(Array.isArray(item.listings)?item.listings:[]).filter(l=>listingMarket(l)===market);
+  if(!arr.length)return '<span class="muted">Sin publicaciones vinculadas.</span>';
+  arr.sort((a,b)=>(listingProductId(a)+listingVariantId(a)).localeCompare(listingProductId(b)+listingVariantId(b)));
+  return arr.map(l=>{
+    let st=listingStatus(l);
+    let pid=listingProductId(l),vid=listingVariantId(l);
+    return `<div class="marketBox"><div><span class="pill ${market==='ML'?'info':'ok'}">${esc(market)}</span></div><div class="mono id pubvar"><span>Pub: ${esc(pid)}</span><span class="idSep">${vid?'Var: '+esc(vid):''}</span></div><div><strong>${money(listingPrice(l))}</strong></div><div><strong>${esc(listingStock(l))}</strong></div><div><span class="pill marketStatus ${listingStatusClass(st,market)}">${esc(listingStatusLabel(st,market))}</span></div></div>`;
+  }).join('');
+}
+function renderPublicationsReadonly(market,items){
+  const c=pubCfg(market);
+  let body='';
+  if(!items.length){
+    body='<tr><td colspan="4" class="muted" style="text-align:center;padding:24px">Sin publicaciones para este filtro.</td></tr>';
+  }else{
+    body=items.map(i=>{
+      const title=esc(i.name||i.title||'');
+      const sub=[i.variant_name,i.category].filter(Boolean).map(esc).join('<br>');
+      return `<tr><td><strong class="mono">${esc(i.sku)}</strong><br><span class="small">${esc(i.item_type||'')}</span></td><td><div class="pubProductName">${title}</div>${sub?`<div class="pubProductSub">${sub}</div>`:''}</td><td><strong>${esc(i.stock??i.master_stock??0)}</strong><br><span class="small">stock</span></td><td>${renderReadonlyListingsForItem(i,market)}</td></tr>`;
+    }).join('');
+  }
+  if($(c.resultsId))$(c.resultsId).innerHTML=`<div class="tableWrap"><table class="pubReportTable"><thead><tr><th>SKU</th><th>Producto</th><th>Stock</th><th>Publicaciones ${market} / variante / precio / stock</th></tr></thead><tbody>${body}</tbody></table></div>`;
+}
+function publicationsPager(market,total,count){
+  const c=pubCfg(market);
+  let limit=pubLimit(market),offset=window.__xeleriaPubState.offsets[market]||0;
+  let hasPrev=offset>0, hasNext=offset+limit<total;
+  let prev=Math.max(0,offset-limit), next=offset+limit;
+  let from=count?offset+1:0, to=offset+count;
+  return `<button class="secondary" ${hasPrev?'':'disabled'} onclick="loadPublicationsReport('${market}',${prev})">Atrás</button><span class="pill">Mostrando ${from}–${to}${total?` de ${total}`:''}</span><button class="secondary" ${hasNext?'':'disabled'} onclick="loadPublicationsReport('${market}',${next})">Siguiente</button>`;
+}
+async function loadPublicationMaster(force=false){
+  const now=Date.now();
+  if(!force&&window.__xeleriaPubState.master&&(now-window.__xeleriaPubState.masterAt)<60000)return window.__xeleriaPubState.master;
+  const d=await api(`/admin-compat/${TENANT_ID}/inventory-master?limit=5000&_=${Date.now()}`);
+  window.__xeleriaPubState.master=d;
+  window.__xeleriaPubState.masterAt=now;
+  return d;
+}
+async function loadPublicationsReport(market,offset=0,force=false){
+  const c=pubCfg(market);
+  try{
+    window.__xeleriaPubState.offsets[market]=offset;
+    setStatus(c.statusId,force?'Actualizando publicaciones '+c.label+'…':'Leyendo publicaciones '+c.label+'…');
+    let limit=pubLimit(market), q=pubSearch(market);
+    const master=await loadPublicationMaster(force);
+    let items=buildPublicationItems(master,market);
+    const totalBase=items.length;
+    const nq=normalizar(q);
+    if(nq){
+      const terms=nq.split(/\s+/).filter(Boolean);
+      items=items.filter(i=>terms.every(t=>publicationSearchText(i,market).includes(t)));
+    }
+    const filteredTotal=items.length;
+    const page=items.slice(offset,offset+limit);
+    renderPublicationsReadonly(market,page);
+    if($(c.pagerId))$(c.pagerId).innerHTML=publicationsPager(market,filteredTotal,page.length);
+    const pubs=page.reduce((a,i)=>a+(i.listings||[]).filter(l=>listingMarket(l)===market).length,0);
+    setStatus(c.statusId,`Publicaciones ${market}: ${pubs} visibles sobre ${page.length} de ${filteredTotal} ítems${q?' filtrados':''}${filteredTotal!==totalBase?` · base ${totalBase}`:''}`,'oktxt');
+  }catch(e){
+    const msg=e?.data?.detail||e?.data?.message||e?.message||e?.raw||JSON.stringify(e);
+    setStatus(c.statusId,'Error publicaciones '+market+': '+msg,'badtxt');
+    raw(e);
+  }
+}
+
+/* aliases legacy */
+async function readMLItems(){return loadPublicationsReport('ML',0,true)}
+function enterTNPublications(){return enterPublications('TN')}
+function tnPubLimit(){return pubLimit('TN')}
+function tnPubSearch(){return pubSearch('TN')}
+function debouncedTNPublications(){return debouncedPublications('TN')}
+function clearTNPublicationsSearch(){return clearPublicationsSearch('TN')}
+async function loadTNPublicationMaster(force=false){return loadPublicationMaster(force)}
+async function loadTNPublications(offset=0,force=false){return loadPublicationsReport('TN',offset,force)}
+async function syncTNPublications(){try{setStatus('tnProductsStatus','Sincronizando publicaciones TN…');const d=await post(`/tn-reader/${TENANT_ID}/products?page=1&per_page=100&dry_run=false`);window.__xeleriaTNState.master=null;setStatus('tnProductsStatus',`OK: ${d.rows??0} filas TN sincronizadas.`,true);await loadTNPublications(0,true)}catch(e){setStatus('tnProductsStatus','Error sincronizando publicaciones TN.','badtxt');raw(e)}}
+async function readTNProducts(){return loadTNPublications(0,true)}
+
+function tnStatusLabel(v){let n=String(v||'').toLowerCase();if(n==='paid')return'PAGADO';if(n==='pending')return'PENDIENTE';if(n==='shipped')return'ENVIADO';if(n==='delivered')return'ENTREGADO';if(n==='cancelled'||n==='canceled')return'CANCELADO';return v?String(v).toUpperCase():''}
+function tnRawObj(o){let r=o.raw_data||o.raw||{};if(typeof r==='string'){try{return JSON.parse(r)}catch{return {}}}return r&&typeof r==='object'?r:{}}
+function tnOrderNumber(o){let r=tnRawObj(o);let n=r.tn_order_number||r.number||(r.tn_raw&&r.tn_raw.number)||o.tn_order_number||o.external_order_id||'';return String(n).startsWith('#')?String(n):'#'+String(n)}
+function tnOrderLines(o){let lines=Array.isArray(o.sold_lines)?o.sold_lines:(Array.isArray(o.items)?o.items:[]);return lines.map(l=>({sku:l.sku||'',name:l.name||l.title||'',quantity:l.quantity??l.qty??0,unit_price:l.unit_price??l.price??0,subtotal:(Number(l.quantity??l.qty??0)*Number(l.unit_price??l.price??0))||l.subtotal||0}))}
+function tnShippingLabel(o){let s=String(o.tn_shipping_ui_status||o.shipping_ui_status||o.shipping_status||o.tn_shipping_status||'').toLowerCase();if(s.includes('delivered')||s.includes('entregado'))return 'Entregado';if(s.includes('shipped')||s.includes('enviado'))return 'Enviado';if(s.includes('ready')||s.includes('prepar'))return 'Preparar';if(s.includes('cancel'))return 'Cancelado';return o.shipping_option||o.shipping_method||'Sin envío'}
+function tnOrderCard(o){let lines=tnOrderLines(o);let lineHtml=lines.length?lines.map(l=>`<div class="lineItem"><strong>${esc(l.sku)}</strong><span>${esc(l.name)}</span><span>Cant: <strong>${esc(l.quantity)}</strong></span><span>${money(l.unit_price)}</span><span>${money(l.subtotal)}</span></div>`).join(''):'<div class="small">Sin líneas.</div>';let fiscal=o.customer_fiscal_name||o.customer_name||'';let doc=[o.customer_doc_type,o.customer_doc_number].filter(Boolean).join(' ');let iva=o.customer_iva_condition||'';let sub=[doc?`Doc: ${doc}`:'',iva?`IVA: ${iva}`:'',o.customer_city||''].filter(Boolean).join(' · ');let paid=tnStatusLabel(o.tn_payment_status||o.payment_status||o.status);let ship=tnShippingLabel(o);return `<div class="orderCard"><div class="orderHead"><div><strong>${esc(tnOrderNumber(o))}</strong><br><span class="small">Orden API: ${esc(o.external_order_id||'')}</span><br><span class="small">${dateAR(o.display_created_at||o.source_created_at||o.created_at)}</span></div><div><strong>${esc(String(fiscal).toUpperCase())}</strong>${sub?`<br><span class="small">${esc(sub)}</span>`:''}</div><div class="orderLogisticsBlock"><span class="pill info shippingPill">${esc(ship)}</span><br><span class="orderPayStatus">${esc(paid)}</span></div><div><strong>${money(o.total)}</strong><br><span class="small">${lines.length} ${lines.length===1?'línea':'líneas'}</span></div><div>${(typeof mlInvoiceButton==='function')?mlInvoiceButton(o):''}</div></div><div class="orderLines">${lineHtml}</div></div>`}
+function tnOrdersTable(items){if(!items||!items.length)return '<div class="card"><p>No hay ventas capturadas.</p></div>';return items.map(tnOrderCard).join('')}
+async function captureTNSales(){try{setStatus('tnVentasStatus','Capturando ventas TN recientes…');const d=await post(`/tn-reader/${TENANT_ID}/orders?page=1&per_page=30&dry_run=false`);setStatus('tnVentasStatus',`Captura TN: ${d.saved?.length??0} guardadas / ${d.found_orders??0} leídas.`,true);await loadRecent('TN',0)}catch(e){setStatus('tnVentasStatus','Error capturando ventas TN.','badtxt');raw(e)}}
+async function readTNOrders(dry=true){if(dry)return loadRecent('TN',0);return captureTNSales()}
+
+
+/* v1.0.36: ventas ML/TN unificadas visualmente; ML captura antes de listar */
+(function(){
+  const mlCaptureState={at:0,running:false,last:null};
+
+  function salesLimit(ch){return Number($(String(ch).toLowerCase()+'VentasLimit')?.value||20)}
+  function salesSearch(ch){return ($(String(ch).toLowerCase()+'VentasSearch')?.value||'').trim()}
+  function salesStatusId(ch){return String(ch).toLowerCase()+'VentasStatus'}
+  function salesTableId(ch){return String(ch).toLowerCase()+'VentasTable'}
+  function salesPagerId(ch){return String(ch).toLowerCase()+'VentasPager'}
+
+  window.salesLimit=salesLimit;
+  window.salesSearch=salesSearch;
+
+  function errMsg(e){
+    if(!e)return 'Error desconocido';
+    if(e.data?.detail)return typeof e.data.detail==='string'?e.data.detail:JSON.stringify(e.data.detail);
+    if(e.detail)return typeof e.detail==='string'?e.detail:JSON.stringify(e.detail);
+    if(e.message)return e.message;
+    try{return JSON.stringify(e)}catch{return String(e)}
+  }
+
+  window.debouncedSales=function(ch){
+    clearTimeout(timers['sales_'+ch]);
+    timers['sales_'+ch]=setTimeout(()=>loadRecent(ch,0,{capture:false}),350);
+  };
+
+  window.clearSalesSearch=function(ch){
+    const el=$(String(ch).toLowerCase()+'VentasSearch');
+    if(el)el.value='';
+    loadRecent(ch,0,{capture:true});
+  };
+
+  function orderNumber(o,ch){
+    if(ch==='ML')return o.sale_number||o.ml_sale_number||o.pack_id||o.external_order_id||o.id||'';
+    const raw=(o.raw_data&&typeof o.raw_data==='object')?o.raw_data:{};
+    return raw.number?('#'+raw.number):(o.order_number||o.tn_order_number||o.external_order_id||o.id||'');
+  }
+
+  function orderLines(o){
+    return (o.sold_lines||o.lines||o.order_items||o.items||[]).map(l=>{
+      const qty=Number(l.quantity??l.qty??0)||0;
+      const unit=Number(l.unit_price??l.price??0)||0;
+      return {
+        sku:l.sku||'',
+        name:l.name||l.title||l.product_name||'',
+        quantity:qty,
+        unit_price:unit,
+        subtotal:Number(l.subtotal??(qty*unit))||0,
+        prev:l.previous_stock,
+        next:l.new_stock
+      };
+    });
+  }
+
+  function statusLabel(o,ch){
+    const s=String(o.payment_status||o.status||o.ml_status||o.tn_payment_status||'').toLowerCase();
+    if(s.includes('paid')||s.includes('confirmed')||s.includes('approved'))return 'Pagada';
+    if(s.includes('cancel'))return 'Cancelada';
+    if(s.includes('pending'))return 'Pendiente';
+    return o.payment_status||o.status||'';
+  }
+
+  function logisticLabel(o,ch){
+    const raw=(o.raw_data&&typeof o.raw_data==='object')?o.raw_data:{};
+    if(ch==='ML'){
+      const lt=String(o.ml_shipping_logistic_type||o.logistic_type||raw.logistic_type||'').toLowerCase();
+      const mode=String(o.ml_shipping_mode||o.shipping_mode||'').toLowerCase();
+      if(lt.includes('fulfillment'))return 'FULL';
+      if(lt.includes('self_service'))return 'FLEX';
+      if(mode||o.ml_shipping_id)return 'Mercado Envíos';
+      return 'Sin envío';
+    }
+    return o.shipping_method||o.shipping_option||raw.shipping_option?.name||raw.shipping_option||'Sin envío';
+  }
+
+  function shippingStateLabel(o,ch){
+    const s=String(o.shipping_ui_status||o.tn_shipping_ui_status||o.ml_shipping_ui_status||o.shipping_status||o.ml_shipping_status||o.tn_shipping_status||o.fulfillment_status||'').toLowerCase();
+    if(s.includes('delivered')||s.includes('entregado'))return 'Entregado';
+    if(s.includes('shipped')||s.includes('picked_up')||s.includes('transit')||s.includes('camino'))return 'En camino';
+    if(s.includes('ready'))return 'Listo para despachar';
+    if(s.includes('pending'))return 'Pendiente';
+    if(s.includes('cancel'))return 'Cancelado';
+    return '';
+  }
+
+  function shippingStateClass(label){
+    const s=String(label||'').toLowerCase();
+    if(s.includes('entregado'))return 'delivered';
+    if(s.includes('camino')||s.includes('listo')||s.includes('pendiente'))return 'pending';
+    return 'other';
+  }
+
+  function orderCard(o,ch){
+    const lines=orderLines(o);
+    const display=lines.length?lines.map(l=>`<div class="lineItem"><div><strong>${esc(l.sku)}</strong></div><div>${esc(l.name||'')}</div><div>Cant: <strong>${esc(l.quantity)}</strong></div><div>${l.unit_price?money(l.unit_price):''}</div><div>${l.prev!==undefined?`Stock ${esc(l.prev)} → ${esc(l.next)}`:(l.subtotal?money(l.subtotal):'')}</div></div>`).join(''):'<div class="muted">Sin líneas visibles todavía.</div>';
+    const logistic=logisticLabel(o,ch);
+    const state=shippingStateLabel(o,ch);
+    const stateHtml=state?`<span class="shippingAction ${shippingStateClass(state)}">${esc(state)}</span>`:'';
+    const logisticClass=logistic==='FULL'?'dark':logistic==='FLEX'?'ok':logistic==='Sin envío'?'dark':'info';
+    const raw=(o.raw_data&&typeof o.raw_data==='object')?o.raw_data:{};
+    const doc=[o.customer_doc_type||'',o.customer_doc_number||''].filter(Boolean).join(' ');
+    const sub=[];
+    if(doc)sub.push('Doc: '+doc);
+    if(o.customer_iva_condition)sub.push('IVA: '+o.customer_iva_condition);
+    if(o.customer_city)sub.push(o.customer_city);
+    const customer=(o.customer_fiscal_name||o.customer_name||raw.contact_name||raw.buyer?.nickname||'').toString();
+    return `<div class="orderCard"><div class="orderHead"><div><strong>${esc(orderNumber(o,ch))}</strong>${o.external_order_id?`<br><span class="small">Orden API: ${esc(o.external_order_id)}</span>`:''}<br><span class="small">${dateAR(o.display_created_at||o.source_created_at||o.created_at||o.ml_date_created)}</span></div><div><strong>${esc(customer.toUpperCase())}</strong>${sub.length?`<br><span class="small">${esc(sub.join(' · '))}</span>`:''}</div><div class="orderLogisticsBlock"><span class="pill ${logisticClass} shippingPill">${esc(logistic)}</span><br><span class="orderPayStatus">${esc(statusLabel(o,ch))}</span>${stateHtml}</div><div><strong>${money(o.total)}</strong>${o.total_products&&Number(o.total_products)!==Number(o.total)?`<br><span class="small">Productos: ${money(o.total_products)}</span>`:''}<br><span class="small">${lines.length} ${lines.length===1?'línea':'líneas'}</span></div><div></div></div><div class="orderLines">${display}</div></div>`;
+  }
+
+  function ordersTable(items,ch){
+    if(!items||!items.length)return '<div class="card"><p>No hay ventas capturadas.</p></div>';
+    return items.map(o=>orderCard(o,ch)).join('');
+  }
+
+  function pagerHtml(ch,d){
+    const limit=Number(d.limit||salesLimit(ch)||20),offset=Number(d.offset||0),total=Number(d.total||0);
+    const count=(d.items||[]).length,from=total?offset+1:0,to=Math.min(offset+count,total||offset+count),prev=Math.max(0,offset-limit),next=offset+limit;
+    return `<button class="secondary" ${offset<=0?'disabled':''} onclick="loadRecent('${ch}',${prev},{capture:false})">Anterior</button><span class="pill">Mostrando ${from}–${to}${total?` de ${total}`:''}</span><button class="secondary" ${d.has_more?'':'disabled'} onclick="loadRecent('${ch}',${next},{capture:false})">Siguiente</button>`;
+  }
+
+  async function captureMLRecent(force=false){
+    const now=Date.now();
+    if(mlCaptureState.running)return mlCaptureState.last;
+    if(!force && mlCaptureState.at && (now-mlCaptureState.at)<30000)return mlCaptureState.last;
+    mlCaptureState.running=true;
+    try{
+      const d=await post(`/ml-reader/${TENANT_ID}/orders?limit=50&offset=0&dry_run=false`);
+      mlCaptureState.at=Date.now();
+      mlCaptureState.last=d;
+      return d;
+    }finally{
+      mlCaptureState.running=false;
+    }
+  }
+
+  async function captureTNRecent(){
+    return post(`/tn-reader/${TENANT_ID}/orders?page=1&per_page=30&dry_run=false`);
+  }
+
+  async function loadMLRecent(offset,limit,q,opt={}){
+    return api(`/ml-sales/${TENANT_ID}/recent?limit=${encodeURIComponent(limit)}&offset=${encodeURIComponent(offset)}&exclude_tests=true&q=${encodeURIComponent(q)}`);
+  }
+
+  function tnUiOrder(row,items){
+    const raw=(row.raw_data&&typeof row.raw_data==='object')?row.raw_data:{};
+    const lines=(items||[]).map(it=>({sku:it.sku,title:it.title||it.name,quantity:it.quantity,unit_price:it.unit_price,subtotal:(Number(it.quantity||0)*Number(it.unit_price||0))||0}));
+    return {
+      ...row,
+      channel:'TN',
+      order_number:raw.number?('#'+raw.number):row.external_order_id,
+      customer_fiscal_name:row.customer_name,
+      display_created_at:row.source_created_at||row.created_at,
+      sold_lines:lines,
+      shipping_option:row.shipping_method||row.shipping_option,
+      tn_shipping_status:row.shipping_status,
+      raw_data:raw
+    };
+  }
+
+  async function loadTNRecent(offset,limit,q){
+    return api(`/tn-sales/${TENANT_ID}/recent?limit=${encodeURIComponent(limit)}&offset=${encodeURIComponent(offset)}&exclude_tests=true&q=${encodeURIComponent(q)}`);
+  }
+
+  window.loadRecent=async function(ch,offset=0,opt={}){
+    ch=String(ch||'').toUpperCase();
+    const lim=salesLimit(ch),q=salesSearch(ch),sid=salesStatusId(ch),tid=salesTableId(ch),pid=salesPagerId(ch);
+    state.sales=state.sales||{ML:{offset:0},TN:{offset:0}};
+    state.sales[ch]=state.sales[ch]||{offset:0};
+    state.sales[ch].offset=offset;
+    setStatus(sid,`Consultando ventas ${ch}…`);
+    try{
+      const d=ch==='ML'?await loadMLRecent(offset,lim,q,opt):await loadTNRecent(offset,lim,q);
+      const arr=d.items||[];
+      if($(tid))$(tid).innerHTML=ordersTable(arr,ch);
+      if($(pid))$(pid).innerHTML=pagerHtml(ch,d);
+      setStatus(sid,`OK: ${d.total||0} ventas${q?' filtradas':''}`,true);
+    }catch(e){
+      setStatus(sid,`Error ventas ${ch}: ${errMsg(e)}`,false);
+      raw(e);
+      console.error('loadRecent '+ch,e);
+    }
+  };
+
+  window.refreshShippingPending=async function(ch){
+    ch=String(ch||'').toUpperCase();
+    if(ch!=='ML')return loadRecent(ch,0,{capture:true});
+    if(!confirm('Refrescar estados de envío no entregados de Mercado Libre?\n\nSe consultan solo ventas recientes no terminales.'))return;
+    setStatus('mlVentasStatus','Refrescando estados no entregados ML…');
+    try{
+      const d=await post(`/ml-sales/${TENANT_ID}/refresh_shipping_pending?limit=50&days=30&scan_limit=250`);
+      setStatus('mlVentasStatus',`Refresh ML: ${d.refreshed_count||0} actualizadas, ${d.error_count||0} errores`,d.error_count?false:true);
+      await loadRecent('ML',0,{capture:false});
+    }catch(e){setStatus('mlVentasStatus','Error refresh envíos ML: '+errMsg(e),false);raw(e)}
+  };
+
+  window.captureTNSales=async function(){
+    try{setStatus('tnVentasStatus','Capturando ventas TN recientes…');const d=await captureTNRecent();setStatus('tnVentasStatus',`Captura TN: ${d.saved?.length??0} guardadas / ${d.found_orders??0} leídas.`,true);await loadRecent('TN',0,{capture:false})}catch(e){setStatus('tnVentasStatus','Error capturando ventas TN: '+errMsg(e),false);raw(e)}
+  };
+})();
+
+localStorage.setItem('xeleria_tenant_id',TENANT_ID);
+loadUserOptions();
+closePublicationMatrix('La configuración está cerrada. Tocá “Configurar inventario” para empezar.');
+refreshAll();
+
+/* v17 old ERP inventory/combos module port, adapted to XelerIA tenant tables */
+(function(){
+  window.state = window.state || {};
+  state.inventoryItems = state.inventoryItems || [];
+  state.inventory = state.inventory || {offset:0,total:0};
+  state.comboItems = state.comboItems || [];
+  state.pendingBundleDraft = state.pendingBundleDraft || null;
+
+  window.showGestPanel = function(which){
+    const isCombos = which === 'combos';
+    qs('gestPanelProductos')?.classList.toggle('active', !isCombos);
+    qs('gestPanelCombos')?.classList.toggle('active', isCombos);
+    qs('gestTabProductos')?.classList.toggle('active', !isCombos);
+    qs('gestTabCombos')?.classList.toggle('active', isCombos);
+    if(isCombos) loadCombos(); else searchInventory(state.inventory?.offset||0,false);
+    return false;
+  };
+
+  window.debouncedSearch = function(kind){
+    clearTimeout(timers[kind]);
+    timers[kind]=setTimeout(()=>{if(kind==='inv')searchInventory(0,true);if(kind==='combo')loadCombos()},350);
+  };
+
+  window.invLimit = function(){return Number(qs('invLimit')?.value||20)}
+  window.inventoryPagerHtml = function(d){
+    let limit=Number(d.limit||invLimit()||20),offset=Number(d.offset||0),total=Number(d.total||0);
+    let from=total?offset+1:0,to=Math.min(offset+(d.items||[]).length,total||offset+(d.items||[]).length),prev=Math.max(0,offset-limit),next=offset+limit;
+    return `<button class="secondary" ${offset<=0?'disabled':''} onclick="searchInventory(${prev})">Atrás</button><span class="pill">Mostrando ${from}–${to}${total?` de ${total}`:''}</span><button class="secondary" ${d.has_next?'':'disabled'} onclick="searchInventory(${next})">Siguiente</button>`;
+  };
+
+  function statusCast(st){
+    if(st===true)return 'visible';
+    if(st===false)return 'hidden';
+    return String(st||'').toLowerCase();
+  }
+  window.listingStatusLabel = function(st){
+    let s=statusCast(st);
+    if(s==='true'||s.includes('visible')||s.includes('active'))return 'Visible';
+    if(s==='false'||s.includes('hidden')||s.includes('ocult'))return 'Oculta';
+    if(s.includes('inactive')||s.includes('deleted')||s.includes('closed'))return 'Oculta';
+    if(s.includes('paused')||s.includes('pause'))return 'Pausada';
+    return st||'-';
+  };
+  window.listingStatusClass = function(st){
+    let s=statusCast(st);
+    if(s==='true'||s.includes('visible')||s.includes('active'))return 'ok';
+    if(s==='false'||s.includes('hidden')||s.includes('ocult')||s.includes('inactive')||s.includes('deleted')||s.includes('closed'))return 'inactive';
+    if(s.includes('paused')||s.includes('pause'))return 'warn';
+    return 'info';
+  };
+  window.listingMarket = function(l){return String(l.marketplace||l.channel||'').toUpperCase()}
+  window.listingProductId = function(l){return l.external_product_id??l.listing_id??l.item_id??l.product_id??l.external_full_id??''}
+  window.listingVariantId = function(l){return l.external_variant_id??l.variant_id??l.variation_id??''}
+  window.listingPrice = function(l){return l.price??l.marketplace_price??l.target_price??''}
+  window.listingStock = function(l){return l.stock??l.available_quantity??l.marketplace_stock??''}
+  window.listingStatus = function(l){return l.status_label??l.status??l.state??''}
+  window.pubVarBlock = function(pid,vid){return `<div class="mono id pubvar"><span>Pub: ${esc(pid)}</span><span class="idSep">Var: ${esc(vid||0)}</span></div>`}
+
+  window.searchInventory = async function(offset=0,savePref=false){
+    let q=qs('invSearch')?.value.trim()||'',lim=invLimit(),market=qs('invMarket')?.value||'',maxStock=(qs('invMaxStock')?.value||'').trim();
+    state.inventory.offset=offset;setStatus('invStatus','Buscando inventario + publicaciones...');
+    try{
+      let d=await api(`/products-admin/${TENANT_ID}/products?q=${encodeURIComponent(q)}&limit=${encodeURIComponent(lim)}&offset=${encodeURIComponent(offset)}&channel=${encodeURIComponent(market||'ALL')}&stock_le=${encodeURIComponent(maxStock)}&item_type=simple`);
+      state.inventoryItems=d.items||[];state.inventory.total=Number(d.total||0);
+      renderInventory();
+      if(qs('invPager'))qs('invPager').innerHTML=inventoryPagerHtml(d);
+      let filtro=(market?` · canal ${market}`:'')+(maxStock!==''?` · stock <= ${maxStock}`:'');
+      if(q && !(state.inventoryItems||[]).length){
+        setStatus('invStatus','No se encontró ese SKU como producto simple',false);
+      }else{
+        setStatus('invStatus',`Inventario: ${state.inventoryItems.length} de ${state.inventory.total} ítems${filtro} · Publicaciones visibles: ${d.visible_publications??0}`,true);
+      }
+    }catch(e){setStatus('invStatus',q?'No se encontró ese SKU como producto simple':'Error inventario: '+(e.message||JSON.stringify(e)),false);raw(e)}
+  };
+
+  window.renderListingsForItem = function(item){
+    let market=qs('invMarket')?.value||'';
+    let arr=(Array.isArray(item.listings)?item.listings:[]).filter(l=>!market||listingMarket(l)===market);
+    if(!arr.length)return '<span class="muted">Sin publicaciones vinculadas para este filtro.</span>';
+    arr.sort((a,b)=>(listingMarket(a)+listingProductId(a)+listingVariantId(a)).localeCompare(listingMarket(b)+listingProductId(b)+listingVariantId(b)));
+    return arr.map((l,idx)=>{
+      let m=listingMarket(l),pid=listingProductId(l),vid=listingVariantId(l),price=listingPrice(l),stock=listingStock(l),st=listingStatus(l),key=esc(`${item.sku}_${idx}`);
+      return `<div class="marketBox"><div><span class="pill ${m==='ML'?'info':'ok'}">${esc(m||'?')}</span></div>${pubVarBlock(pid,vid)}<div><input class="priceInput" id="price_${key}" value="${esc(price)}" title="Precio marketplace"></div><div><input class="stockInput" value="${esc(stock)}" disabled title="Stock marketplace informado"></div><div><span class="pill marketStatus ${listingStatusClass(st,market)}">${esc(listingStatusLabel(st,market))}</span></div></div>`;
+    }).join('');
+  };
+
+  window.inventoryStockCell = function(i,idx){
+    let isBundle=String(i.item_type||'').toLowerCase()==='bundle';
+    if(isBundle)return `<div class="invStockBox" style="opacity:.58"><div class="stockControls"><input class="stockInput" type="number" step="1" id="stock_${idx}" value="${esc(i.stock??0)}" disabled title="Stock calculado desde componentes"><span class="small">actual ERP: ${esc(i.stock??0)}</span></div></div><div id="rowStatus_${idx}" class="small">Bundle: stock calculado por componentes.</div>`;
+    return `<div class="invStockBox"><div class="stockControls"><input class="stockInput" type="number" step="1" id="stock_${idx}" value="${esc(i.stock??0)}"><span class="small">actual ERP: ${esc(i.stock??0)}</span></div><button class="ok" onclick="saveInventoryStock(${idx})">Guardar</button></div><div id="rowStatus_${idx}" class="small"></div>`;
+  };
+  window.inventoryActionsCell = function(i,idx){
+    let isBundle=String(i.item_type||'').toLowerCase()==='bundle',sku=esc(i.sku||'');
+    let edit=isBundle?`<button onclick="renderEditBundleTool(${idx})">Modificar combo</button>`:`<button onclick="return productsPending('Modificar producto')">Modificar</button>`;
+    let link=isBundle?`<button onclick="renderLinkBundleTool(${idx})">Vincular publicaciones</button>`:`<button onclick="return productsPending('Vincular publicaciones')">Vincular publicaciones</button>`;
+    return `<details class="kebabMenu"><summary title="Más acciones">⋮</summary><div class="kebabPanel">${edit}${link}</div></details>`;
+  };
+  window.renderInventory = function(){
+    let items=state.inventoryItems||[],tbody='';
+    if(!items.length)tbody='<tr><td colspan="5" class="muted" style="text-align:center;padding:24px">Sin resultados para este filtro.</td></tr>';
+    else tbody=items.map((i,idx)=>`<tr><td><strong class="mono">${esc(i.sku)}</strong><br><span class="small">${esc(i.item_type||'')}</span></td><td>${esc(i.name||'')}<br><span class="small">${esc(i.category||'')}</span></td><td>${inventoryStockCell(i,idx)}</td><td>${renderListingsForItem(i)}</td><td class="actionCell">${inventoryActionsCell(i,idx)}</td></tr>`).join('');
+    qs('invResults').innerHTML=`<table class="inventoryTable"><thead><tr><th>SKU</th><th>Producto</th><th>Stock ERP editable</th><th>Publicaciones / variantes / precio / stock</th><th>⋮</th></tr></thead><tbody>${tbody}</tbody></table>`;
+  };
+  window.saveInventoryStock = async function(idx){
+    let item=state.inventoryItems[idx],el=qs('rowStatus_'+idx);
+    if(!item)return;
+    if(String(item.item_type||'').toLowerCase()==='bundle'){if(el){el.textContent='Bundle: el stock se calcula desde componentes.';el.style.color='var(--muted)'}return}
+    let sku=item.sku,newStock=Number(qs('stock_'+idx).value);
+    if(!Number.isFinite(newStock)){el.textContent='Stock inválido';return}
+    el.textContent='Guardando...';
+    try{
+      let d=await postJSON(`/products-admin/${TENANT_ID}/products/${encodeURIComponent(sku)}/save`,{stock:Math.trunc(newStock),listings:[],notes:'Ajuste desde inventario editable integrado'});
+      item.stock=Math.trunc(newStock);el.textContent='OK: stock guardado. Refrescando vista...';el.style.color='var(--ok)';
+      await searchInventory(state.inventory.offset||0,false);
+      setStatus('invStatus',`Stock guardado para ${sku}. Vista refrescada con el mismo filtro.`,true);
+    }catch(e){el.textContent='Error: '+(e.message||JSON.stringify(e));el.style.color='var(--bad)';raw(e)}
+  };
+
+  window.comboLimit = function(){return Number(qs('comboLimit')?.value||50)}
+  window.loadCombos = async function(){
+    let q=(qs('comboSearch')?.value||'').trim(),lim=comboLimit();
+    setStatus('comboStatus','Buscando combos...');
+    try{
+      let d=await api(`/bundle-items/${TENANT_ID}?q=${encodeURIComponent(q)}&limit=${encodeURIComponent(lim)}`);
+      let rows=(d.items||[]).map(x=>({...(x.bundle||{}),_bundlePayload:x}));
+      state.comboItems=rows;state.inventoryItems=rows;
+      renderCombos();
+      setStatus('comboStatus',`Combos: ${rows.length} de ${d.total||rows.length}${q?' filtrados':''}`,true);
+    }catch(e){setStatus('comboStatus','Error combos: '+(e?.message||JSON.stringify(e)),false);raw(e)}
+  };
+  window.renderCombos = function(){
+    let items=state.comboItems||[], tbody='';
+    if(!items.length){
+      tbody='<tr><td colspan="5" class="muted" style="text-align:center;padding:24px">Sin combos para este filtro.</td></tr>';
+    }else{
+      tbody=items.map((i,idx)=>{
+        const stock=(i._bundlePayload&&i._bundlePayload.available_stock!==undefined)?i._bundlePayload.available_stock:(i.stock??0);
+        return `<tr><td><strong class="mono">${esc(i.sku)}</strong></td><td>${esc(i.name||'')}</td><td><strong>${esc(stock)}</strong></td><td>${renderBundleComponentsInline(i._bundlePayload)}</td><td class="actionCell">${inventoryActionsCell(i,idx)}</td></tr>`;
+      }).join('');
+    }
+    qs('comboResults').innerHTML=`<table class="inventoryTable comboOldTable"><thead><tr><th>SKU</th><th>Combo</th><th>Stock</th><th>Componentes</th><th>⋮</th></tr></thead><tbody>${tbody}</tbody></table>`;
+  };
+  function renderBundleComponentsInline(payload){
+    let comps=(payload&&payload.components)||[];
+    if(!comps.length)return '<span class="muted">Sin componentes.</span>';
+    return `<table class="comboCompTable"><thead><tr><th>SKU</th><th>Componente</th><th>Cant.</th><th>Stock</th></tr></thead><tbody>${comps.map(c=>{let it=c.component||{};return `<tr><td><b>${esc(it.sku||'')}</b></td><td>${esc(it.name||'')}</td><td>${esc(c.quantity||0)}</td><td>${esc(it.stock??0)}</td></tr>`}).join('')}</tbody></table>`;
+  }
+
+  window.toggleInventoryTool = function(type){ if(type==='bundle') renderBundleTool(); return false; };
+  window.renderEditBundleTool = function(idx){ renderBundleTool(state.comboItems[idx]||state.inventoryItems[idx]||{}); };
+  window.cancelBundleTool = function(){let box=qs('comboTools');if(box){box.classList.add('hidden');box.innerHTML='';}safeSetStatus? safeSetStatus('comboStatus','Edición cancelada.',true) : setStatus('comboStatus','Edición cancelada.',true);return false;};
+  window.renderBundleTool = function(item={}){
+    showGestPanel('combos');
+    let box=qs('comboTools'); if(!box)return;
+    let payload=item._bundlePayload||{};
+    let comps=(payload.components||[]).map(c=>({sku:c.component?.sku||'',name:c.component?.name||'',quantity:c.quantity||1,stock:c.component?.stock??''}));
+    let listings=payload.listings||item.listings||[];
+    box.classList.remove('hidden');
+    box.innerHTML=`<div class="bundleTool"><div class="bundleGrid">
+      <div><label>SKU combo</label><input id="comboSku" value="${esc(item.sku||'')}" placeholder="SKU combo"></div>
+      <div><label>Nombre</label><input id="comboName" value="${esc(item.name||'')}" placeholder="Nombre del combo"></div>
+      <div><label>Costo</label><input id="comboCost" type="number" step="0.01" value="${esc(item.cost||0)}"></div>
+    </div>
+    <div class="btnrow" style="margin-top:12px"><button class="secondary" onclick="addBundleComponentLine()">Agregar componente</button><button class="secondary" onclick="addBundleListingLine()">Agregar publicación</button><button class="primary" onclick="saveBundleTool()">Guardar combo</button><button class="secondary" onclick="cancelBundleTool();return false;">Cancelar</button></div>
+    <div id="bundleLines" style="margin-top:12px"></div>
+    <div id="bundleListingLines" class="productListingLines" style="margin-top:12px"></div>
+    <div id="bundleToolStatus" class="status"></div></div>`;
+    (comps.length?comps:[{}]).forEach(c=>addBundleComponentLine(c));
+    (Array.isArray(listings)?listings:[]).forEach(l=>addBundleListingLine(l));
+    if(focusListings && !(listings||[]).length) addBundleListingLine({marketplace:qs('invMarket')?.value||'TN'});
+    setTimeout(()=>box.scrollIntoView({behavior:'smooth',block:'start'}),0);
+  };
+  window.addBundleComponentLine = function(d={}){
+    let box=qs('bundleLines'); if(!box)return;
+    let id='bline_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+    let div=document.createElement('div');div.className='bundleComponentLine';div.dataset.validSku=d.sku?'1':'0';
+    div.innerHTML=`<div><label>SKU</label><input class="bSku" value="${esc(d.sku||'')}" oninput="bundleSearchComponent(this)" autocomplete="off"><div class="bundleSuggest"></div></div><div class="fieldRel"><label>Componente</label><input class="bName" value="${esc(d.name||'')}" oninput="bundleSearchComponent(this)" autocomplete="off"><div class="bundleSuggest"></div></div><div><label>Cant.</label><input class="bQty" type="number" step="0.01" min="0.01" value="${esc(d.quantity||1)}"></div><div><label>&nbsp;</label><button class="secondary" onclick="this.closest('.bundleComponentLine').remove()">×</button></div>`;
+    box.appendChild(div);
+  };
+  window.bundleSearchComponent = function(input){
+    clearTimeout(input._t);
+    input._t=setTimeout(async()=>{
+      let line=input.closest('.bundleComponentLine'),q=input.value.trim(),box=line.querySelector('.bundleSuggest');
+      if(!q||q.length<2){box.style.display='none';box.innerHTML='';return}
+      try{
+        let d=await api(`/bundle-items/${TENANT_ID}/component-search?q=${encodeURIComponent(q)}&limit=8`);
+        let items=d.items||[];
+        box.innerHTML=items.map(it=>`<div class="bundleSuggestItem" onclick="pickBundleComponent(this)" data-sku="${esc(it.sku||'')}" data-name="${esc(it.name||'')}"><b>${esc(it.sku||'')}</b> · ${esc(it.name||'')} <span class="muted">Stock ${esc(it.stock??0)}</span></div>`).join('')||'<div class="bundleSuggestItem muted">Sin coincidencias</div>';
+        box.style.display='block';
+      }catch(e){box.innerHTML='<div class="bundleSuggestItem muted">Error buscando componente</div>';box.style.display='block';raw(e)}
+    },280);
+  };
+  window.pickBundleComponent = function(el){
+    let line=el.closest('.bundleComponentLine');
+    line.querySelector('.bSku').value=el.dataset.sku||'';
+    line.querySelector('.bName').value=el.dataset.name||'';
+    line.dataset.validSku='1';
+    line.querySelectorAll('.bundleSuggest').forEach(b=>{b.style.display='none';b.innerHTML=''});
+  };
+  window.saveBundleTool = async function(){
+    let sku=(qs('comboSku')?.value||'').trim(),name=(qs('comboName')?.value||sku).trim();
+    if(!sku){setStatus('bundleToolStatus','Cargá SKU de combo.',false);return}
+    setStatus('bundleToolStatus','Guardando combo...');
+    try{
+      const listings=collectBundleToolListings();
+      const d=await postJSON(`/bundle-items/${TENANT_ID}`,{sku,name,cost:qs('comboCost')?.value||0,active:true,listings});
+      let components=[...document.querySelectorAll('.bundleComponentLine')].map(line=>({sku:(line.querySelector('.bSku')?.value||'').trim(),quantity:Number(line.querySelector('.bQty')?.value||0)})).filter(x=>x.sku&&x.quantity>0);
+      if(components.length) await postJSON(`/bundle-items/${TENANT_ID}/${encodeURIComponent(sku)}/components`,{components});
+      await loadCombos();
+      let tool=qs('comboTools');if(tool){tool.classList.add('hidden');tool.innerHTML='';}
+      setStatus('comboStatus',`Combo ${sku} guardado y stock recalculado.`,true);
+    }catch(e){setStatus('bundleToolStatus','Error guardando combo: '+(e.message||JSON.stringify(e)),false);raw(e)}
+  };
+})();
+
+
+/* v18 old ERP module port: launchers fixed */
+(function(){
+  const qs = window.$ || ((id)=>document.getElementById(id));
+  const timers = window.__xeleriaOldErpTimers || (window.__xeleriaOldErpTimers = {});
+  const state = window.__xeleriaOldErpState || (window.__xeleriaOldErpState = {
+    inventoryItems: [],
+    inventory: {offset:0,total:0},
+    comboItems: []
+  });
+
+  function safeRaw(e){ try{ if(typeof raw === 'function') raw(e); }catch(_){} }
+  function safeSetStatus(id,msg,ok=null){ try{ setStatus(id,msg,ok); }catch(_){ const el=qs(id); if(el)el.textContent=msg||''; } }
+  function moneyLocal(n){ try{ return typeof money==='function'?money(n):String(n??''); }catch(_){ return String(n??''); } }
+
+  window.showView = function(id){
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    qs(id)?.classList.add('active');
+    document.querySelectorAll('.navBtn').forEach(b=>b.classList.toggle('active',b.dataset.view===id));
+    const title=document.querySelector(`.navBtn[data-view="${id}"]`)?.textContent?.trim()||'XelerIA';
+    if(qs('pageTitle')) qs('pageTitle').textContent=title;
+    if(qs('pageCrumb')) qs('pageCrumb').textContent='XelerIA';
+    if(id==='configuracion' && typeof loadUserOptions==='function') loadUserOptions();
+    if(id==='inventario') showGestPanel(qs('gestPanelCombos')?.classList.contains('active') ? 'combos' : 'productos');
+    return false;
+  };
+
+  window.showGestPanel = function(which){
+    const isCombos = which === 'combos';
+    qs('gestPanelProductos')?.classList.toggle('active', !isCombos);
+    qs('gestPanelCombos')?.classList.toggle('active', isCombos);
+    qs('gestTabProductos')?.classList.toggle('active', !isCombos);
+    qs('gestTabCombos')?.classList.toggle('active', isCombos);
+    if(isCombos) loadCombos(); else searchInventory(0,false);
+    return false;
+  };
+
+  window.debouncedSearch = function(kind){
+    clearTimeout(timers[kind]);
+    timers[kind]=setTimeout(()=>{ if(kind==='inv')searchInventory(0,true); if(kind==='combo')loadCombos(); },350);
+  };
+
+  window.invLimit = function(){ return Number(qs('invLimit')?.value||20); };
+
+  window.inventoryPagerHtml = function(d){
+    let limit=Number(d.limit||invLimit()||20), offset=Number(d.offset||0), total=Number(d.total||0);
+    let from=total?offset+1:0;
+    let to=Math.min(offset+(d.items||[]).length,total||offset+(d.items||[]).length);
+    let prev=Math.max(0,offset-limit);
+    let next=offset+limit;
+    return `<button class="secondary" ${offset<=0?'disabled':''} onclick="searchInventory(${prev})">Atrás</button><span class="pill">Mostrando ${from}–${to}${total?` de ${total}`:''}</span><button class="secondary" ${d.has_next?'':'disabled'} onclick="searchInventory(${next})">Siguiente</button>`;
+  };
+
+  function statusCast(st){
+    if(st===true)return 'visible';
+    if(st===false)return 'hidden';
+    return String(st||'').toLowerCase();
+  }
+
+  window.listingStatusLabel = function(st){
+    let s=statusCast(st);
+    if(s==='true'||s.includes('visible')||s.includes('active'))return 'Visible';
+    if(s==='false'||s.includes('hidden')||s.includes('ocult'))return 'Oculta';
+    if(s.includes('inactive')||s.includes('deleted')||s.includes('closed'))return 'Oculta';
+    if(s.includes('paused')||s.includes('pause'))return 'Pausada';
+    return st||'-';
+  };
+
+  window.listingStatusClass = function(st){
+    let s=statusCast(st);
+    if(s==='true'||s.includes('visible')||s.includes('active'))return 'ok';
+    if(s==='false'||s.includes('hidden')||s.includes('ocult')||s.includes('inactive')||s.includes('deleted')||s.includes('closed'))return 'inactive';
+    if(s.includes('paused')||s.includes('pause'))return 'warn';
+    return 'info';
+  };
+
+  window.listingMarket = function(l){ return String(l.marketplace||l.channel||'').toUpperCase(); };
+  window.listingProductId = function(l){ return l.external_product_id??l.listing_id??l.item_id??l.product_id??l.external_full_id??''; };
+  window.listingVariantId = function(l){ return l.external_variant_id??l.variant_id??l.variation_id??''; };
+  window.listingPrice = function(l){ return l.price??l.marketplace_price??l.target_price??''; };
+  window.listingStock = function(l){ return l.stock??l.available_quantity??l.marketplace_stock??''; };
+  window.listingStatus = function(l){ return l.status_label??l.status??l.state??''; };
+  window.pubVarBlock = function(pid,vid){ return `<div class="mono id pubvar"><span>Pub: ${esc(pid)}</span><span class="idSep">Var: ${esc(vid||0)}</span></div>`; };
+
+  window.searchInventory = async function(offset=0,savePref=false){
+    let q=qs('invSearch')?.value.trim()||'';
+    let lim=invLimit();
+    let market=qs('invMarket')?.value||'';
+    let maxStock=(qs('invMaxStock')?.value||'').trim();
+    state.inventory.offset=offset;
+    safeSetStatus('invStatus','Buscando inventario + publicaciones...');
+    try{
+      let d=await api(`/products-admin/${TENANT_ID}/products?q=${encodeURIComponent(q)}&limit=${encodeURIComponent(lim)}&offset=${encodeURIComponent(offset)}&channel=${encodeURIComponent(market||'ALL')}&stock_le=${encodeURIComponent(maxStock)}&item_type=simple`);
+      state.inventoryItems=d.items||[];
+      state.inventory.total=Number(d.total||0);
+      renderInventory();
+      if(qs('invPager')) qs('invPager').innerHTML=inventoryPagerHtml(d);
+      let filtro=(market?` · canal ${market}`:'')+(maxStock!==''?` · stock <= ${maxStock}`:'');
+      if(q && !state.inventoryItems.length){
+        safeSetStatus('invStatus','No se encontró ese SKU como producto simple',false);
+      }else{
+        safeSetStatus('invStatus',`Inventario: ${state.inventoryItems.length} de ${state.inventory.total} ítems${filtro} · Publicaciones visibles: ${d.visible_publications??0}`,true);
+      }
+    }catch(e){
+      safeSetStatus('invStatus',q?'No se encontró ese SKU como producto simple':'Error inventario: '+(e.message||JSON.stringify(e)),false);
+      safeRaw(e);
+    }
+  };
+
+  function marketplaceStatusLabel(st, market){
+    let s=statusCast(st);
+    let m=String(market||'').toUpperCase();
+    if(m==='ML'){
+      if(s.includes('paused')||s.includes('pause'))return 'Pausado';
+      if(s==='true'||s.includes('active')||s.includes('published'))return 'Activa';
+      return st||'-';
+    }
+    if(m==='TN'){
+      if(s==='false'||s.includes('hidden')||s.includes('ocult')||s.includes('inactive')||s.includes('deleted')||s.includes('closed'))return 'Oculto';
+      if(s==='true'||s.includes('visible')||s.includes('active')||s.includes('published'))return 'Visible';
+      return st||'-';
+    }
+    if(s==='true'||s.includes('visible')||s.includes('active'))return 'Visible';
+    if(s==='false'||s.includes('hidden')||s.includes('ocult'))return 'Oculto';
+    if(s.includes('paused')||s.includes('pause'))return 'Pausado';
+    return st||'-';
+  }
+
+  window.listingStatusLabel = function(st, market){ return marketplaceStatusLabel(st, market); };
+
+  function marketplaceStatusOption(st, market){
+    let s=statusCast(st);
+    let m=String(market||'').toUpperCase();
+    if(m==='ML'){
+      if(s.includes('paused')||s.includes('pause'))return 'paused';
+      if(s.includes('active')||s.includes('published')||s==='true')return 'active';
+      return String(st||'');
+    }
+    if(s.includes('hidden')||s.includes('ocult')||s==='false')return 'hidden';
+    if(s.includes('visible')||s.includes('active')||s.includes('published')||s==='true')return 'visible';
+    return String(st||'');
+  }
+
+  function simpleProductType(i){ return String(i.item_type||'simple').toLowerCase(); }
+
+  window.renderListingsForItem = function(item,rowIdx){
+    let market=qs('invMarket')?.value||'';
+    let arr=(Array.isArray(item.listings)?item.listings:[]).filter(l=>!market||listingMarket(l)===market);
+    if(!arr.length)return '<span class="muted">Sin publicaciones vinculadas para este filtro.</span>';
+    arr.sort((a,b)=>(listingMarket(a)+listingProductId(a)+listingVariantId(a)).localeCompare(listingMarket(b)+listingProductId(b)+listingVariantId(b)));
+    return arr.map((l,idx)=>{
+      let m=listingMarket(l), pid=listingProductId(l), vid=listingVariantId(l), price=listingPrice(l), stock=listingStock(l), st=listingStatus(l);
+      return `<div class="marketBox"><div><span class="pill ${m==='ML'?'info':'ok'}">${esc(m||'?')}</span></div>${pubVarBlock(pid,vid)}<div><input class="priceInput" id="price_${rowIdx}_${idx}" value="${esc(price)}" title="Precio marketplace"></div><div><input class="stockInput" id="lstk_${rowIdx}_${idx}" value="${esc(stock)}" disabled title="Stock marketplace informado"></div><div><span class="pill marketStatus ${listingStatusClass(st)}">${esc(listingStatusLabel(st,m))}</span></div></div>`;
+    }).join('');
+  };
+
+  function collectListingsForRow(item,rowIdx){
+    return (Array.isArray(item.listings)?item.listings:[]).map((l,j)=>{
+      let m=listingMarket(l);
+      return {
+        id:l.id||null,
+        marketplace:m,
+        channel:m,
+        external_product_id:listingProductId(l)||null,
+        external_variant_id:listingVariantId(l)||null,
+        listing_id:listingProductId(l)||null,
+        variant_id:listingVariantId(l)||null,
+        price:qs(`price_${rowIdx}_${j}`)?.value ?? listingPrice(l),
+        stock:listingStock(l),
+        status:listingStatus(l)||null
+      };
+    });
+  }
+
+  window.inventoryStockCell = function(i,idx){
+    let isBundle=simpleProductType(i)==='bundle';
+    if(isBundle){
+      return `<div class="invStockBox" style="opacity:.58"><div class="stockControls"><input class="stockInput" type="number" step="1" id="stock_${idx}" value="${esc(i.stock??0)}" disabled title="Stock calculado desde componentes"><span class="small">actual ERP: ${esc(i.stock??0)}</span></div></div><div id="rowStatus_${idx}" class="small">Bundle: stock calculado por componentes.</div>`;
+    }
+    return `<div class="invStockBox"><div class="stockControls"><input class="stockInput" type="number" step="1" id="stock_${idx}" value="${esc(i.stock??0)}"><span class="small">actual ERP: ${esc(i.stock??0)}</span></div><button class="ok" onclick="saveInventoryStock(${idx})">Guardar</button></div><div id="rowStatus_${idx}" class="small"></div>`;
+  };
+
+  window.inventoryActionsCell = function(i,idx){
+    let isBundle=simpleProductType(i)==='bundle';
+    let edit=isBundle?`<button onclick="renderEditBundleTool(${idx})">Modificar combo</button>`:`<button onclick="renderEditProductTool(${idx})">Modificar producto</button>`;
+    let link=isBundle?`<button onclick="renderLinkBundleTool(${idx})">Vincular publicaciones</button>`:`<button onclick="renderLinkProductTool(${idx})">Vincular publicaciones</button>`;
+    return `<details class="kebabMenu"><summary title="Más acciones">⋮</summary><div class="kebabPanel">${edit}${link}</div></details>`;
+  };
+
+  window.renderInventory = function(){
+    let items=state.inventoryItems||[], tbody='';
+    if(!items.length){
+      tbody='<tr><td colspan="5" class="muted" style="text-align:center;padding:24px">Sin productos simples para este filtro.</td></tr>';
+    }else{
+      tbody=items.map((i,idx)=>`<tr><td><strong class="mono">${esc(i.sku)}</strong><br><span class="small">${esc(i.item_type||'simple')}</span></td><td>${esc(i.name||i.title||'')}<br><span class="small">${esc([i.variant_name,i.category].filter(Boolean).join(' · '))}</span></td><td>${inventoryStockCell(i,idx)}</td><td>${renderListingsForItem(i,idx)}</td><td class="actionCell">${inventoryActionsCell(i,idx)}</td></tr>`).join('');
+    }
+    qs('invResults').innerHTML=`<table class="inventoryTable"><thead><tr><th>SKU</th><th>Producto</th><th>Stock ERP editable</th><th>Publicaciones / variantes / precio / stock</th><th>⋮</th></tr></thead><tbody>${tbody}</tbody></table>`;
+  };
+
+  window.saveInventoryStock = async function(idx){
+    let item=state.inventoryItems[idx], el=qs('rowStatus_'+idx);
+    if(!item)return;
+    if(simpleProductType(item)==='bundle'){
+      if(el){el.textContent='Bundle: el stock se calcula desde componentes.';el.style.color='var(--muted)';}
+      return;
+    }
+    let sku=item.sku, newStock=Number(qs('stock_'+idx)?.value);
+    if(!Number.isFinite(newStock)){ if(el)el.textContent='Stock inválido'; return; }
+    if(el)el.textContent='Guardando...';
+    try{
+      let payload={
+        sku,
+        name:item.name||item.title||'',
+        variant_name:item.variant_name||'',
+        category:item.category||'',
+        cost:item.cost??0,
+        stock:Math.trunc(newStock),
+        item_type:'simple',
+        active:item.active!==false,
+        listings:collectListingsForRow(item,idx),
+        notes:'Ajuste desde Productos simples'
+      };
+      let d=await postJSON(`/products-admin/${TENANT_ID}/products/${encodeURIComponent(sku)}/save`,payload);
+      item.stock=Math.trunc(newStock);
+      if(el){el.textContent=`OK: producto guardado. Jobs: ${d.jobs_created??(d.sync_jobs||[]).length??0}`;el.style.color='var(--ok)';}
+      await searchInventory(state.inventory.offset||0,false);
+      safeSetStatus('invStatus',`Producto guardado para ${sku}. Vista refrescada con el mismo filtro.`,true);
+    }catch(e){
+      if(el){el.textContent='Error: '+(e.message||JSON.stringify(e));el.style.color='var(--bad)';}
+      safeRaw(e);
+    }
+  };
+
+  window.showProductLinkHint = function(){
+    safeSetStatus('invStatus','Para vincular publicaciones: abrí el ⋮ del producto y elegí “Vincular publicaciones”.',true);
+    return false;
+  };
+
+  window.renderEditProductTool = function(idx){
+    renderProductTool(state.inventoryItems[idx]||{});
+  };
+
+  window.renderLinkProductTool = function(idx){
+    const item=state.inventoryItems[idx]||{};
+    renderProductTool(item,true);
+    const lines=qs('productListingLines');
+    if(lines && !lines.querySelector('.productListingLine')) addProductListingLine({marketplace:qs('invMarket')?.value||'TN'});
+    setTimeout(()=>qs('productListingLines')?.scrollIntoView({behavior:'smooth',block:'center'}),80);
+  };
+
+  window.closeProductTool = function(){
+    const box=qs('inventoryTools');
+    if(box){box.classList.add('hidden');box.innerHTML='';}
+  };
+
+  window.renderProductTool = function(item={}, focusListings=false){
+    showGestPanel('productos');
+    const box=qs('inventoryTools');
+    if(!box)return;
+    const isEdit=!!item.sku;
+    box.classList.remove('hidden');
+    box.innerHTML=`<div class="productTool">
+      <div class="productGrid">
+        <input id="productOldSku" type="hidden" value="${escAttr(item.sku||'')}">
+        <div><label>SKU</label><input id="productSku" value="${escAttr(item.sku||'')}" placeholder="SKU producto simple"></div>
+        <div><label>Nombre</label><input id="productName" value="${escAttr(item.name||item.title||'')}" placeholder="Nombre del producto"></div>
+        <div><label>Variante</label><input id="productVariant" value="${escAttr(item.variant_name||'')}" placeholder="Color / medida / variante"></div>
+        <div><label>Categoría</label><input id="productCategory" value="${escAttr(item.category||'')}" placeholder="Categoría"></div>
+        <div><label>Stock</label><input id="productStock" type="number" step="1" value="${escAttr(item.stock??0)}"></div>
+        <div><label>Costo</label><input id="productCost" type="number" step="0.01" value="${escAttr(item.cost??0)}"></div>
+      </div>
+      <div class="btnrow" style="margin-top:12px">
+        <label class="checkLine" style="margin:0"><input id="productActive" type="checkbox" ${(item.active!==false)?'checked':''}> Activo</label>
+        <button class="secondary" onclick="addProductListingLine()">Agregar publicación</button>
+        <button class="primary" onclick="saveProductTool()">Guardar producto</button>
+        <button class="secondary" onclick="closeProductTool()">Cerrar</button>
+      </div>
+      <div class="toolSub">Guarda en <b>inventory_items</b> y, si hay publicaciones cargadas, en <b>marketplace_listings</b>. Todo viaja con tenant_id: <span class="mono">${esc(TENANT_ID)}</span>.</div>
+      <div id="productListingLines" class="productListingLines"></div>
+      <div id="productToolStatus" class="status"></div>
+    </div>`;
+    (Array.isArray(item.listings)?item.listings:[]).forEach(l=>addProductListingLine(l));
+    if(focusListings && !(item.listings||[]).length) addProductListingLine({marketplace:qs('invMarket')?.value||'TN'});
+    setTimeout(()=>box.scrollIntoView({behavior:'smooth',block:'start'}),60);
+    safeSetStatus('invStatus',isEdit?`Editando producto ${item.sku}`:'Alta de producto simple',true);
+  };
+
+  window.addProductListingLine = function(d={}){
+    const box=qs('productListingLines');
+    if(!box)return;
+    const line=document.createElement('div');
+    line.className='productListingLine';
+    const ch=String(d.marketplace||d.channel||'TN').toUpperCase();
+    const st=marketplaceStatusOption(d.status_label??d.status??d.state??(ch==='ML'?'active':'visible'),ch);
+    line.innerHTML=`<input class="plId plHidden" value="${escAttr(d.id||'')}">
+      <div><label>Canal</label><select class="plChannel"><option ${ch==='TN'?'selected':''}>TN</option><option ${ch==='ML'?'selected':''}>ML</option></select></div>
+      <div><label>Publicación</label><input class="plListing" value="${escAttr(listingProductId(d)||'')}" placeholder="ID publicación"></div>
+      <div><label>Variante</label><input class="plVariant" value="${escAttr(listingVariantId(d)||'0')}" placeholder="0"></div>
+      <div><label>Precio</label><input class="plPrice" type="number" step="1" value="${escAttr(listingPrice(d)||'')}"></div>
+      <div><label>Stock</label><input class="plStock" type="number" step="1" value="${escAttr(listingStock(d)||0)}"></div>
+      <div><label>Estado</label><select class="plStatus"><option value="visible" ${st==='visible'?'selected':''}>Visible</option><option value="hidden" ${st==='hidden'?'selected':''}>Oculto</option><option value="active" ${st==='active'?'selected':''}>Activa</option><option value="paused" ${st==='paused'?'selected':''}>Pausado</option></select></div>
+      <div><label>&nbsp;</label><button class="secondary" onclick="this.closest('.productListingLine').remove()">×</button></div>`;
+    box.appendChild(line);
+  };
+
+  function collectProductToolListings(){
+    return [...document.querySelectorAll('#productListingLines .productListingLine')].map(line=>{
+      const channel=(line.querySelector('.plChannel')?.value||'').trim().toUpperCase();
+      const listing=(line.querySelector('.plListing')?.value||'').trim();
+      const variant=(line.querySelector('.plVariant')?.value||'').trim();
+      if(!channel || !listing)return null;
+      return {
+        id:(line.querySelector('.plId')?.value||'').trim()||null,
+        marketplace:channel,
+        channel,
+        external_product_id:listing,
+        external_variant_id:variant||null,
+        listing_id:listing,
+        variant_id:variant||null,
+        price:line.querySelector('.plPrice')?.value||null,
+        stock:line.querySelector('.plStock')?.value||0,
+        status:line.querySelector('.plStatus')?.value||null
+      };
+    }).filter(Boolean);
+  }
+
+  window.saveProductTool = async function(){
+    const oldSku=(qs('productOldSku')?.value||'').trim();
+    const sku=(qs('productSku')?.value||'').trim();
+    if(!sku){safeSetStatus('productToolStatus','Cargá SKU del producto.',false);return;}
+    const stock=Number(qs('productStock')?.value||0);
+    if(!Number.isFinite(stock)){safeSetStatus('productToolStatus','Stock inválido.',false);return;}
+    const payload={
+      sku,
+      old_sku:oldSku||sku,
+      name:(qs('productName')?.value||sku).trim(),
+      title:(qs('productName')?.value||sku).trim(),
+      variant_name:(qs('productVariant')?.value||'').trim(),
+      category:(qs('productCategory')?.value||'').trim(),
+      cost:qs('productCost')?.value||0,
+      stock:Math.trunc(stock),
+      item_type:'simple',
+      active:!!qs('productActive')?.checked,
+      listings:collectProductToolListings(),
+      notes:'Guardado desde Productos simples'
+    };
+    safeSetStatus('productToolStatus','Guardando producto simple...', 'warntxt');
+    try{
+      const d=await postJSON(`/products-admin/${TENANT_ID}/products/${encodeURIComponent(oldSku||sku)}/save`,payload);
+      safeSetStatus('productToolStatus',`Producto guardado. Jobs: ${d.jobs_created??(d.sync_jobs||[]).length??0}`,true);
+      closeProductTool();
+      await searchInventory(state.inventory.offset||0,false);
+      safeSetStatus('invStatus',`Producto simple guardado: ${sku}`,true);
+    }catch(e){
+      safeSetStatus('productToolStatus','Error guardando producto simple.',false);
+      safeRaw(e);
+    }
+  };
+
+  window.comboLimit = function(){ return Number(qs('comboLimit')?.value||50); };
+
+  window.loadCombos = async function(){
+    let q=(qs('comboSearch')?.value||'').trim(), lim=comboLimit();
+    safeSetStatus('comboStatus','Buscando combos...');
+    try{
+      let d=await api(`/bundle-items/${TENANT_ID}?q=${encodeURIComponent(q)}&limit=${encodeURIComponent(lim)}`);
+      let rows=(d.items||[]).map(x=>({...(x.bundle||{}),_bundlePayload:x}));
+      state.comboItems=rows;
+      renderCombos();
+      safeSetStatus('comboStatus',`Combos: ${rows.length} de ${d.total||rows.length}${q?' filtrados':''}`,true);
+    }catch(e){
+      safeSetStatus('comboStatus','Error combos: '+(e?.message||JSON.stringify(e)),false);
+      safeRaw(e);
+    }
+  };
+
+  window.renderCombos = function(){
+    let items=state.comboItems||[], tbody='';
+    if(!items.length){
+      tbody='<tr><td colspan="5" class="muted" style="text-align:center;padding:24px">Sin combos para este filtro.</td></tr>';
+    }else{
+      tbody=items.map((i,idx)=>{
+        const stock=(i._bundlePayload&&i._bundlePayload.available_stock!==undefined)?i._bundlePayload.available_stock:(i.stock??0);
+        return `<tr><td><strong class="mono">${esc(i.sku)}</strong></td><td>${esc(i.name||'')}</td><td><strong>${esc(stock)}</strong></td><td>${renderBundleComponentsInline(i._bundlePayload)}</td><td class="actionCell">${inventoryActionsCell(i,idx)}</td></tr>`;
+      }).join('');
+    }
+    qs('comboResults').innerHTML=`<table class="inventoryTable comboOldTable"><thead><tr><th>SKU</th><th>Combo</th><th>Stock</th><th>Componentes</th><th>⋮</th></tr></thead><tbody>${tbody}</tbody></table>`;
+  };
+
+  function renderBundleComponentsInline(payload){
+    let comps=(payload&&payload.components)||[];
+    if(!comps.length)return '<span class="muted">Sin componentes.</span>';
+    return `<table class="comboCompTable"><thead><tr><th>SKU</th><th>Componente</th><th>Cant.</th><th>Stock</th></tr></thead><tbody>${comps.map(c=>{let it=c.component||{};return `<tr><td><b>${esc(it.sku||'')}</b></td><td>${esc(it.name||'')}</td><td>${esc(c.quantity||0)}</td><td>${esc(it.stock??0)}</td></tr>`}).join('')}</tbody></table>`;
+  }
+
+  window.toggleInventoryTool = function(type){
+    if(type==='bundle') renderBundleTool();
+    return false;
+  };
+
+  window.renderLinkBundleTool = function(idx){
+    const item=state.comboItems[idx]||state.inventoryItems?.[idx]||{};
+    renderBundleTool(item,true);
+    const lines=qs('bundleListingLines');
+    const payload=item._bundlePayload||{};
+    const currentListings=payload.listings||item.listings||[];
+    if(lines && !currentListings.length && !lines.querySelector('.bundleListingLine')) addBundleListingLine({marketplace:qs('invMarket')?.value||'TN'});
+    setTimeout(()=>qs('bundleListingLines')?.scrollIntoView({behavior:'smooth',block:'center'}),80);
+  };
+
+  window.renderEditBundleTool = function(idx){
+    renderBundleTool(state.comboItems[idx]||state.inventoryItems?.[idx]||{});
+  };
+
+  window.cancelBundleTool = function(){let box=qs('comboTools');if(box){box.classList.add('hidden');box.innerHTML='';}safeSetStatus('comboStatus','Edición cancelada.',true);return false;};
+
+  window.renderBundleTool = function(item={}, focusListings=false){
+    showGestPanel('combos');
+    let box=qs('comboTools');
+    if(!box)return;
+    let payload=item._bundlePayload||{};
+    let comps=(payload.components||[]).map(c=>({sku:c.component?.sku||'',name:c.component?.name||'',quantity:c.quantity||1,stock:c.component?.stock??''}));
+    let listings=payload.listings||item.listings||[];
+    box.classList.remove('hidden');
+    box.innerHTML=`<div class="bundleTool"><div class="bundleGrid">
+      <div><label>SKU combo</label><input id="comboSku" value="${esc(item.sku||'')}" placeholder="SKU combo"></div>
+      <div><label>Nombre</label><input id="comboName" value="${esc(item.name||'')}" placeholder="Nombre del combo"></div>
+      <div><label>Costo</label><input id="comboCost" type="number" step="0.01" value="${esc(item.cost||0)}"></div>
+    </div>
+    <div class="btnrow" style="margin-top:12px"><button class="secondary" onclick="addBundleComponentLine()">Agregar componente</button><button class="secondary" onclick="addBundleListingLine()">Agregar publicación</button><button class="primary" onclick="saveBundleTool()">Guardar combo</button><button class="secondary" onclick="cancelBundleTool();return false;">Cancelar</button></div>
+    <div id="bundleLines" style="margin-top:12px"></div>
+    <div id="bundleListingLines" class="productListingLines" style="margin-top:12px"></div>
+    <div id="bundleToolStatus" class="status"></div></div>`;
+    (comps.length?comps:[{}]).forEach(c=>addBundleComponentLine(c));
+    (Array.isArray(listings)?listings:[]).forEach(l=>addBundleListingLine(l));
+    if(focusListings && !(listings||[]).length) addBundleListingLine({marketplace:qs('invMarket')?.value||'TN'});
+    setTimeout(()=>box.scrollIntoView({behavior:'smooth',block:'start'}),0);
+  };
+
+  window.addBundleComponentLine = function(d={}){
+    let box=qs('bundleLines');
+    if(!box)return;
+    let div=document.createElement('div');
+    div.className='bundleComponentLine';
+    div.dataset.validSku=d.sku?'1':'0';
+    div.innerHTML=`<div><label>SKU</label><input class="bSku" value="${esc(d.sku||'')}" oninput="bundleSearchComponent(this)" autocomplete="off"><div class="bundleSuggest"></div></div><div class="fieldRel"><label>Componente</label><input class="bName" value="${esc(d.name||'')}" oninput="bundleSearchComponent(this)" autocomplete="off"><div class="bundleSuggest"></div></div><div><label>Cant.</label><input class="bQty" type="number" step="0.01" min="0.01" value="${esc(d.quantity||1)}"></div><div><label>&nbsp;</label><button class="secondary" onclick="this.closest('.bundleComponentLine').remove()">×</button></div>`;
+    box.appendChild(div);
+  };
+
+  window.bundleSearchComponent = function(input){
+    clearTimeout(input._t);
+    input._t=setTimeout(async()=>{
+      let line=input.closest('.bundleComponentLine'), q=input.value.trim(), box=line.querySelector('.bundleSuggest');
+      if(!q||q.length<2){box.style.display='none';box.innerHTML='';return;}
+      try{
+        let d=await api(`/bundle-items/${TENANT_ID}/component-search?q=${encodeURIComponent(q)}&limit=8`);
+        let items=d.items||[];
+        box.innerHTML=items.map(it=>`<div class="bundleSuggestItem" onclick="pickBundleComponent(this)" data-sku="${esc(it.sku||'')}" data-name="${esc(it.name||'')}"><b>${esc(it.sku||'')}</b> · ${esc(it.name||'')} <span class="muted">Stock ${esc(it.stock??0)}</span></div>`).join('')||'<div class="bundleSuggestItem muted">Sin coincidencias</div>';
+        box.style.display='block';
+      }catch(e){
+        box.innerHTML='<div class="bundleSuggestItem muted">Error buscando componente</div>';
+        box.style.display='block';
+        safeRaw(e);
+      }
+    },280);
+  };
+
+  window.pickBundleComponent = function(el){
+    let line=el.closest('.bundleComponentLine');
+    line.querySelector('.bSku').value=el.dataset.sku||'';
+    line.querySelector('.bName').value=el.dataset.name||'';
+    line.dataset.validSku='1';
+    line.querySelectorAll('.bundleSuggest').forEach(b=>{b.style.display='none';b.innerHTML='';});
+  };
+
+  window.addBundleListingLine = function(d={}){
+    const box=qs('bundleListingLines');
+    if(!box)return;
+    const line=document.createElement('div');
+    line.className='productListingLine bundleListingLine';
+    const ch=String(d.marketplace||d.channel||'TN').toUpperCase();
+    const st=marketplaceStatusOption(d.status_label??d.status??d.state??(ch==='ML'?'active':'visible'),ch);
+    const title=d.title||d.name||'';
+    line.innerHTML=`<input class="plId plHidden" value="${escAttr(d.id||'')}">
+      <input class="plListing plHidden" value="${escAttr(listingProductId(d)||'')}">
+      <input class="plVariant plHidden" value="${escAttr(listingVariantId(d)||'')}">
+      <div><label>Canal</label><select class="plChannel" onchange="resetPublicationLine(this.closest('.bundleListingLine'))"><option ${ch==='TN'?'selected':''}>TN</option><option ${ch==='ML'?'selected':''}>ML</option></select></div>
+      <div class="fieldRel pubSearchField"><label>Buscar publicación huérfana</label><input class="plSearch" value="${escAttr(title)}" placeholder="Empezá a escribir título o producto" autocomplete="off" oninput="searchBundlePublication(this)" onfocus="searchBundlePublication(this)"><div class="bundleSuggest pubSuggest"></div></div>
+      <div><label>Precio</label><input class="plPrice" type="number" step="1" value="${escAttr(listingPrice(d)||'')}"></div>
+      <div><label>Stock</label><input class="plStock" type="number" step="1" value="${escAttr(listingStock(d)||0)}"></div>
+      <div><label>Estado</label><select class="plStatus"><option value="visible" ${st==='visible'?'selected':''}>Visible</option><option value="hidden" ${st==='hidden'?'selected':''}>Oculto</option><option value="active" ${st==='active'?'selected':''}>Activa</option><option value="paused" ${st==='paused'?'selected':''}>Pausado</option></select></div>
+      <div><label>&nbsp;</label><button class="secondary" onclick="this.closest('.bundleListingLine').remove()">×</button></div>`;
+    box.appendChild(line);
+  };
+
+  window.resetPublicationLine = function(line){
+    if(!line)return;
+    ['plId','plListing','plVariant'].forEach(cls=>{const el=line.querySelector('.'+cls); if(el)el.value='';});
+    const search=line.querySelector('.plSearch'); if(search)search.value='';
+    const sug=line.querySelector('.pubSuggest'); if(sug){sug.style.display='none';sug.innerHTML='';}
+  };
+
+  window.searchBundlePublication = function(input){
+    clearTimeout(input._t);
+    input._t=setTimeout(async()=>{
+      const line=input.closest('.bundleListingLine');
+      const q=(input.value||'').trim();
+      const box=line.querySelector('.pubSuggest');
+      const ch=(line.querySelector('.plChannel')?.value||'ALL').trim().toUpperCase();
+      line.querySelector('.plListing').value='';
+      line.querySelector('.plVariant').value='';
+      if(!q || q.length<2){box.style.display='none';box.innerHTML='';return;}
+      try{
+        const d=await api(`/bundle-items/${TENANT_ID}/publication-search?q=${encodeURIComponent(q)}&marketplace=${encodeURIComponent(ch)}&limit=8`);
+        const items=d.items||[];
+        box.innerHTML=items.map((it,idx)=>`<div class="bundleSuggestItem" onclick="pickBundlePublication(this)" data-i="${idx}" data-marketplace="${escAttr(it.marketplace||ch)}" data-product="${escAttr(it.external_product_id||'')}" data-variant="${escAttr(it.external_variant_id||'')}" data-title="${escAttr(it.title||'')}" data-price="${escAttr(it.price??'')}" data-stock="${escAttr(it.stock??0)}" data-status="${escAttr(it.status||'')}"><b>${esc(it.title||'Sin título')}</b><br><span class="muted">${esc(it.marketplace||ch)} · Stock ${esc(it.stock??0)} · ${esc(it.status_label||it.status||'')}</span></div>`).join('')||'<div class="bundleSuggestItem muted">Sin publicaciones huérfanas para ese texto</div>';
+        box.style.display='block';
+      }catch(e){box.innerHTML='<div class="bundleSuggestItem muted">Error buscando publicaciones huérfanas</div>';box.style.display='block';safeRaw(e)}
+    },280);
+  };
+
+  window.pickBundlePublication = function(el){
+    const line=el.closest('.bundleListingLine');
+    const ch=el.dataset.marketplace||line.querySelector('.plChannel')?.value||'TN';
+    line.querySelector('.plChannel').value=ch;
+    line.querySelector('.plId').value='';
+    line.querySelector('.plListing').value=el.dataset.product||'';
+    line.querySelector('.plVariant').value=el.dataset.variant||'';
+    line.querySelector('.plSearch').value=el.dataset.title||'Publicación seleccionada';
+    line.querySelector('.plPrice').value=el.dataset.price||'';
+    line.querySelector('.plStock').value=el.dataset.stock||0;
+    const status=marketplaceStatusOption(el.dataset.status||'',ch);
+    if(status) line.querySelector('.plStatus').value=status;
+    line.querySelectorAll('.pubSuggest').forEach(b=>{b.style.display='none';b.innerHTML='';});
+  };
+
+  function collectBundleToolListings(){
+    return [...document.querySelectorAll('#bundleListingLines .bundleListingLine')].map(line=>{
+      const channel=(line.querySelector('.plChannel')?.value||'').trim().toUpperCase();
+      const listing=(line.querySelector('.plListing')?.value||'').trim();
+      const variant=(line.querySelector('.plVariant')?.value||'').trim();
+      if(!channel || !listing)return null;
+      return {
+        id:(line.querySelector('.plId')?.value||'').trim()||null,
+        marketplace:channel,
+        channel,
+        external_product_id:listing,
+        external_variant_id:variant||null,
+        listing_id:listing,
+        variant_id:variant||null,
+        price:line.querySelector('.plPrice')?.value||null,
+        stock:line.querySelector('.plStock')?.value||0,
+        status:line.querySelector('.plStatus')?.value||null
+      };
+    }).filter(Boolean);
+  }
+
+  window.saveBundleTool = async function(){
+    let sku=(qs('comboSku')?.value||'').trim(), name=(qs('comboName')?.value||sku).trim();
+    if(!sku){safeSetStatus('bundleToolStatus','Cargá SKU de combo.',false);return;}
+    safeSetStatus('bundleToolStatus','Guardando combo...');
+    try{
+      const listings=collectBundleToolListings();
+      await postJSON(`/bundle-items/${TENANT_ID}`,{sku,name,cost:qs('comboCost')?.value||0,active:true,listings});
+      let components=[...document.querySelectorAll('.bundleComponentLine')]
+        .map(line=>({sku:(line.querySelector('.bSku')?.value||'').trim(),quantity:Number(line.querySelector('.bQty')?.value||0)}))
+        .filter(x=>x.sku&&x.quantity>0);
+      if(components.length) await postJSON(`/bundle-items/${TENANT_ID}/${encodeURIComponent(sku)}/components`,{components});
+      await loadCombos();
+      let tool=qs('comboTools');if(tool){tool.classList.add('hidden');tool.innerHTML='';}
+      safeSetStatus('comboStatus',`Combo ${sku} guardado. Publicaciones: ${listings.length}.`,true);
+    }catch(e){
+      safeSetStatus('bundleToolStatus','Error guardando combo: '+(e.message||JSON.stringify(e)),false);
+      safeRaw(e);
+    }
+  };
+
+  if(qs('inventario')?.classList.contains('active')){
+    setTimeout(()=>showGestPanel('productos'),100);
+  }
+})();
+
+</script>
+</body>
+</html>
