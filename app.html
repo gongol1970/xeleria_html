@@ -696,11 +696,23 @@ details.kebabMenu{position:relative}details.kebabMenu summary{list-style:none;cu
 #ml-ventas .btnrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 #ml-ventas .card{max-width:none!important}
 
+/* v1.0.29: TN publicaciones/ventas old ERP toolbar sizing */
+#tn-publicaciones .grid,#tn-ventas .grid{display:grid!important;grid-template-columns:repeat(12,1fr)!important;gap:14px!important;align-items:end!important}
+#tn-publicaciones .col-8,#tn-ventas .col-8{grid-column:span 8!important}
+#tn-publicaciones .col-2,#tn-ventas .col-2{grid-column:span 2!important}
+#tn-publicaciones label,#tn-ventas label{display:block!important;font-size:12px!important;font-weight:800!important;color:#504b43!important;margin-bottom:6px!important;text-transform:uppercase!important;letter-spacing:.04em!important}
+#tn-publicaciones input,#tn-publicaciones select,#tn-ventas input,#tn-ventas select{width:100%!important;height:44px!important;border:1px solid #cfc4ad!important;border-radius:12px!important;background:#fff!important;padding:10px 11px!important;font-size:14px!important;color:var(--ink)!important;outline:none!important;box-sizing:border-box!important}
+#tn-publicaciones button,#tn-ventas button{border-radius:12px!important;min-height:44px!important;padding:10px 14px!important;font-weight:800!important}
+#tn-publicaciones .btnrow,#tn-ventas .btnrow{display:flex!important;gap:10px!important;flex-wrap:wrap!important;align-items:center!important}
+#tn-publicaciones .card,#tn-ventas .card{max-width:none!important}
+#tn-publicaciones .orderHead{grid-template-columns:1.05fr 1.35fr .7fr .7fr auto!important}
+@media(max-width:900px){#tn-publicaciones .col-8,#tn-publicaciones .col-2,#tn-ventas .col-8,#tn-ventas .col-2{grid-column:1/-1!important}}
+
 </style>
 </head>
 <body>
 <div class="app">
-<aside><div class="brand"><div class="brandTop"><span class="appMark"><img src="./favicon_xeleria.png?v=18" alt="XelerIA"></span><div class="brandName">XelerIA</div><div class="tenantBadge" id="tenantBadge">PC</div></div><p id="tenantSubtitle">Panel operativo</p></div><nav><button class="navBtn active" data-view="inicio">Inicio / Dashboard</button><div class="navTitle">Mercado Libre</div><button class="navBtn" data-view="ml-publicaciones">Publicaciones</button><button class="navBtn" data-view="ml-ventas">Ventas</button><div class="navTitle">Tienda Nube</div><button class="navBtn" data-view="tn-publicaciones">Publicaciones</button><button class="navBtn" data-view="tn-ventas">Ventas</button><div class="navTitle">Gestión</div><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="consola">Detalle técnico</button></nav><div class="sidebarFoot">Pantalla: XelerIA 1.0.28-tn-publications-status-clean<br>Servidor: <span id="footBackendVer">?</span><br><span class="muted">Cambios externos desactivados</span></div></aside>
+<aside><div class="brand"><div class="brandTop"><span class="appMark"><img src="./favicon_xeleria.png?v=18" alt="XelerIA"></span><div class="brandName">XelerIA</div><div class="tenantBadge" id="tenantBadge">PC</div></div><p id="tenantSubtitle">Panel operativo</p></div><nav><button class="navBtn active" data-view="inicio">Inicio / Dashboard</button><div class="navTitle">Mercado Libre</div><button class="navBtn" data-view="ml-publicaciones">Publicaciones</button><button class="navBtn" data-view="ml-ventas">Ventas</button><div class="navTitle">Tienda Nube</div><button class="navBtn" data-view="tn-publicaciones">Publicaciones</button><button class="navBtn" data-view="tn-ventas">Ventas</button><div class="navTitle">Gestión</div><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="consola">Detalle técnico</button></nav><div class="sidebarFoot">Pantalla: XelerIA 1.0.29-tn-publications-toolbar-refresh<br>Servidor: <span id="footBackendVer">?</span><br><span class="muted">Cambios externos desactivados</span></div></aside>
 <main><div class="topbar"><h2 id="pageTitle">Inicio</h2><div class="crumb" id="pageCrumb">Panel operativo</div></div>
 <section id="inicio" class="view active"><div class="hero"><div class="btnrow" style="justify-content:space-between"><div><h3>Dashboard</h3><p>Resumen operativo de XelerIA. El dashboard informa; no dispara operaciones.</p></div><button class="secondary" onclick="refreshAll()">Actualizar</button></div><div id="homeStatus" class="status"></div></div><div class="grid"><div class="col-3 stat good"><div class="k">Servidor</div><div class="v" id="stApi">?</div><div class="s">Versión <span id="dashBackendVer">?</span></div></div><div class="col-3 stat" id="mlCardMini"><div class="k">Mercado Libre</div><div class="v" id="stML">?</div><div class="s" id="stMLSub">Conexión</div></div><div class="col-3 stat" id="tnCardMini"><div class="k">Tienda Nube</div><div class="v" id="stTN">?</div><div class="s" id="stTNSub">Conexión</div></div><div class="col-3 stat warnline"><div class="k">Cambios externos</div><div class="v">Bloqueado</div><div class="s">No modifica stock/precios en ML/TN</div></div></div><div class="card"><h3>Resumen operativo</h3><div id="snapshotWrap" class="tableWrap"><div class="dashEmpty">Tocá “Actualizar”.</div></div></div></section>
 <section id="ml-publicaciones" class="view"><div class="card"><h3>Mercado Libre · Publicaciones</h3><p>Vista segura: lee publicaciones, no cambia tu inventario.</p><div class="btnrow"><button class="secondary" onclick="readMLItems()">Ver primeras publicaciones</button><button class="primary importBtn" onclick="startStaging('ML')">Configurar inventario ML</button><button class="secondary" onclick="connectML()">Conectar ML</button></div><div id="mlItemsStatus" class="status"></div><div id="mlItemsTable" class="tableWrap"></div></div></section>
@@ -907,7 +919,7 @@ details.kebabMenu{position:relative}details.kebabMenu summary{list-style:none;cu
 <section id="consola" class="view"><div class="card"><h3>Detalle técnico</h3><pre id="rawConsole" class="console">Inicializando…</pre></div></section>
 </main></div>
 <script>
-const FRONT_VERSION = '1.0.25-ml-sales-capture-old-layout';
+const FRONT_VERSION = '1.0.29-tn-publications-toolbar-refresh';
 const API_BASE='https://api.xeleria.com.ar/api';
 const RAW_LIMIT=12000;
 let STAGING_SESSION_ID='';
@@ -981,7 +993,7 @@ const tail=rows.length>max?`<div class="dashEmpty">Mostrando ${max} de ${rows.le
 
 function showView(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));$(id)?.classList.add('active');
 document.querySelectorAll('.navBtn').forEach(b=>b.classList.toggle('active',b.dataset.view===id));
-const title=document.querySelector(`.navBtn[data-view="${id}"]`)?.textContent?.trim()||'XelerIA';$('pageTitle').textContent=title;$('pageCrumb').textContent='XelerIA';if(id==='configuracion')loadUserOptions();if(id==='inventario')loadInventoryMaster(true);if(id==='ml-ventas')loadRecent('ML',0);if(id==='tn-publicaciones')loadTNPublications(0);if(id==='tn-ventas')loadRecent('TN',0)}document.querySelectorAll('.navBtn[data-view]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));
+const title=document.querySelector(`.navBtn[data-view="${id}"]`)?.textContent?.trim()||'XelerIA';$('pageTitle').textContent=title;$('pageCrumb').textContent='XelerIA';if(id==='configuracion')loadUserOptions();if(id==='inventario')loadInventoryMaster(true);if(id==='ml-ventas')loadRecent('ML',0);if(id==='tn-publicaciones')enterTNPublications();if(id==='tn-ventas')loadRecent('TN',0)}document.querySelectorAll('.navBtn[data-view]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));
 
 function setImportBusy(busy){document.querySelectorAll('.importBtn').forEach(b=>b.disabled=busy);['saveMatrixBtn','cancelMatrixBtn'].forEach(id=>{if($(id))$(id).disabled=busy})}
 
@@ -1844,6 +1856,14 @@ const d=await post(`/ml-reader/${TENANT_ID}/items?limit=30&offset=0&dry_run=true
 const rows=d.items||[];$('mlItemsTable').innerHTML=table(rows,[{key:'sku',label:'SKU'},{key:'sku_source',label:'Origen SKU'},{key:'needs_sku_review',label:'Revisión',render:r=>r.needs_sku_review?pill(false,'revisar','warn'):''},{key:'item_id',label:'Publicación'},{key:'variation_id',label:'Variante'},{key:'title',label:'Título'},{key:'stock',label:'Stock'},{key:'price',label:'Precio',render:r=>money(r.price)},{key:'status',label:'Estado'}]);setStatus('mlItemsStatus',`Vista ML: ${rows.length} filas. Pendientes SKU: ${d.pending_sku_rows??0}.`,'oktxt')}catch(e){setStatus('mlItemsStatus','Error leyendo publicaciones ML.','badtxt');raw(e)}}
 
 
+function enterTNPublications(){
+  try{
+    if($('tnProductsTable'))$('tnProductsTable').innerHTML='<div class="card"><p>Actualizando publicaciones TN…</p></div>';
+    if($('tnProductsPager'))$('tnProductsPager').innerHTML='';
+    setStatus('tnProductsStatus','Actualizando publicaciones TN…');
+  }catch{}
+  loadTNPublications(0,true);
+}
 function tnPubLimit(){return Number($('tnPubLimit')?.value||20)}
 function tnPubSearch(){return ($('tnPubSearch')?.value||'').trim()}
 window.__xeleriaTNTimers=window.__xeleriaTNTimers||{};
@@ -1865,7 +1885,7 @@ function tnPublicationVisible(r){
 }
 function tnPublicationCard(r){let u=tnProductUrl(r);let title=r.title||r.name||'';let visible=tnPublicationVisible(r);let productId=r.product_id||r.external_product_id||'';let variantId=r.variant_id||r.external_variant_id||'';return `<div class="orderCard"><div class="orderHead" style="grid-template-columns:1.05fr 1.35fr .7fr .7fr auto"><div><strong>${esc(r.sku||'')}</strong><br><span class="small">Producto ${esc(productId)} ${variantId?`· Variante ${esc(variantId)}`:''}</span></div><div><strong>${esc(title)}</strong>${u?`<br><a class="small" target="_blank" href="${esc(u)}">Abrir publicación</a>`:''}</div><div>${visible?pill(true,'Visible'):pill(false,'Oculta','warn')}</div><div><strong>${money(r.price)}</strong><br><span class="small">Stock ${esc(r.stock??r.available_quantity??0)}</span></div><div>${r.image_url?`<img src="${esc(r.image_url)}" style="width:44px;height:44px;object-fit:cover;border-radius:10px;border:1px solid #eee2c8">`:''}</div></div></div>`}
 function tnPublicationsPager(d,items){let limit=tnPubLimit(),offset=window.__xeleriaTNState.pubOffset||0,total=Number(d.total??d.rows??items.length??0);let hasPrev=offset>0;let hasNext=(items.length>=limit);let prev=Math.max(0,offset-limit),next=offset+limit;return `<button class="secondary" ${hasPrev?'':'disabled'} onclick="loadTNPublications(${prev})">Anterior</button><span class="pill">Mostrando ${items.length?offset+1:0}–${offset+items.length}${total?` de ${total}`:''}</span><button class="secondary" ${hasNext?'':'disabled'} onclick="loadTNPublications(${next})">Siguiente</button>`}
-async function loadTNPublications(offset=0){try{window.__xeleriaTNState.pubOffset=offset;setStatus('tnProductsStatus','Leyendo publicaciones TN…');let limit=tnPubLimit();let page=Math.floor(offset/limit)+1;const d=await post(`/tn-reader/${TENANT_ID}/products?page=${encodeURIComponent(page)}&per_page=${encodeURIComponent(limit)}&dry_run=true`);let rows=d.items||[];let q=tnPubSearch();rows=rows.filter(r=>tnPubSearchMatches(r,q));$('tnProductsTable').innerHTML=rows.length?rows.map(tnPublicationCard).join(''):'<div class="card"><p>No hay publicaciones TN para este filtro.</p></div>';if($('tnProductsPager'))$('tnProductsPager').innerHTML=tnPublicationsPager(d,rows);setStatus('tnProductsStatus',`OK: ${rows.length} publicaciones${q?' filtradas':''}.`,'oktxt')}catch(e){setStatus('tnProductsStatus','Error leyendo publicaciones TN.','badtxt');raw(e)}}
+async function loadTNPublications(offset=0,force=false){try{window.__xeleriaTNState.pubOffset=offset;setStatus('tnProductsStatus',force?'Actualizando publicaciones TN…':'Leyendo publicaciones TN…');let limit=tnPubLimit();let page=Math.floor(offset/limit)+1;const d=await post(`/tn-reader/${TENANT_ID}/products?page=${encodeURIComponent(page)}&per_page=${encodeURIComponent(limit)}&dry_run=true&_=${Date.now()}`);let rows=d.items||[];let q=tnPubSearch();rows=rows.filter(r=>tnPubSearchMatches(r,q));$('tnProductsTable').innerHTML=rows.length?rows.map(tnPublicationCard).join(''):'<div class="card"><p>No hay publicaciones TN para este filtro.</p></div>';if($('tnProductsPager'))$('tnProductsPager').innerHTML=tnPublicationsPager(d,rows);setStatus('tnProductsStatus',`OK: ${rows.length} publicaciones${q?' filtradas':''}.`,'oktxt')}catch(e){setStatus('tnProductsStatus','Error leyendo publicaciones TN.','badtxt');raw(e)}}
 async function syncTNPublications(){try{setStatus('tnProductsStatus','Sincronizando publicaciones TN…');const d=await post(`/tn-reader/${TENANT_ID}/products?page=1&per_page=100&dry_run=false`);setStatus('tnProductsStatus',`OK: ${d.rows??0} filas TN sincronizadas.`,true);await loadTNPublications(0)}catch(e){setStatus('tnProductsStatus','Error sincronizando publicaciones TN.','badtxt');raw(e)}}
 async function readTNProducts(){return loadTNPublications(0)}
 
