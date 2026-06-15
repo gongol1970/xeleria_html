@@ -712,7 +712,7 @@ details.kebabMenu{position:relative}details.kebabMenu summary{list-style:none;cu
 </head>
 <body>
 <div class="app">
-<aside><div class="brand"><div class="brandTop"><span class="appMark"><img src="./favicon_xeleria.png?v=18" alt="XelerIA"></span><div class="brandName">XelerIA</div><div class="tenantBadge" id="tenantBadge">PC</div></div><p id="tenantSubtitle">Panel operativo</p></div><nav><button class="navBtn active" data-view="inicio">Inicio / Dashboard</button><div class="navTitle">Mercado Libre</div><button class="navBtn" data-view="ml-publicaciones">Publicaciones</button><button class="navBtn" data-view="ml-ventas">Ventas</button><div class="navTitle">Tienda Nube</div><button class="navBtn" data-view="tn-publicaciones">Publicaciones</button><button class="navBtn" data-view="tn-ventas">Ventas</button><div class="navTitle">Gestión</div><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="consola">Detalle técnico</button></nav><div class="sidebarFoot">Pantalla: XelerIA 1.0.30-tn-db-publications<br>Servidor: <span id="footBackendVer">?</span><br><span class="muted">Cambios externos desactivados</span></div></aside>
+<aside><div class="brand"><div class="brandTop"><span class="appMark"><img src="./favicon_xeleria.png?v=18" alt="XelerIA"></span><div class="brandName">XelerIA</div><div class="tenantBadge" id="tenantBadge">PC</div></div><p id="tenantSubtitle">Panel operativo</p></div><nav><button class="navBtn active" data-view="inicio">Inicio / Dashboard</button><div class="navTitle">Mercado Libre</div><button class="navBtn" data-view="ml-publicaciones">Publicaciones</button><button class="navBtn" data-view="ml-ventas">Ventas</button><div class="navTitle">Tienda Nube</div><button class="navBtn" data-view="tn-publicaciones">Publicaciones</button><button class="navBtn" data-view="tn-ventas">Ventas</button><div class="navTitle">Gestión</div><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="consola">Detalle técnico</button></nav><div class="sidebarFoot">Pantalla: XelerIA 1.0.32-tn-same-report<br>Servidor: <span id="footBackendVer">?</span><br><span class="muted">Cambios externos desactivados</span></div></aside>
 <main><div class="topbar"><h2 id="pageTitle">Inicio</h2><div class="crumb" id="pageCrumb">Panel operativo</div></div>
 <section id="inicio" class="view active"><div class="hero"><div class="btnrow" style="justify-content:space-between"><div><h3>Dashboard</h3><p>Resumen operativo de XelerIA. El dashboard informa; no dispara operaciones.</p></div><button class="secondary" onclick="refreshAll()">Actualizar</button></div><div id="homeStatus" class="status"></div></div><div class="grid"><div class="col-3 stat good"><div class="k">Servidor</div><div class="v" id="stApi">?</div><div class="s">Versión <span id="dashBackendVer">?</span></div></div><div class="col-3 stat" id="mlCardMini"><div class="k">Mercado Libre</div><div class="v" id="stML">?</div><div class="s" id="stMLSub">Conexión</div></div><div class="col-3 stat" id="tnCardMini"><div class="k">Tienda Nube</div><div class="v" id="stTN">?</div><div class="s" id="stTNSub">Conexión</div></div><div class="col-3 stat warnline"><div class="k">Cambios externos</div><div class="v">Bloqueado</div><div class="s">No modifica stock/precios en ML/TN</div></div></div><div class="card"><h3>Resumen operativo</h3><div id="snapshotWrap" class="tableWrap"><div class="dashEmpty">Tocá “Actualizar”.</div></div></div></section>
 <section id="ml-publicaciones" class="view"><div class="card"><h3>Mercado Libre · Publicaciones</h3><p>Vista segura: lee publicaciones, no cambia tu inventario.</p><div class="btnrow"><button class="secondary" onclick="readMLItems()">Ver primeras publicaciones</button><button class="primary importBtn" onclick="startStaging('ML')">Configurar inventario ML</button><button class="secondary" onclick="connectML()">Conectar ML</button></div><div id="mlItemsStatus" class="status"></div><div id="mlItemsTable" class="tableWrap"></div></div></section>
@@ -1867,74 +1867,130 @@ function enterTNPublications(){
 function tnPubLimit(){return Number($('tnPubLimit')?.value||20)}
 function tnPubSearch(){return ($('tnPubSearch')?.value||'').trim()}
 window.__xeleriaTNTimers=window.__xeleriaTNTimers||{};
-window.__xeleriaTNState=window.__xeleriaTNState||{pubOffset:0};
-function debouncedTNPublications(){clearTimeout(window.__xeleriaTNTimers.pub);window.__xeleriaTNTimers.pub=setTimeout(()=>loadTNPublications(0),350)}
+window.__xeleriaTNState=window.__xeleriaTNState||{pubOffset:0,master:null,masterAt:0};
+function debouncedTNPublications(){clearTimeout(window.__xeleriaTNTimers.pub);window.__xeleriaTNTimers.pub=setTimeout(()=>loadTNPublications(0,false),350)}
 function clearTNPublicationsSearch(){let el=$('tnPubSearch');if(el)el.value='';loadTNPublications(0,true)}
-function tnPublicationStatusFromListing(l){
-  const raw = l?.status_label ?? l?.publication_status ?? l?.status ?? l?.published ?? l?.raw_data?.published ?? l?.raw_data?.product?.published ?? l?.raw_data?.published_at;
-  if(raw===true) return 'Visible';
-  if(raw===false) return 'Oculta';
-  const s=normalizar(raw);
-  if(!s) return 'Visible';
-  if(['true','1','visible','published','active','activa','activo','yes','si','sí'].includes(s)) return 'Visible';
-  if(['false','0','hidden','oculta','oculto','unpublished','inactive','deleted','closed','paused','pausado','pausada','archived'].includes(s)) return 'Oculta';
-  if(s.includes('ocult')||s.includes('hidden')||s.includes('unpublish')||s.includes('deleted')||s.includes('closed')||s.includes('paused')) return 'Oculta';
-  if(s.includes('visible')||s.includes('published')||s.includes('active')) return 'Visible';
-  return s;
+function listingMarket(l){return String(l?.marketplace||l?.channel||'').toUpperCase().trim()}
+function listingProductId(l){return String(l?.external_product_id||l?.product_id||l?.listing_id||l?.item_id||'').trim()}
+function listingVariantId(l){return String(l?.external_variant_id||l?.variant_id||l?.variation_id||'').trim()}
+function listingPrice(l){return Number(l?.price??l?.raw_data?.price??0)}
+function listingStock(l){return l?.stock??l?.available_quantity??l?.raw_data?.stock??l?.raw_data?.variants?.[0]?.stock??''}
+function tnListingPublishedRaw(l){
+  const raw=l?.raw_data||{};
+  if(l?.published!==undefined)return l.published;
+  if(raw?.published!==undefined)return raw.published;
+  if(raw?.product?.published!==undefined)return raw.product.published;
+  if(raw?.published_at!==undefined)return !!raw.published_at;
+  return undefined;
 }
-function tnProductUrl(r){return r.url||r.permalink||r.canonical_url||r.raw_data?.canonical_url||r.raw_data?.url||''}
-function tnPublicationRowsFromProducts(d){
-  const out=[];
-  for(const item of (d.items||[])){
-    const listings=(item.listings||[]).filter(l=>String(l.marketplace||'').toUpperCase()==='TN');
-    for(const l of listings){
-      out.push({
-        sku:l.sku||item.sku,
-        title:l.title||item.title||item.name||'',
-        product_id:l.external_product_id||l.product_id||'',
-        variant_id:l.external_variant_id||l.variant_id||'',
-        price:l.price,
-        stock:l.stock??l.available_quantity??item.stock??item.master_stock??0,
-        status:l.status,
-        status_label:l.status_label,
-        published:l.raw_data?.published,
-        url:l.url||l.permalink,
-        image_url:l.image_url||item.image_url,
-        raw_data:l.raw_data||{},
-        item
-      });
-    }
+function listingStatus(l){
+  const explicit=l?.status_label??l?.publication_status??l?.status;
+  if(explicit!==undefined&&explicit!==null&&String(explicit).trim()!=='')return explicit;
+  const pub=tnListingPublishedRaw(l);
+  if(pub!==undefined)return pub;
+  return '';
+}
+function listingStatusLabel(st){
+  if(st===true)return 'Visible';
+  if(st===false)return 'Oculta';
+  let s=normalizar(st);
+  if(!s)return '-';
+  if(['true','1','visible','published','active','activa','activo','yes','si','sí'].includes(s))return 'Visible';
+  if(['false','0','hidden','oculta','oculto','unpublished','inactive','deleted','closed','paused','pausado','pausada','archived'].includes(s))return 'Oculta';
+  if(s.includes('ocult')||s.includes('hidden')||s.includes('unpublish')||s.includes('inactive')||s.includes('deleted')||s.includes('closed')||s.includes('paused'))return 'Oculta';
+  if(s.includes('visible')||s.includes('published')||s.includes('active'))return 'Visible';
+  return String(st||'-');
+}
+function listingStatusClass(st){
+  let label=normalizar(listingStatusLabel(st));
+  if(label.includes('oculta')||label.includes('pausada'))return 'inactive';
+  if(label.includes('visible')||label.includes('activa'))return 'ok';
+  return 'info';
+}
+function publicationSearchText(item,market){
+  const parts=[item.sku,item.name,item.title,item.variant_name,item.category,item.stock,item.master_stock];
+  (item.listings||[]).filter(l=>listingMarket(l)===market).forEach(l=>{
+    parts.push(l.sku,l.title,l.external_product_id,l.external_variant_id,l.status,l.status_label,l.price,l.stock,l.available_quantity,l.url,l.permalink);
+    const raw=l.raw_data||{};
+    parts.push(raw.name,raw.title,raw.canonical_url,raw.url,raw.published,raw.id);
+  });
+  return normalizar(parts.filter(v=>v!==undefined&&v!==null).join(' '));
+}
+function tnBuildPublicationItems(master,market){
+  const inv=Array.isArray(master.inventory_items)?master.inventory_items:[];
+  const listings=(Array.isArray(master.marketplace_listings)?master.marketplace_listings:[]).filter(l=>listingMarket(l)===market);
+  const bySku={};
+  inv.forEach(i=>{if(i&&i.sku)bySku[String(i.sku)]={...i,listings:[]}});
+  listings.forEach(l=>{
+    const sku=String(l.sku||'').trim();
+    if(!sku)return;
+    if(!bySku[sku])bySku[sku]={sku,name:l.title||'',title:l.title||'',stock:l.stock??l.available_quantity??'',item_type:'',listings:[]};
+    bySku[sku].listings.push(l);
+  });
+  return Object.values(bySku).filter(i=>(i.listings||[]).some(l=>listingMarket(l)===market)).sort((a,b)=>String(a.sku||'').localeCompare(String(b.sku||'')));
+}
+function renderReadonlyListingsForItem(item,market){
+  let arr=(Array.isArray(item.listings)?item.listings:[]).filter(l=>listingMarket(l)===market);
+  if(!arr.length)return '<span class="muted">Sin publicaciones vinculadas.</span>';
+  arr.sort((a,b)=>(listingProductId(a)+listingVariantId(a)).localeCompare(listingProductId(b)+listingVariantId(b)));
+  return arr.map(l=>{
+    let st=listingStatus(l);
+    let pid=listingProductId(l),vid=listingVariantId(l);
+    let url=l.url||l.permalink||l.raw_data?.canonical_url||l.raw_data?.url||'';
+    return `<div class="marketBox"><div><span class="pill ok">${esc(market)}</span></div><div class="mono id pubvar"><span>Pub: ${esc(pid)}</span><span class="idSep">${vid?'Var: '+esc(vid):''}</span>${url?`<br><a class="small" target="_blank" href="${esc(url)}">Abrir</a>`:''}</div><div><strong>${money(listingPrice(l))}</strong></div><div><strong>${esc(listingStock(l))}</strong></div><div><span class="pill marketStatus ${listingStatusClass(st)}">${esc(listingStatusLabel(st))}</span></div></div>`;
+  }).join('');
+}
+function renderPublicationsReadonly(market,items){
+  let body='';
+  if(!items.length){
+    body='<tr><td colspan="4" class="muted" style="text-align:center;padding:24px">Sin publicaciones para este filtro.</td></tr>';
+  }else{
+    body=items.map(i=>`<tr><td><strong class="mono">${esc(i.sku)}</strong><br><span class="small">${esc(i.item_type||'')}</span></td><td>${esc(i.name||i.title||'')}<br><span class="small">${esc(i.category||'')}</span></td><td><strong>${esc(i.stock??i.master_stock??0)}</strong><br><span class="small">stock ERP</span></td><td>${renderReadonlyListingsForItem(i,market)}</td></tr>`).join('');
   }
-  return out;
+  $('tnProductsTable').innerHTML=`<div class="tableWrap"><table class="inventoryTable"><thead><tr><th>SKU</th><th>Producto</th><th>Stock ERP</th><th>Publicaciones ${market} / variante / precio / stock</th></tr></thead><tbody>${body}</tbody></table></div>`;
 }
-function tnPublicationCard(r){
-  let u=tnProductUrl(r), title=r.title||r.name||'';
-  let st=tnPublicationStatusFromListing(r);
-  let visible=normalizar(st)!=='oculta';
-  let productId=r.product_id||r.external_product_id||'';
-  let variantId=r.variant_id||r.external_variant_id||'';
-  return `<div class="orderCard"><div class="orderHead" style="grid-template-columns:1.05fr 1.35fr .7fr .7fr auto"><div><strong>${esc(r.sku||'')}</strong><br><span class="small">Producto ${esc(productId)} ${variantId?`· Variante ${esc(variantId)}`:''}</span></div><div><strong>${esc(title)}</strong>${u?`<br><a class="small" target="_blank" href="${esc(u)}">Abrir publicación</a>`:''}</div><div>${visible?pill(true,'Visible'):pill(false,'Oculta','warn')}</div><div><strong>${money(r.price)}</strong><br><span class="small">Stock ${esc(r.stock??r.available_quantity??0)}</span></div><div>${r.image_url?`<img src="${esc(r.image_url)}" style="width:44px;height:44px;object-fit:cover;border-radius:10px;border:1px solid #eee2c8">`:''}</div></div></div>`
-}
-function tnPublicationsPager(d,items){
-  let limit=tnPubLimit(),offset=window.__xeleriaTNState.pubOffset||0,total=Number(d.total??items.length??0);
+function tnPublicationsPager(total,count){
+  let limit=tnPubLimit(),offset=window.__xeleriaTNState.pubOffset||0;
   let hasPrev=offset>0, hasNext=offset+limit<total;
   let prev=Math.max(0,offset-limit), next=offset+limit;
-  return `<button class="secondary" ${hasPrev?'':'disabled'} onclick="loadTNPublications(${prev})">Anterior</button><span class="pill">Mostrando ${items.length?offset+1:0}–${offset+items.length}${total?` de ${total}`:''}</span><button class="secondary" ${hasNext?'':'disabled'} onclick="loadTNPublications(${next})">Siguiente</button>`
+  let from=count?offset+1:0, to=offset+count;
+  return `<button class="secondary" ${hasPrev?'':'disabled'} onclick="loadTNPublications(${prev})">Atrás</button><span class="pill">Mostrando ${from}–${to}${total?` de ${total}`:''}</span><button class="secondary" ${hasNext?'':'disabled'} onclick="loadTNPublications(${next})">Siguiente</button>`;
+}
+async function loadTNPublicationMaster(force=false){
+  const now=Date.now();
+  if(!force&&window.__xeleriaTNState.master&&(now-window.__xeleriaTNState.masterAt)<60000)return window.__xeleriaTNState.master;
+  const d=await api(`/admin-compat/${TENANT_ID}/inventory-master?limit=5000&_=${Date.now()}`);
+  window.__xeleriaTNState.master=d;
+  window.__xeleriaTNState.masterAt=now;
+  return d;
 }
 async function loadTNPublications(offset=0,force=false){
   try{
     window.__xeleriaTNState.pubOffset=offset;
     setStatus('tnProductsStatus',force?'Actualizando publicaciones TN…':'Leyendo publicaciones TN…');
-    let limit=tnPubLimit(), q=tnPubSearch();
-    const d=await api(`/products-admin/${TENANT_ID}/products?channel=TN&item_type=all&q=${encodeURIComponent(q)}&limit=${encodeURIComponent(limit)}&offset=${encodeURIComponent(offset)}&_=${Date.now()}`);
-    let rows=tnPublicationRowsFromProducts(d);
-    $('tnProductsTable').innerHTML=rows.length?rows.map(tnPublicationCard).join(''):'<div class="card"><p>No hay publicaciones TN para este filtro.</p></div>';
-    if($('tnProductsPager'))$('tnProductsPager').innerHTML=tnPublicationsPager(d,rows);
-    setStatus('tnProductsStatus',`OK: ${rows.length} publicaciones${q?' filtradas':''}.`,'oktxt')
-  }catch(e){setStatus('tnProductsStatus','Error leyendo publicaciones TN.','badtxt');raw(e)}
+    let limit=tnPubLimit(), q=tnPubSearch(), market='TN';
+    const master=await loadTNPublicationMaster(force);
+    let items=tnBuildPublicationItems(master,market);
+    const totalBase=items.length;
+    const nq=normalizar(q);
+    if(nq){
+      const terms=nq.split(/\s+/).filter(Boolean);
+      items=items.filter(i=>terms.every(t=>publicationSearchText(i,market).includes(t)));
+    }
+    const filteredTotal=items.length;
+    const page=items.slice(offset,offset+limit);
+    renderPublicationsReadonly(market,page);
+    if($('tnProductsPager'))$('tnProductsPager').innerHTML=tnPublicationsPager(filteredTotal,page.length);
+    const pubs=page.reduce((a,i)=>a+(i.listings||[]).filter(l=>listingMarket(l)===market).length,0);
+    setStatus('tnProductsStatus',`Publicaciones TN: ${pubs} visibles sobre ${page.length} de ${filteredTotal} ítems${q?' filtrados':''}${filteredTotal!==totalBase?` · base ${totalBase}`:''}`,'oktxt');
+  }catch(e){
+    const msg=e?.data?.detail||e?.data?.message||e?.message||e?.raw||JSON.stringify(e);
+    setStatus('tnProductsStatus','Error publicaciones TN: '+msg,'badtxt');
+    raw(e);
+  }
 }
-async function syncTNPublications(){try{setStatus('tnProductsStatus','Sincronizando publicaciones TN…');const d=await post(`/tn-reader/${TENANT_ID}/products?page=1&per_page=100&dry_run=false`);setStatus('tnProductsStatus',`OK: ${d.rows??0} filas TN sincronizadas.`,true);await loadTNPublications(0)}catch(e){setStatus('tnProductsStatus','Error sincronizando publicaciones TN.','badtxt');raw(e)}}
-async function readTNProducts(){return loadTNPublications(0)}
+async function syncTNPublications(){try{setStatus('tnProductsStatus','Sincronizando publicaciones TN…');const d=await post(`/tn-reader/${TENANT_ID}/products?page=1&per_page=100&dry_run=false`);window.__xeleriaTNState.master=null;setStatus('tnProductsStatus',`OK: ${d.rows??0} filas TN sincronizadas.`,true);await loadTNPublications(0,true)}catch(e){setStatus('tnProductsStatus','Error sincronizando publicaciones TN.','badtxt');raw(e)}}
+async function readTNProducts(){return loadTNPublications(0,true)}
 
 function tnStatusLabel(v){let n=String(v||'').toLowerCase();if(n==='paid')return'PAGADO';if(n==='pending')return'PENDIENTE';if(n==='shipped')return'ENVIADO';if(n==='delivered')return'ENTREGADO';if(n==='cancelled'||n==='canceled')return'CANCELADO';return v?String(v).toUpperCase():''}
 function tnRawObj(o){let r=o.raw_data||o.raw||{};if(typeof r==='string'){try{return JSON.parse(r)}catch{return {}}}return r&&typeof r==='object'?r:{}}
