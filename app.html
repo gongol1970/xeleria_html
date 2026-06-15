@@ -709,7 +709,7 @@ details.kebabMenu{position:relative}details.kebabMenu summary{list-style:none;cu
 @media(max-width:900px){#tn-publicaciones .col-8,#tn-publicaciones .col-2,#tn-ventas .col-8,#tn-ventas .col-2{grid-column:1/-1!important}}
 
 
-/* v1.0.35: estados por marketplace y alineación publicaciones */
+/* v1.0.36: ventas ML/TN unificadas + captura ML antes de listar */
 #ml-publicaciones .grid,#tn-publicaciones .grid{display:grid!important;grid-template-columns:repeat(12,1fr)!important;gap:14px!important;align-items:end!important}
 #ml-publicaciones .col-8,#tn-publicaciones .col-8{grid-column:span 8!important}
 #ml-publicaciones .col-2,#tn-publicaciones .col-2{grid-column:span 2!important}
@@ -717,31 +717,28 @@ details.kebabMenu{position:relative}details.kebabMenu summary{list-style:none;cu
 #ml-publicaciones input,#ml-publicaciones select,#tn-publicaciones input,#tn-publicaciones select{width:100%!important;height:44px!important;border:1px solid #cfc4ad!important;border-radius:12px!important;background:#fff!important;padding:10px 11px!important;font-size:14px!important;color:var(--ink)!important;outline:none!important;box-sizing:border-box!important}
 #ml-publicaciones button,#tn-publicaciones button{border-radius:12px!important;min-height:44px!important;padding:10px 14px!important;font-weight:800!important}
 #ml-publicaciones .card,#tn-publicaciones .card{max-width:none!important}
-.pubReportTable{table-layout:fixed;min-width:1100px}
-.pubReportTable th:nth-child(1),.pubReportTable td:nth-child(1){width:165px}
-.pubReportTable th:nth-child(2),.pubReportTable td:nth-child(2){width:480px}
-.pubReportTable th:nth-child(3),.pubReportTable td:nth-child(3){width:88px}
+.pubReportTable{table-layout:fixed;min-width:1160px}
+.pubReportTable th:nth-child(1),.pubReportTable td:nth-child(1){width:170px}
+.pubReportTable th:nth-child(2),.pubReportTable td:nth-child(2){width:420px}
+.pubReportTable th:nth-child(3),.pubReportTable td:nth-child(3){width:110px}
 .pubReportTable th:nth-child(4),.pubReportTable td:nth-child(4){width:auto}
-.pubReportTable td{overflow:hidden}
 .pubProductName{font-weight:800;line-height:1.22}
 .pubProductSub{font-size:12px;color:var(--muted);line-height:1.25;margin-top:2px}
-.pubReportTable .marketBox{width:100%;max-width:100%;grid-template-columns:42px minmax(0,1fr) 96px 54px 84px!important;gap:8px;overflow:hidden}
-.pubReportTable .marketBox>div{min-width:0;overflow:hidden;text-overflow:ellipsis}
-.pubReportTable .marketBox .pubvar{grid-template-columns:minmax(0,1fr) minmax(86px,108px);gap:6px}
-.pubReportTable .marketStatus{white-space:nowrap;justify-content:center;min-width:0;padding-left:8px;padding-right:8px}
+.pubReportTable .marketBox{grid-template-columns:42px minmax(280px,1fr) 110px 90px 100px!important}
+.pubReportTable .marketBox .pubvar{grid-template-columns:minmax(140px,1fr) minmax(110px,130px)}
 @media(max-width:900px){#ml-publicaciones .col-8,#ml-publicaciones .col-2,#tn-publicaciones .col-8,#tn-publicaciones .col-2{grid-column:1/-1!important}}
 
 </style>
 </head>
 <body>
 <div class="app">
-<aside><div class="brand"><div class="brandTop"><span class="appMark"><img src="./favicon_xeleria.png?v=18" alt="XelerIA"></span><div class="brandName">XelerIA</div><div class="tenantBadge" id="tenantBadge">PC</div></div><p id="tenantSubtitle">Panel operativo</p></div><nav><button class="navBtn active" data-view="inicio">Inicio / Dashboard</button><div class="navTitle">Mercado Libre</div><button class="navBtn" data-view="ml-publicaciones">Publicaciones</button><button class="navBtn" data-view="ml-ventas">Ventas</button><div class="navTitle">Tienda Nube</div><button class="navBtn" data-view="tn-publicaciones">Publicaciones</button><button class="navBtn" data-view="tn-ventas">Ventas</button><div class="navTitle">Gestión</div><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="consola">Detalle técnico</button></nav><div class="sidebarFoot">Pantalla: XelerIA 1.0.35-publication-status-align<br>Servidor: <span id="footBackendVer">?</span><br><span class="muted">Cambios externos desactivados</span></div></aside>
+<aside><div class="brand"><div class="brandTop"><span class="appMark"><img src="./favicon_xeleria.png?v=18" alt="XelerIA"></span><div class="brandName">XelerIA</div><div class="tenantBadge" id="tenantBadge">PC</div></div><p id="tenantSubtitle">Panel operativo</p></div><nav><button class="navBtn active" data-view="inicio">Inicio / Dashboard</button><div class="navTitle">Mercado Libre</div><button class="navBtn" data-view="ml-publicaciones">Publicaciones</button><button class="navBtn" data-view="ml-ventas">Ventas</button><div class="navTitle">Tienda Nube</div><button class="navBtn" data-view="tn-publicaciones">Publicaciones</button><button class="navBtn" data-view="tn-ventas">Ventas</button><div class="navTitle">Gestión</div><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="consola">Detalle técnico</button></nav><div class="sidebarFoot">Pantalla: XelerIA 1.0.36-sales-unified-ml-capture<br>Servidor: <span id="footBackendVer">?</span><br><span class="muted">Cambios externos desactivados</span></div></aside>
 <main><div class="topbar"><h2 id="pageTitle">Inicio</h2><div class="crumb" id="pageCrumb">Panel operativo</div></div>
 <section id="inicio" class="view active"><div class="hero"><div class="btnrow" style="justify-content:space-between"><div><h3>Dashboard</h3><p>Resumen operativo de XelerIA. El dashboard informa; no dispara operaciones.</p></div><button class="secondary" onclick="refreshAll()">Actualizar</button></div><div id="homeStatus" class="status"></div></div><div class="grid"><div class="col-3 stat good"><div class="k">Servidor</div><div class="v" id="stApi">?</div><div class="s">Versión <span id="dashBackendVer">?</span></div></div><div class="col-3 stat" id="mlCardMini"><div class="k">Mercado Libre</div><div class="v" id="stML">?</div><div class="s" id="stMLSub">Conexión</div></div><div class="col-3 stat" id="tnCardMini"><div class="k">Tienda Nube</div><div class="v" id="stTN">?</div><div class="s" id="stTNSub">Conexión</div></div><div class="col-3 stat warnline"><div class="k">Cambios externos</div><div class="v">Bloqueado</div><div class="s">No modifica stock/precios en ML/TN</div></div></div><div class="card"><h3>Resumen operativo</h3><div id="snapshotWrap" class="tableWrap"><div class="dashEmpty">Tocá “Actualizar”.</div></div></div></section>
 <section id="ml-publicaciones" class="view"><div class="card"><h3>Mercado Libre · Publicaciones</h3><div class="grid"><div class="col-8"><label>Buscar publicación ML</label><input id="mlPubSearch" oninput="debouncedPublications('ML')" placeholder="SKU, producto, publicación, variante, título"></div><div class="col-2"><label>Mostrar</label><select id="mlPubLimit" onchange="loadPublicationsReport('ML',0)"><option selected>20</option><option>40</option><option>50</option></select></div><div class="col-2"><label>&nbsp;</label><button class="secondary" onclick="clearPublicationsSearch('ML')">Limpiar</button></div><div class="col-12"><div class="btnrow" style="margin-top:0"><button class="secondary" onclick="loadPublicationsReport('ML',0,true)">Actualizar vista</button></div></div></div><div id="mlPubStatus" class="status"></div><div id="mlPubResults" style="margin-top:12px"></div><div id="mlPubPager" class="btnrow" style="margin-top:12px"></div></div></section>
 <section id="tn-publicaciones" class="view"><div class="card"><h3>Tienda Nube · Publicaciones</h3><div class="grid"><div class="col-8"><label>Buscar publicación TN</label><input id="tnPubSearch" oninput="debouncedPublications('TN')" placeholder="SKU, producto, publicación, variante, título"></div><div class="col-2"><label>Mostrar</label><select id="tnPubLimit" onchange="loadPublicationsReport('TN',0)"><option selected>20</option><option>40</option><option>50</option></select></div><div class="col-2"><label>&nbsp;</label><button class="secondary" onclick="clearPublicationsSearch('TN')">Limpiar</button></div><div class="col-12"><div class="btnrow" style="margin-top:0"><button class="secondary" onclick="loadPublicationsReport('TN',0,true)">Actualizar vista</button></div></div></div><div id="tnPubStatus" class="status"></div><div id="tnPubResults" style="margin-top:12px"></div><div id="tnPubPager" class="btnrow" style="margin-top:12px"></div></div></section>
 <section id="ml-ventas" class="view"><div class="card"><h3>Mercado Libre · Ventas capturadas</h3><div class="grid"><div class="col-8"><label>Buscar venta ML</label><input id="mlVentasSearch" oninput="debouncedSales('ML')" placeholder="Nombre, SKU, venta, orden API, envío ML, producto"></div><div class="col-2"><label>Mostrar</label><select id="mlVentasLimit" onchange="loadRecent('ML',0)"><option selected>20</option><option>40</option><option>50</option></select></div><div class="col-2"><label>&nbsp;</label><button class="secondary" onclick="clearSalesSearch('ML')">Limpiar</button></div></div><div class="btnrow" style="margin-top:10px"><button class="secondary" onclick="refreshShippingPending('ML')">Refrescar estados no entregadas</button><span class="small">Consulta solo ventas no terminales recientes, no todo el histórico.</span></div><div id="mlVentasStatus" class="status"></div><div id="mlVentasTable" style="margin-top:12px"></div><div id="mlVentasPager" class="btnrow" style="margin-top:12px"></div></div></section>
-<section id="tn-ventas" class="view"><div class="card"><h3>Tienda Nube · Ventas capturadas</h3><div class="grid"><div class="col-8"><label>Buscar venta TN</label><input id="tnVentasSearch" oninput="debouncedSales('TN')" placeholder="Nombre, SKU, número, orden API, producto"></div><div class="col-2"><label>Mostrar</label><select id="tnVentasLimit" onchange="loadRecent('TN',0)"><option selected>20</option><option>40</option><option>50</option></select></div><div class="col-2"><label>&nbsp;</label><button class="secondary" onclick="clearSalesSearch('TN')">Limpiar</button></div></div><div class="btnrow" style="margin-top:10px"><button class="secondary" onclick="loadRecent('TN',0)">Actualizar</button><button class="primary" onclick="captureTNSales()">Capturar ventas TN</button><span class="small">Primero captura ventas recientes y después muestra lo guardado.</span></div><div id="tnVentasStatus" class="status"></div><div id="tnVentasTable" style="margin-top:12px"></div><div id="tnVentasPager" class="btnrow" style="margin-top:12px"></div></div></section>
+<section id="tn-ventas" class="view"><div class="card"><h3>Tienda Nube · Ventas capturadas</h3><div class="grid"><div class="col-8"><label>Buscar venta TN</label><input id="tnVentasSearch" oninput="debouncedSales('TN')" placeholder="Nombre, SKU, número, orden API, producto"></div><div class="col-2"><label>Mostrar</label><select id="tnVentasLimit" onchange="loadRecent('TN',0)"><option selected>20</option><option>40</option><option>50</option></select></div><div class="col-2"><label>&nbsp;</label><button class="secondary" onclick="clearSalesSearch('TN')">Limpiar</button></div></div><div class="btnrow" style="margin-top:10px"><button class="secondary" onclick="loadRecent('TN',0)">Actualizar</button></div><div id="tnVentasStatus" class="status"></div><div id="tnVentasTable" style="margin-top:12px"></div><div id="tnVentasPager" class="btnrow" style="margin-top:12px"></div></div></section>
 
 <section id="inventario" class="view">
   <div class="gestMenu erpOldGestMenu">
@@ -942,7 +939,7 @@ details.kebabMenu{position:relative}details.kebabMenu summary{list-style:none;cu
 <section id="consola" class="view"><div class="card"><h3>Detalle técnico</h3><pre id="rawConsole" class="console">Inicializando…</pre></div></section>
 </main></div>
 <script>
-const FRONT_VERSION = '1.0.35-publication-status-align';
+const FRONT_VERSION = '1.0.36-sales-unified-ml-capture';
 const API_BASE='https://api.xeleria.com.ar/api';
 const RAW_LIMIT=12000;
 let STAGING_SESSION_ID='';
@@ -2072,6 +2069,238 @@ function tnOrderCard(o){let lines=tnOrderLines(o);let lineHtml=lines.length?line
 function tnOrdersTable(items){if(!items||!items.length)return '<div class="card"><p>No hay ventas capturadas.</p></div>';return items.map(tnOrderCard).join('')}
 async function captureTNSales(){try{setStatus('tnVentasStatus','Capturando ventas TN recientes…');const d=await post(`/tn-reader/${TENANT_ID}/orders?page=1&per_page=30&dry_run=false`);setStatus('tnVentasStatus',`Captura TN: ${d.saved?.length??0} guardadas / ${d.found_orders??0} leídas.`,true);await loadRecent('TN',0)}catch(e){setStatus('tnVentasStatus','Error capturando ventas TN.','badtxt');raw(e)}}
 async function readTNOrders(dry=true){if(dry)return loadRecent('TN',0);return captureTNSales()}
+
+
+/* v1.0.36: ventas ML/TN unificadas visualmente; ML captura antes de listar */
+(function(){
+  const mlCaptureState={at:0,running:false,last:null};
+
+  function salesLimit(ch){return Number($(String(ch).toLowerCase()+'VentasLimit')?.value||20)}
+  function salesSearch(ch){return ($(String(ch).toLowerCase()+'VentasSearch')?.value||'').trim()}
+  function salesStatusId(ch){return String(ch).toLowerCase()+'VentasStatus'}
+  function salesTableId(ch){return String(ch).toLowerCase()+'VentasTable'}
+  function salesPagerId(ch){return String(ch).toLowerCase()+'VentasPager'}
+
+  window.salesLimit=salesLimit;
+  window.salesSearch=salesSearch;
+
+  function errMsg(e){
+    if(!e)return 'Error desconocido';
+    if(e.data?.detail)return typeof e.data.detail==='string'?e.data.detail:JSON.stringify(e.data.detail);
+    if(e.detail)return typeof e.detail==='string'?e.detail:JSON.stringify(e.detail);
+    if(e.message)return e.message;
+    try{return JSON.stringify(e)}catch{return String(e)}
+  }
+
+  window.debouncedSales=function(ch){
+    clearTimeout(timers['sales_'+ch]);
+    timers['sales_'+ch]=setTimeout(()=>loadRecent(ch,0,{capture:false}),350);
+  };
+
+  window.clearSalesSearch=function(ch){
+    const el=$(String(ch).toLowerCase()+'VentasSearch');
+    if(el)el.value='';
+    loadRecent(ch,0,{capture:true});
+  };
+
+  function orderNumber(o,ch){
+    if(ch==='ML')return o.sale_number||o.ml_sale_number||o.pack_id||o.external_order_id||o.id||'';
+    const raw=(o.raw_data&&typeof o.raw_data==='object')?o.raw_data:{};
+    return raw.number?('#'+raw.number):(o.order_number||o.tn_order_number||o.external_order_id||o.id||'');
+  }
+
+  function orderLines(o){
+    return (o.sold_lines||o.lines||o.order_items||o.items||[]).map(l=>{
+      const qty=Number(l.quantity??l.qty??0)||0;
+      const unit=Number(l.unit_price??l.price??0)||0;
+      return {
+        sku:l.sku||'',
+        name:l.name||l.title||l.product_name||'',
+        quantity:qty,
+        unit_price:unit,
+        subtotal:Number(l.subtotal??(qty*unit))||0,
+        prev:l.previous_stock,
+        next:l.new_stock
+      };
+    });
+  }
+
+  function statusLabel(o,ch){
+    const s=String(o.payment_status||o.status||o.ml_status||o.tn_payment_status||'').toLowerCase();
+    if(s.includes('paid')||s.includes('confirmed')||s.includes('approved'))return 'Pagada';
+    if(s.includes('cancel'))return 'Cancelada';
+    if(s.includes('pending'))return 'Pendiente';
+    return o.payment_status||o.status||'';
+  }
+
+  function logisticLabel(o,ch){
+    const raw=(o.raw_data&&typeof o.raw_data==='object')?o.raw_data:{};
+    if(ch==='ML'){
+      const lt=String(o.ml_shipping_logistic_type||o.logistic_type||raw.logistic_type||'').toLowerCase();
+      const mode=String(o.ml_shipping_mode||o.shipping_mode||'').toLowerCase();
+      if(lt.includes('fulfillment'))return 'FULL';
+      if(lt.includes('self_service'))return 'FLEX';
+      if(mode||o.ml_shipping_id)return 'Mercado Envíos';
+      return 'Sin envío';
+    }
+    return o.shipping_method||o.shipping_option||raw.shipping_option?.name||raw.shipping_option||'Sin envío';
+  }
+
+  function shippingStateLabel(o,ch){
+    const s=String(o.shipping_ui_status||o.tn_shipping_ui_status||o.ml_shipping_ui_status||o.shipping_status||o.ml_shipping_status||o.tn_shipping_status||o.fulfillment_status||'').toLowerCase();
+    if(s.includes('delivered')||s.includes('entregado'))return 'Entregado';
+    if(s.includes('shipped')||s.includes('picked_up')||s.includes('transit')||s.includes('camino'))return 'En camino';
+    if(s.includes('ready'))return 'Listo para despachar';
+    if(s.includes('pending'))return 'Pendiente';
+    if(s.includes('cancel'))return 'Cancelado';
+    return '';
+  }
+
+  function shippingStateClass(label){
+    const s=String(label||'').toLowerCase();
+    if(s.includes('entregado'))return 'delivered';
+    if(s.includes('camino')||s.includes('listo')||s.includes('pendiente'))return 'pending';
+    return 'other';
+  }
+
+  function orderCard(o,ch){
+    const lines=orderLines(o);
+    const display=lines.length?lines.map(l=>`<div class="lineItem"><div><strong>${esc(l.sku)}</strong></div><div>${esc(l.name||'')}</div><div>Cant: <strong>${esc(l.quantity)}</strong></div><div>${l.unit_price?money(l.unit_price):''}</div><div>${l.prev!==undefined?`Stock ${esc(l.prev)} → ${esc(l.next)}`:(l.subtotal?money(l.subtotal):'')}</div></div>`).join(''):'<div class="muted">Sin líneas visibles todavía.</div>';
+    const logistic=logisticLabel(o,ch);
+    const state=shippingStateLabel(o,ch);
+    const stateHtml=state?`<span class="shippingAction ${shippingStateClass(state)}">${esc(state)}</span>`:'';
+    const logisticClass=logistic==='FULL'?'dark':logistic==='FLEX'?'ok':logistic==='Sin envío'?'dark':'info';
+    const raw=(o.raw_data&&typeof o.raw_data==='object')?o.raw_data:{};
+    const doc=[o.customer_doc_type||'',o.customer_doc_number||''].filter(Boolean).join(' ');
+    const sub=[];
+    if(doc)sub.push('Doc: '+doc);
+    if(o.customer_iva_condition)sub.push('IVA: '+o.customer_iva_condition);
+    if(o.customer_city)sub.push(o.customer_city);
+    const customer=(o.customer_fiscal_name||o.customer_name||raw.contact_name||raw.buyer?.nickname||'').toString();
+    return `<div class="orderCard"><div class="orderHead"><div><strong>${esc(orderNumber(o,ch))}</strong>${o.external_order_id?`<br><span class="small">Orden API: ${esc(o.external_order_id)}</span>`:''}<br><span class="small">${dateAR(o.display_created_at||o.source_created_at||o.created_at||o.ml_date_created)}</span></div><div><strong>${esc(customer.toUpperCase())}</strong>${sub.length?`<br><span class="small">${esc(sub.join(' · '))}</span>`:''}</div><div class="orderLogisticsBlock"><span class="pill ${logisticClass} shippingPill">${esc(logistic)}</span><br><span class="orderPayStatus">${esc(statusLabel(o,ch))}</span>${stateHtml}</div><div><strong>${money(o.total)}</strong>${o.total_products&&Number(o.total_products)!==Number(o.total)?`<br><span class="small">Productos: ${money(o.total_products)}</span>`:''}<br><span class="small">${lines.length} ${lines.length===1?'línea':'líneas'}</span></div><div></div></div><div class="orderLines">${display}</div></div>`;
+  }
+
+  function ordersTable(items,ch){
+    if(!items||!items.length)return '<div class="card"><p>No hay ventas capturadas.</p></div>';
+    return items.map(o=>orderCard(o,ch)).join('');
+  }
+
+  function pagerHtml(ch,d){
+    const limit=Number(d.limit||salesLimit(ch)||20),offset=Number(d.offset||0),total=Number(d.total||0);
+    const count=(d.items||[]).length,from=total?offset+1:0,to=Math.min(offset+count,total||offset+count),prev=Math.max(0,offset-limit),next=offset+limit;
+    return `<button class="secondary" ${offset<=0?'disabled':''} onclick="loadRecent('${ch}',${prev},{capture:false})">Anterior</button><span class="pill">Mostrando ${from}–${to}${total?` de ${total}`:''}</span><button class="secondary" ${d.has_more?'':'disabled'} onclick="loadRecent('${ch}',${next},{capture:false})">Siguiente</button>`;
+  }
+
+  async function captureMLRecent(force=false){
+    const now=Date.now();
+    if(mlCaptureState.running)return mlCaptureState.last;
+    if(!force && mlCaptureState.at && (now-mlCaptureState.at)<30000)return mlCaptureState.last;
+    mlCaptureState.running=true;
+    try{
+      const d=await post(`/ml-reader/${TENANT_ID}/orders?limit=50&offset=0&dry_run=false`);
+      mlCaptureState.at=Date.now();
+      mlCaptureState.last=d;
+      return d;
+    }finally{
+      mlCaptureState.running=false;
+    }
+  }
+
+  async function captureTNRecent(){
+    return post(`/tn-reader/${TENANT_ID}/orders?page=1&per_page=30&dry_run=false`);
+  }
+
+  async function loadMLRecent(offset,limit,q){
+    if(offset===0 && !q){
+      try{
+        setStatus('mlVentasStatus','Capturando ventas ML recientes…');
+        const c=await captureMLRecent(true);
+        setStatus('mlVentasStatus',`Captura ML: ${c.saved?.length??0} guardadas / ${c.found_orders??0} leídas. Listando…`,true);
+      }catch(e){
+        setStatus('mlVentasStatus','No pude capturar ML; listo lo guardado. '+errMsg(e),false);
+      }
+    }
+    return api(`/ml-sales/${TENANT_ID}/recent?limit=${encodeURIComponent(limit)}&offset=${encodeURIComponent(offset)}&exclude_tests=true&q=${encodeURIComponent(q)}`);
+  }
+
+  function tnUiOrder(row,items){
+    const raw=(row.raw_data&&typeof row.raw_data==='object')?row.raw_data:{};
+    const lines=(items||[]).map(it=>({sku:it.sku,title:it.title||it.name,quantity:it.quantity,unit_price:it.unit_price,subtotal:(Number(it.quantity||0)*Number(it.unit_price||0))||0}));
+    return {
+      ...row,
+      channel:'TN',
+      order_number:raw.number?('#'+raw.number):row.external_order_id,
+      customer_fiscal_name:row.customer_name,
+      display_created_at:row.source_created_at||row.created_at,
+      sold_lines:lines,
+      shipping_option:row.shipping_method||row.shipping_option,
+      tn_shipping_status:row.shipping_status,
+      raw_data:raw
+    };
+  }
+
+  async function loadTNRecent(offset,limit,q){
+    if(offset===0 && !q){
+      try{ await captureTNRecent(); }catch(e){ console.warn('capture TN failed',e); }
+    }
+    const d=await api(`/admin-compat/${TENANT_ID}/sales-master?limit=5000`);
+    const allOrders=(d.orders||[]).filter(o=>String(o.channel||'').toUpperCase()==='TN');
+    const itemsByOrder={};
+    for(const it of (d.order_items||[])){
+      (itemsByOrder[String(it.order_id)] ||= []).push(it);
+    }
+    let rows=allOrders.map(o=>tnUiOrder(o,itemsByOrder[String(o.id)]||[]));
+    const terms=normalizar(q).split(/\s+/).filter(Boolean);
+    if(terms.length){
+      rows=rows.filter(o=>{
+        const parts=[o.external_order_id,o.order_number,o.customer_name,o.customer_fiscal_name,o.shipping_method,o.shipping_status,o.payment_status,o.status];
+        (o.sold_lines||[]).forEach(l=>parts.push(l.sku,l.title,l.name));
+        const blob=normalizar(parts.filter(v=>v!==null&&v!==undefined).join(' '));
+        return terms.every(t=>blob.includes(t));
+      });
+    }
+    rows.sort((a,b)=>String(b.source_created_at||b.created_at||'').localeCompare(String(a.source_created_at||a.created_at||'')));
+    const total=rows.length;
+    return {ok:true,channel:'TN',items:rows.slice(offset,offset+limit),total,limit,offset,has_more:offset+limit<total};
+  }
+
+  window.loadRecent=async function(ch,offset=0,opt={}){
+    ch=String(ch||'').toUpperCase();
+    const lim=salesLimit(ch),q=salesSearch(ch),sid=salesStatusId(ch),tid=salesTableId(ch),pid=salesPagerId(ch);
+    state.sales=state.sales||{ML:{offset:0},TN:{offset:0}};
+    state.sales[ch]=state.sales[ch]||{offset:0};
+    state.sales[ch].offset=offset;
+    setStatus(sid,`Consultando ventas ${ch}…`);
+    try{
+      const d=ch==='ML'?await loadMLRecent(offset,lim,q):await loadTNRecent(offset,lim,q);
+      const arr=d.items||[];
+      if($(tid))$(tid).innerHTML=ordersTable(arr,ch);
+      if($(pid))$(pid).innerHTML=pagerHtml(ch,d);
+      setStatus(sid,`OK: ${d.total||0} ventas${q?' filtradas':''}`,true);
+    }catch(e){
+      setStatus(sid,`Error ventas ${ch}: ${errMsg(e)}`,false);
+      raw(e);
+      console.error('loadRecent '+ch,e);
+    }
+  };
+
+  window.refreshShippingPending=async function(ch){
+    ch=String(ch||'').toUpperCase();
+    if(ch!=='ML')return loadRecent(ch,0,{capture:true});
+    if(!confirm('Refrescar estados de envío no entregados de Mercado Libre?\n\nSe consultan solo ventas recientes no terminales.'))return;
+    setStatus('mlVentasStatus','Refrescando estados no entregados ML…');
+    try{
+      const d=await post(`/ml-sales/${TENANT_ID}/refresh_shipping_pending?limit=50&days=30&scan_limit=250`);
+      setStatus('mlVentasStatus',`Refresh ML: ${d.refreshed_count||0} actualizadas, ${d.error_count||0} errores`,d.error_count?false:true);
+      await loadRecent('ML',0,{capture:false});
+    }catch(e){setStatus('mlVentasStatus','Error refresh envíos ML: '+errMsg(e),false);raw(e)}
+  };
+
+  window.captureTNSales=async function(){
+    try{setStatus('tnVentasStatus','Capturando ventas TN recientes…');const d=await captureTNRecent();setStatus('tnVentasStatus',`Captura TN: ${d.saved?.length??0} guardadas / ${d.found_orders??0} leídas.`,true);await loadRecent('TN',0,{capture:false})}catch(e){setStatus('tnVentasStatus','Error capturando ventas TN: '+errMsg(e),false);raw(e)}
+  };
+})();
+
 localStorage.setItem('xeleria_tenant_id',TENANT_ID);
 loadUserOptions();
 closePublicationMatrix('La configuración está cerrada. Tocá “Configurar inventario” para empezar.');
