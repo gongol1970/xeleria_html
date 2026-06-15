@@ -708,15 +708,35 @@ details.kebabMenu{position:relative}details.kebabMenu summary{list-style:none;cu
 #tn-publicaciones .orderHead{grid-template-columns:1.05fr 1.35fr .7fr .7fr auto!important}
 @media(max-width:900px){#tn-publicaciones .col-8,#tn-publicaciones .col-2,#tn-ventas .col-8,#tn-ventas .col-2{grid-column:1/-1!important}}
 
+
+/* v1.0.34: publicaciones ML/TN unificadas */
+#ml-publicaciones .grid,#tn-publicaciones .grid{display:grid!important;grid-template-columns:repeat(12,1fr)!important;gap:14px!important;align-items:end!important}
+#ml-publicaciones .col-8,#tn-publicaciones .col-8{grid-column:span 8!important}
+#ml-publicaciones .col-2,#tn-publicaciones .col-2{grid-column:span 2!important}
+#ml-publicaciones label,#tn-publicaciones label{display:block!important;font-size:12px!important;font-weight:800!important;color:#504b43!important;margin-bottom:6px!important;text-transform:uppercase!important;letter-spacing:.04em!important}
+#ml-publicaciones input,#ml-publicaciones select,#tn-publicaciones input,#tn-publicaciones select{width:100%!important;height:44px!important;border:1px solid #cfc4ad!important;border-radius:12px!important;background:#fff!important;padding:10px 11px!important;font-size:14px!important;color:var(--ink)!important;outline:none!important;box-sizing:border-box!important}
+#ml-publicaciones button,#tn-publicaciones button{border-radius:12px!important;min-height:44px!important;padding:10px 14px!important;font-weight:800!important}
+#ml-publicaciones .card,#tn-publicaciones .card{max-width:none!important}
+.pubReportTable{table-layout:fixed;min-width:1160px}
+.pubReportTable th:nth-child(1),.pubReportTable td:nth-child(1){width:170px}
+.pubReportTable th:nth-child(2),.pubReportTable td:nth-child(2){width:420px}
+.pubReportTable th:nth-child(3),.pubReportTable td:nth-child(3){width:110px}
+.pubReportTable th:nth-child(4),.pubReportTable td:nth-child(4){width:auto}
+.pubProductName{font-weight:800;line-height:1.22}
+.pubProductSub{font-size:12px;color:var(--muted);line-height:1.25;margin-top:2px}
+.pubReportTable .marketBox{grid-template-columns:42px minmax(280px,1fr) 110px 90px 100px!important}
+.pubReportTable .marketBox .pubvar{grid-template-columns:minmax(140px,1fr) minmax(110px,130px)}
+@media(max-width:900px){#ml-publicaciones .col-8,#ml-publicaciones .col-2,#tn-publicaciones .col-8,#tn-publicaciones .col-2{grid-column:1/-1!important}}
+
 </style>
 </head>
 <body>
 <div class="app">
-<aside><div class="brand"><div class="brandTop"><span class="appMark"><img src="./favicon_xeleria.png?v=18" alt="XelerIA"></span><div class="brandName">XelerIA</div><div class="tenantBadge" id="tenantBadge">PC</div></div><p id="tenantSubtitle">Panel operativo</p></div><nav><button class="navBtn active" data-view="inicio">Inicio / Dashboard</button><div class="navTitle">Mercado Libre</div><button class="navBtn" data-view="ml-publicaciones">Publicaciones</button><button class="navBtn" data-view="ml-ventas">Ventas</button><div class="navTitle">Tienda Nube</div><button class="navBtn" data-view="tn-publicaciones">Publicaciones</button><button class="navBtn" data-view="tn-ventas">Ventas</button><div class="navTitle">Gestión</div><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="consola">Detalle técnico</button></nav><div class="sidebarFoot">Pantalla: XelerIA 1.0.33-tn-same-report<br>Servidor: <span id="footBackendVer">?</span><br><span class="muted">Cambios externos desactivados</span></div></aside>
+<aside><div class="brand"><div class="brandTop"><span class="appMark"><img src="./favicon_xeleria.png?v=18" alt="XelerIA"></span><div class="brandName">XelerIA</div><div class="tenantBadge" id="tenantBadge">PC</div></div><p id="tenantSubtitle">Panel operativo</p></div><nav><button class="navBtn active" data-view="inicio">Inicio / Dashboard</button><div class="navTitle">Mercado Libre</div><button class="navBtn" data-view="ml-publicaciones">Publicaciones</button><button class="navBtn" data-view="ml-ventas">Ventas</button><div class="navTitle">Tienda Nube</div><button class="navBtn" data-view="tn-publicaciones">Publicaciones</button><button class="navBtn" data-view="tn-ventas">Ventas</button><div class="navTitle">Gestión</div><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="consola">Detalle técnico</button></nav><div class="sidebarFoot">Pantalla: XelerIA 1.0.34-publications-unified-layout<br>Servidor: <span id="footBackendVer">?</span><br><span class="muted">Cambios externos desactivados</span></div></aside>
 <main><div class="topbar"><h2 id="pageTitle">Inicio</h2><div class="crumb" id="pageCrumb">Panel operativo</div></div>
 <section id="inicio" class="view active"><div class="hero"><div class="btnrow" style="justify-content:space-between"><div><h3>Dashboard</h3><p>Resumen operativo de XelerIA. El dashboard informa; no dispara operaciones.</p></div><button class="secondary" onclick="refreshAll()">Actualizar</button></div><div id="homeStatus" class="status"></div></div><div class="grid"><div class="col-3 stat good"><div class="k">Servidor</div><div class="v" id="stApi">?</div><div class="s">Versión <span id="dashBackendVer">?</span></div></div><div class="col-3 stat" id="mlCardMini"><div class="k">Mercado Libre</div><div class="v" id="stML">?</div><div class="s" id="stMLSub">Conexión</div></div><div class="col-3 stat" id="tnCardMini"><div class="k">Tienda Nube</div><div class="v" id="stTN">?</div><div class="s" id="stTNSub">Conexión</div></div><div class="col-3 stat warnline"><div class="k">Cambios externos</div><div class="v">Bloqueado</div><div class="s">No modifica stock/precios en ML/TN</div></div></div><div class="card"><h3>Resumen operativo</h3><div id="snapshotWrap" class="tableWrap"><div class="dashEmpty">Tocá “Actualizar”.</div></div></div></section>
-<section id="ml-publicaciones" class="view"><div class="card"><h3>Mercado Libre · Publicaciones</h3><p>Vista segura: lee publicaciones, no cambia tu inventario.</p><div class="btnrow"><button class="secondary" onclick="readMLItems()">Ver primeras publicaciones</button><button class="primary importBtn" onclick="startStaging('ML')">Configurar inventario ML</button><button class="secondary" onclick="connectML()">Conectar ML</button></div><div id="mlItemsStatus" class="status"></div><div id="mlItemsTable" class="tableWrap"></div></div></section>
-<section id="tn-publicaciones" class="view"><div class="card"><h3>Tienda Nube · Publicaciones</h3><div class="grid"><div class="col-8"><label>Buscar publicación TN</label><input id="tnPubSearch" oninput="debouncedTNPublications()" placeholder="SKU, producto, variante, título"></div><div class="col-2"><label>Mostrar</label><select id="tnPubLimit" onchange="loadTNPublications(0)"><option selected>20</option><option>40</option><option>50</option></select></div><div class="col-2"><label>&nbsp;</label><button class="secondary" onclick="clearTNPublicationsSearch()">Limpiar</button></div><div class="col-12"><div class="btnrow" style="margin-top:0"><button class="secondary" onclick="loadTNPublications(0)">Actualizar vista</button></div></div></div><div id="tnProductsStatus" class="status"></div><div id="tnProductsTable" style="margin-top:12px"></div><div id="tnProductsPager" class="btnrow" style="margin-top:12px"></div></div></section>
+<section id="ml-publicaciones" class="view"><div class="card"><h3>Mercado Libre · Publicaciones</h3><div class="grid"><div class="col-8"><label>Buscar publicación ML</label><input id="mlPubSearch" oninput="debouncedPublications('ML')" placeholder="SKU, producto, publicación, variante, título"></div><div class="col-2"><label>Mostrar</label><select id="mlPubLimit" onchange="loadPublicationsReport('ML',0)"><option selected>20</option><option>40</option><option>50</option></select></div><div class="col-2"><label>&nbsp;</label><button class="secondary" onclick="clearPublicationsSearch('ML')">Limpiar</button></div><div class="col-12"><div class="btnrow" style="margin-top:0"><button class="secondary" onclick="loadPublicationsReport('ML',0,true)">Actualizar vista</button></div></div></div><div id="mlPubStatus" class="status"></div><div id="mlPubResults" style="margin-top:12px"></div><div id="mlPubPager" class="btnrow" style="margin-top:12px"></div></div></section>
+<section id="tn-publicaciones" class="view"><div class="card"><h3>Tienda Nube · Publicaciones</h3><div class="grid"><div class="col-8"><label>Buscar publicación TN</label><input id="tnPubSearch" oninput="debouncedPublications('TN')" placeholder="SKU, producto, publicación, variante, título"></div><div class="col-2"><label>Mostrar</label><select id="tnPubLimit" onchange="loadPublicationsReport('TN',0)"><option selected>20</option><option>40</option><option>50</option></select></div><div class="col-2"><label>&nbsp;</label><button class="secondary" onclick="clearPublicationsSearch('TN')">Limpiar</button></div><div class="col-12"><div class="btnrow" style="margin-top:0"><button class="secondary" onclick="loadPublicationsReport('TN',0,true)">Actualizar vista</button></div></div></div><div id="tnPubStatus" class="status"></div><div id="tnPubResults" style="margin-top:12px"></div><div id="tnPubPager" class="btnrow" style="margin-top:12px"></div></div></section>
 <section id="ml-ventas" class="view"><div class="card"><h3>Mercado Libre · Ventas capturadas</h3><div class="grid"><div class="col-8"><label>Buscar venta ML</label><input id="mlVentasSearch" oninput="debouncedSales('ML')" placeholder="Nombre, SKU, venta, orden API, envío ML, producto"></div><div class="col-2"><label>Mostrar</label><select id="mlVentasLimit" onchange="loadRecent('ML',0)"><option selected>20</option><option>40</option><option>50</option></select></div><div class="col-2"><label>&nbsp;</label><button class="secondary" onclick="clearSalesSearch('ML')">Limpiar</button></div></div><div class="btnrow" style="margin-top:10px"><button class="secondary" onclick="refreshShippingPending('ML')">Refrescar estados no entregadas</button><span class="small">Consulta solo ventas no terminales recientes, no todo el histórico.</span></div><div id="mlVentasStatus" class="status"></div><div id="mlVentasTable" style="margin-top:12px"></div><div id="mlVentasPager" class="btnrow" style="margin-top:12px"></div></div></section>
 <section id="tn-ventas" class="view"><div class="card"><h3>Tienda Nube · Ventas capturadas</h3><div class="grid"><div class="col-8"><label>Buscar venta TN</label><input id="tnVentasSearch" oninput="debouncedSales('TN')" placeholder="Nombre, SKU, número, orden API, producto"></div><div class="col-2"><label>Mostrar</label><select id="tnVentasLimit" onchange="loadRecent('TN',0)"><option selected>20</option><option>40</option><option>50</option></select></div><div class="col-2"><label>&nbsp;</label><button class="secondary" onclick="clearSalesSearch('TN')">Limpiar</button></div></div><div class="btnrow" style="margin-top:10px"><button class="secondary" onclick="loadRecent('TN',0)">Actualizar</button><button class="primary" onclick="captureTNSales()">Capturar ventas TN</button><span class="small">Primero captura ventas recientes y después muestra lo guardado.</span></div><div id="tnVentasStatus" class="status"></div><div id="tnVentasTable" style="margin-top:12px"></div><div id="tnVentasPager" class="btnrow" style="margin-top:12px"></div></div></section>
 
@@ -1006,7 +1026,7 @@ const tail=rows.length>max?`<div class="dashEmpty">Mostrando ${max} de ${rows.le
 
 function showView(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));$(id)?.classList.add('active');
 document.querySelectorAll('.navBtn').forEach(b=>b.classList.toggle('active',b.dataset.view===id));
-const title=document.querySelector(`.navBtn[data-view="${id}"]`)?.textContent?.trim()||'XelerIA';$('pageTitle').textContent=title;$('pageCrumb').textContent='XelerIA';if(id==='configuracion')loadUserOptions();if(id==='inventario')loadInventoryMaster(true);if(id==='ml-ventas')loadRecent('ML',0);if(id==='tn-publicaciones')enterTNPublications();if(id==='tn-ventas')loadRecent('TN',0)}document.querySelectorAll('.navBtn[data-view]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));
+const title=document.querySelector(`.navBtn[data-view="${id}"]`)?.textContent?.trim()||'XelerIA';$('pageTitle').textContent=title;$('pageCrumb').textContent='XelerIA';if(id==='configuracion')loadUserOptions();if(id==='inventario')loadInventoryMaster(true);if(id==='ml-publicaciones')enterPublications('ML');if(id==='ml-ventas')loadRecent('ML',0);if(id==='tn-publicaciones')enterPublications('TN');if(id==='tn-ventas')loadRecent('TN',0)}document.querySelectorAll('.navBtn[data-view]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));
 
 function setImportBusy(busy){document.querySelectorAll('.importBtn').forEach(b=>b.disabled=busy);['saveMatrixBtn','cancelMatrixBtn'].forEach(id=>{if($(id))$(id).disabled=busy})}
 
@@ -1864,25 +1884,34 @@ async function cancelStaging() {
   }
 }
 
-async function readMLItems(){try{setStatus('mlItemsStatus','Leyendo publicaciones ML…');
-const d=await post(`/ml-reader/${TENANT_ID}/items?limit=30&offset=0&dry_run=true`);
-const rows=d.items||[];$('mlItemsTable').innerHTML=table(rows,[{key:'sku',label:'SKU'},{key:'sku_source',label:'Origen SKU'},{key:'needs_sku_review',label:'Revisión',render:r=>r.needs_sku_review?pill(false,'revisar','warn'):''},{key:'item_id',label:'Publicación'},{key:'variation_id',label:'Variante'},{key:'title',label:'Título'},{key:'stock',label:'Stock'},{key:'price',label:'Precio',render:r=>money(r.price)},{key:'status',label:'Estado'}]);setStatus('mlItemsStatus',`Vista ML: ${rows.length} filas. Pendientes SKU: ${d.pending_sku_rows??0}.`,'oktxt')}catch(e){setStatus('mlItemsStatus','Error leyendo publicaciones ML.','badtxt');raw(e)}}
 
-
-function enterTNPublications(){
-  try{
-    if($('tnProductsTable'))$('tnProductsTable').innerHTML='<div class="card"><p>Actualizando publicaciones TN…</p></div>';
-    if($('tnProductsPager'))$('tnProductsPager').innerHTML='';
-    setStatus('tnProductsStatus','Actualizando publicaciones TN…');
-  }catch{}
-  loadTNPublications(0,true);
+function pubCfg(market){
+  const key=market==='ML'?'ml':'tn';
+  const label=market==='ML'?'ML':'TN';
+  return {
+    key,label,
+    searchId:key+'PubSearch',
+    limitId:key+'PubLimit',
+    statusId:key+'PubStatus',
+    resultsId:key+'PubResults',
+    pagerId:key+'PubPager'
+  };
 }
-function tnPubLimit(){return Number($('tnPubLimit')?.value||20)}
-function tnPubSearch(){return ($('tnPubSearch')?.value||'').trim()}
-window.__xeleriaTNTimers=window.__xeleriaTNTimers||{};
-window.__xeleriaTNState=window.__xeleriaTNState||{pubOffset:0,master:null,masterAt:0};
-function debouncedTNPublications(){clearTimeout(window.__xeleriaTNTimers.pub);window.__xeleriaTNTimers.pub=setTimeout(()=>loadTNPublications(0,false),350)}
-function clearTNPublicationsSearch(){let el=$('tnPubSearch');if(el)el.value='';loadTNPublications(0,true)}
+function enterPublications(market){
+  const c=pubCfg(market);
+  try{
+    if($(c.resultsId))$(c.resultsId).innerHTML='<div class="card"><p>Actualizando publicaciones '+c.label+'…</p></div>';
+    if($(c.pagerId))$(c.pagerId).innerHTML='';
+    setStatus(c.statusId,'Actualizando publicaciones '+c.label+'…');
+  }catch{}
+  loadPublicationsReport(market,0,true);
+}
+function pubLimit(market){const c=pubCfg(market);return Number($(c.limitId)?.value||20)}
+function pubSearch(market){const c=pubCfg(market);return ($(c.searchId)?.value||'').trim()}
+window.__xeleriaPubTimers=window.__xeleriaPubTimers||{};
+window.__xeleriaPubState=window.__xeleriaPubState||{offsets:{ML:0,TN:0},master:null,masterAt:0};
+function debouncedPublications(market){clearTimeout(window.__xeleriaPubTimers[market]);window.__xeleriaPubTimers[market]=setTimeout(()=>loadPublicationsReport(market,0,false),350)}
+function clearPublicationsSearch(market){const c=pubCfg(market);let el=$(c.searchId);if(el)el.value='';loadPublicationsReport(market,0,true)}
 function listingMarket(l){return String(l?.marketplace||l?.channel||'').toUpperCase().trim()}
 function listingProductId(l){return String(l?.external_product_id||l?.product_id||l?.listing_id||l?.item_id||'').trim()}
 function listingVariantId(l){return String(l?.external_variant_id||l?.variant_id||l?.variation_id||'').trim()}
@@ -1904,20 +1933,20 @@ function listingStatus(l){
   return '';
 }
 function listingStatusLabel(st){
-  if(st===true)return 'Visible';
+  if(st===true)return 'Activa';
   if(st===false)return 'Oculta';
   let s=normalizar(st);
   if(!s)return '-';
-  if(['true','1','visible','published','active','activa','activo','yes','si','sí'].includes(s))return 'Visible';
+  if(['true','1','visible','published','active','activa','activo','yes','si','sí'].includes(s))return 'Activa';
   if(['false','0','hidden','oculta','oculto','unpublished','inactive','deleted','closed','paused','pausado','pausada','archived'].includes(s))return 'Oculta';
   if(s.includes('ocult')||s.includes('hidden')||s.includes('unpublish')||s.includes('inactive')||s.includes('deleted')||s.includes('closed')||s.includes('paused'))return 'Oculta';
-  if(s.includes('visible')||s.includes('published')||s.includes('active'))return 'Visible';
+  if(s.includes('visible')||s.includes('published')||s.includes('active'))return 'Activa';
   return String(st||'-');
 }
 function listingStatusClass(st){
   let label=normalizar(listingStatusLabel(st));
   if(label.includes('oculta')||label.includes('pausada'))return 'inactive';
-  if(label.includes('visible')||label.includes('activa'))return 'ok';
+  if(label.includes('visible')||label.includes('activa')||label.includes('activa'))return 'ok';
   return 'info';
 }
 function publicationSearchText(item,market){
@@ -1929,7 +1958,7 @@ function publicationSearchText(item,market){
   });
   return normalizar(parts.filter(v=>v!==undefined&&v!==null).join(' '));
 }
-function tnBuildPublicationItems(master,market){
+function buildPublicationItems(master,market){
   const inv=Array.isArray(master.inventory_items)?master.inventory_items:[];
   const listings=(Array.isArray(master.marketplace_listings)?master.marketplace_listings:[]).filter(l=>listingMarket(l)===market);
   const bySku={};
@@ -1949,41 +1978,47 @@ function renderReadonlyListingsForItem(item,market){
   return arr.map(l=>{
     let st=listingStatus(l);
     let pid=listingProductId(l),vid=listingVariantId(l);
-    let url=l.url||l.permalink||l.raw_data?.canonical_url||l.raw_data?.url||'';
-    return `<div class="marketBox"><div><span class="pill ok">${esc(market)}</span></div><div class="mono id pubvar"><span>Pub: ${esc(pid)}</span><span class="idSep">${vid?'Var: '+esc(vid):''}</span>${url?`<br><a class="small" target="_blank" href="${esc(url)}">Abrir</a>`:''}</div><div><strong>${money(listingPrice(l))}</strong></div><div><strong>${esc(listingStock(l))}</strong></div><div><span class="pill marketStatus ${listingStatusClass(st)}">${esc(listingStatusLabel(st))}</span></div></div>`;
+    return `<div class="marketBox"><div><span class="pill ${market==='ML'?'info':'ok'}">${esc(market)}</span></div><div class="mono id pubvar"><span>Pub: ${esc(pid)}</span><span class="idSep">${vid?'Var: '+esc(vid):''}</span></div><div><strong>${money(listingPrice(l))}</strong></div><div><strong>${esc(listingStock(l))}</strong></div><div><span class="pill marketStatus ${listingStatusClass(st)}">${esc(listingStatusLabel(st))}</span></div></div>`;
   }).join('');
 }
 function renderPublicationsReadonly(market,items){
+  const c=pubCfg(market);
   let body='';
   if(!items.length){
     body='<tr><td colspan="4" class="muted" style="text-align:center;padding:24px">Sin publicaciones para este filtro.</td></tr>';
   }else{
-    body=items.map(i=>`<tr><td><strong class="mono">${esc(i.sku)}</strong><br><span class="small">${esc(i.item_type||'')}</span></td><td>${esc(i.name||i.title||'')}<br><span class="small">${esc(i.category||'')}</span></td><td><strong>${esc(i.stock??i.master_stock??0)}</strong><br><span class="small">stock ERP</span></td><td>${renderReadonlyListingsForItem(i,market)}</td></tr>`).join('');
+    body=items.map(i=>{
+      const title=esc(i.name||i.title||'');
+      const sub=[i.variant_name,i.category].filter(Boolean).map(esc).join('<br>');
+      return `<tr><td><strong class="mono">${esc(i.sku)}</strong><br><span class="small">${esc(i.item_type||'')}</span></td><td><div class="pubProductName">${title}</div>${sub?`<div class="pubProductSub">${sub}</div>`:''}</td><td><strong>${esc(i.stock??i.master_stock??0)}</strong><br><span class="small">stock</span></td><td>${renderReadonlyListingsForItem(i,market)}</td></tr>`;
+    }).join('');
   }
-  $('tnProductsTable').innerHTML=`<div class="tableWrap"><table class="inventoryTable"><thead><tr><th>SKU</th><th>Producto</th><th>Stock ERP</th><th>Publicaciones ${market} / variante / precio / stock</th></tr></thead><tbody>${body}</tbody></table></div>`;
+  if($(c.resultsId))$(c.resultsId).innerHTML=`<div class="tableWrap"><table class="pubReportTable"><thead><tr><th>SKU</th><th>Producto</th><th>Stock</th><th>Publicaciones ${market} / variante / precio / stock</th></tr></thead><tbody>${body}</tbody></table></div>`;
 }
-function tnPublicationsPager(total,count){
-  let limit=tnPubLimit(),offset=window.__xeleriaTNState.pubOffset||0;
+function publicationsPager(market,total,count){
+  const c=pubCfg(market);
+  let limit=pubLimit(market),offset=window.__xeleriaPubState.offsets[market]||0;
   let hasPrev=offset>0, hasNext=offset+limit<total;
   let prev=Math.max(0,offset-limit), next=offset+limit;
   let from=count?offset+1:0, to=offset+count;
-  return `<button class="secondary" ${hasPrev?'':'disabled'} onclick="loadTNPublications(${prev})">Atrás</button><span class="pill">Mostrando ${from}–${to}${total?` de ${total}`:''}</span><button class="secondary" ${hasNext?'':'disabled'} onclick="loadTNPublications(${next})">Siguiente</button>`;
+  return `<button class="secondary" ${hasPrev?'':'disabled'} onclick="loadPublicationsReport('${market}',${prev})">Atrás</button><span class="pill">Mostrando ${from}–${to}${total?` de ${total}`:''}</span><button class="secondary" ${hasNext?'':'disabled'} onclick="loadPublicationsReport('${market}',${next})">Siguiente</button>`;
 }
-async function loadTNPublicationMaster(force=false){
+async function loadPublicationMaster(force=false){
   const now=Date.now();
-  if(!force&&window.__xeleriaTNState.master&&(now-window.__xeleriaTNState.masterAt)<60000)return window.__xeleriaTNState.master;
+  if(!force&&window.__xeleriaPubState.master&&(now-window.__xeleriaPubState.masterAt)<60000)return window.__xeleriaPubState.master;
   const d=await api(`/admin-compat/${TENANT_ID}/inventory-master?limit=5000&_=${Date.now()}`);
-  window.__xeleriaTNState.master=d;
-  window.__xeleriaTNState.masterAt=now;
+  window.__xeleriaPubState.master=d;
+  window.__xeleriaPubState.masterAt=now;
   return d;
 }
-async function loadTNPublications(offset=0,force=false){
+async function loadPublicationsReport(market,offset=0,force=false){
+  const c=pubCfg(market);
   try{
-    window.__xeleriaTNState.pubOffset=offset;
-    setStatus('tnProductsStatus',force?'Actualizando publicaciones TN…':'Leyendo publicaciones TN…');
-    let limit=tnPubLimit(), q=tnPubSearch(), market='TN';
-    const master=await loadTNPublicationMaster(force);
-    let items=tnBuildPublicationItems(master,market);
+    window.__xeleriaPubState.offsets[market]=offset;
+    setStatus(c.statusId,force?'Actualizando publicaciones '+c.label+'…':'Leyendo publicaciones '+c.label+'…');
+    let limit=pubLimit(market), q=pubSearch(market);
+    const master=await loadPublicationMaster(force);
+    let items=buildPublicationItems(master,market);
     const totalBase=items.length;
     const nq=normalizar(q);
     if(nq){
@@ -1993,15 +2028,25 @@ async function loadTNPublications(offset=0,force=false){
     const filteredTotal=items.length;
     const page=items.slice(offset,offset+limit);
     renderPublicationsReadonly(market,page);
-    if($('tnProductsPager'))$('tnProductsPager').innerHTML=tnPublicationsPager(filteredTotal,page.length);
+    if($(c.pagerId))$(c.pagerId).innerHTML=publicationsPager(market,filteredTotal,page.length);
     const pubs=page.reduce((a,i)=>a+(i.listings||[]).filter(l=>listingMarket(l)===market).length,0);
-    setStatus('tnProductsStatus',`Publicaciones TN: ${pubs} visibles sobre ${page.length} de ${filteredTotal} ítems${q?' filtrados':''}${filteredTotal!==totalBase?` · base ${totalBase}`:''}`,'oktxt');
+    setStatus(c.statusId,`Publicaciones ${market}: ${pubs} visibles sobre ${page.length} de ${filteredTotal} ítems${q?' filtrados':''}${filteredTotal!==totalBase?` · base ${totalBase}`:''}`,'oktxt');
   }catch(e){
     const msg=e?.data?.detail||e?.data?.message||e?.message||e?.raw||JSON.stringify(e);
-    setStatus('tnProductsStatus','Error publicaciones TN: '+msg,'badtxt');
+    setStatus(c.statusId,'Error publicaciones '+market+': '+msg,'badtxt');
     raw(e);
   }
 }
+
+/* aliases legacy */
+async function readMLItems(){return loadPublicationsReport('ML',0,true)}
+function enterTNPublications(){return enterPublications('TN')}
+function tnPubLimit(){return pubLimit('TN')}
+function tnPubSearch(){return pubSearch('TN')}
+function debouncedTNPublications(){return debouncedPublications('TN')}
+function clearTNPublicationsSearch(){return clearPublicationsSearch('TN')}
+async function loadTNPublicationMaster(force=false){return loadPublicationMaster(force)}
+async function loadTNPublications(offset=0,force=false){return loadPublicationsReport('TN',offset,force)}
 async function syncTNPublications(){try{setStatus('tnProductsStatus','Sincronizando publicaciones TN…');const d=await post(`/tn-reader/${TENANT_ID}/products?page=1&per_page=100&dry_run=false`);window.__xeleriaTNState.master=null;setStatus('tnProductsStatus',`OK: ${d.rows??0} filas TN sincronizadas.`,true);await loadTNPublications(0,true)}catch(e){setStatus('tnProductsStatus','Error sincronizando publicaciones TN.','badtxt');raw(e)}}
 async function readTNProducts(){return loadTNPublications(0,true)}
 
