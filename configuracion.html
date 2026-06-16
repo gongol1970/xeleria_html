@@ -24,17 +24,11 @@ body{
   margin:0;
   background:var(--bg);
   color:var(--ink);
-  font-family:Georgia,"Times New Roman",serif;
+  font-family:Tahoma,Arial,sans-serif;
   font-size:16px;
 }
 .wrap{padding:17px 18px 60px}
-h1{
-  font-family:Arial,Helvetica,sans-serif;
-  font-size:34px;
-  line-height:1;
-  margin:0 0 4px;
-  font-weight:900;
-}
+h1{font-size:34px;line-height:1;margin:0 0 4px;font-weight:900}
 .sub{margin:0 0 22px;color:#4d4740}
 .tabs{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 16px}
 .tab{
@@ -54,25 +48,11 @@ h1{
   padding:20px;
   margin-bottom:32px;
 }
-h2{
-  font-family:Arial,Helvetica,sans-serif;
-  font-size:20px;
-  margin:0 0 10px;
-}
-h3{
-  font-family:Arial,Helvetica,sans-serif;
-  font-size:18px;
-  margin:0 0 12px;
-}
+h2{font-size:20px;margin:0 0 10px}
+h3{font-size:18px;margin:0 0 12px}
 .lead{color:#333;margin:0 0 8px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.field label{
-  display:block;
-  font-weight:800;
-  color:#514b43;
-  font-size:15px;
-  margin-bottom:5px;
-}
+.field label{display:block;font-weight:800;color:#514b43;font-size:15px;margin-bottom:5px}
 input,select,textarea{
   width:100%;
   height:44px;
@@ -81,7 +61,7 @@ input,select,textarea{
   background:white;
   padding:10px 13px;
   font-size:16px;
-  font-family:Arial,Helvetica,sans-serif;
+  font-family:Tahoma,Arial,sans-serif;
 }
 textarea{height:82px;resize:vertical}
 .full{grid-column:1/-1}
@@ -95,23 +75,15 @@ button{
   font-weight:900;
   font-size:16px;
   cursor:pointer;
+  font-family:Tahoma,Arial,sans-serif;
 }
+button:disabled{cursor:not-allowed;opacity:.65}
 .gold{background:var(--gold2);border:0}
 .btnrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .checks{margin:14px 0 4px}
 .checks b{display:block;color:#514b43;margin-bottom:5px}
-.checks label{
-  font-weight:800;
-  margin-right:20px;
-  white-space:nowrap;
-}
-.checks input{
-  width:20px;
-  height:20px;
-  vertical-align:middle;
-  margin:0 6px 0 0;
-  accent-color:#111;
-}
+.checks label{font-weight:800;margin-right:20px;white-space:nowrap}
+.checks input{width:20px;height:20px;vertical-align:middle;margin:0 6px 0 0;accent-color:#111}
 .logoRow{display:flex;gap:12px;align-items:center}
 .logoBox{
   width:88px;
@@ -122,55 +94,50 @@ button{
   align-items:center;
   justify-content:center;
   overflow:hidden;
+  color:#8b7b4a;
+  font-size:13px;
+  font-weight:900;
 }
-.logoBox svg{width:62px}
 .logoBox img{width:100%;height:100%;object-fit:contain;background:var(--soft)}
 .billing{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
-.billingBox{
-  border:1px dashed var(--line);
-  border-radius:16px;
-  background:#fffdf8;
-  padding:15px;
-}
-.billingBox b{font-family:Arial,Helvetica,sans-serif;font-size:18px}
+.billingBox{border:1px dashed var(--line);border-radius:16px;background:#fffdf8;padding:15px}
+.billingBox b{font-size:18px}
 .billingBox p{margin:6px 0 8px;color:#5b554c}
 .channels{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .channel{
   border:1px solid var(--line);
-  border-left:5px solid #2d8b60;
+  border-left:5px solid #9b9488;
   border-radius:20px;
   background:#fffdf8;
   padding:24px 26px;
 }
+.channel.connected{border-left-color:#2d8b60}
 .channel h3{font-size:20px;color:#4b4b4b}
 .pill{
   display:inline-block;
-  background:#d8f2df;
-  color:#087345;
+  background:#eee4d1;
+  color:#6b6254;
   border-radius:999px;
   padding:3px 9px;
   font-weight:800;
   font-size:14px;
 }
-.disabled{
-  background:#e9dfcf;
-  color:#9b9488;
-  border:1px solid #d8ccb5;
-}
+.connected .pill{background:#d8f2df;color:#087345}
+.disabled{background:#e9dfcf;color:#9b9488;border:1px solid #d8ccb5}
 .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:14px}
-.sq{
-  display:inline-block;
-  width:18px;
-  height:18px;
-  border:1px solid var(--line);
-  border-radius:4px;
-  vertical-align:middle;
-  margin-right:5px;
-}
+.sq{display:inline-block;width:18px;height:18px;border:1px solid var(--line);border-radius:4px;vertical-align:middle;margin-right:5px}
 .status{min-height:22px;margin-top:10px;color:#555}
 .ok{color:var(--ok)}
 .bad{color:#b42318}
 .warn{color:#9a6700}
+.notice{
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#fff8c5;
+  padding:12px 14px;
+  margin:0 0 16px;
+  display:none;
+}
 @media(max-width:800px){
   .grid2,.billing,.channels{grid-template-columns:1fr}
   .full{grid-column:auto}
@@ -181,7 +148,8 @@ button{
 <body>
 <div class="wrap">
   <h1>Configuración</h1>
-  <p class="sub">XelerIA</p>
+  <p class="sub">XelerIA · <span id="tenantLabel">sin tenant cargado</span></p>
+
 
   <nav class="tabs">
     <a class="tab" href="#opciones">Opciones del usuario</a>
@@ -197,19 +165,13 @@ button{
     <div class="grid2">
       <div class="field">
         <label>Nombre visible</label>
-        <input id="display_name" value="Planeta Casa">
+        <input id="display_name" placeholder="Nombre del comercio">
       </div>
 
       <div class="field">
         <label>Logo del comercio</label>
         <div class="logoRow">
-          <div class="logoBox" id="logo_preview">
-            <svg viewBox="0 0 100 100" fill="none">
-              <path d="M12 36 50 17l38 19v44H12V36Z" stroke="white" stroke-width="7"/>
-              <text x="51" y="61" text-anchor="middle" font-size="11" fill="#8b7b4a" font-family="Arial">PLANETA</text>
-              <text x="51" y="73" text-anchor="middle" font-size="11" fill="#8b7b4a" font-family="Arial">CASA</text>
-            </svg>
-          </div>
+          <div class="logoBox" id="logo_preview">LOGO</div>
           <input id="logo_file" type="file" accept="image/png,image/jpeg,image/webp" hidden>
           <input id="logo_data" type="hidden">
           <button onclick="logo_file.click()">Subir logo</button>
@@ -219,8 +181,8 @@ button{
 
     <div class="checks">
       <b>Facturación automática por canal</b>
-      <label><input id="auto_ml" type="checkbox" checked> Emitir factura automática para ventas Mercado Libre</label>
-      <label><input id="auto_tn" type="checkbox" checked> Emitir factura automática para ventas Tienda Nube</label>
+      <label><input id="auto_ml" type="checkbox"> Emitir factura automática para ventas Mercado Libre</label>
+      <label><input id="auto_tn" type="checkbox"> Emitir factura automática para ventas Tienda Nube</label>
     </div>
 
     <div class="btnrow">
@@ -240,11 +202,12 @@ button{
       </div>
       <div class="field">
         <label>Razón social</label>
-        <input id="razon">
+        <input id="razon" placeholder="Razón social">
       </div>
       <div class="field">
         <label>Condición IVA</label>
         <select id="iva">
+          <option value="">Seleccionar</option>
           <option>Responsable Inscripto</option>
           <option>Monotributo</option>
           <option>Exento</option>
@@ -257,7 +220,7 @@ button{
       </div>
       <div class="field full">
         <label>Domicilio fiscal</label>
-        <input id="domicilio">
+        <input id="domicilio" placeholder="Domicilio fiscal">
       </div>
       <div class="field full">
         <label>Observaciones internas</label>
@@ -277,17 +240,17 @@ button{
     <div class="billing">
       <div class="billingBox">
         <b>Plan actual</b>
-        <p>Standard</p>
+        <p id="planActual">Sin configurar</p>
       </div>
       <div class="billingBox">
         <b>Pago Mercado Pago</b>
         <p>Botón reservado para pago.</p>
-        <button class="gold">Pagar con Mercado Pago</button>
+        <button class="gold" disabled>Pagar con Mercado Pago</button>
       </div>
       <div class="billingBox">
         <b>Facturas XelerIA</b>
         <p>Descarga de facturas emitidas por el uso de la app.</p>
-        <button>Ver facturas</button>
+        <button disabled>Ver facturas</button>
       </div>
     </div>
   </section>
@@ -297,21 +260,21 @@ button{
     <p class="lead">XelerIA revisa tus canales y te muestra qué cambios conviene guardar.</p>
 
     <div class="channels">
-      <div class="channel">
+      <div class="channel" id="ml_card">
         <h3>Mercado Libre</h3>
-        <p>Estado: <span class="pill">conectado</span> <span id="ml_label">PLANETACASA</span></p>
-        <button class="disabled" disabled>ML conectado</button>
+        <p>Estado: <span class="pill" id="ml_state">no conectado</span> <span id="ml_label"></span></p>
+        <button id="ml_button" onclick="connectChannel('ml')">Conectar ML</button>
       </div>
-      <div class="channel">
+      <div class="channel" id="tn_card">
         <h3>Tienda Nube</h3>
-        <p>Estado: <span class="pill">conectado</span> <span id="tn_label">Planeta Casa</span></p>
-        <button class="disabled" disabled>TN conectado</button>
+        <p>Estado: <span class="pill" id="tn_state">no conectado</span> <span id="tn_label"></span></p>
+        <button id="tn_button" onclick="connectChannel('tn')">Conectar TN</button>
       </div>
     </div>
 
     <div class="btnrow" style="margin-top:30px">
-      <button>Configurar desde ML</button>
-      <button>Configurar desde TN</button>
+      <button disabled>Configurar desde ML</button>
+      <button disabled>Configurar desde TN</button>
     </div>
 
     <div class="legend">
@@ -320,7 +283,7 @@ button{
       <span><i class="sq" style="background:#fff8c5"></i>Necesita revisión</span>
     </div>
 
-    <p class="lead" style="margin-top:14px">La configuración está cerrada. Tocá “Configurar inventario” para empezar.</p>
+    <p class="lead" style="margin-top:14px">La configuración está pendiente. Conectá tus canales para empezar.</p>
   </section>
 </div>
 
@@ -328,64 +291,156 @@ button{
 const API='https://api.xeleria.com.ar/api';
 const DEFAULT='00000000-0000-0000-0000-000000000001';
 const qp=new URLSearchParams(location.search);
-const TENANT=qp.get('tenant_id')||qp.get('tenant')||localStorage.getItem('xeleria_tenant_id')||DEFAULT;
-localStorage.setItem('xeleria_tenant_id',TENANT);
+
+if(qp.get('reset')==='1'){
+  localStorage.removeItem('xeleria_tenant_id');
+  localStorage.removeItem('xeleria_session');
+  localStorage.removeItem('xeleria_owner_key');
+}
+
+const incomingTenant=qp.get('tenant_id')||qp.get('tenant')||'';
+if(incomingTenant && incomingTenant!==DEFAULT){
+  localStorage.setItem('xeleria_tenant_id',incomingTenant);
+}
+
+const storedTenant=localStorage.getItem('xeleria_tenant_id')||'';
+const TENANT=(storedTenant && storedTenant!==DEFAULT) ? storedTenant : '';
+
+function redirectToLogin(){
+  const next=encodeURIComponent(location.pathname.split('/').pop() || 'configuracion.html');
+  location.replace(`inicio.html?next=${next}`);
+}
+
+if(!TENANT){
+  redirectToLogin();
+}
 
 function el(id){return document.getElementById(id)}
 function msg(id,t,c=''){let x=el(id);if(x){x.textContent=t;x.className=c}}
-function cleanCuit(){el('cuit').value=(el('cuit').value||'').replace(/\D/g,'').slice(0,11);return el('cuit').value}
-function checkCuit(){let d=cleanCuit();if(d.length===11)msg('fiscal_status',' CUIT revisado.','ok');else msg('fiscal_status',' CUIT incompleto.','bad')}
+function hasTenant(){return !!TENANT}
+
+function cleanCuit(){
+  el('cuit').value=(el('cuit').value||'').replace(/\D/g,'').slice(0,11);
+  return el('cuit').value
+}
+
+function checkCuit(){
+  let d=cleanCuit();
+  if(d.length===11)msg('fiscal_status',' CUIT revisado.','ok');
+  else msg('fiscal_status',' CUIT incompleto.','bad')
+}
+
+function connectChannel(ch){
+  if(!hasTenant()){
+    alert('Primero entrá desde inicio.html para generar un tenant real.');
+    return;
+  }
+  const ownerKey=localStorage.getItem('xeleria_owner_key')||'';
+  if(!ownerKey){
+    alert('Falta el código beta privado desde inicio.html.');
+    return;
+  }
+  location.href=`${API}/oauth/${ch}/start?owner_key=${encodeURIComponent(ownerKey)}&tenant_id=${encodeURIComponent(TENANT)}`;
+}
 
 function data(){
   return {
-    display_name:el('display_name').value,
+    display_name:el('display_name').value.trim() || null,
     logo_png_500_base64:el('logo_data').value||null,
     auto_invoice_ml:el('auto_ml').checked,
     auto_invoice_tn:el('auto_tn').checked,
-    fiscal_cuit:cleanCuit(),
-    fiscal_razon_social:el('razon').value,
-    fiscal_iva_condition:el('iva').value,
+    fiscal_cuit:cleanCuit() || null,
+    fiscal_razon_social:el('razon').value.trim() || null,
+    fiscal_iva_condition:el('iva').value || null,
     fiscal_pos_arca:el('pto').value?Number(el('pto').value):null,
-    fiscal_address:el('domicilio').value,
-    fiscal_internal_notes:el('notas').value,
-    xeleria_plan:'standard',
-    ml_connected:true,
-    ml_account_label:el('ml_label').textContent,
-    tn_connected:true,
-    tn_account_label:el('tn_label').textContent,
+    fiscal_address:el('domicilio').value.trim() || null,
+    fiscal_internal_notes:el('notas').value.trim() || null,
+    xeleria_plan:el('planActual').textContent==='Sin configurar' ? 'standard' : el('planActual').textContent.toLowerCase(),
+    ml_connected:el('ml_card').classList.contains('connected'),
+    ml_account_label:el('ml_label').textContent.trim() || null,
+    tn_connected:el('tn_card').classList.contains('connected'),
+    tn_account_label:el('tn_label').textContent.trim() || null,
     inventory_config_locked:true,
     settings:{}
   }
 }
 
+function setChannel(channel,connected,label){
+  const card=el(channel+'_card');
+  const state=el(channel+'_state');
+  const labelEl=el(channel+'_label');
+  const button=el(channel+'_button');
+
+  if(connected){
+    card.classList.add('connected');
+    state.textContent='conectado';
+    labelEl.textContent=label||'';
+    button.textContent=channel.toUpperCase()+' conectado';
+    button.className='disabled';
+    button.disabled=true;
+  }else{
+    card.classList.remove('connected');
+    state.textContent='no conectado';
+    labelEl.textContent='';
+    button.textContent='Conectar '+channel.toUpperCase();
+    button.className='';
+    button.disabled=false;
+  }
+}
+
 function apply(s){
   if(!s)return;
+
   el('display_name').value=s.display_name||'';
   el('auto_ml').checked=!!s.auto_invoice_ml;
   el('auto_tn').checked=!!s.auto_invoice_tn;
   el('cuit').value=s.fiscal_cuit||'';
   el('razon').value=s.fiscal_razon_social||'';
-  el('iva').value=s.fiscal_iva_condition||'Responsable Inscripto';
+  el('iva').value=s.fiscal_iva_condition||'';
   el('pto').value=s.fiscal_pos_arca||'';
   el('domicilio').value=s.fiscal_address||'';
   el('notas').value=s.fiscal_internal_notes||'';
+  el('planActual').textContent=s.xeleria_plan ? s.xeleria_plan.charAt(0).toUpperCase()+s.xeleria_plan.slice(1) : 'Sin configurar';
+
   if(s.logo_png_500_base64){
     el('logo_data').value=s.logo_png_500_base64;
     el('logo_preview').innerHTML='<img alt="Logo" src="'+s.logo_png_500_base64+'">';
+  }else{
+    el('logo_data').value='';
+    el('logo_preview').textContent='LOGO';
   }
-  if(s.ml_account_label)el('ml_label').textContent=s.ml_account_label;
-  if(s.tn_account_label)el('tn_label').textContent=s.tn_account_label;
+
+  setChannel('ml',!!s.ml_connected,s.ml_account_label);
+  setChannel('tn',!!s.tn_connected,s.tn_account_label);
 }
 
 async function load(){
+  if(!hasTenant()){
+    redirectToLogin();
+    return;
+  }
+
+  el('tenantLabel').textContent=TENANT;
+
   try{
     let r=await fetch(`${API}/tenant-settings/${TENANT}`);
     let j=await r.json();
-    if(j.ok)apply(j.settings);
-  }catch(e){}
+    if(!j.ok){
+      redirectToLogin();
+      return;
+    }
+    if(j.settings)apply(j.settings);
+  }catch(e){
+    redirectToLogin();
+  }
 }
 
 async function saveSettings(id){
+  if(!hasTenant()){
+    redirectToLogin();
+    return;
+  }
+
   try{
     msg(id,'Guardando...','warn');
     let r=await fetch(`${API}/tenant-settings/${TENANT}`,{
@@ -405,6 +460,7 @@ async function saveSettings(id){
 el('logo_file').addEventListener('change',ev=>{
   let f=ev.target.files[0];
   if(!f)return;
+
   let rd=new FileReader();
   rd.onload=()=>{
     let img=new Image();
@@ -425,6 +481,8 @@ el('logo_file').addEventListener('change',ev=>{
   rd.readAsDataURL(f);
 });
 
+setChannel('ml',false,null);
+setChannel('tn',false,null);
 load();
 </script>
 </body>
