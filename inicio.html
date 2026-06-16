@@ -237,18 +237,54 @@
     const ownerKey = () => ownerKeyInput.value.trim();
     const setStatus = msg => statusBox.textContent = msg || '';
 
-    function startChannel(channel) {
+    async function ensureTenant() {
+      const existing = localStorage.getItem('xeleria_tenant_id') || '';
+
+      if (existing && existing !== '00000000-0000-0000-0000-000000000001') {
+        return existing;
+      }
+
+      const response = await fetch(`${API_BASE}/tenant/bootstrap`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          owner_key: ownerKey(),
+          display_name: '',
+          next: NEXT_PAGE
+        })
+      });
+
+      const data = await response.json();
+
+      if (!data.ok) {
+        throw new Error(data.error || 'No se pudo generar el tenant.');
+      }
+
+      const tenantId = data.tenant && data.tenant.id;
+
+      if (!tenantId) {
+        throw new Error('El backend no devolvió tenant_id.');
+      }
+
+      localStorage.setItem('xeleria_tenant_id', tenantId);
+      return tenantId;
+    }
+
+    async function startChannel(channel) {
       try {
         if (!ownerKey()) {
           throw new Error('Cargá el código beta privado.');
         }
 
         localStorage.setItem('xeleria_owner_key', ownerKey());
-        localStorage.removeItem('xeleria_tenant_id');
+
+        setStatus('Creando espacio de trabajo…');
+
+        const tenantId = await ensureTenant();
 
         setStatus('Redirigiendo…');
 
-        location.href = `${API_BASE}/oauth/${channel}/start?owner_key=${encodeURIComponent(ownerKey())}&next=${encodeURIComponent(NEXT_PAGE)}`;
+        location.href = `${API_BASE}/oauth/${channel}/start?owner_key=${encodeURIComponent(ownerKey())}&tenant_id=${encodeURIComponent(tenantId)}&next=${encodeURIComponent(NEXT_PAGE)}`;
       } catch (error) {
         setStatus('');
         alert(error.message || 'No se pudo iniciar.');
