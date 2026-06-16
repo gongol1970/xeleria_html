@@ -5,9 +5,9 @@
 <script src="./xeleria_auth_guard.js"></script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>XelerIA · Planeta Casa</title>
+<title>XelerIA · ERP</title>
 <!-- HUBIAX_INVENTORY_COMBOS_UI_V1_47 -->
-<link rel="icon" href="./favicon_nexia.png?v=2" />
+<link rel="icon" href="./favicon_xeleria.png?v=1" />
 <style>
 :root{--bg:#f2f0eb;--surface:#fffdf8;--surface2:#f8f4ea;--ink:#171717;--muted:#6b665c;--line:#ded4be;--brand:#dcc58f;--brand2:#cdb272;--dark:#101010;--ok:#067647;--bad:#b42318;--warn:#b54708;--shadow:0 10px 30px rgba(17,17,17,.08);--radius:18px}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,Arial,sans-serif;font-size:14px}.app{display:flex;min-height:100vh}
@@ -101,7 +101,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 <body>
 <div class="app">
 <aside>
-<div class="brand"><div class="brandTop"><span class="appMark"><img src="./favicon_nexia.png?v=2" alt="XelerIA"></span><div class="brandName">XelerIA</div><div class="brandTenantLogo" id="brandTenantLogo">LOGO</div><button class="mobileMenuToggle" type="button" onclick="toggleMobileMenu()">☰</button></div><button id="globalAlertBell" class="globalAlertBell hidden" title="Novedades" onclick="openFirstAlertView()">🔔<span id="globalAlertBadge">0</span></button><p>Planeta Casa · operación diaria</p></div>
+<div class="brand"><div class="brandTop"><span class="appMark"><img src="./favicon_xeleria.png?v=1" alt="XelerIA"></span><div class="brandName">XelerIA</div><div class="brandTenantLogo" id="brandTenantLogo">LOGO</div><button class="mobileMenuToggle" type="button" onclick="toggleMobileMenu()">☰</button></div><button id="globalAlertBell" class="globalAlertBell hidden" title="Novedades" onclick="openFirstAlertView()">🔔<span id="globalAlertBadge">0</span></button><p>XelerIA · operación diaria</p></div>
 <nav>
 <button class="navBtn active" data-view="inicio">⌂ Inicio / Dashboard</button><button class="navBtn" data-view="metricas">◈ Métricas</button>
 <div class="navTitle">Mercado Libre</div><div class="sub"><button class="navBtn" data-view="ml-publicaciones">Publicaciones</button><button class="navBtn" data-view="ml-preguntas">Preguntas</button><button class="navBtn" data-view="ml-ventas">Ventas</button><button class="navBtn" data-view="ml-clientes">Clientes</button></div>
@@ -109,11 +109,11 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 
 <div class="navTitle">Local físico</div><div class="sub"><button class="navBtn" data-view="arca-manual">Emitir comprobante manual</button></div>
 <div class="navTitle">Gestión</div><div class="sub"><div class="navParent">Inventario</div><div class="sub2"><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="combos">Combos / Kits</button><button class="navBtn" data-view="full-inbound">Envío a Full</button><button class="navBtn" data-view="movimientos">Movimientos de stock</button></div><button class="navBtn" data-view="clientes">Clientes ML / TN</button><button class="navBtn" data-view="base-conocimiento">Base de Conocimiento IA</button><button class="navBtn" data-view="arca-reportes">ARCA reportes</button></div>
-<div class="navTitle">Sistema</div><div class="sub"><button class="navBtn" data-view="configuracion">Configuración</button></div>
+<div class="navTitle">Sistema</div><div class="sub"><button class="navBtn" type="button" onclick="location.href='configuracion.html'">Configuración</button></div>
 </nav><div class="sidebarFoot">Frontend: 1.79<br>Backend: <span id="footBackendVer">?</span></div>
 </aside>
 <main>
-<div class="topbar"><div><h2 id="pageTitle">Inicio</h2><div class="crumb" id="pageCrumb">Panel operativo</div></div><div class="tokenBox"><div><label>API</label><input id="apiUrl" value="https://planeta-casa-erp.onrender.com"></div><div><label>ADMIN_TOKEN</label><input id="token" type="password" placeholder="Token"></div><button class="primary" onclick="saveSettings()">Guardar</button><button class="secondary" onclick="health()">Probar</button></div></div>
+<div class="topbar"><div><h2 id="pageTitle">Inicio</h2><div class="crumb" id="pageCrumb">Panel operativo</div></div><div class="tokenBox"><div><label>API</label><input id="apiUrl" value="https://api.xeleria.com.ar"></div><div><label>ADMIN_TOKEN</label><input id="token" type="password" placeholder="Token"></div><button class="primary" onclick="saveSettings()">Guardar</button><button class="secondary" onclick="health()">Probar</button></div></div>
 <section id="inicio" class="view active">
   <div class="dashHero">
     <div class="dashStatusLine">
@@ -260,11 +260,11 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 
 <section id="fallas" class="view"><div class="card"><h3>Gestión · Monitor de sync_jobs</h3><p>Solo monitoreo. La ejecución de jobs queda a cargo del autosync del ERP.</p><div class="grid"><div class="col-2"><label>Cantidad visible</label><select id="jobsLimit" class="limitSelect" onchange="loadSyncJobs(0,true)"><option>20</option><option>50</option><option selected>100</option><option>200</option></select></div><div class="col-2"><label>&nbsp;</label><button onclick="loadSyncJobs(0,true)">Actualizar</button></div></div><div id="jobsStatus" class="status"></div><div id="jobsTable" class="tableWrap" style="margin-top:12px"></div><div id="jobsPager" class="btnrow jobsPager"></div><pre id="jobsOut" class="hidden"></pre></div></section>
 
-<section id="configuracion" class="view"><div class="card connectionSettings"><h3>Conexión ERP</h3><p>API y ADMIN_TOKEN quedan acá para no ocupar espacio operativo.</p><div class="connGrid"><div><label>API</label><input id="cfgApiUrl" value="https://planeta-casa-erp.onrender.com"></div><div><label>ADMIN_TOKEN</label><input id="cfgToken" type="password" placeholder="Token"></div><button class="primary" onclick="saveSettingsFromConfig()">Guardar</button><button class="secondary" onclick="health()">Probar</button></div><div id="connStatus" class="status"></div></div><div class="card"><h3>Configuración</h3><p>Preparado para SaaS: empresa, datos fiscales, logo, preferencias de factura y ARCA. Por ahora guarda localmente el logo en este navegador; después lo conectamos a tabla <span class="mono">erp_company_settings</span>.</p><div class="grid"><div class="col-6"><label>Nombre fantasía</label><input id="cfgNombreFantasia" placeholder="Planeta Casa"></div><div class="col-6"><label>Razón social</label><input id="cfgRazonSocial" placeholder="La Salvia Gonzalo Martin"></div><div class="col-3"><label>CUIT</label><input id="cfgCuit" placeholder="23214771659"></div><div class="col-3"><label>Condición IVA</label><input id="cfgCondIva" placeholder="Responsable Inscripto"></div><div class="col-3"><label>Punto venta ARCA</label><input id="cfgPtoVta" placeholder="0006"></div><div class="col-3"><label>Ambiente ARCA</label><select id="cfgArcaEnv"><option value="homologacion">Homologación</option><option value="produccion">Producción</option></select></div><div class="col-12"><label>Domicilio comercial</label><input id="cfgDomicilio" placeholder="Domicilio fiscal/comercial"></div></div><div class="dividerLine"></div><div class="grid"><div class="col-6"><h3>Logo / branding</h3><label>URL pública del logo</label><input id="cfgLogoUrl" placeholder="https://.../logo.png" oninput="previewConfigLogo()"><div class="btnrow" style="margin-top:10px"><label class="btn secondary" style="margin:0;text-transform:none;letter-spacing:0;color:#111">Cargar archivo<input id="cfgLogoFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" style="display:none" onchange="loadLogoFile(event)"></label><button class="secondary" onclick="clearLogoConfig()">Quitar logo</button></div><p class="configHint">Cuando hay logo, se muestra como logo de la empresa/tenant en el menú. XelerIA queda como marca de la app; el logo de la empresa queda separado para factura y operación.</p></div><div class="col-6"><label>Vista previa</label><div id="cfgLogoPreview" class="configLogoPreview"><div class="logoPlaceholder">LOGO</div></div><div id="cfgStatus" class="status"></div></div></div><div class="dividerLine"></div><div class="grid"><div class="col-4"><label>Facturación automática</label><select id="cfgAutoInvoice"><option value="false">OFF</option><option value="true">ON</option></select></div><div class="col-4"><label>Concepto default</label><select id="cfgConcepto"><option>Productos</option><option>Servicios</option><option>Productos y Servicios</option></select></div><div class="col-4"><label>Logo factura</label><input id="cfgLogoFactura" placeholder="Usar mismo logo del ERP" readonly></div></div><div class="dividerLine"></div><div class="btnrow" style="justify-content:flex-end"><button class="secondary" onclick="health()">Probar conexión</button><button class="primary" onclick="saveConfig()">Guardar configuración</button></div></div></section>
+<!-- Configuración vieja removida: usar configuracion.html -->
 </main></div>
 <div id="erpBusyOverlay" class="erpBusyOverlay"><div class="erpBusyBox"><div class="erpSpinner"></div><div id="erpBusyTitle" class="erpBusyTitle">Procesando...</div><div id="erpBusyMsg" class="erpBusyMsg">No cierres esta pantalla.</div></div></div>
 <script>
-let state={api:'https://planeta-casa-erp.onrender.com',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[],comboItems:[],pendingBundleDraft:null};let timers={};
+let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[],comboItems:[],pendingBundleDraft:null};let timers={};
 
 const ALERT_KEYS={
   ml_questions:{view:'ml-preguntas',label:'Preguntas ML'},
@@ -402,7 +402,7 @@ function showView(id){
     cleanTitle=(clone.textContent||'').replace(/\s+\d+\s*$/,'').trim()||'ERP';
   }
   qs('pageTitle').textContent=cleanTitle;
-  qs('pageCrumb').textContent='Planeta Casa · '+cleanTitle;
+  qs('pageCrumb').textContent='XelerIA · '+cleanTitle;
   if(id==='inicio')loadDashboard();
   if(id==='dashboard')loadDashboard();
   if(id==='movimientos')loadMovements();
@@ -543,6 +543,16 @@ function dashFailureRows(f){
 async function loadDashboard(force=false){
   if(loadDashboard.loading&&!force)return;
   loadDashboard.loading=true;
+
+  if(!token()){
+    dashSet('dashBackendVer','?');
+    dashSet('footBackendVer','?');
+    if(qs('stErp'))qs('stErp').textContent='Tenant OK';
+    setStatus('homeStatus','Dashboard operativo pendiente de migrar a tenant. OAuth y sesión OK.', 'warn');
+    loadDashboard.loading=false;
+    return;
+  }
+
   setStatus('homeStatus','Actualizando dashboard...');
   try{
     await refreshShippingForDashboard();
