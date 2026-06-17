@@ -76,7 +76,7 @@
       return;
     }
     if(batch&&!confirm('Hay una grilla pendiente. Podés salir a conectar y al volver se intentará recuperar.\n\nContinuar?'))return;
-    const url=API+'/oauth/'+encodeURIComponent(ch)+'/start?owner_key='+encodeURIComponent(ownerKey)+'&tenant_id='+encodeURIComponent(tenant())+'&next='+encodeURIComponent('configuracion.html');
+    const url=API+'/oauth/'+encodeURIComponent(ch)+'/start?owner_key='+encodeURIComponent(ownerKey)+'&tenant_id='+encodeURIComponent(tenant())+'&next='+encodeURIComponent('admin_erp.html');
     const win=window.open(url,'_blank','noopener,noreferrer');
     if(!win){
       alert('El navegador bloqueó la pestaña nueva. Abrimos la autenticación en esta pestaña.');
