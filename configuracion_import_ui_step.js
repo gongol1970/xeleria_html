@@ -3,7 +3,7 @@
   const D='00000000-0000-0000-0000-000000000001';
   const BK='xeleria_import_batch_id_v3';
   const CK='xeleria_import_channel_v3';
-  let busy=false,batch=localStorage.getItem(BK)||'',chan=localStorage.getItem(CK)||'ML',gridRows=[];
+  let busy=false,batch='',chan='ML',gridRows=[];
 
   function q(s){return document.querySelector(s)}
   function all(){const inv=q('#inventario');return inv?Array.from(inv.querySelectorAll('button')):[]}
@@ -168,17 +168,19 @@
   async function begin(ch){
     if(busy)return;
     if(!ok())return alert('Falta tenant real');
-    chan=ch;localStorage.setItem(CK,ch);paint(ch,true);
+    localStorage.removeItem(BK);
+    localStorage.removeItem(CK);
+    batch='';
+    chan=ch;
+    paint(ch,true);
     try{
-      if(!batch){
-        msg('Iniciando '+ch+'...','warn');
-        let j=await fetchJsonRetry(A+'/inventory/import/start-step',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tenant_id:tid(),channel:ch})},'Iniciando '+ch,8);
-        batch=j.batch_id;localStorage.setItem(BK,batch);
-      }
+      msg('Iniciando '+ch+'...','warn');
+      let j=await fetchJsonRetry(A+'/inventory/import/start-step',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tenant_id:tid(),channel:ch})},'Iniciando '+ch,8);
+      batch=j.batch_id;
       await loop(ch);
     }catch(e){
-      if(String(e.message||'').includes('Batch no encontrado')){localStorage.removeItem(BK);localStorage.removeItem(CK);batch=''}
-      msg((e.message||'Error')+' · podés reintentar desde el último avance','bad');
+      batch='';
+      msg((e.message||'Error')+' · reintentá Importar '+ch,'bad');
     }finally{paint(ch,false)}
   }
 
@@ -196,6 +198,8 @@
   window.xeleriaOpenImportGrid=openGrid;
   function boot(){
     hideOldPhrase();
+    localStorage.removeItem(BK);
+    localStorage.removeItem(CK);
     let m=mlb(),n=tnb();
     if(m)m.onclick=function(){begin('ML')};
     if(n)n.onclick=function(){begin('TN')};
