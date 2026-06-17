@@ -3,7 +3,8 @@
   const D='00000000-0000-0000-0000-000000000001';
   const BK='xeleria_import_batch_id_v3';
   const CK='xeleria_import_channel_v3';
-  let busy=false,batch=localStorage.getItem(BK)||'',chan=localStorage.getItem(CK)||'ML';
+  let busy=false,batch=localStorage.getItem(BK)||'',chan=localStorage.getItem(CK)||'ML',gridRows=[];
+
   function q(s){return document.querySelector(s)}
   function all(){const inv=q('#inventario');return inv?Array.from(inv.querySelectorAll('button')):[]}
   function mlb(){return all().find(b=>/ML/i.test(b.textContent||'')&&!/conectado|Conectar/i.test(b.textContent||''))}
@@ -11,15 +12,168 @@
   function tid(){return localStorage.getItem('xeleria_tenant_id')||''}
   function ok(){const x=tid();return x&&x!==D}
   function msg(x,c){let e=q('#import_status');if(e){e.textContent=x;e.className=c||'status'}}
+  function modalMsg(x,c){let e=q('#xi_grid_status');if(e){e.textContent=x;e.className=c||'status'}}
   function connected(ch){return q('#'+ch.toLowerCase()+'_card')?.classList.contains('connected')}
-  function paint(ch,on){busy=on;const m=mlb(),n=tnb();if(m){m.textContent=on&&ch==='ML'?'Importando ML...':(batch&&chan==='ML'?'Continuar ML':'Importar ML');m.disabled=on||!connected('ML')}if(n){n.textContent=on&&ch==='TN'?'Importando TN...':'Importar TN';n.disabled=on||!connected('TN')}}
-  function modal(){let m=q('#xi_grid_modal');if(m)return m;let d=document.createElement('div');d.id='xi_grid_modal';d.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99999;display:none;padding:24px;overflow:auto';d.innerHTML='<div style="background:#fffdf8;border-radius:18px;padding:18px;max-width:1200px;margin:auto"><button id="xi_grid_close">Cerrar</button><h3>Grilla importada</h3><div id="xi_grid_status"></div><div style="overflow:auto"><table style="width:100%;border-collapse:collapse;font-size:14px"><thead><tr><th>SKU</th><th>Tienda Nube</th><th>ML</th></tr></thead><tbody id="xi_grid_body"></tbody></table></div></div>';document.body.appendChild(d);q('#xi_grid_close').onclick=()=>d.style.display='none';return d}
+  function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
   function safe(s){return String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
-  function cell(c){if(!c)return 'Sin publicación';return '<b>'+safe(c.title||'')+'</b><br><small>'+safe(c.publication||'')+(c.variant?' / '+safe(c.variant):'')+'<br>'+safe(c.compare_status||'')+'</small>'}
-  async function openGrid(id){let m=modal();q('#xi_grid_status').textContent='Cargando grilla...';m.style.display='block';let r=await fetch(A+'/inventory/import/batches/'+id+'/grid?tenant_id='+encodeURIComponent(tid()));let j=await r.json();if(!j.ok)throw new Error(j.error||'Error grilla');let tb=q('#xi_grid_body');tb.innerHTML='';for(const row of (j.grid||[])){let tr=document.createElement('tr');tr.innerHTML='<td><b>'+safe(row.sku||'SIN SKU')+'</b></td><td>'+cell(row.tn)+'</td><td>'+cell(row.ml)+'</td>';tb.appendChild(tr)}q('#xi_grid_status').textContent=(j.grid||[]).length+' filas agrupadas'}
-  async function begin(ch){if(busy)return;if(!ok())return alert('Falta tenant real');if(ch!=='ML')return alert('Primero dejamos ML perfecto; TN queda en el próximo paso.');chan=ch;localStorage.setItem(CK,ch);paint(ch,true);try{if(!batch){msg('Iniciando ML...','warn');let r=await fetch(A+'/inventory/import/start-step',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tenant_id:tid(),channel:ch})});let j=await r.json();if(!j.ok)throw new Error(j.error||'Error iniciando');batch=j.batch_id;localStorage.setItem(BK,batch)}await loop(ch)}catch(e){if(String(e.message||'').includes('Batch no encontrado')){localStorage.removeItem(BK);localStorage.removeItem(CK);batch=''}msg((e.message||'Error')+' · podés reintentar desde el último avance','bad')}finally{paint(ch,false)}}
-  async function loop(ch){let done=false,lastP=0,lastT='?',doneBatch=batch;while(!done){let s=await fetch(A+'/inventory/import/step',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tenant_id:tid(),batch_id:batch,limit:5})});let x=await s.json();if(!x.ok)throw new Error(x.error||'Error importando');done=!!x.done;lastP=x.processed||lastP;lastT=x.total||lastT;msg('Importando ML: '+lastP+' / '+lastT+' publicaciones','warn')}localStorage.removeItem(BK);localStorage.removeItem(CK);batch='';msg('ML importado. Abriendo grilla...','ok');await openGrid(doneBatch)}
+  function slug(s){return String(s??'').replace(/[^a-zA-Z0-9_-]/g,'_')||'SIN_SKU'}
+  function isTransient(e){return /Errno 11|Resource temporarily unavailable|temporarily unavailable|EAGAIN|Failed to fetch|NetworkError|Load failed/i.test(String(e?.message||e||''))}
+
+  function hideOldPhrase(){
+    const inv=q('#inventario');
+    if(!inv)return;
+    const p=inv.querySelector('h2 + p.lead');
+    if(p && /revisa tus canales/i.test(p.textContent||''))p.remove();
+  }
+
+  function paint(ch,on){
+    busy=on;
+    const m=mlb(),n=tnb();
+    if(m){m.textContent=on&&ch==='ML'?'Importando ML...':(batch&&chan==='ML'?'Continuar ML':'Importar ML');m.disabled=on||!connected('ML')}
+    if(n){n.textContent=on&&ch==='TN'?'Importando TN...':(batch&&chan==='TN'?'Continuar TN':'Importar TN');n.disabled=on||!connected('TN')}
+  }
+
+  async function fetchJsonRetry(url,opt,label,max=8){
+    let lastErr=null;
+    for(let i=1;i<=max;i++){
+      try{
+        const r=await fetch(url,opt);
+        const j=await r.json().catch(()=>({ok:false,error:'Respuesta no JSON'}));
+        if(!r.ok || !j.ok) throw new Error(j.error||j.detail||('HTTP '+r.status));
+        return j;
+      }catch(e){
+        lastErr=e;
+        if(!isTransient(e) || i===max)break;
+        const wait=Math.min(1200*i,5000);
+        msg(`${label}: servidor ocupado, reintento ${i}/${max-1}...`,'warn');
+        await sleep(wait);
+      }
+    }
+    throw lastErr||new Error(label+' falló');
+  }
+
+  function modal(){
+    let m=q('#xi_grid_modal');
+    if(m)return m;
+    let d=document.createElement('div');
+    d.id='xi_grid_modal';
+    d.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99999;display:none;padding:24px;overflow:auto';
+    d.innerHTML=`
+      <div style="background:#fffdf8;border-radius:18px;padding:18px;max-width:1250px;margin:auto;border:1px solid #ded4be">
+        <div style="display:flex;justify-content:space-between;gap:12px;align-items:start;margin-bottom:12px">
+          <div><h3 style="margin:0 0 4px">Grilla importada</h3><div id="xi_grid_status" class="status"></div></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button id="xi_grid_save" class="gold">Guardar selección en inventario real</button>
+            <button id="xi_grid_close">Cerrar</button>
+          </div>
+        </div>
+        <div style="overflow:auto;max-height:72vh">
+          <table class="importTable" style="min-width:1040px;width:100%;border-collapse:collapse;font-size:14px">
+            <thead><tr><th>SKU</th><th>Tienda Nube</th><th>Mercado Libre</th><th>Simple</th><th>Bundle</th></tr></thead>
+            <tbody id="xi_grid_body"></tbody>
+          </table>
+        </div>
+        <div style="font-size:12px;color:#5b554c;margin-top:8px">Simple/Bundle es global por SKU. No está encasillado por canal.</div>
+      </div>`;
+    document.body.appendChild(d);
+    q('#xi_grid_close').onclick=()=>d.style.display='none';
+    q('#xi_grid_save').onclick=saveBatch;
+    return d;
+  }
+
+  function cell(c){
+    if(!c)return '<span style="color:#8a8172;font-style:italic">Sin publicación</span>';
+    return '<b>'+safe(c.title||'')+'</b><br><small>'+safe(c.variant_title||'')+'<br>Publicación: '+safe(c.publication||'')+(c.variant?' / Variante: '+safe(c.variant):'')+'<br>'+safe(c.compare_status||'')+'</small>';
+  }
+
+  function rowType(row){
+    return (row?.tn?.bundle || row?.ml?.bundle) ? 'bundle' : 'simple';
+  }
+
+  function renderGrid(rows){
+    gridRows=rows||[];
+    let tb=q('#xi_grid_body');
+    tb.innerHTML='';
+    for(const row of gridRows){
+      const k=slug(row.sku||'SIN_SKU');
+      const type=rowType(row);
+      let tr=document.createElement('tr');
+      tr.className=row.row_status||'';
+      tr.innerHTML=`<td><b>${safe(row.sku||'SIN SKU')}</b></td><td>${cell(row.tn)}</td><td>${cell(row.ml)}</td><td style="text-align:center"><input style="width:18px;height:18px" type="radio" name="xi_type_${k}" value="simple" ${type==='simple'?'checked':''}></td><td style="text-align:center"><input style="width:18px;height:18px" type="radio" name="xi_type_${k}" value="bundle" ${type==='bundle'?'checked':''}></td>`;
+      tb.appendChild(tr);
+    }
+  }
+
+  function selected(){
+    const out=[];
+    for(const row of gridRows){
+      const k=slug(row.sku||'SIN_SKU');
+      const type=q(`input[name="xi_type_${k}"]:checked`)?.value||'simple';
+      for(const c of [row.tn,row.ml]){
+        if(c&&c.staging_id)out.push({staging_id:c.staging_id,item_type:type});
+      }
+    }
+    return out;
+  }
+
+  async function openGrid(id,ch){
+    let m=modal();
+    modalMsg('Cargando grilla...','warn');
+    m.style.display='block';
+    let j=await fetchJsonRetry(A+'/inventory/import/batches/'+id+'/grid?tenant_id='+encodeURIComponent(tid()),{},'Cargando grilla',5);
+    renderGrid(j.grid||[]);
+    modalMsg(`${ch||chan}: ${(j.grid||[]).length} SKUs agrupados`,'ok');
+  }
+
+  async function saveBatch(){
+    if(!batch)return modalMsg('No encontré batch activo.','bad');
+    try{
+      modalMsg('Guardando inventario real...','warn');
+      let j=await fetchJsonRetry(A+'/inventory/import/batches/'+batch+'/confirm',{
+        method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tenant_id:tid(),rows:selected()})
+      },'Guardando',4);
+      modalMsg(`Guardado. Items: ${j.saved_items||0}, publicaciones: ${j.saved_listings||0}`,'ok');
+      localStorage.removeItem(BK);localStorage.removeItem(CK);batch='';paint('',false);
+    }catch(e){modalMsg(e.message||'Error guardando','bad')}
+  }
+
+  async function begin(ch){
+    if(busy)return;
+    if(!ok())return alert('Falta tenant real');
+    chan=ch;localStorage.setItem(CK,ch);paint(ch,true);
+    try{
+      if(!batch){
+        msg('Iniciando '+ch+'...','warn');
+        let j=await fetchJsonRetry(A+'/inventory/import/start-step',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tenant_id:tid(),channel:ch})},'Iniciando '+ch,8);
+        batch=j.batch_id;localStorage.setItem(BK,batch);
+      }
+      await loop(ch);
+    }catch(e){
+      if(String(e.message||'').includes('Batch no encontrado')){localStorage.removeItem(BK);localStorage.removeItem(CK);batch=''}
+      msg((e.message||'Error')+' · podés reintentar desde el último avance','bad');
+    }finally{paint(ch,false)}
+  }
+
+  async function loop(ch){
+    let done=false,lastP=0,lastT='?',doneBatch=batch;
+    while(!done){
+      let x=await fetchJsonRetry(A+'/inventory/import/step',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tenant_id:tid(),batch_id:batch,limit:5})},'Importando '+ch,10);
+      done=!!x.done;lastP=x.processed||lastP;lastT=x.total||lastT;
+      msg('Importando '+ch+': '+lastP+' / '+lastT+' publicaciones','warn');
+    }
+    msg(ch+' importado. Abriendo grilla...','ok');
+    await openGrid(doneBatch,ch);
+  }
+
   window.xeleriaOpenImportGrid=openGrid;
-  function boot(){let m=mlb(),n=tnb();if(m)m.onclick=function(){begin('ML')};if(n)n.onclick=function(){begin('TN')};if(m&&!q('#import_status')){const s=document.createElement('span');s.id='import_status';s.className='status';m.parentElement.appendChild(s)}paint('',false)}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();setTimeout(boot,1200);setTimeout(boot,2500);
+  function boot(){
+    hideOldPhrase();
+    let m=mlb(),n=tnb();
+    if(m)m.onclick=function(){begin('ML')};
+    if(n)n.onclick=function(){begin('TN')};
+    if(m&&!q('#import_status')){const s=document.createElement('span');s.id='import_status';s.className='status';m.parentElement.appendChild(s)}
+    paint('',false);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+  setTimeout(boot,1200);setTimeout(boot,2500);
 })();
