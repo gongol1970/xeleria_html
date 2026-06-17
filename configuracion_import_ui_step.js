@@ -65,14 +65,27 @@
     if(b&&!$('#import_status')){const s=document.createElement('span');s.id='import_status';s.className='status';b.parentElement.appendChild(s)}
   }
 
+  function openChannelOAuth(ch){
+    if(!realTenant()){
+      alert('Primero entrá desde inicio.html para generar un tenant real.');
+      return;
+    }
+    const ownerKey=localStorage.getItem('xeleria_owner_key')||'';
+    if(!ownerKey){
+      alert('Falta el código beta privado desde inicio.html.');
+      return;
+    }
+    if(batch&&!confirm('Hay una grilla pendiente. Podés salir a conectar y al volver se intentará recuperar.\n\nContinuar?'))return;
+    const url=API+'/oauth/'+encodeURIComponent(ch)+'/start?owner_key='+encodeURIComponent(ownerKey)+'&tenant_id='+encodeURIComponent(tenant())+'&next='+encodeURIComponent('configuracion.html');
+    const win=window.open(url,'_blank','noopener,noreferrer');
+    if(!win){
+      alert('El navegador bloqueó la pestaña nueva. Abrimos la autenticación en esta pestaña.');
+      window.top.location.href=url;
+    }
+  }
+
   function patchConnect(){
-    if(window.__xi_connect_guard_v5||typeof window.connectChannel!=='function')return;
-    const original=window.connectChannel;
-    window.__xi_connect_guard_v5=true;
-    window.connectChannel=function(ch){
-      if(batch&&!confirm('Hay una grilla pendiente. Podés salir a conectar y al volver se intentará recuperar.\n\nContinuar?'))return;
-      return original.apply(this,arguments);
-    };
+    window.connectChannel=function(ch){openChannelOAuth(ch)};
   }
 
   async function fetchJson(url,opt={},label='Operación'){
