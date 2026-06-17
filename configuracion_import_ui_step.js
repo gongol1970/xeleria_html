@@ -40,7 +40,7 @@
       #xi_grid_table{border-collapse:collapse;width:100%;min-width:1040px;table-layout:fixed;font-size:12px;line-height:1.15}
       #xi_grid_table th,#xi_grid_table td{border:1px solid #e5dac4;padding:4px 8px;vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;height:36px}
       #xi_grid_table th{position:sticky;top:0;z-index:2;background:#eee4d1;text-align:left;font-size:13px;font-weight:900}
-      #xi_grid_table th:nth-child(4),#xi_grid_table th:nth-child(5),#xi_grid_table td:nth-child(4),#xi_grid_table td:nth-child(5){text-align:center}
+      #xi_grid_table th:nth-child(3),#xi_grid_table th:nth-child(4),#xi_grid_table td:nth-child(3),#xi_grid_table td:nth-child(4){text-align:center}
       #xi_grid_table .sku{font-weight:900}
       #xi_grid_table .nopub{color:#777;font-style:italic}
       #xi_grid_table .pub b{font-size:12px}
@@ -62,8 +62,8 @@
   function paint(ch,on){
     busy=on;
     const m=mlb(),n=tnb();
-    if(m){m.textContent=on&&ch==='ML'?'Importando ML...':(batch&&chan==='ML'?'Continuar ML':'Importar ML');m.disabled=on||!connected('ML')}
-    if(n){n.textContent=on&&ch==='TN'?'Importando TN...':(batch&&chan==='TN'?'Continuar TN':'Importar TN');n.disabled=on||!connected('TN')}
+    if(m){m.textContent=on&&ch==='ML'?'Importando ML...':'Importar ML';m.disabled=on||!connected('ML')}
+    if(n){n.textContent=on&&ch==='TN'?'Importando TN...':'Importar TN';n.disabled=on||!connected('TN')}
   }
 
   async function fetchJsonRetry(url,opt,label,max=8){
@@ -94,11 +94,11 @@
     p.id='xi_grid_panel';
     p.innerHTML=`
       <div id="xi_grid_head"><div><b>Grilla importada</b><span id="xi_grid_status"></span></div></div>
-      <div id="xi_grid_help">Revisá solo Simple/Bundle. Simple = producto normal. Bundle = combo/kit que descuenta componentes. Si TN dice “Sin publicación”, es normal cuando todavía importaste solo ML.</div>
+      <div id="xi_grid_help">Revisá solo Simple/Combo. Esa definición pertenece al SKU completo, tanto para Tienda Nube como para Mercado Libre. Simple = producto normal. Combo = kit que descuenta componentes.</div>
       <div id="xi_grid_wrap">
         <table id="xi_grid_table">
-          <colgroup><col style="width:150px"><col style="width:260px"><col><col style="width:72px"><col style="width:72px"></colgroup>
-          <thead><tr><th>SKU</th><th>Tienda Nube</th><th>Mercado Libre</th><th>Simple</th><th>Bundle</th></tr></thead>
+          <colgroup><col style="width:150px"><col style="width:260px"><col style="width:72px"><col style="width:72px"><col></colgroup>
+          <thead><tr><th>SKU</th><th>Tienda Nube</th><th>Simple</th><th>Combo</th><th>Mercado Libre</th></tr></thead>
           <tbody id="xi_grid_body"></tbody>
         </table>
       </div>
@@ -110,8 +110,8 @@
     return p;
   }
 
-  function cell(c){
-    if(!c)return '<span class="nopub">Sin publicación TN</span>';
+  function cell(c,ch){
+    if(!c)return '<span class="nopub">Sin publicación '+ch+'</span>';
     return '<div class="pub"><b>'+safe(c.title||'')+'</b><br><small>Publicación: '+safe(c.publication||'')+(c.variant?' / Variante: '+safe(c.variant):'')+'</small></div>';
   }
 
@@ -129,10 +129,10 @@
       if(row.tn)tn++; if(row.ml)ml++;
       let tr=document.createElement('tr');
       tr.className=row.row_status||'';
-      tr.innerHTML=`<td class="sku">${safe(row.sku||'SIN SKU')}</td><td>${cell(row.tn)}</td><td>${cell(row.ml)}</td><td><input type="radio" name="xi_type_${k}" value="simple" ${type==='simple'?'checked':''}></td><td><input type="radio" name="xi_type_${k}" value="bundle" ${type==='bundle'?'checked':''}></td>`;
+      tr.innerHTML=`<td class="sku">${safe(row.sku||'SIN SKU')}</td><td>${cell(row.tn,'TN')}</td><td><input type="radio" name="xi_type_${k}" value="simple" ${type==='simple'?'checked':''}></td><td><input type="radio" name="xi_type_${k}" value="bundle" ${type==='bundle'?'checked':''}></td><td>${cell(row.ml,'ML')}</td>`;
       tb.appendChild(tr);
     }
-    gridMsg(`ML: ${ml} · TN: ${tn} · ${gridRows.length} SKUs agrupados · Simple: ${simple} · Bundle: ${bundle}`,'ok');
+    gridMsg(`ML: ${ml} · TN: ${tn} · ${gridRows.length} SKUs agrupados · Simple: ${simple} · Combo: ${bundle}`,'ok');
   }
 
   function selected(){
@@ -156,7 +156,7 @@
   async function saveBatch(){
     if(!batch)return gridMsg('No encontré batch activo.','bad');
     const bundles=gridRows.filter(r=>q(`input[name="xi_type_${slug(r.sku||'SIN_SKU')}"]:checked`)?.value==='bundle').length;
-    if(!confirm(`Vas a guardar ${gridRows.length} SKUs.\nBundles marcados: ${bundles}.`))return;
+    if(!confirm(`Vas a guardar ${gridRows.length} SKUs.\nCombos marcados: ${bundles}.`))return;
     try{
       gridMsg('Guardando inventario real...','warn');
       let j=await fetchJsonRetry(A+'/inventory/import/batches/'+batch+'/confirm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tenant_id:tid(),rows:selected()})},'Guardando',4);
