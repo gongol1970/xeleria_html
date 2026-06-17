@@ -36,8 +36,8 @@
       #xi_grid_head b{font-size:14px}
       #xi_grid_status{font-size:12px;color:#087345;margin-left:8px}
       #xi_grid_help{font-size:11px;color:#5b554c;padding:4px 10px;border-bottom:1px solid #eadfc9;background:#fffaf0}
-      #xi_grid_wrap{height:52vh;min-height:360px;overflow:auto;background:white}
-      #xi_grid_table{border-collapse:collapse;width:100%;min-width:1040px;table-layout:fixed;font-size:12px;line-height:1.15}
+      #xi_grid_wrap{height:64vh;min-height:560px;max-height:720px;overflow-y:auto;overflow-x:hidden;background:white}
+      #xi_grid_table{border-collapse:collapse;width:100%;min-width:0;table-layout:fixed;font-size:12px;line-height:1.15}
       #xi_grid_table th,#xi_grid_table td{border:1px solid #e5dac4;padding:4px 8px;vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;height:36px}
       #xi_grid_table th{position:sticky;top:0;z-index:2;background:#eee4d1;text-align:left;font-size:13px;font-weight:900}
       #xi_grid_table th:nth-child(3),#xi_grid_table th:nth-child(4),#xi_grid_table td:nth-child(3),#xi_grid_table td:nth-child(4){text-align:center}
@@ -97,7 +97,7 @@
       <div id="xi_grid_help">Revisá solo Simple/Combo. Esa definición pertenece al SKU completo, tanto para Tienda Nube como para Mercado Libre. Simple = producto normal. Combo = kit que descuenta componentes.</div>
       <div id="xi_grid_wrap">
         <table id="xi_grid_table">
-          <colgroup><col style="width:150px"><col style="width:260px"><col style="width:72px"><col style="width:72px"><col></colgroup>
+          <colgroup><col style="width:12%"><col style="width:38%"><col style="width:6%"><col style="width:6%"><col style="width:38%"></colgroup>
           <thead><tr><th>SKU</th><th>Tienda Nube</th><th>Simple</th><th>Combo</th><th>Mercado Libre</th></tr></thead>
           <tbody id="xi_grid_body"></tbody>
         </table>
