@@ -36,7 +36,7 @@
       #xi_grid_head b{font-size:14px}
       #xi_grid_status{font-size:12px;color:#087345;margin-left:8px}
       #xi_grid_help{font-size:11px;color:#5b554c;padding:4px 10px;border-bottom:1px solid #eadfc9;background:#fffaf0}
-      #xi_grid_wrap{height:64vh;min-height:560px;max-height:720px;overflow-y:auto;overflow-x:hidden;background:white}
+      #xi_grid_wrap{height:calc(100vh - 310px);min-height:460px;max-height:640px;overflow-y:auto;overflow-x:hidden;background:white}
       #xi_grid_table{border-collapse:collapse;width:100%;min-width:0;table-layout:fixed;font-size:12px;line-height:1.15}
       #xi_grid_table th,#xi_grid_table td{border:1px solid #e5dac4;padding:4px 8px;vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;height:36px}
       #xi_grid_table th{position:sticky;top:0;z-index:2;background:#eee4d1;text-align:left;font-size:13px;font-weight:900}
