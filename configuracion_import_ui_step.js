@@ -61,19 +61,30 @@
     d.innerHTML=`
       <div style="background:#fffdf8;border-radius:18px;padding:18px;max-width:1250px;margin:auto;border:1px solid #ded4be">
         <div style="display:flex;justify-content:space-between;gap:12px;align-items:start;margin-bottom:12px">
-          <div><h3 style="margin:0 0 4px">Grilla importada</h3><div id="xi_grid_status" class="status"></div></div>
+          <div>
+            <h3 style="margin:0 0 4px">Paso 2 de 2 · Revisar inventario importado</h3>
+            <div id="xi_grid_status" class="status"></div>
+          </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button id="xi_grid_save" class="gold">Guardar selección en inventario real</button>
-            <button id="xi_grid_close">Cerrar</button>
+            <button id="xi_grid_save" class="gold">Guardar inventario real</button>
+            <button id="xi_grid_close">Cerrar sin guardar</button>
           </div>
         </div>
-        <div style="overflow:auto;max-height:72vh">
+        <div style="background:#fff8c5;border:1px solid #ded4be;border-radius:14px;padding:12px 14px;margin:8px 0 12px;line-height:1.45">
+          <b>Qué tenés que hacer:</b><br>
+          1) Revisá solamente las columnas <b>Simple</b> y <b>Bundle</b>.<br>
+          2) Dejá <b>Simple</b> para un producto normal.<br>
+          3) Marcá <b>Bundle</b> solo si ese SKU es un combo/kit que debe descontar componentes.<br>
+          4) Si Tienda Nube dice <b>Sin publicación</b>, no es error: todavía no se importó TN.
+        </div>
+        <div id="xi_grid_summary" style="font-size:13px;color:#5b554c;margin:0 0 8px"></div>
+        <div style="overflow:auto;max-height:70vh">
           <table class="importTable" style="min-width:1040px;width:100%;border-collapse:collapse;font-size:14px">
             <thead><tr><th>SKU</th><th>Tienda Nube</th><th>Mercado Libre</th><th>Simple</th><th>Bundle</th></tr></thead>
             <tbody id="xi_grid_body"></tbody>
           </table>
         </div>
-        <div style="font-size:12px;color:#5b554c;margin-top:8px">Simple/Bundle es global por SKU. No está encasillado por canal.</div>
+        <div style="font-size:12px;color:#5b554c;margin-top:8px">La clasificación Simple/Bundle es única por SKU. No depende del canal.</div>
       </div>`;
     document.body.appendChild(d);
     q('#xi_grid_close').onclick=()=>d.style.display='none';
@@ -94,14 +105,20 @@
     gridRows=rows||[];
     let tb=q('#xi_grid_body');
     tb.innerHTML='';
+    let simple=0,bundle=0,tn=0,ml=0;
     for(const row of gridRows){
       const k=slug(row.sku||'SIN_SKU');
       const type=rowType(row);
+      if(type==='bundle')bundle++; else simple++;
+      if(row.tn)tn++;
+      if(row.ml)ml++;
       let tr=document.createElement('tr');
       tr.className=row.row_status||'';
       tr.innerHTML=`<td><b>${safe(row.sku||'SIN SKU')}</b></td><td>${cell(row.tn)}</td><td>${cell(row.ml)}</td><td style="text-align:center"><input style="width:18px;height:18px" type="radio" name="xi_type_${k}" value="simple" ${type==='simple'?'checked':''}></td><td style="text-align:center"><input style="width:18px;height:18px" type="radio" name="xi_type_${k}" value="bundle" ${type==='bundle'?'checked':''}></td>`;
       tb.appendChild(tr);
     }
+    const s=q('#xi_grid_summary');
+    if(s)s.innerHTML=`Detectados: <b>${gridRows.length}</b> SKUs · ML: <b>${ml}</b> · TN: <b>${tn}</b> · Simple: <b>${simple}</b> · Bundle: <b>${bundle}</b>`;
   }
 
   function selected(){
@@ -122,15 +139,18 @@
     m.style.display='block';
     let j=await fetchJsonRetry(A+'/inventory/import/batches/'+id+'/grid?tenant_id='+encodeURIComponent(tid()),{},'Cargando grilla',5);
     renderGrid(j.grid||[]);
-    modalMsg(`${ch||chan}: ${(j.grid||[]).length} SKUs agrupados`,'ok');
+    modalMsg(`${ch||chan}: ${(j.grid||[]).length} SKUs agrupados. Revisá Simple/Bundle antes de guardar.`,'ok');
   }
 
   async function saveBatch(){
     if(!batch)return modalMsg('No encontré batch activo.','bad');
+    const rows=selected();
+    const bundles=gridRows.filter(r=>q(`input[name="xi_type_${slug(r.sku||'SIN_SKU')}"]:checked`)?.value==='bundle').length;
+    if(!confirm(`Vas a guardar ${gridRows.length} SKUs en inventario real.\n\nBundles marcados: ${bundles}.\n\nSi no revisaste los combos, cancelá.`))return;
     try{
       modalMsg('Guardando inventario real...','warn');
       let j=await fetchJsonRetry(A+'/inventory/import/batches/'+batch+'/confirm',{
-        method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tenant_id:tid(),rows:selected()})
+        method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tenant_id:tid(),rows:rows})
       },'Guardando',4);
       modalMsg(`Guardado. Items: ${j.saved_items||0}, publicaciones: ${j.saved_listings||0}`,'ok');
       localStorage.removeItem(BK);localStorage.removeItem(CK);batch='';paint('',false);
