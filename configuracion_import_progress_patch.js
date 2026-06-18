@@ -4,12 +4,88 @@
   const KEY='xeleria_import_batch_v5';
   const LIMIT=5;
   let running=false;
+  let lastConnections=null;
 
   const $=s=>document.querySelector(s);
   const tenant=()=>localStorage.getItem('xeleria_tenant_id')||'';
+  const session=()=>localStorage.getItem('xeleria_session')||'';
   const realTenant=()=>tenant()&&tenant()!==DEF;
   const connected=c=>$('#'+c.toLowerCase()+'_card')?.classList.contains('connected');
   const channels=()=>['ML','TN'].filter(connected);
+
+  function pumba(){
+    localStorage.removeItem('xeleria_session');
+    try{window.top.location.replace('https://xeleria.com.ar/inicio.html')}
+    catch(e){location.replace('https://xeleria.com.ar/inicio.html')}
+  }
+
+  function authHeaders(extra){
+    const h=new Headers(extra||{});
+    const tok=session().trim();
+    if(tok)h.set('Authorization','Bearer '+tok);
+    return h;
+  }
+
+  function normConnections(raw){
+    raw=raw||{};
+    return {
+      ML: raw.ML || raw.ml || raw.mercadolibre || raw.mercado_libre || {},
+      TN: raw.TN || raw.tn || raw.tiendanube || raw.tienda_nube || {}
+    };
+  }
+
+  function connIsOn(c){
+    return !!(c&&(c.connected===true||c.ok===true||c.live===true||c.status==='connected'||c.status==='ok'));
+  }
+
+  function connLabel(c){
+    return String((c&&(c.label||c.account_label||c.name||c.nickname||c.email||c.store_name||c.user||c.id))||'').trim();
+  }
+
+  function paintChannel(ch,conn){
+    const key=ch.toLowerCase();
+    const card=$('#'+key+'_card');
+    const state=$('#'+key+'_state');
+    const label=$('#'+key+'_label');
+    const btn=$('#'+key+'_button');
+    const on=connIsOn(conn);
+    const txt=connLabel(conn);
+    if(card)card.classList.toggle('connected',on);
+    if(state)state.textContent=on?'conectado':'no conectado';
+    if(label)label.textContent=on&&txt?' · '+txt:'';
+    if(btn){
+      btn.textContent=on?ch+' conectado':'Conectar '+ch;
+      btn.disabled=on;
+      btn.title=on?ch+' conectado por sesión XelerIA':'Conectar '+ch;
+    }
+  }
+
+  function applySessionStatus(j){
+    if(j.settings&&window.apply)window.apply(j.settings);
+    const c=normConnections(j.connections||{});
+    lastConnections=c;
+    paintChannel('ML',c.ML);
+    paintChannel('TN',c.TN);
+    const parts=[];
+    if(connIsOn(c.ML))parts.push('ML: '+(connLabel(c.ML)||'conectado'));
+    if(connIsOn(c.TN))parts.push('TN: '+(connLabel(c.TN)||'conectado'));
+    status(parts.length?'Sesión XelerIA activa · '+parts.join(' · '):'Sesión XelerIA activa · sin canales conectados','ok');
+  }
+
+  async function refreshSessionStatus(){
+    if(!realTenant()||!session().trim())return pumba();
+    try{
+      const r=await fetch(API+'/session/status?tenant_id='+encodeURIComponent(tenant())+'&_='+Date.now(),{headers:authHeaders(),cache:'no-store'});
+      const j=await r.json().catch(()=>({ok:false,error:'Respuesta no JSON'}));
+      if(r.status===401||r.status===403)return pumba();
+      if(!r.ok||!j.ok)throw new Error(j.error||('HTTP '+r.status));
+      applySessionStatus(j);
+      patch(false);
+      return j;
+    }catch(e){
+      status(e.message||'No pude validar sesión/conexiones','bad');
+    }
+  }
 
   function installImportGridCss(){
     if($('#xeleriaImportGridCss'))return;
@@ -79,6 +155,7 @@
   async function steppedImport(){
     if(running)return;
     if(!realTenant())return alert('Falta tenant real.');
+    await refreshSessionStatus();
     const ch=channels();
     if(!ch.length)return alert('Primero conectá ML, TN o ambos.');
     const oldBatch=localStorage.getItem(KEY)||'';
@@ -89,22 +166,14 @@
     if(btn)btn.disabled=true;
     try{
       status('Iniciando importación por pasos '+ch.join(' + ')+'...','warn');
-      const start=await json(API+'/inventory/import2/start-step',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({tenant_id:tenant(),channels:ch})
-      });
+      const start=await json(API+'/inventory/import2/start-step',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tenant_id:tenant(),channels:ch})});
       const batchId=start.batch_id;
       localStorage.setItem(KEY,batchId);
       status(fmt(start.counts)||'Importación iniciada.','warn');
 
       let last=start;
       for(let i=0;i<10000;i++){
-        last=await json(API+'/inventory/import2/step',{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({tenant_id:tenant(),batch_id:batchId,limit:LIMIT})
-        });
+        last=await json(API+'/inventory/import2/step',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tenant_id:tenant(),batch_id:batchId,limit:LIMIT})});
         status((fmt(last.counts)||'Importando...')+(last.done?' · terminado':''),last.done?'ok':'warn');
         if(last.done)break;
         await new Promise(r=>setTimeout(r,120));
@@ -117,7 +186,7 @@
     }finally{
       running=false;
       if(btn)btn.disabled=false;
-      patch();
+      patch(false);
     }
   }
 
@@ -129,7 +198,7 @@
       if(connected(ch)){
         b.textContent=ch+' conectado';
         b.disabled=true;
-        b.title=ch+' ya está conectado';
+        b.title=ch+' conectado por sesión XelerIA';
       }else{
         b.textContent='Conectar '+ch;
         b.disabled=false;
@@ -138,8 +207,9 @@
     }
   }
 
-  function patch(){
+  function patch(runStatus){
     installImportGridCss();
+    if(runStatus!==false && !lastConnections)refreshSessionStatus();
     normalizeConnectButtons();
     const btn=$('#import_ml_btn');
     const tn=$('#import_tn_btn');
@@ -151,7 +221,8 @@
     btn.title=channels().length?'Importa ML/TN de a 5 publicaciones':'Conectá ML, TN o ambos primero';
   }
 
-  function boot(){patch();setTimeout(patch,500);setTimeout(patch,1500);setTimeout(patch,2800)}
+  function boot(){patch();refreshSessionStatus();setTimeout(refreshSessionStatus,900);setTimeout(refreshSessionStatus,2200);setTimeout(patch,500);setTimeout(patch,1500);setTimeout(patch,2800)}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
   setInterval(patch,4000);
+  setInterval(refreshSessionStatus,60000);
 })();
