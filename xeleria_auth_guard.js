@@ -60,11 +60,18 @@
       document.head.appendChild(s);
     }
     const t=document.getElementById('tenantLabel');
-    if(t && /^[0-9a-fA-F-]{20,}$/.test((t.textContent||'').trim())) t.textContent='sesión activa';
+    if(t) t.textContent='';
   }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply);else apply();
-  setTimeout(apply,500);
-  setTimeout(apply,1500);
+  function boot(){
+    apply();
+    const t=document.getElementById('tenantLabel');
+    if(t && window.MutationObserver){
+      new MutationObserver(apply).observe(t,{childList:true,characterData:true,subtree:true});
+    }
+    let n=0;
+    const timer=setInterval(()=>{apply(); if(++n>40)clearInterval(timer)},250);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
 
 (function(){
