@@ -16,11 +16,20 @@
     localStorage.removeItem("xeleria_tenant_id");
     localStorage.removeItem("xeleria_session");
     localStorage.removeItem("xeleria_owner_key");
+    localStorage.removeItem("pc_erp_token");
   }
 
   const incomingTenant = qp.get("tenant_id") || qp.get("tenant") || "";
   if (incomingTenant && incomingTenant !== DEFAULT_TENANT) {
     localStorage.setItem("xeleria_tenant_id", incomingTenant);
+  }
+
+  if (file === "admin_erp.html") {
+    const ownerKey = (localStorage.getItem("xeleria_owner_key") || "").trim();
+    const legacyToken = (localStorage.getItem("pc_erp_token") || "").trim();
+    if (ownerKey && !legacyToken) {
+      localStorage.setItem("pc_erp_token", ownerKey);
+    }
   }
 
   const tenant = localStorage.getItem("xeleria_tenant_id") || "";
