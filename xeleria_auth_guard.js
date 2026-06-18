@@ -52,6 +52,20 @@
 (function(){
   const file=(location.pathname.split('/').pop()||'').toLowerCase();
   if(file!=='configuracion.html')return;
+
+  function sessionErrorText(txt){
+    const t=String(txt||'').toLowerCase();
+    return t.includes('sesión xeleria inválida') || t.includes('sesion xeleria invalida') || t.includes('falta sesión xeleria') || t.includes('falta sesion xeleria');
+  }
+
+  function goInicioIfSessionError(){
+    if(!document.body)return;
+    if(sessionErrorText(document.body.innerText||'')){
+      localStorage.removeItem('xeleria_session');
+      location.replace('inicio.html');
+    }
+  }
+
   function apply(){
     if(!document.getElementById('xeleriaButtonStyle')){
       const s=document.createElement('style');
@@ -61,12 +75,16 @@
     }
     const t=document.getElementById('tenantLabel');
     if(t) t.textContent='';
+    goInicioIfSessionError();
   }
   function boot(){
     apply();
     const t=document.getElementById('tenantLabel');
     if(t && window.MutationObserver){
       new MutationObserver(apply).observe(t,{childList:true,characterData:true,subtree:true});
+    }
+    if(document.body && window.MutationObserver){
+      new MutationObserver(goInicioIfSessionError).observe(document.body,{childList:true,characterData:true,subtree:true});
     }
     let n=0;
     const timer=setInterval(()=>{apply(); if(++n>40)clearInterval(timer)},250);
