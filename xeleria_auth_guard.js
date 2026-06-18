@@ -74,7 +74,31 @@
     if(!document.getElementById('xeleriaButtonStyle')){
       const s=document.createElement('style');
       s.id='xeleriaButtonStyle';
-      s.textContent='button,.tab{background:#DCC58F!important;border:0!important;color:#111!important;box-shadow:none!important}button:hover,.tab:hover{filter:brightness(.98)}button:active,.tab:active{background:#CDB272!important;filter:none!important}button:disabled,button.disabled,.disabled{background:#e9dfcf!important;color:#8a8172!important;border:0!important}.tab{border-radius:999px}';
+      s.textContent=[
+        'body{font-size:14px!important;line-height:1.38!important}',
+        '.wrap{padding:14px 16px 42px!important}',
+        'h1{font-size:28px!important;line-height:1.05!important;margin:0 0 2px!important}',
+        'h2{font-size:18px!important;margin:0 0 8px!important}',
+        'h3{font-size:17px!important;margin:0 0 10px!important}',
+        '.sub{font-size:13px!important;margin:0 0 16px!important}',
+        '.card{padding:16px!important;margin-bottom:22px!important;border-radius:16px!important}',
+        '.lead,p{font-size:14px!important;line-height:1.42!important}',
+        'label,.field label{font-size:13px!important}',
+        'input:not([type="radio"]):not([type="checkbox"]),select,textarea{height:40px!important;font-size:14px!important;padding:8px 11px!important;border-radius:11px!important}',
+        'textarea{height:72px!important}',
+        'button,.tab{background:#DCC58F!important;border:0!important;color:#111!important;box-shadow:none!important;font-size:14px!important;min-height:38px!important;height:auto!important;padding:9px 13px!important;border-radius:12px!important}',
+        '.tab{border-radius:999px!important}',
+        'button:hover,.tab:hover{filter:brightness(.98)}button:active,.tab:active{background:#CDB272!important;filter:none!important}',
+        'button:disabled,button.disabled,.disabled{background:#e9dfcf!important;color:#8a8172!important;border:0!important}',
+        'input[type="radio"],input[type="checkbox"],.checks input,.radioCell input,#importGridBody input[type="radio"]{width:16px!important;height:16px!important;min-width:16px!important;max-width:16px!important;min-height:16px!important;max-height:16px!important;margin:0 6px 0 0!important;padding:0!important;transform:none!important;vertical-align:middle!important;accent-color:#0d6efd!important}',
+        '.radioCell{text-align:center!important;width:64px!important}',
+        '.radioCell input{margin:0!important}',
+        '.importTable th,.importTable td{font-size:13px!important;padding:7px 8px!important}',
+        '.logoBox{width:78px!important;height:78px!important}',
+        '.channel{padding:18px 22px!important;border-radius:16px!important}',
+        '.channel h3{font-size:18px!important}',
+        '.pill{font-size:13px!important;padding:3px 8px!important}'
+      ].join('');
       document.head.appendChild(s);
     }
     const t=document.getElementById('tenantLabel');
