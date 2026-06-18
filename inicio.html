@@ -6,6 +6,9 @@
   <title>XelerIA · Inicio</title>
 
   <script>
+    if (window.top !== window.self) {
+      window.top.location.replace(window.location.href);
+    }
     if (location.protocol === 'http:' && location.hostname.endsWith('xeleria.com.ar')) {
       location.replace('https://' + location.host + location.pathname + location.search + location.hash);
     }
