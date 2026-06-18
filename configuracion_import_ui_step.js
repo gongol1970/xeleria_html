@@ -2,6 +2,13 @@
   const API='https://api.xeleria.com.ar/api';
   const DEF='00000000-0000-0000-0000-000000000001';
   const KEY='xeleria_import_batch_v5';
+  const qp=new URLSearchParams(location.search);
+  const incomingSession=(qp.get('session')||'').trim();
+  if(incomingSession){
+    localStorage.setItem('xeleria_session',incomingSession);
+    qp.delete('session');
+    history.replaceState(null,'',location.pathname+(qp.toString()?'?'+qp.toString():'')+location.hash);
+  }
   let batch=localStorage.getItem(KEY)||'';
   let rows=[];
   let busy=false;
@@ -76,7 +83,7 @@
       return;
     }
     if(batch&&!confirm('Hay una grilla pendiente. Podés salir a conectar y al volver se intentará recuperar.\n\nContinuar?'))return;
-    const url=API+'/oauth/'+encodeURIComponent(ch)+'/start?owner_key='+encodeURIComponent(ownerKey)+'&tenant_id='+encodeURIComponent(tenant())+'&next='+encodeURIComponent('admin_erp.html');
+    const url=API+'/oauth/'+encodeURIComponent(ch)+'/start?owner_key='+encodeURIComponent(ownerKey)+'&tenant_id='+encodeURIComponent(tenant())+'&next='+encodeURIComponent('configuracion.html');
     const win=window.open(url,'_blank','noopener,noreferrer');
     if(!win){
       alert('El navegador bloqueó la pestaña nueva. Abrimos la autenticación en esta pestaña.');
