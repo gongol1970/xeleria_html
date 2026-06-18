@@ -15,6 +15,7 @@
 
   const $=s=>document.querySelector(s);
   const tenant=()=>localStorage.getItem('xeleria_tenant_id')||'';
+  const session=()=>localStorage.getItem('xeleria_session')||'';
   const realTenant=()=>tenant()&&tenant()!==DEF;
   const esc=s=>String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
   const slug=s=>String(s??'SIN_SKU').replace(/[^a-zA-Z0-9_-]/g,'_');
@@ -22,6 +23,60 @@
   const connectedChannels=()=>['ML','TN'].filter(connected);
   const status=(t,c)=>{let e=$('#import_status');if(e){e.textContent=t;e.className=c||'status'}};
   const gridStatus=(t,c)=>{let e=$('#xi_grid_status');if(e){e.textContent=t;e.className=c||'status'}};
+
+  function authHeaders(extra){
+    const h=new Headers(extra||{});
+    const tok=session().trim();
+    if(tok)h.set('Authorization','Bearer '+tok);
+    return h;
+  }
+
+  function needSession(where){
+    if(session().trim())return true;
+    status((where||'Configuración')+': falta sesión XelerIA. Volvé a ingresar con ML o TN.','bad');
+    return false;
+  }
+
+  async function loadSessionSettings(){
+    if(!realTenant())return window.redirectToLogin?window.redirectToLogin():null;
+    if(!needSession('Cargando configuración'))return;
+    try{
+      const r=await fetch(API+'/session/tenant-settings/'+encodeURIComponent(tenant()),{headers:authHeaders(),cache:'no-store'});
+      const j=await r.json();
+      if(!r.ok||!j.ok)throw new Error(j.error||'Error cargando configuración');
+      if(window.el)window.el('tenantLabel').textContent=tenant();
+      if(j.settings&&window.apply)window.apply(j.settings);
+      status('Sesión XelerIA activa para Configuración.','ok');
+    }catch(e){
+      status(e.message||'Error cargando configuración','bad');
+    }
+  }
+
+  async function saveSessionSettings(id){
+    if(!realTenant())return window.redirectToLogin?window.redirectToLogin():null;
+    if(!needSession('Guardando configuración'))return;
+    try{
+      if(window.msg)window.msg(id,'Guardando con sesión XelerIA...','warn');
+      const payload=window.data?window.data():{};
+      const r=await fetch(API+'/session/tenant-settings/'+encodeURIComponent(tenant()),{
+        method:'POST',
+        headers:authHeaders({'Content-Type':'application/json'}),
+        body:JSON.stringify(payload)
+      });
+      const j=await r.json();
+      if(!r.ok||!j.ok)throw new Error(j.error||'Error guardando');
+      if(j.settings&&window.apply)window.apply(j.settings);
+      if(window.msg)window.msg(id,'Guardado con sesión XelerIA.','ok');
+    }catch(e){
+      if(window.msg)window.msg(id,e.message||'Error','bad');
+      else status(e.message||'Error guardando','bad');
+    }
+  }
+
+  function patchConfigSession(){
+    window.load=loadSessionSettings;
+    window.saveSettings=saveSessionSettings;
+  }
 
   function addStyle(){
     if($('#xi_grid_style'))return;
@@ -177,7 +232,7 @@
     localStorage.removeItem(KEY);batch='';rows=[];$('#xi_grid_panel')?.remove();status('Importación cancelada.','warn');normalizeScreen();
   }
 
-  function boot(){patchConnect();normalizeScreen();loadBackendVersion();if(batch){status('Hay una grilla pendiente recuperable. Guardá o cancelá antes de importar de nuevo.','warn');loadGrid().catch(e=>status('No pude recuperar grilla: '+(e.message||e),'bad'))}}
+  function boot(){patchConfigSession();patchConnect();normalizeScreen();loadBackendVersion();loadSessionSettings();if(batch){status('Hay una grilla pendiente recuperable. Guardá o cancelá antes de importar de nuevo.','warn');loadGrid().catch(e=>status('No pude recuperar grilla: '+(e.message||e),'bad'))}}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
   setTimeout(boot,1200);setTimeout(boot,2500);setInterval(loadBackendVersion,30000);
 })();
