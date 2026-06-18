@@ -32,6 +32,84 @@
 })();
 
 (function(){
+  const API='https://api.xeleria.com.ar/api';
+  const DEFAULT_TENANT='00000000-0000-0000-0000-000000000001';
+  const page=(location.pathname.split('/').pop()||'').toLowerCase();
+  if(page!=='admin_erp.html')return;
+
+  function tenant(){return localStorage.getItem('xeleria_tenant_id')||''}
+  function validTenant(){const t=tenant();return t&&t!==DEFAULT_TENANT}
+  function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+  function normalizeLogo(src){
+    src=String(src||'').trim();
+    if(!src)return '';
+    if(src.startsWith('data/png;base64,'))return src.replace('data/png;base64,','data:image/png;base64,');
+    if(src.startsWith('data/jpg;base64,'))return src.replace('data/jpg;base64,','data:image/jpeg;base64,');
+    if(src.startsWith('data/jpeg;base64,'))return src.replace('data/jpeg;base64,','data:image/jpeg;base64,');
+    if(src.startsWith('data/webp;base64,'))return src.replace('data/webp;base64,','data:image/webp;base64,');
+    return src;
+  }
+
+  function addShellStyle(){
+    if(document.getElementById('xeleriaTenantShellStyle'))return;
+    const s=document.createElement('style');
+    s.id='xeleriaTenantShellStyle';
+    s.textContent='.appMark.tenantBrandMark{border-radius:14px!important;background:rgba(255,255,255,.96)!important;box-shadow:0 0 0 1px rgba(220,197,143,.45)!important;padding:5px!important}.appMark.tenantBrandMark img{width:100%!important;height:100%!important;object-fit:contain!important;display:block!important}.brandTenantLogo{display:none!important}.brandName{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sidebarFoot{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}.sidebarFoot #footBackendVer{color:#fff}';
+    document.head.appendChild(s);
+  }
+
+  async function updateBackendVersion(){
+    const el=document.getElementById('footBackendVer');
+    if(!el)return;
+    try{
+      const r=await fetch(API+'/version?_='+Date.now(),{cache:'no-store'});
+      const j=await r.json();
+      if(!r.ok||!j.ok)throw new Error(j.error||('HTTP '+r.status));
+      el.textContent=j.app_version||j.version||'?';
+      el.title='Uptime: '+Math.floor(Number(j.uptime_seconds||0)/60)+' min';
+    }catch(e){
+      el.textContent='?';
+      el.title='No pude leer /api/version';
+    }
+  }
+
+  async function updateTenantBrand(){
+    if(!validTenant())return;
+    try{
+      const r=await fetch(API+'/tenant-settings/'+encodeURIComponent(tenant())+'?_='+Date.now(),{cache:'no-store'});
+      const j=await r.json();
+      if(!r.ok||!j.ok||!j.settings)return;
+      const st=j.settings;
+      const name=(st.display_name||'').trim()||'XelerIA';
+      const logo=normalizeLogo(st.logo_png_500_base64||'');
+      const nameEl=document.querySelector('.brandName');
+      const pEl=document.querySelector('.brand p');
+      const mark=document.querySelector('.appMark');
+      if(nameEl)nameEl.textContent=name;
+      if(pEl)pEl.textContent=name+' · operación diaria';
+      document.title=name+' · ERP';
+      if(mark&&logo){
+        mark.classList.add('tenantBrandMark');
+        mark.innerHTML='<img src="'+esc(logo)+'" alt="'+esc(name)+'">';
+      }
+    }catch(e){
+      // No bloquea el panel si falla el branding.
+    }
+  }
+
+  function bootShell(){
+    addShellStyle();
+    updateBackendVersion();
+    updateTenantBrand();
+    setTimeout(updateBackendVersion,1500);
+    setInterval(updateBackendVersion,30000);
+    setTimeout(updateTenantBrand,1200);
+  }
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bootShell);else bootShell();
+})();
+
+(function(){
   const VERSION='xeleria-import-grid-v1';
   const page=(location.pathname.split('/').pop()||'').toLowerCase();
   if(page!=='admin_erp.html')return;
