@@ -54,7 +54,7 @@
     if(document.getElementById('xeleriaTenantShellStyle'))return;
     const s=document.createElement('style');
     s.id='xeleriaTenantShellStyle';
-    s.textContent='.appMark.tenantBrandMark{border-radius:14px!important;background:rgba(255,255,255,.96)!important;box-shadow:0 0 0 1px rgba(220,197,143,.45)!important;padding:5px!important}.appMark.tenantBrandMark img{width:100%!important;height:100%!important;object-fit:contain!important;display:block!important}.brandTenantLogo{display:none!important}.brandName{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sidebarFoot{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}.sidebarFoot #footBackendVer{color:#fff}';
+    s.textContent='.brandTenantLogo{width:58px!important;height:58px!important;min-width:58px!important;max-width:58px!important;border-radius:12px!important;overflow:hidden!important;padding:4px!important}.brandTenantLogo.hasLogo{background:#fff!important}.brandTenantLogo img{width:100%!important;height:100%!important;object-fit:contain!important;display:block!important}.brandName{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sidebarFoot{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}.sidebarFoot #footBackendVer{color:#fff}';
     document.head.appendChild(s);
   }
 
@@ -80,17 +80,20 @@
       const j=await r.json();
       if(!r.ok||!j.ok||!j.settings)return;
       const st=j.settings;
-      const name=(st.display_name||'').trim()||'XelerIA';
+      const name=(st.display_name||'').trim()||'Mi comercio';
       const logo=normalizeLogo(st.logo_png_500_base64||'');
-      const nameEl=document.querySelector('.brandName');
       const pEl=document.querySelector('.brand p');
-      const mark=document.querySelector('.appMark');
-      if(nameEl)nameEl.textContent=name;
+      const box=document.getElementById('brandTenantLogo');
       if(pEl)pEl.textContent=name+' · operación diaria';
-      document.title=name+' · ERP';
-      if(mark&&logo){
-        mark.classList.add('tenantBrandMark');
-        mark.innerHTML='<img src="'+esc(logo)+'" alt="'+esc(name)+'">';
+      document.title='XelerIA · '+name;
+      if(box&&logo){
+        box.classList.add('hasLogo');
+        box.innerHTML='<img src="'+esc(logo)+'" alt="'+esc(name)+'">';
+        box.title=name;
+      }else if(box){
+        box.classList.remove('hasLogo');
+        box.textContent='LOGO';
+        box.title=name;
       }
     }catch(e){
       // No bloquea el panel si falla el branding.
