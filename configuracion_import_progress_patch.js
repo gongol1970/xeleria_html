@@ -11,11 +11,27 @@
   const connected=c=>$('#'+c.toLowerCase()+'_card')?.classList.contains('connected');
   const channels=()=>['ML','TN'].filter(connected);
 
-  function installSmallRadios(){
-    if($('#xeleriaSmallImportRadios'))return;
+  function installImportGridCss(){
+    if($('#xeleriaImportGridCss'))return;
     const s=document.createElement('style');
-    s.id='xeleriaSmallImportRadios';
-    s.textContent='.importTable .radioCell{text-align:center!important;width:72px!important}.importTable .radioCell input[type="radio"],#importGridBody input[type="radio"]{width:18px!important;height:18px!important;min-width:18px!important;max-width:18px!important;min-height:18px!important;max-height:18px!important;margin:0!important;padding:0!important;transform:none!important;accent-color:#0d6efd!important;vertical-align:middle!important}';
+    s.id='xeleriaImportGridCss';
+    s.textContent=[
+      '.importBox{width:min(1320px,98vw)!important;padding:14px!important}',
+      '.importBox .tableWrap{overflow-x:hidden!important}',
+      '.importTable{width:100%!important;table-layout:fixed!important;font-size:12px!important}',
+      '.importTable th,.importTable td{font-size:12px!important;line-height:1.22!important;padding:5px 6px!important;overflow-wrap:anywhere!important;word-break:normal!important}',
+      '.importTable th:nth-child(1),.importTable td:nth-child(1){width:18%!important}',
+      '.importTable th:nth-child(2),.importTable td:nth-child(2){width:27%!important}',
+      '.importTable th:nth-child(3),.importTable td:nth-child(3){width:5%!important}',
+      '.importTable th:nth-child(4),.importTable td:nth-child(4){width:5%!important}',
+      '.importTable th:nth-child(5),.importTable td:nth-child(5){width:35%!important}',
+      '.importTable th:nth-child(6),.importTable td:nth-child(6){width:5%!important}',
+      '.importTable th:nth-child(7),.importTable td:nth-child(7){width:5%!important}',
+      '.pubTitle{font-size:12px!important;line-height:1.22!important;font-weight:700!important}',
+      '.pubMeta{font-size:10.5px!important;line-height:1.22!important}',
+      '.importTable .radioCell{text-align:center!important;width:auto!important}',
+      '.importTable .radioCell input[type="radio"],#importGridBody input[type="radio"]{width:16px!important;height:16px!important;min-width:16px!important;max-width:16px!important;min-height:16px!important;max-height:16px!important;margin:0!important;padding:0!important;transform:none!important;accent-color:#0d6efd!important;vertical-align:middle!important}'
+    ].join('');
     document.head.appendChild(s);
   }
 
@@ -95,7 +111,7 @@
       }
       if(!last.done)throw new Error('Corte de seguridad: demasiados pasos de importación');
       await loadFinalGrid(batchId);
-      installSmallRadios();
+      installImportGridCss();
     }catch(e){
       status(e.message||'Error importando','bad');
     }finally{
@@ -123,7 +139,7 @@
   }
 
   function patch(){
-    installSmallRadios();
+    installImportGridCss();
     normalizeConnectButtons();
     const btn=$('#import_ml_btn');
     const tn=$('#import_tn_btn');
