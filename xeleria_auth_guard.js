@@ -62,7 +62,11 @@
     if(!document.body)return;
     if(sessionErrorText(document.body.innerText||'')){
       localStorage.removeItem('xeleria_session');
-      location.replace('inicio.html');
+      try{
+        window.top.location.replace('inicio.html');
+      }catch(e){
+        location.replace('inicio.html');
+      }
     }
   }
 
