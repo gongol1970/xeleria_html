@@ -11,6 +11,14 @@
   const connected=c=>$('#'+c.toLowerCase()+'_card')?.classList.contains('connected');
   const channels=()=>['ML','TN'].filter(connected);
 
+  function installSmallRadios(){
+    if($('#xeleriaSmallImportRadios'))return;
+    const s=document.createElement('style');
+    s.id='xeleriaSmallImportRadios';
+    s.textContent='.importTable .radioCell{text-align:center!important;width:72px!important}.importTable .radioCell input[type="radio"],#importGridBody input[type="radio"]{width:18px!important;height:18px!important;min-width:18px!important;max-width:18px!important;min-height:18px!important;max-height:18px!important;margin:0!important;padding:0!important;transform:none!important;accent-color:#0d6efd!important;vertical-align:middle!important}';
+    document.head.appendChild(s);
+  }
+
   function status(text, cls){
     let e=$('#import_status');
     if(!e){
@@ -87,6 +95,7 @@
       }
       if(!last.done)throw new Error('Corte de seguridad: demasiados pasos de importación');
       await loadFinalGrid(batchId);
+      installSmallRadios();
     }catch(e){
       status(e.message||'Error importando','bad');
     }finally{
@@ -114,6 +123,7 @@
   }
 
   function patch(){
+    installSmallRadios();
     normalizeConnectButtons();
     const btn=$('#import_ml_btn');
     const tn=$('#import_tn_btn');
