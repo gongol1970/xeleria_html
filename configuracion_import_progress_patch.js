@@ -46,7 +46,6 @@
       try{return await window.loadGrid()}
       catch(e){}
     }
-    const old=localStorage.getItem(KEY);
     localStorage.setItem(KEY,batchId);
     status('Importación terminada. Cargando grilla...','warn');
     location.hash='#inventario';
@@ -66,7 +65,7 @@
     if(btn)btn.disabled=true;
     try{
       status('Iniciando importación por pasos '+ch.join(' + ')+'...','warn');
-      const start=await json(API+'/inventory/import/start-step',{
+      const start=await json(API+'/inventory/import2/start-step',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({tenant_id:tenant(),channels:ch})
@@ -77,7 +76,7 @@
 
       let last=start;
       for(let i=0;i<10000;i++){
-        last=await json(API+'/inventory/import/step',{
+        last=await json(API+'/inventory/import2/step',{
           method:'POST',
           headers:{'Content-Type':'application/json'},
           body:JSON.stringify({tenant_id:tenant(),batch_id:batchId,limit:LIMIT})
@@ -93,10 +92,29 @@
     }finally{
       running=false;
       if(btn)btn.disabled=false;
+      patch();
+    }
+  }
+
+  function normalizeConnectButtons(){
+    const map=[['ML','ml_button'],['TN','tn_button']];
+    for(const [ch,id] of map){
+      const b=$('#'+id);
+      if(!b)continue;
+      if(connected(ch)){
+        b.textContent=ch+' conectado';
+        b.disabled=true;
+        b.title=ch+' ya está conectado';
+      }else{
+        b.textContent='Conectar '+ch;
+        b.disabled=false;
+        b.title='Conectar '+ch;
+      }
     }
   }
 
   function patch(){
+    normalizeConnectButtons();
     const btn=$('#import_ml_btn');
     const tn=$('#import_tn_btn');
     if(tn)tn.style.display='none';
