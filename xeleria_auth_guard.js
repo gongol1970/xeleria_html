@@ -36,9 +36,8 @@
   }
 
   if (file === "admin_erp.html") {
-    const ownerKey = (localStorage.getItem("xeleria_owner_key") || "").trim();
-    const legacyToken = (localStorage.getItem("pc_erp_token") || "").trim();
-    if (ownerKey && !legacyToken) localStorage.setItem("pc_erp_token", ownerKey);
+    const sessionToken = (localStorage.getItem("xeleria_session") || "").trim();
+    if (sessionToken) localStorage.setItem("pc_erp_token", sessionToken);
   }
 
   const tenant = localStorage.getItem("xeleria_tenant_id") || "";
