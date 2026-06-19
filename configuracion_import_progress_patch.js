@@ -22,7 +22,9 @@
   function authHeaders(extra){
     const h=new Headers(extra||{});
     const tok=session().trim();
+    const ten=tenant().trim();
     if(tok)h.set('Authorization','Bearer '+tok);
+    if(ten)h.set('X-XelerIA-Tenant',ten);
     return h;
   }
 
@@ -121,6 +123,7 @@
   }
 
   async function json(url,opt){
+    opt={...(opt||{}),headers:authHeaders((opt&&opt.headers)||{})};
     const r=await fetch(url,opt||{});
     const j=await r.json().catch(()=>({ok:false,error:'Respuesta no JSON'}));
     if(!r.ok||!j.ok)throw new Error(j.error||j.detail||('HTTP '+r.status));

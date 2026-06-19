@@ -27,7 +27,9 @@
   function authHeaders(extra){
     const h=new Headers(extra||{});
     const tok=session().trim();
+    const ten=tenant().trim();
     if(tok)h.set('Authorization','Bearer '+tok);
+    if(ten)h.set('X-XelerIA-Tenant',ten);
     return h;
   }
 
@@ -151,6 +153,7 @@
   }
 
   async function fetchJson(url,opt={},label='Operación'){
+    opt={...opt,headers:authHeaders(opt.headers||{})};
     let last;
     for(let i=1;i<=6;i++){
       try{
