@@ -93,7 +93,7 @@ async function confirmImportBatch(){if(!currentImportBatchId)return;try{msg('mod
 el('logo_file').addEventListener('change',ev=>{let f=ev.target.files[0];if(!f)return;let rd=new FileReader();rd.onload=()=>{let img=new Image();img.onload=()=>{let c=document.createElement('canvas');c.width=c.height=500;let x=c.getContext('2d');x.clearRect(0,0,500,500);let r=Math.min(500/img.width,500/img.height),w=img.width*r,h=img.height*r;x.drawImage(img,(500-w)/2,(500-h)/2,w,h);let out=c.toDataURL('image/png');el('logo_data').value=out;el('logo_preview').innerHTML='<img alt="Logo" src="'+out+'">';saveSettings('opt_status')};img.src=rd.result};rd.readAsDataURL(f)});
 setChannel('ml',false,null);setChannel('tn',false,null);refreshImportButtons();if(!localStorage.getItem('xeleria_session'))load();
 </script>
-<script src="./configuracion_import_ui_step.js?v=4"></script>
+<script src="./configuracion_import_ui_step.js?v=5"></script>
 <script src="./configuracion_import_progress_patch.js?v=1"></script>
 </body>
 </html>
