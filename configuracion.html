@@ -44,8 +44,33 @@ button:disabled{cursor:not-allowed;opacity:.65}.gold{background:var(--gold2);bor
 .importTable{width:100%;border-collapse:collapse;margin-top:12px;font-size:14px}.importTable th,.importTable td{border:1px solid var(--line);padding:8px;vertical-align:top}.importTable th{background:#eee4d1;text-align:left;position:sticky;top:56px;z-index:1}.importTable tr.new{background:#eefbe8}.importTable tr.missing_sku{background:#fff8c5}.importTable tr.missing_in_refresh{background:#fdecec}.pubTitle{font-weight:800}.pubMeta{color:#5b554c;font-size:12px;margin-top:3px;line-height:1.35}.importActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center}.radioCell{text-align:center;white-space:nowrap}.radioCell input{width:18px;height:18px}
 @media(max-width:800px){.grid2,.billing,.channels{grid-template-columns:1fr}.full{grid-column:auto}.wrap{padding:12px}}
 </style>
+
+<style id="xeleriaEmbeddedConfigCss">
+html.embedded,html.embedded body{background:transparent!important;overflow:hidden!important}
+html.embedded .wrap{padding:0!important}
+html.embedded h1,
+html.embedded .sub,
+html.embedded .tabs{display:none!important}
+html.embedded .card{box-shadow:none!important;margin-bottom:22px!important}
+html.embedded #inventario{margin-top:0!important}
+</style>
+
 </head>
 <body>
+
+<script>
+(function(){
+  const qp=new URLSearchParams(location.search);
+  if(qp.get('embedded')!=='1')return;
+  document.documentElement.classList.add('embedded');
+  function pingParent(){
+    try{ if(parent&&parent!==window&&parent.resizeConfigFrame) parent.resizeConfigFrame(); }catch(e){}
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',pingParent);else pingParent();
+  setInterval(pingParent,1000);
+})();
+</script>
+
 <div class="wrap">
   <h1>Configuración</h1>
   <p class="sub">XelerIA · <span id="tenantLabel">sin tenant cargado</span></p>
@@ -93,7 +118,7 @@ async function confirmImportBatch(){if(!currentImportBatchId)return;try{msg('mod
 el('logo_file').addEventListener('change',ev=>{let f=ev.target.files[0];if(!f)return;let rd=new FileReader();rd.onload=()=>{let img=new Image();img.onload=()=>{let c=document.createElement('canvas');c.width=c.height=500;let x=c.getContext('2d');x.clearRect(0,0,500,500);let r=Math.min(500/img.width,500/img.height),w=img.width*r,h=img.height*r;x.drawImage(img,(500-w)/2,(500-h)/2,w,h);let out=c.toDataURL('image/png');el('logo_data').value=out;el('logo_preview').innerHTML='<img alt="Logo" src="'+out+'">';saveSettings('opt_status')};img.src=rd.result};rd.readAsDataURL(f)});
 setChannel('ml',false,null);setChannel('tn',false,null);refreshImportButtons();if(!localStorage.getItem('xeleria_session'))load();
 </script>
-<script src="./configuracion_import_ui_step.js?v=6"></script>
-<script src="./configuracion_import_progress_patch.js?v=2"></script>
+<script src="./configuracion_import_ui_step.js?v=7"></script>
+<script src="./configuracion_import_progress_patch.js?v=3"></script>
 </body>
 </html>

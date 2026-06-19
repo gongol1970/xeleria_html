@@ -85,7 +85,12 @@
       patch(false);
       return j;
     }catch(e){
-      status(e.message||'No pude validar sesión/conexiones','bad');
+      const msg=String(e?.message||e||'');
+      if(/Failed to fetch|NetworkError|Load failed|ERR_FAILED/i.test(msg)){
+        status('Conexión momentánea con el servidor. Reintentando...','warn');
+      }else{
+        status(msg||'No pude validar sesión/conexiones','bad');
+      }
     }
   }
 
