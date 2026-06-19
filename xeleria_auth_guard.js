@@ -58,15 +58,9 @@
   }
 
   function goInicioIfSessionError(){
-    if(!document.body)return;
-    if(sessionErrorText(document.body.innerText||'')){
-      localStorage.removeItem('xeleria_session');
-      try{
-        window.top.location.replace('inicio.html');
-      }catch(e){
-        location.replace('inicio.html');
-      }
-    }
+    // No borrar sesión por texto visible en pantalla.
+    // La expiración real se decide solo por 401/403 del backend.
+    return;
   }
 
   function apply(){

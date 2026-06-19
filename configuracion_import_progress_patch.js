@@ -13,7 +13,7 @@
   const connected=c=>$('#'+c.toLowerCase()+'_card')?.classList.contains('connected');
   const channels=()=>['ML','TN'].filter(connected);
 
-  function pumba(){
+  function sessionExpiredRedirect(){
     localStorage.removeItem('xeleria_session');
     try{window.top.location.replace('https://xeleria.com.ar/inicio.html')}
     catch(e){location.replace('https://xeleria.com.ar/inicio.html')}
@@ -75,11 +75,11 @@
   }
 
   async function refreshSessionStatus(){
-    if(!realTenant()||!session().trim())return pumba();
+    if(!realTenant()||!session().trim())return sessionExpiredRedirect();
     try{
       const r=await fetch(API+'/session/status?tenant_id='+encodeURIComponent(tenant())+'&_='+Date.now(),{headers:authHeaders(),cache:'no-store'});
       const j=await r.json().catch(()=>({ok:false,error:'Respuesta no JSON'}));
-      if(r.status===401||r.status===403)return pumba();
+      if(r.status===401||r.status===403)return sessionExpiredRedirect();
       if(!r.ok||!j.ok)throw new Error(j.error||('HTTP '+r.status));
       applySessionStatus(j);
       patch(false);
