@@ -5,6 +5,7 @@
   const LIMIT=5;
   let running=false;
   let lastConnections=null;
+  const SNAPKEY=()=> 'xeleria_session_connections_'+(session().trim()||'none');
 
   const $=s=>document.querySelector(s);
   const tenant=()=>localStorage.getItem('xeleria_tenant_id')||'';
@@ -27,6 +28,18 @@
     if(ten)h.set('X-XelerIA-Tenant',ten);
     return h;
   }
+
+  function loadSessionSnapshot(){
+    try{
+      const raw=localStorage.getItem(SNAPKEY());
+      return raw?JSON.parse(raw):null;
+    }catch(e){return null}
+  }
+
+  function saveSessionSnapshot(payload){
+    try{localStorage.setItem(SNAPKEY(),JSON.stringify(payload||{}))}catch(e){}
+  }
+
 
   function normConnections(raw){
     raw=raw||{};
@@ -63,8 +76,11 @@
   }
 
   function applySessionStatus(j){
-    if(j.settings&&window.apply)window.apply(j.settings);
-    const c=normConnections(j.connections||{});
+    const cached=loadSessionSnapshot();
+    let payload=cached&&cached.connections?cached:{settings:j.settings||null,connections:normConnections(j.connections||{}),created_at:Date.now()};
+    if(!cached||!cached.connections)saveSessionSnapshot(payload);
+    if(payload.settings&&window.apply)window.apply(payload.settings);
+    const c=normConnections(payload.connections||{});
     lastConnections=c;
     paintChannel('ML',c.ML);
     paintChannel('TN',c.TN);
@@ -76,6 +92,13 @@
 
   async function refreshSessionStatus(){
     if(!realTenant()||!session().trim())return sessionExpiredRedirect();
+
+    const cached=loadSessionSnapshot();
+    if(cached&&cached.connections){
+      applySessionStatus({settings:cached.settings||null,connections:cached.connections});
+      return cached;
+    }
+
     try{
       const r=await fetch(API+'/session/status?tenant_id='+encodeURIComponent(tenant())+'&_='+Date.now(),{headers:authHeaders(),cache:'no-store'});
       const j=await r.json().catch(()=>({ok:false,error:'Respuesta no JSON'}));
@@ -163,7 +186,7 @@
   async function steppedImport(){
     if(running)return;
     if(!realTenant())return alert('Falta tenant real.');
-    await refreshSessionStatus();
+    if(!lastConnections)await refreshSessionStatus();
     const ch=channels();
     if(!ch.length)return alert('Primero conectá ML, TN o ambos.');
     const oldBatch=localStorage.getItem(KEY)||'';
@@ -232,5 +255,5 @@
   function boot(){patch();refreshSessionStatus();setTimeout(refreshSessionStatus,900);setTimeout(refreshSessionStatus,2200);setTimeout(patch,500);setTimeout(patch,1500);setTimeout(patch,2800)}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
   setInterval(patch,4000);
-  setInterval(refreshSessionStatus,60000);
+  // Sin polling de conexiones: el snapshot vive toda la sesión.
 })();
