@@ -12,6 +12,7 @@
   let batch=localStorage.getItem(KEY)||'';
   let rows=[];
   let busy=false;
+  let saving=false;
 
   const $=s=>document.querySelector(s);
   const tenant=()=>localStorage.getItem('xeleria_tenant_id')||'';
@@ -83,7 +84,7 @@
   function addStyle(){
     if($('#xi_grid_style'))return;
     const s=document.createElement('style');s.id='xi_grid_style';
-    s.textContent='#xi_grid_panel{margin-top:12px;border:1px solid #ded4be;background:#fffdf8;overflow:visible}#xi_grid_head{padding:6px 10px;border-bottom:1px solid #ded4be;background:#fffdf8;font-size:13px}#xi_grid_status{font-size:11px;color:#087345;margin-left:8px}#xi_grid_help{font-size:10px;color:#5b554c;padding:4px 10px;border-bottom:1px solid #eadfc9;background:#fffaf0}#xi_grid_wrap{height:auto;min-height:0;max-height:none;overflow:visible;background:#fff}#xi_grid_table{width:100%;min-width:0;border-collapse:collapse;table-layout:fixed;font-size:11px;line-height:1.08}#xi_grid_table th,#xi_grid_table td{border:1px solid #e5dac4;padding:3px 6px;height:31px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}#xi_grid_table th{position:sticky;top:0;z-index:2;background:#eee4d1;text-align:left;font-size:11px;font-weight:900}#xi_grid_table th:nth-child(3),#xi_grid_table td:nth-child(3){text-align:center}#xi_grid_table th:nth-child(3){font-size:10px!important}.xi_sku{font-weight:900}.xi_empty{color:#777;font-style:italic}.xi_pub b{font-size:10px}.xi_pub small{font-size:9px;color:#222}.xi_type{display:flex;gap:5px;align-items:center;justify-content:center;font-size:9px;font-weight:900;white-space:nowrap}.xi_type label{display:inline-flex;align-items:center;gap:2px}.xi_type input[type=radio],#xi_grid_table input[type=radio]{width:13px;height:13px;margin:0;accent-color:#1677ff}.new{background:#eefbe8}.missing_sku{background:#fff8c5}.missing_in_refresh{background:#fdecec}#xi_grid_actions{position:sticky;bottom:0;display:flex;gap:8px;align-items:center;padding:7px 10px;background:rgba(255,253,248,.95);border-top:1px solid #ded4be}#xi_grid_actions button{height:30px;font-size:11px;border-radius:7px;padding:0 11px}.xi_save{background:#cdb272!important;border:0!important;color:#111!important}.xi_cancel{background:#fff!important;border:1px solid #d7c9ae!important;color:#9a1f1f!important}#xi_backend_version{margin:8px 0 0;font-size:10px;color:#6b6254;background:#fffaf0;border:1px solid #eadfc9;padding:5px 8px;display:inline-block}';
+    s.textContent='#xi_grid_panel{margin-top:12px;border:1px solid #ded4be;background:#fffdf8;overflow:visible}#xi_grid_head{padding:6px 10px;border-bottom:1px solid #ded4be;background:#fffdf8;font-size:13px}#xi_grid_status{font-size:11px;margin-left:8px}#xi_grid_status.ok{color:#087345!important}#xi_grid_status.warn{color:#b54708!important}#xi_grid_status.bad{color:#b42318!important}#xi_grid_help{font-size:10px;color:#5b554c;padding:4px 10px;border-bottom:1px solid #eadfc9;background:#fffaf0}#xi_grid_wrap{height:auto;min-height:0;max-height:none;overflow:visible;background:#fff}#xi_grid_table{width:100%;min-width:0;border-collapse:collapse;table-layout:fixed;font-size:11px;line-height:1.08}#xi_grid_table th,#xi_grid_table td{border:1px solid #e5dac4;padding:3px 6px;height:31px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}#xi_grid_table th{position:sticky;top:0;z-index:2;background:#eee4d1;text-align:left;font-size:11px;font-weight:900}#xi_grid_table th:nth-child(3),#xi_grid_table td:nth-child(3){text-align:center}#xi_grid_table th:nth-child(3){font-size:10px!important}.xi_sku{font-weight:900}.xi_empty{color:#777;font-style:italic}.xi_pub b{font-size:10px}.xi_pub small{font-size:9px;color:#222}.xi_type{display:flex;gap:5px;align-items:center;justify-content:center;font-size:9px;font-weight:900;white-space:nowrap}.xi_type label{display:inline-flex;align-items:center;gap:2px}.xi_type input[type=radio],#xi_grid_table input[type=radio]{width:13px;height:13px;margin:0;accent-color:#1677ff}.new{background:#eefbe8}.missing_sku{background:#fff8c5}.missing_in_refresh{background:#fdecec}#xi_grid_actions{position:sticky;bottom:0;display:flex;gap:8px;align-items:center;padding:7px 10px;background:rgba(255,253,248,.95);border-top:1px solid #ded4be}#xi_grid_actions button{height:30px;font-size:11px;border-radius:7px;padding:0 11px}.xi_save{background:#cdb272!important;border:0!important;color:#111!important}.xi_cancel{background:#fff!important;border:1px solid #d7c9ae!important;color:#9a1f1f!important}#xi_backend_version{margin:8px 0 0;font-size:10px;color:#6b6254;background:#fffaf0;border:1px solid #eadfc9;padding:5px 8px;display:inline-block}';
     document.head.appendChild(s);
   }
 
@@ -194,7 +195,7 @@
     p.innerHTML='<div id="xi_grid_head"><b>Grilla importada</b><span id="xi_grid_status"></span></div><div id="xi_grid_help">Revisá Simple / Combo una vez por SKU. Aplica tanto para Tienda Nube como para Mercado Libre.</div><div id="xi_grid_wrap"><table id="xi_grid_table"><colgroup><col style="width:14%"><col style="width:39%"><col style="width:8%"><col style="width:39%"></colgroup><thead><tr><th>SKU</th><th>Tienda Nube</th><th>Simple/Combo</th><th>Mercado Libre</th></tr></thead><tbody id="xi_grid_body"></tbody></table></div><div id="xi_grid_actions"><button class="xi_save" id="xi_grid_save">Guardar cambios</button><button class="xi_cancel" id="xi_grid_cancel">Cancelar</button></div>';
     const inv=$('#inventario'),legend=inv?.querySelector('.legend');
     if(legend)inv.insertBefore(p,legend);else inv?.appendChild(p);
-    $('#xi_grid_save').onclick=saveBatch;$('#xi_grid_cancel').onclick=cancelBatch;
+    $('#xi_grid_save').onclick=saveBatch;$('#xi_grid_cancel').onclick=cancelBatch;setGridSaving(false);
     return p;
   }
 
@@ -217,22 +218,57 @@
     if(!batch)return;
     panel();gridStatus('Cargando grilla...','warn');
     const j=await fetchJson(API+'/inventory/import/batches/'+batch+'/grid?tenant_id='+encodeURIComponent(tenant()),{},'Cargando grilla');
-    rows=j.grid||[];render();$('#xi_grid_panel')?.scrollIntoView({block:'start'});normalizeScreen();
+    rows=j.grid||[];render();setGridSaving(false);$('#xi_grid_panel')?.scrollIntoView({block:'start'});normalizeScreen();
   }
   function selected(){
     const out=[];
     for(const row of rows){const k=slug(row.sku),t=document.querySelector('input[name="xi_'+k+'"]:checked')?.value||'simple';for(const c of [row.tn,row.ml])if(c&&c.staging_id)out.push({staging_id:c.staging_id,item_type:t})}
     return out;
   }
+  function scrollToInventoryTop(){
+    try{$('#inventario')?.scrollIntoView({behavior:'smooth',block:'start'})}catch(e){}
+    try{if(parent&&parent!==window)parent.scrollTo({top:0,behavior:'smooth'})}catch(e){}
+  }
+
+  function setGridSaving(on){
+    saving=!!on;
+    const disabled=saving||!batch;
+    const save=$('#xi_grid_save');
+    const cancel=$('#xi_grid_cancel');
+    if(save){
+      save.disabled=disabled;
+      save.textContent=saving?'Guardando...':'Guardar cambios';
+      save.style.opacity=disabled?'.55':'';
+      save.style.cursor=disabled?'not-allowed':'';
+    }
+    if(cancel){
+      cancel.disabled=disabled;
+      cancel.style.opacity=disabled?'.55':'';
+      cancel.style.cursor=disabled?'not-allowed':'';
+    }
+  }
+
   async function saveBatch(){
-    if(!batch)return;
-    if(!confirm('Guardar '+rows.length+' SKUs en inventario real?'))return;
-    try{gridStatus('Guardando inventario real...','warn');const j=await fetchJson(API+'/inventory/import/batches/'+batch+'/confirm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tenant_id:tenant(),rows:selected()})},'Guardando');gridStatus('Guardado. Items: '+(j.saved_items||0)+' · publicaciones: '+(j.saved_listings||0),'ok');localStorage.removeItem(KEY);batch='';normalizeScreen()}
-    catch(e){gridStatus(e.message||'Error guardando','bad')}
+    if(!batch||saving)return;
+    if(!confirm('Aplicar los cambios de '+rows.length+' SKUs al inventario?'))return;
+    scrollToInventoryTop();
+    setGridSaving(true);
+    try{
+      gridStatus('Aplicando cambios al inventario...','warn');
+      const j=await fetchJson(API+'/inventory/import/batches/'+batch+'/confirm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tenant_id:tenant(),rows:selected()})},'Guardando');
+      gridStatus('Guardado. Items: '+(j.saved_items||0)+' · publicaciones: '+(j.saved_listings||0),'ok');
+      localStorage.removeItem(KEY);
+      batch='';
+      normalizeScreen();
+    }catch(e){
+      gridStatus('No se pudo guardar: '+(e.message||'Error guardando'),'bad');
+    }finally{
+      setGridSaving(false);
+    }
   }
   function cancelBatch(){
     if(!confirm('Cancelar la grilla pendiente?'))return;
-    localStorage.removeItem(KEY);batch='';rows=[];$('#xi_grid_panel')?.remove();status('Importación cancelada.','warn');normalizeScreen();
+    localStorage.removeItem(KEY);batch='';rows=[];setGridSaving(false);$('#xi_grid_panel')?.remove();status('Importación cancelada.','warn');normalizeScreen();
   }
 
   function boot(){patchConfigSession();patchConnect();normalizeScreen();loadBackendVersion();loadSessionSettings();if(batch){status('Hay una grilla pendiente recuperable. Guardá o cancelá antes de importar de nuevo.','warn');loadGrid().catch(e=>status('No pude recuperar grilla: '+(e.message||e),'bad'))}}

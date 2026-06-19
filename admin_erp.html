@@ -498,7 +498,11 @@ function dashChannelBox(obj,ch){return (obj&&obj.channels&&obj.channels[ch])?obj
 function dashInvChannelBox(obj,ch){return (obj&&obj.channels&&obj.channels[ch])?obj.channels[ch]:{count:0,total_amount:0,items:[]}}
 function dashMiniItem(it){let num=it.sale_number||it.external_order_id||'';let ch=it.channel||'';let cust=it.customer_name||'Sin nombre';let amt=dashMoney(it.total);return `<div class="dashItem"><div><span class="pill ${ch==='ML'?'info':'ok'}">${esc(ch)}</span></div><div><strong>${esc(num)}</strong><br><span class="small">${esc(cust)} · ${dateAR(it.created_at)}</span></div><div><strong>${amt}</strong></div></div>`}
 function dashShippingRows(p){let rows=[];let chs=p.channels||{};Object.keys(chs).forEach(ch=>{let types=chs[ch].types||{};Object.keys(types).forEach(t=>{rows.push({channel:ch,type:t,count:types[t].count||0,total:types[t].total_amount||0})})});rows.sort((a,b)=>a.channel.localeCompare(b.channel)||b.count-a.count);if(!rows.length)return '<div class="dashEmpty">Sin pendientes de envío en la ventana actual.</div>';return `<table class="dashTable"><thead><tr><th>Canal</th><th>Tipo de envío</th><th>Cantidad</th><th>Importe</th></tr></thead><tbody>${rows.map(r=>`<tr><td><span class="pill ${r.channel==='ML'?'info':'ok'}">${esc(r.channel)}</span></td><td><strong>${esc(r.type)}</strong></td><td>${esc(r.count)}</td><td>${dashMoney(r.total)}</td></tr>`).join('')}</tbody></table>`}
+function isDashboardViewActive(){
+  return !!(qs('inicio')?.classList.contains('active')||qs('dashboard')?.classList.contains('active'));
+}
 async function refreshShippingForDashboard(){
+  if(!isDashboardViewActive())return;
   let now=Date.now();
   if(loadDashboard._refreshingShipping)return;
   if(loadDashboard._lastShippingRefreshAt && now-loadDashboard._lastShippingRefreshAt<45000)return;
@@ -569,6 +573,7 @@ function dashFailureRows(f){
 
 
 async function loadDashboard(force=false){
+  if(!isDashboardViewActive())return;
   if(loadDashboard.loading&&!force)return;
   loadDashboard.loading=true;
 
@@ -614,7 +619,7 @@ async function loadDashboard(force=false){
     if(qs('stWa'))qs('stWa').textContent=poll.whatsapp_admin_configurado?'OK':'NO';
     setStatus('homeStatus','Dashboard actualizado · '+dateAR(d.generated_at),true);
   }catch(e){
-    if(qs('inicio')?.classList.contains('active')||qs('dashboard')?.classList.contains('active')){
+    if(isDashboardViewActive()){
       console.error('loadDashboard',e);
       setStatus('homeStatus','Error dashboard: '+(e.message||JSON.stringify(e)),false);
     }else{
