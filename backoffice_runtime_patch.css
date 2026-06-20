@@ -1,0 +1,43 @@
+/* XelerIA runtime patch — botones uniformes y visor JSON */
+:root{
+  --xe-btn:#d2b66f;
+  --xe-btn-hover:#c3a354;
+  --xe-btn-active:#a9822d;
+  --xe-btn-ink:#111111;
+  --xe-btn-border:#b79543;
+  --xe-btn-focus:rgba(123,91,20,.30);
+}
+button,.btn,.primary,.secondary,.ok,.warn,.danger,
+input[type="button"],input[type="submit"]{
+  background:var(--xe-btn)!important;
+  color:var(--xe-btn-ink)!important;
+  border:1px solid var(--xe-btn-border)!important;
+  box-shadow:none!important;
+  transition:background .12s ease,transform .08s ease,border-color .12s ease,filter .12s ease!important;
+}
+button:hover,.btn:hover,.primary:hover,.secondary:hover,.ok:hover,.warn:hover,.danger:hover,
+input[type="button"]:hover,input[type="submit"]:hover{
+  background:var(--xe-btn-hover)!important;
+  color:var(--xe-btn-ink)!important;
+  filter:saturate(1.08)!important;
+}
+button:active,.btn:active,.primary:active,.secondary:active,.ok:active,.warn:active,.danger:active,
+input[type="button"]:active,input[type="submit"]:active{
+  background:var(--xe-btn-active)!important;
+  color:var(--xe-btn-ink)!important;
+  transform:translateY(1px) scale(.99)!important;
+  filter:saturate(1.18)!important;
+}
+button:focus-visible,.btn:focus-visible,input[type="button"]:focus-visible,input[type="submit"]:focus-visible{
+  outline:3px solid var(--xe-btn-focus)!important;
+  outline-offset:2px!important;
+}
+button:disabled,.btn:disabled,input[type="button"]:disabled,input[type="submit"]:disabled{
+  opacity:.55!important;
+  cursor:not-allowed!important;
+  filter:grayscale(.15)!important;
+}
+.xe-json-panel{margin-top:12px;border:1px solid var(--line,#ded4be);border-radius:14px;background:#fffaf0;padding:12px;display:none}
+.xe-json-panel.active{display:block}
+.xe-json-panel pre{white-space:pre-wrap;word-break:break-word;max-height:360px;overflow:auto;margin:0;font-size:12px;background:#111;color:#f8f8f2;border-radius:12px;padding:12px}
+.xe-token-note{font-size:12px;color:var(--muted,#6b665c);margin-top:6px}
