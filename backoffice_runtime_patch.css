@@ -37,6 +37,41 @@ button:disabled,.btn:disabled,input[type="button"]:disabled,input[type="submit"]
   cursor:not-allowed!important;
   filter:grayscale(.15)!important;
 }
+
+/* Menú izquierdo: queda oscuro por defecto; solo se pinta el ítem bajo mouse o presionado. */
+aside .navBtn,
+aside .navBtn.active,
+aside .navParent{
+  background:transparent!important;
+  color:#ffffff!important;
+  border:1px solid transparent!important;
+  box-shadow:none!important;
+  transform:none!important;
+  filter:none!important;
+}
+aside .navBtn:hover{
+  background:var(--xe-btn-hover)!important;
+  color:#111111!important;
+  border-color:rgba(220,197,143,.45)!important;
+  filter:saturate(1.08)!important;
+}
+aside .navBtn:active,
+aside .navBtn.active:active{
+  background:var(--xe-btn-active)!important;
+  color:#111111!important;
+  transform:translateY(1px) scale(.99)!important;
+  filter:saturate(1.18)!important;
+}
+aside .navBtn:focus-visible{
+  outline:2px solid rgba(220,197,143,.35)!important;
+  outline-offset:2px!important;
+}
+aside .navTitle{
+  background:transparent!important;
+  color:#d5c6a2!important;
+  border:0!important;
+}
+
 .xe-json-panel{margin-top:12px;border:1px solid var(--line,#ded4be);border-radius:14px;background:#fffaf0;padding:12px;display:none}
 .xe-json-panel.active{display:block}
 .xe-json-panel pre{white-space:pre-wrap;word-break:break-word;max-height:360px;overflow:auto;margin:0;font-size:12px;background:#111;color:#f8f8f2;border-radius:12px;padding:12px}
