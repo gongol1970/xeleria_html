@@ -19,7 +19,7 @@ jobs:
       - name: Checkout xeleria_html
         uses: actions/checkout@v4
 
-      - name: Patch admin_erp.html tenant header/query
+      - name: Patch admin_erp.html tenant header/query and UI helpers
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -29,14 +29,20 @@ jobs:
           original = text
 
           text = text.replace('<title>XelerIA · Planeta Casa</title>', '<title>XelerIA · Backoffice</title>')
+          text = text.replace('Conexión ERP', 'Conexión XelerIA')
           text = text.replace("qs('pageCrumb').textContent='Planeta Casa · '+cleanTitle;", "qs('pageCrumb').textContent='XelerIA · '+cleanTitle;")
           text = text.replace('https://planeta-casa-erp.onrender.com', 'https://api.xeleria.com.ar')
           text = text.replace('https://api.xeleria.com.ar/api', 'https://api.xeleria.com.ar')
 
           old = "function qs(id){return document.getElementById(id)}function fieldVal(id){let el=qs(id);return el?el.value:''}function apiBase(){return(fieldVal('cfgApiUrl')||fieldVal('apiUrl')||state.api).replace(/\\/$/,'')}function token(){return fieldVal('cfgToken')||fieldVal('token')||state.token||''}function url(path){return `${apiBase()}${path}${path.includes('?')?'&':'?'}token=${encodeURIComponent(token())}`}"
-          new = "function qs(id){return document.getElementById(id)}function fieldVal(id){let el=qs(id);return el?el.value:''}function apiBase(){return(fieldVal('cfgApiUrl')||fieldVal('apiUrl')||state.api).replace(/\\/$/,'')}function token(){return fieldVal('cfgToken')||fieldVal('token')||state.token||''}function tenantId(){let qp=new URLSearchParams(location.search);let fromUrl=qp.get('tenant_id')||qp.get('tenant')||'';if(fromUrl){localStorage.setItem('xeleria_tenant_id',fromUrl)}return fromUrl||localStorage.getItem('xeleria_tenant_id')||'00000000-0000-0000-0000-000000000001'}function url(path){let sep=path.includes('?')?'&':'?';return `${apiBase()}${path}${sep}token=${encodeURIComponent(token())}&tenant_id=${encodeURIComponent(tenantId())}`}function xeleriaHeaders(extra={}){return {'Content-Type':'application/json','x-xeleria-tenant':tenantId(),...(extra||{})}}"
+          new = "function qs(id){return document.getElementById(id)}function fieldVal(id){let el=qs(id);return el?el.value:''}function apiBase(){return(fieldVal('cfgApiUrl')||fieldVal('apiUrl')||state.api).replace(/\\/$/,'')}function token(){return fieldVal('cfgToken')||fieldVal('token')||state.token||localStorage.getItem('xeleria_admin_token')||''}function tenantId(){let qp=new URLSearchParams(location.search);let fromUrl=qp.get('tenant_id')||qp.get('tenant')||'';if(fromUrl){localStorage.setItem('xeleria_tenant_id',fromUrl)}return fromUrl||localStorage.getItem('xeleria_tenant_id')||'00000000-0000-0000-0000-000000000001'}function url(path){let sep=path.includes('?')?'&':'?';return `${apiBase()}${path}${sep}tenant_id=${encodeURIComponent(tenantId())}`}function xeleriaHeaders(extra={}){let t=token();let h={'Content-Type':'application/json','x-xeleria-tenant':tenantId(),...(extra||{})};if(t)h['x-admin-token']=t;return h}"
           if old in text and 'function tenantId(){' not in text:
               text = text.replace(old, new, 1)
+
+          # Si ya estaba parcheado con token en query, lo sobreescribimos con versión sin token visible en URL.
+          old2 = "function qs(id){return document.getElementById(id)}function fieldVal(id){let el=qs(id);return el?el.value:''}function apiBase(){return(fieldVal('cfgApiUrl')||fieldVal('apiUrl')||state.api).replace(/\\/$/,'')}function token(){return fieldVal('cfgToken')||fieldVal('token')||state.token||''}function tenantId(){let qp=new URLSearchParams(location.search);let fromUrl=qp.get('tenant_id')||qp.get('tenant')||'';if(fromUrl){localStorage.setItem('xeleria_tenant_id',fromUrl)}return fromUrl||localStorage.getItem('xeleria_tenant_id')||'00000000-0000-0000-0000-000000000001'}function url(path){let sep=path.includes('?')?'&':'?';return `${apiBase()}${path}${sep}token=${encodeURIComponent(token())}&tenant_id=${encodeURIComponent(tenantId())}`}function xeleriaHeaders(extra={}){return {'Content-Type':'application/json','x-xeleria-tenant':tenantId(),...(extra||{})}}"
+          if old2 in text:
+              text = text.replace(old2, new, 1)
 
           text = text.replace(
               "headers:{'Content-Type':'application/json',...(opt.headers||{})}",
@@ -47,17 +53,120 @@ jobs:
               "async function fetchText(path,opt={}){let r=await fetch(url(path),{...opt,headers:xeleriaHeaders(opt.headers||{})});let txt=await r.text();if(!r.ok)throw {ok:false,http_status:r.status,path,raw_text:txt};return txt}"
           )
 
-          if "console.info('XelerIA tenant', tenantId());" not in text and 'function tenantId(){' in text:
-              text = text.replace(
-                  "function startAlertPolling(){\n",
-                  "console.info('XelerIA tenant', tenantId());\nfunction startAlertPolling(){\n"
-              )
+          css = r'''
+<style id="xeleria-unified-button-style">
+:root{--xe-btn:#d2b66f;--xe-btn-hover:#c4a24f;--xe-btn-active:#a9822d;--xe-btn-ink:#101010;--xe-btn-border:#b79543;--xe-focus:#7b5b14}
+button,.btn,.primary,.secondary,.ok,.warn,.danger{background:var(--xe-btn)!important;color:var(--xe-btn-ink)!important;border:1px solid var(--xe-btn-border)!important;box-shadow:none!important;transition:background .12s ease,transform .08s ease,border-color .12s ease,filter .12s ease!important}
+button:hover,.btn:hover,.primary:hover,.secondary:hover,.ok:hover,.warn:hover,.danger:hover{background:var(--xe-btn-hover)!important;color:var(--xe-btn-ink)!important;filter:saturate(1.08)!important}
+button:active,.btn:active,.primary:active,.secondary:active,.ok:active,.warn:active,.danger:active{background:var(--xe-btn-active)!important;color:var(--xe-btn-ink)!important;transform:translateY(1px) scale(.99)!important;filter:saturate(1.18)!important}
+button:focus-visible,.btn:focus-visible{outline:3px solid rgba(123,91,20,.28)!important;outline-offset:2px!important}
+button:disabled,.btn:disabled{opacity:.55!important;cursor:not-allowed!important;filter:grayscale(.15)!important}
+.xe-json-panel{margin-top:12px;border:1px solid var(--line);border-radius:14px;background:#fffaf0;padding:12px;display:none}.xe-json-panel.active{display:block}.xe-json-panel pre{white-space:pre-wrap;word-break:break-word;max-height:360px;overflow:auto;margin:0;font-size:12px}.xe-token-note{font-size:12px;color:var(--muted);margin-top:6px}
+</style>
+'''
+          if 'xeleria-unified-button-style' not in text:
+              text = text.replace('</head>', css + '\n</head>', 1)
+
+          script = r'''
+<script id="xeleria-debug-and-token-script">
+(function(){
+  const LAST_KEY='xeleria_last_json';
+  function pretty(v){try{return JSON.stringify(v,null,2)}catch(e){return String(v)}}
+  function saveLast(payload){try{localStorage.setItem(LAST_KEY,pretty({...payload,at:new Date().toISOString()}))}catch(e){}}
+  window.xeleriaSaveLastJson=saveLast;
+
+  // Evitar token visible en URL. Si viene, se guarda local y se limpia la barra.
+  try{
+    const u=new URL(location.href);
+    const t=u.searchParams.get('token')||u.searchParams.get('admin_token')||u.searchParams.get('ADMIN_TOKEN');
+    if(t){localStorage.setItem('xeleria_admin_token',t);u.searchParams.delete('token');u.searchParams.delete('admin_token');u.searchParams.delete('ADMIN_TOKEN');history.replaceState({},'',u.toString())}
+  }catch(e){}
+
+  const rawFetch=window.fetch.bind(window);
+  window.fetch=async function(input,init){
+    const reqUrl=(typeof input==='string')?input:(input&&input.url)||'';
+    try{
+      const res=await rawFetch(input,init);
+      const clone=res.clone();
+      let txt='';
+      try{txt=await clone.text()}catch(e){}
+      let body=txt;
+      try{body=JSON.parse(txt)}catch(e){}
+      saveLast({ok:res.ok,status:res.status,url:reqUrl,body});
+      return res;
+    }catch(err){
+      saveLast({ok:false,url:reqUrl,error:String(err&&err.message||err)});
+      throw err;
+    }
+  };
+
+  function tenantId(){
+    const qp=new URLSearchParams(location.search);const fromUrl=qp.get('tenant_id')||qp.get('tenant')||'';
+    if(fromUrl)localStorage.setItem('xeleria_tenant_id',fromUrl);
+    return fromUrl||localStorage.getItem('xeleria_tenant_id')||'00000000-0000-0000-0000-000000000001';
+  }
+  function apiBase(){const el=document.getElementById('cfgApiUrl')||document.getElementById('apiUrl');return ((el&&el.value)||'https://api.xeleria.com.ar').replace(/\/$/,'')}
+  function token(){const el=document.getElementById('cfgToken')||document.getElementById('token');return ((el&&el.value)||localStorage.getItem('xeleria_admin_token')||'').trim()}
+  window.tenantId=window.tenantId||tenantId;
+  window.url=function(path){return `${apiBase()}${path}${path.includes('?')?'&':'?'}tenant_id=${encodeURIComponent(tenantId())}`};
+  window.xeleriaHeaders=function(extra={}){const h={'Content-Type':'application/json','x-xeleria-tenant':tenantId(),...(extra||{})};const t=token();if(t)h['x-admin-token']=t;return h};
+
+  function ensureDebugUI(){
+    const apiInput=document.getElementById('cfgApiUrl')||document.getElementById('apiUrl');
+    if(!apiInput)return;
+    const card=apiInput.closest('.card')||apiInput.parentElement;
+    if(!card || document.getElementById('xeShowLastJson'))return;
+
+    const tokenInput=document.getElementById('cfgToken')||document.getElementById('token');
+    if(tokenInput){
+      tokenInput.type='password';
+      tokenInput.autocomplete='off';
+      tokenInput.style.display='none';
+      const labels=[...document.querySelectorAll('label')];
+      const lab=labels.find(l=>(l.getAttribute('for')===tokenInput.id)||/ADMIN_TOKEN|TOKEN/i.test(l.textContent||''));
+      if(lab)lab.style.display='none';
+      const note=document.createElement('div');note.className='xe-token-note';note.textContent='Token guardado localmente. No se muestra ni viaja en la URL.';
+      tokenInput.insertAdjacentElement('afterend',note);
+    }
+
+    const row=document.createElement('div');row.className='btnrow';row.style.marginTop='12px';
+    const btn=document.createElement('button');btn.id='xeShowLastJson';btn.type='button';btn.textContent='Ver último JSON';
+    const testBtn=[...card.querySelectorAll('button')].find(b=>(b.textContent||'').trim().toLowerCase()==='probar');
+    if(testBtn){
+      testBtn.type='button';
+      testBtn.onclick=async function(ev){
+        ev.preventDefault();ev.stopPropagation();
+        const status=card.querySelector('.status')||card.querySelector('[id*=status]')||card.querySelector('[id*=Status]');
+        try{
+          const r=await fetch(`${apiBase()}/admin/health?tenant_id=${encodeURIComponent(tenantId())}`,{headers:window.xeleriaHeaders({})});
+          const data=await r.json();
+          saveLast({ok:r.ok,status:r.status,url:`${apiBase()}/admin/health`,body:data});
+          if(status){status.textContent=r.ok?'Conectado.':'Error de conexión.';status.className='status '+(r.ok?'oktxt':'badtxt')}
+        }catch(e){
+          saveLast({ok:false,url:`${apiBase()}/admin/health`,error:String(e&&e.message||e)});
+          if(status){status.textContent='Error de conexión.';status.className='status badtxt'}
+        }
+      };
+    }
+    const panel=document.createElement('div');panel.id='xeLastJsonPanel';panel.className='xe-json-panel';panel.innerHTML='<pre id="xeLastJsonPre">Todavía no hay JSON guardado.</pre>';
+    btn.addEventListener('click',function(){
+      const pre=panel.querySelector('pre');pre.textContent=localStorage.getItem(LAST_KEY)||'Todavía no hay JSON guardado.';panel.classList.toggle('active');
+    });
+    row.appendChild(btn);card.appendChild(row);card.appendChild(panel);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ensureDebugUI);else ensureDebugUI();
+  setTimeout(ensureDebugUI,800);
+})();
+</script>
+'''
+          if 'xeleria-debug-and-token-script' not in text:
+              text = text.replace('</body>', script + '\n</body>', 1)
 
           if text == original:
-              print('Sin cambios: admin_erp.html ya estaba tenant-aware.')
+              print('Sin cambios: admin_erp.html ya estaba actualizado.')
           else:
               path.write_text(text, encoding='utf-8')
-              print('admin_erp.html actualizado con tenant, header, branding y API XelerIA raíz.')
+              print('admin_erp.html actualizado: botones uniformes, último JSON, token oculto y test conexión.')
           PY
 
       - name: Commit HTML tenant patch
@@ -65,5 +174,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add admin_erp.html
-          git commit -m "Point admin ERP HTML to root XelerIA API" || echo "Sin cambios para commitear"
+          git commit -m "Standardize buttons and add last JSON viewer" || echo "Sin cambios para commitear"
           git push
