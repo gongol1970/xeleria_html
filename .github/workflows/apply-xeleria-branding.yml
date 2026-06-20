@@ -1,0 +1,69 @@
+name: Apply XelerIA branding
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/apply-xeleria-branding.yml'
+      - 'favicon_xeleria.png'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout xeleria_html
+        uses: actions/checkout@v4
+
+      - name: Validate canonical asset
+        run: |
+          test -f favicon_xeleria.png
+          file favicon_xeleria.png
+
+      - name: Replace old app icons with canonical XelerIA asset
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          replacements = {
+              './favicon_nexia.png?v=2': './favicon_xeleria.png?v=20260620',
+              'favicon_nexia.png?v=2': 'favicon_xeleria.png?v=20260620',
+              './ERP.png': './favicon_xeleria.png?v=20260620',
+              'ERP.png': 'favicon_xeleria.png?v=20260620',
+          }
+
+          targets = [
+              Path('admin_erp.html'),
+              Path('admin_erp_operativo.html'),
+              Path('admin_inventario_editable.html'),
+              Path('arca_admin.html'),
+              Path('admin.html'),
+          ]
+
+          changed = []
+          for path in targets:
+              if not path.exists():
+                  continue
+              text = path.read_text(encoding='utf-8')
+              original = text
+              for old, new in replacements.items():
+                  text = text.replace(old, new)
+              if text != original:
+                  path.write_text(text, encoding='utf-8')
+                  changed.append(str(path))
+
+          print('changed:', changed)
+          PY
+
+      - name: Commit branding changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add admin_erp.html admin_erp_operativo.html admin_inventario_editable.html arca_admin.html admin.html || true
+          git commit -m "Use canonical XelerIA favicon asset" || echo "Sin cambios para commitear"
+          git push
