@@ -30,7 +30,8 @@ jobs:
 
           text = text.replace('<title>XelerIA · Planeta Casa</title>', '<title>XelerIA · Backoffice</title>')
           text = text.replace("qs('pageCrumb').textContent='Planeta Casa · '+cleanTitle;", "qs('pageCrumb').textContent='XelerIA · '+cleanTitle;")
-          text = text.replace('https://planeta-casa-erp.onrender.com', 'https://api.xeleria.com.ar/api')
+          text = text.replace('https://planeta-casa-erp.onrender.com', 'https://api.xeleria.com.ar')
+          text = text.replace('https://api.xeleria.com.ar/api', 'https://api.xeleria.com.ar')
 
           old = "function qs(id){return document.getElementById(id)}function fieldVal(id){let el=qs(id);return el?el.value:''}function apiBase(){return(fieldVal('cfgApiUrl')||fieldVal('apiUrl')||state.api).replace(/\\/$/,'')}function token(){return fieldVal('cfgToken')||fieldVal('token')||state.token||''}function url(path){return `${apiBase()}${path}${path.includes('?')?'&':'?'}token=${encodeURIComponent(token())}`}"
           new = "function qs(id){return document.getElementById(id)}function fieldVal(id){let el=qs(id);return el?el.value:''}function apiBase(){return(fieldVal('cfgApiUrl')||fieldVal('apiUrl')||state.api).replace(/\\/$/,'')}function token(){return fieldVal('cfgToken')||fieldVal('token')||state.token||''}function tenantId(){let qp=new URLSearchParams(location.search);let fromUrl=qp.get('tenant_id')||qp.get('tenant')||'';if(fromUrl){localStorage.setItem('xeleria_tenant_id',fromUrl)}return fromUrl||localStorage.getItem('xeleria_tenant_id')||'00000000-0000-0000-0000-000000000001'}function url(path){let sep=path.includes('?')?'&':'?';return `${apiBase()}${path}${sep}token=${encodeURIComponent(token())}&tenant_id=${encodeURIComponent(tenantId())}`}function xeleriaHeaders(extra={}){return {'Content-Type':'application/json','x-xeleria-tenant':tenantId(),...(extra||{})}}"
@@ -56,7 +57,7 @@ jobs:
               print('Sin cambios: admin_erp.html ya estaba tenant-aware.')
           else:
               path.write_text(text, encoding='utf-8')
-              print('admin_erp.html actualizado con tenant, header, branding y API XelerIA.')
+              print('admin_erp.html actualizado con tenant, header, branding y API XelerIA raíz.')
           PY
 
       - name: Commit HTML tenant patch
@@ -64,5 +65,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add admin_erp.html
-          git commit -m "Point admin ERP HTML to XelerIA API" || echo "Sin cambios para commitear"
+          git commit -m "Point admin ERP HTML to root XelerIA API" || echo "Sin cambios para commitear"
           git push
