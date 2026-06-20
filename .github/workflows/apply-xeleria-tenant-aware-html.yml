@@ -1,0 +1,66 @@
+name: Apply XelerIA tenant-aware HTML
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/apply-xeleria-tenant-aware-html.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout xeleria_html
+        uses: actions/checkout@v4
+
+      - name: Patch admin_erp.html tenant header/query
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path('admin_erp.html')
+          text = path.read_text(encoding='utf-8')
+          original = text
+
+          needle = "function qs(id){return document.getElementById(id)}function fieldVal(id){let el=qs(id);return el?el.value:''}function apiBase(){return(fieldVal('cfgApiUrl')||fieldVal('apiUrl')||state.api).replace(/\\/$/,'')}function token(){return fieldVal('cfgToken')||fieldVal('token')||state.token||''}function url(path){return `${apiBase()}${path}${path.includes('?')?'&':'?'}token=${encodeURIComponent(token())}`}"
+          repl = "function qs(id){return document.getElementById(id)}function fieldVal(id){let el=qs(id);return el?el.value:''}function apiBase(){return(fieldVal('cfgApiUrl')||fieldVal('apiUrl')||state.api).replace(/\\/$/,'')}function token(){return fieldVal('cfgToken')||fieldVal('token')||state.token||''}function tenantId(){let qp=new URLSearchParams(location.search);let fromUrl=qp.get('tenant_id')||qp.get('tenant')||'';if(fromUrl){localStorage.setItem('xeleria_tenant_id',fromUrl)}return fromUrl||localStorage.getItem('xeleria_tenant_id')||'00000000-0000-0000-0000-000000000001'}function url(path){let sep=path.includes('?')?'&':'?';return `${apiBase()}${path}${sep}token=${encodeURIComponent(token())}&tenant_id=${encodeURIComponent(tenantId())}`}function xeleriaHeaders(extra={}){return {'Content-Type':'application/json','x-xeleria-tenant':tenantId(),...(extra||{})}}"
+          if needle in text and 'function tenantId(){' not in text:
+              text = text.replace(needle, repl, 1)
+
+          text = text.replace(
+              "headers:{'Content-Type':'application/json',...(opt.headers||{})}",
+              "headers:xeleriaHeaders(opt.headers||{})"
+          )
+          text = text.replace(
+              "async function fetchText(path,opt={}){let r=await fetch(url(path),opt);let txt=await r.text();if(!r.ok)throw {ok:false,http_status:r.status,path,raw_text:txt};return txt}",
+              "async function fetchText(path,opt={}){let r=await fetch(url(path),{...opt,headers:xeleriaHeaders(opt.headers||{})});let txt=await r.text();if(!r.ok)throw {ok:false,http_status:r.status,path,raw_text:txt};return txt}"
+          )
+
+          # Mostrar en consola, sin agregar UI aún: la pantalla queda lista para login/selector tenant futuro.
+          if 'console.info(\'XelerIA tenant\'' not in text:
+              text = text.replace(
+                  "function startAlertPolling(){\n",
+                  "console.info('XelerIA tenant', tenantId());\nfunction startAlertPolling(){\n"
+              )
+
+          if text == original:
+              print('Sin cambios: admin_erp.html ya estaba tenant-aware.')
+          else:
+              path.write_text(text, encoding='utf-8')
+              print('admin_erp.html actualizado con x-xeleria-tenant y tenant_id en URLs.')
+          PY
+
+      - name: Commit HTML tenant patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add admin_erp.html
+          git commit -m "Send XelerIA tenant from admin ERP HTML" || echo "Sin cambios para commitear"
+          git push
