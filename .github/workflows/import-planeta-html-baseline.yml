@@ -1,0 +1,78 @@
+name: Import Planeta HTML baseline
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_branch:
+        description: "Rama destino en xeleria_html"
+        required: true
+        default: "import/planeta-html-baseline"
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout destino xeleria_html
+        uses: actions/checkout@v4
+        with:
+          path: dest
+          ref: main
+
+      - name: Checkout fuente planeta-casa-chat
+        uses: actions/checkout@v4
+        with:
+          repository: gongol1970/planeta-casa-chat
+          ref: main
+          path: source
+
+      - name: Copiar solo HTML/docs base de ERP hacia XelerIA
+        run: |
+          cd dest
+          git checkout -B "${{ inputs.target_branch }}"
+
+          copy_path () {
+            SRC="../source/$1"
+            DST="$1"
+
+            if [ -e "$SRC" ]; then
+              rm -rf "$DST"
+              mkdir -p "$(dirname "$DST")"
+              cp -a "$SRC" "$DST"
+              echo "copiado: $1"
+            else
+              echo "no existe en fuente: $1"
+            fi
+          }
+
+          # Documentación / templates útiles para mapa de migración
+          copy_path "docs"
+          copy_path "templates"
+
+          # Paneles ERP que sí migran
+          copy_path "admin.html"
+          copy_path "admin_erp.html"
+          copy_path "admin_erp_operativo.html"
+          copy_path "admin_inventario_editable.html"
+          copy_path "arca_admin.html"
+
+          # NO copiar:
+          # ERP.png
+          # ISOLOGO.jpg
+          # chat.html
+          # chat.png
+          # favicon_chat.jpg
+          # favicon_nexia.png
+          # panel_humano_planeta_casa_whatsapp_style.html
+          #
+          # El favicon/logo de XelerIA queda el que ya exista en xeleria_html.
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add .
+          git commit -m "Import Planeta ERP HTML baseline for XelerIA migration" || echo "Sin cambios para commitear"
+          git push -u origin "${{ inputs.target_branch }}"
