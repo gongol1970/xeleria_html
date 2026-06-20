@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>XelerIA · Planeta Casa</title>
+<title>XelerIA · Backoffice</title>
 <!-- HUBIAX_INVENTORY_COMBOS_UI_V1_47 -->
 <link rel="icon" href="./favicon_xeleria.png?v=20260620" />
 <style>
@@ -402,7 +402,7 @@ function showView(id){
     cleanTitle=(clone.textContent||'').replace(/\s+\d+\s*$/,'').trim()||'ERP';
   }
   qs('pageTitle').textContent=cleanTitle;
-  qs('pageCrumb').textContent='Planeta Casa · '+cleanTitle;
+  qs('pageCrumb').textContent='XelerIA · '+cleanTitle;
   if(id==='inicio')loadDashboard();
   if(id==='dashboard')loadDashboard();
   if(id==='movimientos')loadMovements();
