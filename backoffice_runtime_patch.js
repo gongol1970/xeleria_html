@@ -55,7 +55,7 @@
     const link = doc.createElement('link');
     link.id = 'xeRuntimePatchCss';
     link.rel = 'stylesheet';
-    link.href = './backoffice_runtime_patch.css?v=20260620-2';
+    link.href = './backoffice_runtime_patch.css?v=20260620-3';
     doc.head.appendChild(link);
   }
 
