@@ -1,1 +1,25 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="0; url=./inventario_config.html"><title>XelerIA</title></head><body><p>Redirigiendo a XelerIA...</p><script>location.replace('./inventario_config.html');</script></body></html>
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>XelerIA · Backoffice</title>
+<style>body{font-family:Inter,Arial,sans-serif;background:#f2f0eb;margin:0;padding:24px;color:#171717}.card{background:#fffdf8;border:1px solid #ded4be;border-radius:18px;padding:18px;box-shadow:0 10px 30px rgba(17,17,17,.08)}.badtxt{color:#b42318;font-weight:800}</style>
+</head>
+<body>
+<div class="card" id="loader">Cargando backoffice estable...</div>
+<script>
+(async()=>{
+  const stable='https://raw.githubusercontent.com/gongol1970/xeleria_html/e30ac178b323b4ae2423b76a50198404dafc52f9/admin_erp.html';
+  try{
+    const r=await fetch(stable,{cache:'no-store'});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const html=await r.text();
+    document.open();document.write(html);document.close();
+  }catch(e){
+    document.getElementById('loader').innerHTML='<div class="badtxt">No pude cargar el backoffice estable: '+String(e.message||e)+'</div>';
+  }
+})();
+</script>
+</body>
+</html>
