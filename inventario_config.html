@@ -56,16 +56,25 @@ function readStored(key, fallback=''){
 }
 function writeStored(key, value){try{localStorage.setItem(key, value || '')}catch(_){}}
 function init(){
-  $('apiUrl').value = readStored('xeleria_api_url', readStored('apiUrl', 'https://api.xeleria.com.ar'));
-  $('token').value = readStored('xeleria_admin_token', readStored('ADMIN_TOKEN', readStored('token','')));
-  $('tenantId').value = readStored('xeleria_tenant_id', readStored('tenant_id', '00000000-0000-0000-0000-000000000001'));
+  const qp = new URLSearchParams(location.search);
+  const api = qp.get('api') || readStored('pc_erp_api', readStored('xeleria_api_url', readStored('apiUrl', 'https://api.xeleria.com.ar')));
+  const tok = qp.get('token') || qp.get('admin_token') || readStored('pc_erp_token', readStored('xeleria_admin_token', readStored('ADMIN_TOKEN', readStored('token',''))));
+  const ten = qp.get('tenant_id') || qp.get('tenant') || readStored('xeleria_tenant_id', readStored('tenant_id', '00000000-0000-0000-0000-000000000001'));
+  $('apiUrl').value = api;
+  $('token').value = tok;
+  $('tenantId').value = ten;
 }
 function apiBase(){return ($('apiUrl').value || 'https://api.xeleria.com.ar').trim().replace(/\/+$/,'').replace(/\/api$/,'')}
 function esc(v){return String(v ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
 function money(v){if(v===null||v===undefined||v==='')return ''; const n=Number(v); return isNaN(n)?esc(v):'$ '+n.toLocaleString('es-AR',{maximumFractionDigits:2})}
 async function fetchJson(path){
-  writeStored('xeleria_api_url', $('apiUrl').value); writeStored('xeleria_admin_token', $('token').value); writeStored('xeleria_tenant_id', $('tenantId').value);
-  const r = await fetch(apiBase()+path, {headers:{'x-admin-token':$('token').value.trim(),'x-xeleria-tenant':$('tenantId').value.trim()}});
+  const t = $('token').value.trim();
+  const tenant = $('tenantId').value.trim();
+  writeStored('pc_erp_api', $('apiUrl').value); writeStored('xeleria_api_url', $('apiUrl').value);
+  writeStored('pc_erp_token', t); writeStored('xeleria_admin_token', t); writeStored('xeleria_tenant_id', tenant);
+  const sep = path.includes('?') ? '&' : '?';
+  const pathWithAuth = path + sep + 'tenant_id=' + encodeURIComponent(tenant) + '&token=' + encodeURIComponent(t);
+  const r = await fetch(apiBase()+pathWithAuth, {headers:{'Content-Type':'application/json','x-admin-token':t,'x-xeleria-tenant':tenant}});
   const txt = await r.text();
   let data; try{data = txt ? JSON.parse(txt) : {}}catch(_){data={raw:txt}}
   if(!r.ok) throw new Error(data.detail || data.error || txt || ('HTTP '+r.status));
@@ -89,8 +98,7 @@ async function loadGrid(offset=0){
   $('status').className='status'; $('status').textContent='Cargando grilla...';
   try{
     const limit = 500;
-    const qs = `?tenant_id=${encodeURIComponent($('tenantId').value.trim())}&limit=${limit}&offset=${offset}`;
-    const data = await fetchJson('/admin/inventory/import-grid'+qs);
+    const data = await fetchJson('/admin/inventory/import-grid?limit='+limit+'&offset='+offset);
     renderRows(data.rows || []);
     const batch = data.batch || {};
     const counts = batch.counts || {};
