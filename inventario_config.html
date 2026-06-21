@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>XelerIA · Configurar inventario</title>
+  <link rel="icon" href="./favicon_xeleria.png?v=20260620">
+  <style>
+    :root{--bg:#f2f0eb;--surface:#fffdf8;--ink:#171717;--muted:#6b665c;--line:#ded4be;--brand:#dcc58f;--ok:#067647;--bad:#b42318;--warn:#b54708;--new:#ecfdf3;--missing:#fef3f2;--sku:#fff7ed;--shadow:0 10px 30px rgba(17,17,17,.08)}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,Arial,sans-serif;font-size:14px}.wrap{padding:22px 26px 60px;max-width:1500px;margin:auto}.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px;margin-bottom:14px}h1,h2,h3{margin:0 0 10px}p{margin:6px 0;color:var(--muted)}label{display:block;font-size:12px;font-weight:800;color:#504b43;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}input,select{width:100%;border:1px solid #cfc4ad;border-radius:12px;background:#fff;padding:10px 11px;font-size:14px;color:var(--ink);outline:none}button,.btn{border:1px solid #b79543;border-radius:12px;background:#d2b66f;color:#111;padding:10px 13px;font-weight:900;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap}button:hover,.btn:hover{background:#c3a354}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.col-2{grid-column:span 2}.col-3{grid-column:span 3}.col-4{grid-column:span 4}.col-6{grid-column:span 6}.col-12{grid-column:span 12}.btnrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.status{min-height:24px;color:var(--muted);margin-top:10px}.oktxt{color:var(--ok);font-weight:800}.badtxt{color:var(--bad);font-weight:800}.warntxt{color:var(--warn);font-weight:800}.small{font-size:12px;color:var(--muted)}.pill{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;font-size:12px;font-weight:800;background:#efe7d5;color:#453d31}.pill.ok{background:#ecfdf3;color:var(--ok)}.pill.bad{background:#fef3f2;color:var(--bad)}.pill.warn{background:#fff7ed;color:var(--warn)}.importGrid{max-height:620px;overflow:auto;border:1px solid var(--line);border-radius:14px;background:#fff;margin-top:12px}.importGrid table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:10px}.importGrid th,.importGrid td{border-bottom:1px solid #eee2c8;padding:6px 8px;text-align:left;vertical-align:top}.importGrid th{position:sticky;top:0;z-index:3;background:#151515;color:#fff}.importGrid col.sku{width:14%}.importGrid col.tn{width:39%}.importGrid col.kind{width:8%}.importGrid col.ml{width:39%}.row-new td{background:var(--new)}.row-missing_in_refresh td{background:var(--missing)}.row-missing_sku td{background:var(--sku)}.pub{margin-bottom:6px;padding-bottom:6px;border-bottom:1px dashed #eadfc8}.pub:last-child{border-bottom:0;margin-bottom:0}.pubTitle{font-weight:900;font-size:10.5px}.pubMeta{font-size:9px;color:#555;line-height:1.35}.typeCell{font-size:10px;text-align:center;white-space:nowrap}.typeCell label{display:inline-flex;text-transform:none;letter-spacing:0;font-size:10px;font-weight:800;margin:0 3px 5px;color:#111}.typeCell input{width:auto;margin:0 3px 0 0}.topActions{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap}.topActions>div{min-width:210px;flex:1}.topActions .token{min-width:260px}.link{color:#111;text-decoration:underline;font-weight:900}@media(max-width:900px){.grid{grid-template-columns:1fr}.col-2,.col-3,.col-4,.col-6,.col-12{grid-column:1/-1}.topActions>div{min-width:100%}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>XelerIA · Configurar inventario</h1>
+      <p>Grilla de revisión desde staging. No guarda inventario real todavía.</p>
+      <p><a class="link" href="./admin_erp.html">← Volver al backoffice</a></p>
+    </div>
+
+    <div class="card">
+      <h2>Conexión</h2>
+      <div class="topActions">
+        <div><label>API</label><input id="apiUrl" value="https://api.xeleria.com.ar"></div>
+        <div class="token"><label>ADMIN_TOKEN</label><input id="token" type="password" placeholder="Token admin"></div>
+        <div><label>Tenant</label><input id="tenantId" value="00000000-0000-0000-0000-000000000001"></div>
+        <div style="flex:0 0 auto"><label>&nbsp;</label><button onclick="loadGrid(0)">Ver grilla</button></div>
+      </div>
+      <div id="status" class="status"></div>
+    </div>
+
+    <div class="card">
+      <div class="btnrow">
+        <h2 style="margin-right:auto">Grilla importada</h2>
+        <span class="pill ok">Verde: nuevo</span>
+        <span class="pill bad">Rojo: falta en refresh</span>
+        <span class="pill warn">Amarillo: SKU faltante</span>
+      </div>
+      <p class="small">Simple / Combo pertenece al SKU general y aplica a TN y ML. Si ya existía en base real, viene preseleccionado desde inventory_items.</p>
+      <div id="summary" class="status"></div>
+      <div class="importGrid">
+        <table>
+          <colgroup><col class="sku"><col class="tn"><col class="kind"><col class="ml"></colgroup>
+          <thead><tr><th>SKU</th><th>Tienda Nube</th><th>Simple / Combo</th><th>Mercado Libre</th></tr></thead>
+          <tbody id="gridBody"><tr><td colspan="4">Cargá la grilla para ver publicaciones.</td></tr></tbody>
+        </table>
+      </div>
+      <div id="pager" class="btnrow" style="margin-top:12px"></div>
+    </div>
+  </div>
+
+<script>
+const $ = id => document.getElementById(id);
+function readStored(key, fallback=''){
+  try{return localStorage.getItem(key) || fallback}catch(_){return fallback}
+}
+function writeStored(key, value){try{localStorage.setItem(key, value || '')}catch(_){}}
+function init(){
+  $('apiUrl').value = readStored('xeleria_api_url', readStored('apiUrl', 'https://api.xeleria.com.ar'));
+  $('token').value = readStored('xeleria_admin_token', readStored('ADMIN_TOKEN', readStored('token','')));
+  $('tenantId').value = readStored('xeleria_tenant_id', readStored('tenant_id', '00000000-0000-0000-0000-000000000001'));
+}
+function apiBase(){return ($('apiUrl').value || 'https://api.xeleria.com.ar').trim().replace(/\/+$/,'').replace(/\/api$/,'')}
+function esc(v){return String(v ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+function money(v){if(v===null||v===undefined||v==='')return ''; const n=Number(v); return isNaN(n)?esc(v):'$ '+n.toLocaleString('es-AR',{maximumFractionDigits:2})}
+async function fetchJson(path){
+  writeStored('xeleria_api_url', $('apiUrl').value); writeStored('xeleria_admin_token', $('token').value); writeStored('xeleria_tenant_id', $('tenantId').value);
+  const r = await fetch(apiBase()+path, {headers:{'x-admin-token':$('token').value.trim(),'x-xeleria-tenant':$('tenantId').value.trim()}});
+  const txt = await r.text();
+  let data; try{data = txt ? JSON.parse(txt) : {}}catch(_){data={raw:txt}}
+  if(!r.ok) throw new Error(data.detail || data.error || txt || ('HTTP '+r.status));
+  return data;
+}
+function renderPubs(list){
+  if(!list || !list.length) return '<span class="small">—</span>';
+  return list.map(p => `<div class="pub"><div class="pubTitle">${esc(p.title || '(sin título)')}</div><div class="pubMeta">ID: ${esc(p.external_full_id || p.external_product_id || '')}<br>Stock: ${esc(p.stock ?? '')} · Precio: ${money(p.price)} · Estado: ${esc(p.status || '')}${p.permalink ? `<br><a class="link" href="${esc(p.permalink)}" target="_blank">abrir</a>` : ''}</div></div>`).join('');
+}
+function renderType(sku, value){
+  const safe = btoa(unescape(encodeURIComponent(sku))).replace(/=/g,'');
+  const v = value === 'bundle' ? 'bundle' : 'simple';
+  return `<div class="typeCell"><label><input type="radio" name="it_${safe}" value="simple" ${v==='simple'?'checked':''}>Simple</label><br><label><input type="radio" name="it_${safe}" value="bundle" ${v==='bundle'?'checked':''}>Combo</label></div>`;
+}
+function rowClass(st){return ['new','missing_in_refresh','missing_sku'].includes(st) ? 'row-'+st : ''}
+function renderRows(rows){
+  if(!rows || !rows.length){$('gridBody').innerHTML = '<tr><td colspan="4">Sin filas.</td></tr>'; return}
+  $('gridBody').innerHTML = rows.map(r => `<tr class="${rowClass(r.compare_status)}"><td><strong>${esc(r.sku)}</strong><br><span class="small">${esc(r.compare_status||'')}</span></td><td>${renderPubs(r.tn_publications)}</td><td>${renderType(r.sku, r.item_type)}</td><td>${renderPubs(r.ml_publications)}</td></tr>`).join('');
+}
+async function loadGrid(offset=0){
+  $('status').className='status'; $('status').textContent='Cargando grilla...';
+  try{
+    const limit = 500;
+    const qs = `?tenant_id=${encodeURIComponent($('tenantId').value.trim())}&limit=${limit}&offset=${offset}`;
+    const data = await fetchJson('/admin/inventory/import-grid'+qs);
+    renderRows(data.rows || []);
+    const batch = data.batch || {};
+    const counts = batch.counts || {};
+    $('summary').innerHTML = `Filas: <strong>${esc(data.total ?? 0)}</strong> · Batch: <strong>${esc(batch.id || '—')}</strong> · ML: <strong>${esc(counts.ML ?? '—')}</strong> · TN: <strong>${esc(counts.TN ?? '—')}</strong>${data.fallback_source ? ' · <span class="warntxt">usando staging anterior como fallback</span>' : ''}`;
+    $('pager').innerHTML = `<button ${offset<=0?'disabled':''} onclick="loadGrid(${Math.max(0,offset-limit)})">Anterior</button><button ${(offset+limit)>=Number(data.total||0)?'disabled':''} onclick="loadGrid(${offset+limit})">Siguiente</button>`;
+    $('status').className='status oktxt'; $('status').textContent='Grilla cargada.';
+  }catch(e){$('status').className='status badtxt'; $('status').textContent='Error: '+e.message}
+}
+init();
+</script>
+</body>
+</html>
