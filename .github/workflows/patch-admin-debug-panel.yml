@@ -1,0 +1,87 @@
+name: Patch admin debug panel
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - .github/workflows/patch-admin-debug-panel.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch admin_erp.html
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          p = Path('admin_erp.html')
+          s = p.read_text(encoding='utf-8')
+          original = s
+
+          # 1) Botón debajo de Sistema > Personalización
+          old_nav = '<div class="navTitle">Sistema</div><div class="sub"><button class="navBtn" data-view="configuracion">Personalización</button></div>'
+          new_nav = '<div class="navTitle">Sistema</div><div class="sub"><button class="navBtn" data-view="configuracion">Personalización</button><button class="navBtn" data-view="sistema-debug">Último JSON</button></div>'
+          if old_nav in s:
+              s = s.replace(old_nav, new_nav, 1)
+          elif 'data-view="sistema-debug"' not in s:
+              raise SystemExit('No encontré nav Sistema esperado')
+
+          # 2) Pantalla copiable antes del cierre de main
+          debug_section = '''\n<section id="sistema-debug" class="view"><div class="card"><h3>Último JSON</h3><p>Última respuesta técnica guardada por el backoffice. Útil para copiar y pegar errores acá.</p><div class="btnrow"><button class="secondary" onclick="renderLastJson()">Actualizar</button><button class="secondary" onclick="copyLastJson()">Copiar JSON</button><button class="secondary" onclick="clearLastJson()">Limpiar</button></div><div id="lastJsonStatus" class="status"></div><pre id="lastJsonOut" class="mono" style="white-space:pre-wrap;overflow:auto;max-height:520px;background:#111;color:#f7f7f7;border-radius:14px;padding:14px"></pre></div></section>\n'''
+          if 'id="sistema-debug"' not in s:
+              marker = '</main></div>\n<div id="erpBusyOverlay"'
+              if marker not in s:
+                  raise SystemExit('No encontré cierre main/overlay')
+              s = s.replace(marker, debug_section + '</main></div>\n<div id="erpBusyOverlay"', 1)
+
+          # 3) showView carga la pantalla debug
+          old_show = "  if(id==='inicio')loadDashboard();"
+          new_show = "  if(id==='sistema-debug')renderLastJson();\n  if(id==='inicio')loadDashboard();"
+          if old_show in s and "if(id==='sistema-debug')renderLastJson();" not in s:
+              s = s.replace(old_show, new_show, 1)
+
+          # 4) Reemplazar popup por pantalla
+          old_popup = "function showLastJson(){alert(localStorage.getItem('xeleria_last_json')||'Todavía no hay JSON guardado.')}"
+          new_popup = "function showLastJson(){showView('sistema-debug');renderLastJson()}"
+          if old_popup in s:
+              s = s.replace(old_popup, new_popup, 1)
+
+          # 5) Funciones de debug/copiado
+          funcs = """
+function lastJsonText(){return localStorage.getItem('xeleria_last_json')||''}
+function renderLastJson(){let el=qs('lastJsonOut');let st=qs('lastJsonStatus');let txt=lastJsonText();if(el)el.textContent=txt||'Todavía no hay JSON guardado.';if(st)setStatus('lastJsonStatus',txt?'Último JSON cargado.':'Todavía no hay JSON guardado.',txt?true:'warn')}
+async function copyLastJson(){let txt=lastJsonText();if(!txt){renderLastJson();return}try{await navigator.clipboard.writeText(txt);setStatus('lastJsonStatus','JSON copiado al portapapeles.',true)}catch(e){setStatus('lastJsonStatus','No pude copiar automático. Seleccioná el bloque y copiá manualmente.',false)}}
+function clearLastJson(){localStorage.removeItem('xeleria_last_json');renderLastJson()}
+"""
+          marker = "function showLastJson(){showView('sistema-debug');renderLastJson()}"
+          if 'function renderLastJson()' not in s:
+              if marker not in s:
+                  raise SystemExit('No encontré showLastJson para insertar helpers')
+              s = s.replace(marker, marker + funcs, 1)
+
+          # 6) El error de saveConfig actualiza el panel si está visible, no escribe en uploadOut escondido.
+          s = s.replace("showPre('uploadOut',e)", "renderLastJson()")
+
+          if s == original:
+              print('Sin cambios: admin_erp.html ya estaba parcheado.')
+          else:
+              p.write_text(s, encoding='utf-8')
+              print('admin_erp.html parcheado.')
+          PY
+      - name: Commit patch
+        run: |
+          if git diff --quiet -- admin_erp.html; then
+            echo "No changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add admin_erp.html
+          git commit -m "Add admin last JSON debug panel"
+          git push
