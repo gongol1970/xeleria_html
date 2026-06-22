@@ -1,4 +1,4 @@
-<!-- XELERIA_CONFIG_INVENTORY_IMPORT_GRID_V1_85_SESSION -->
+<!-- XELERIA_CONFIG_INVENTORY_IMPORT_GRID_V1_86_CONNECTION_STATUS -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -295,7 +295,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 </main></div>
 <div id="erpBusyOverlay" class="erpBusyOverlay"><div class="erpBusyBox"><div class="erpSpinner"></div><div id="erpBusyTitle" class="erpBusyTitle">Procesando...</div><div id="erpBusyMsg" class="erpBusyMsg">No cierres esta pantalla.</div></div></div>
 <script>
-let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[],comboItems:[],pendingBundleDraft:null};let timers={};
+let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[],comboItems:[],pendingBundleDraft:null,connectionSnapshot:null};let timers={};
 
 const ALERT_KEYS={
   ml_questions:{view:'ml-preguntas',label:'Preguntas ML'},
@@ -504,7 +504,7 @@ async function fetchJson(path,opt={}){
   return data;
 }
 async function fetchText(path,opt={}){let r=await fetch(url(path),{...opt,headers:xeleriaHeaders(opt.headers||{})});let txt=await r.text();if(!r.ok)throw {ok:false,http_status:r.status,path,raw_text:txt};return txt}
-async function health(){setStatus('homeStatus','Probando conexión...');setStatus('connStatus','Probando conexión...');try{let d=await fetchJson('/admin/health');let v=d.version||d.app_version||d.backend_version||'?';if(qs('footBackendVer'))qs('footBackendVer').textContent=shortVer(v);if(qs('dashBackendVer'))qs('dashBackendVer').textContent=shortVer(v);if(qs('stErp'))qs('stErp').textContent='OK';renderInventoryImportConnections(d);setStatus('homeStatus','Backend OK · '+shortVer(v),true);setStatus('connStatus','Backend OK · '+shortVer(v),true);return d}catch(e){setStatus('homeStatus','Error conexión: '+errText(e),false);setStatus('connStatus','Error conexión: '+errText(e),false);renderInventoryImportConnections({ml_configurado:false,tn_configurado:false,health_error:errText(e)});showLastJson()}}
+async function health(){setStatus('homeStatus','Probando conexión...');setStatus('connStatus','Probando conexión...');try{let d=await fetchJson('/admin/health');let v=d.version||d.app_version||d.backend_version||'?';if(qs('footBackendVer'))qs('footBackendVer').textContent=shortVer(v);if(qs('dashBackendVer'))qs('dashBackendVer').textContent=shortVer(v);if(qs('stErp'))qs('stErp').textContent='OK';loadConnectionStatus(true);setStatus('homeStatus','Backend OK · '+shortVer(v),true);setStatus('connStatus','Backend OK · '+shortVer(v),true);return d}catch(e){setStatus('homeStatus','Error conexión: '+errText(e),false);setStatus('connStatus','Error conexión: '+errText(e),false);renderInventoryImportConnections({ml_configurado:false,tn_configurado:false,health_error:errText(e)});showLastJson()}}
 function dashMoney(n){return money(Number(n||0))||'$0'}
 function dashSet(id,val){let el=qs(id);if(el)el.textContent=val}
 function dashChannelBox(obj,ch){return (obj&&obj.channels&&obj.channels[ch])?obj.channels[ch]:{count:0,total_amount:0,items:[],types:{}}}
@@ -1597,15 +1597,71 @@ function importReviewSafeName(sku){try{return btoa(unescape(encodeURIComponent(S
 function importReviewType(sku,value){let safe=importReviewSafeName(sku);let v=value==='bundle'?'bundle':'simple';return`<div class="importReviewTypeCell"><label><input type="radio" name="inventory_import_type_${safe}" value="simple" ${v==='simple'?'checked':''}>Simple</label><br><label><input type="radio" name="inventory_import_type_${safe}" value="bundle" ${v==='bundle'?'checked':''}>Combo</label></div>`}
 function importReviewRowClass(status){return['new','missing_in_refresh','missing_sku'].includes(status)?'row-'+status:''}
 function setImportChannelCard(ch,connected,account,raw={}){let key=ch==='ML'?'ML':'TN';let card=qs('inventoryImport'+key+'Card'),st=qs('inventoryImport'+key+'Status'),acc=qs('inventoryImport'+key+'Account'),btn=qs('inventoryImport'+key+'Button');let label=key==='ML'?'ML':'TN';if(card){card.classList.toggle('connected',!!connected);card.classList.toggle('disconnected',!connected)}if(st){st.textContent=connected?'conectado':'no conectado';st.className='pill '+(connected?'ok':'bad')}if(acc){let txt=account||raw.account||raw.nickname||raw.user||raw.email||raw.store||'';acc.textContent=txt?String(txt):'pendiente'}if(btn){btn.textContent=connected?(label+' conectado'):('Conectar '+label);btn.disabled=!!connected;btn.className=connected?'secondary':'primary'}}
-function renderInventoryImportConnections(d={}){let ml=!!(d.ml_configurado||d.ml_connected||d.mercadolibre_connected||d.ml_ok||d.marketplace_ok);let tn=!!(d.tn_configurado||d.tn_connected||d.tiendanube_connected||d.tn_ok||d.tiendanube_ok);let mlAccount=d.ml_account||d.ml_user||d.ml_user_id||d.ml_nickname||d.mercadolibre_account||'';let tnAccount=d.tn_account||d.tn_email||d.tn_store||d.tn_store_id||d.tiendanube_account||'';setImportChannelCard('ML',ml,mlAccount,d);setImportChannelCard('TN',tn,tnAccount,d)}
-function updateInventoryImportConnectionsFromGrid(d={}){let batch=d.batch||{};let acc=batch.accounts||d.accounts||{};let counts=batch.counts||{};let mlRows=(counts.ML??d.ml_count??null);let tnRows=(counts.TN??d.tn_count??null);let mlConnected=!!(d.ml_connected||d.ml_configurado||mlRows!==null&&Number(mlRows)>0||(d.rows||[]).some(r=>(r.ml_publications||[]).length));let tnConnected=!!(d.tn_connected||d.tn_configurado||tnRows!==null&&Number(tnRows)>0||(d.rows||[]).some(r=>(r.tn_publications||[]).length));setImportChannelCard('ML',mlConnected,acc.ML||acc.ml||d.ml_account||'',d);setImportChannelCard('TN',tnConnected,acc.TN||acc.tn||d.tn_account||'',d)}
+function renderInventoryImportConnections(d={}){
+  let source=d.connections?d.connections:d;
+  let mlObj=source.ml||source.ML||{};
+  let tnObj=source.tn||source.TN||{};
+  let ml=!!(mlObj.connected||d.ml_connected||d.mercadolibre_connected||d.ml_ok);
+  let tn=!!(tnObj.connected||d.tn_connected||d.tiendanube_connected||d.tn_ok);
+  let mlAccount=mlObj.label||mlObj.nickname||d.ml_account||d.ml_user||d.ml_nickname||d.mercadolibre_account||'';
+  let tnAccount=tnObj.label||tnObj.email||tnObj.store||d.tn_account||d.tn_email||d.tn_store||d.tiendanube_account||'';
+  setImportChannelCard('ML',ml,mlAccount,{...d,...mlObj});
+  setImportChannelCard('TN',tn,tnAccount,{...d,...tnObj});
+}
+async function loadConnectionStatus(refresh=true){
+  if(!sessionToken()){renderInventoryImportConnections({ml_connected:false,tn_connected:false});return null}
+  try{
+    let d=await fetchJson('/admin/connections/status?refresh='+(refresh?'true':'false'));
+    state.connectionSnapshot=d;
+    renderInventoryImportConnections(d);
+    if(qs('inventoryImportStatus')){
+      let ml=d.connections?.ml,tn=d.connections?.tn;
+      setStatus('inventoryImportStatus',`Conexiones: ML ${ml?.connected?'conectado':'no conectado'}${ml?.label?' · '+ml.label:''} · TN ${tn?.connected?'conectado':'no conectado'}${tn?.label?' · '+tn.label:''}`,true);
+    }
+    return d;
+  }catch(e){
+    console.warn('connection status error',e);
+    return null;
+  }
+}
+function updateInventoryImportConnectionsFromGrid(d={}){
+  let batch=d.batch||{};let acc=batch.accounts||d.accounts||{};let counts=batch.counts||{};
+  let snap=state.connectionSnapshot?.connections||{};
+  let mlSnap=snap.ml||{},tnSnap=snap.tn||{};
+  let mlRows=(counts.ML??d.ml_count??null);let tnRows=(counts.TN??d.tn_count??null);
+  let mlConnected=!!(mlSnap.connected||d.ml_connected||mlRows!==null&&Number(mlRows)>0||(d.rows||[]).some(r=>(r.ml_publications||[]).length));
+  let tnConnected=!!(tnSnap.connected||d.tn_connected||tnRows!==null&&Number(tnRows)>0||(d.rows||[]).some(r=>(r.tn_publications||[]).length));
+  setImportChannelCard('ML',mlConnected,mlSnap.label||acc.ML||acc.ml||d.ml_account||'',d);
+  setImportChannelCard('TN',tnConnected,tnSnap.label||acc.TN||acc.tn||d.tn_account||'',d);
+}
 function connectInventoryChannel(ch){let c=String(ch||'').toUpperCase();let params=new URLSearchParams({connect:c.toLowerCase(),tenant_id:tenantId()});let target='inicio.html?'+params.toString();setStatus('inventoryImportStatus','Abriendo conexión '+c+' desde inicio/onboarding...');window.location.href=target}
 function renderInventoryImportGrid(rows){let body=qs('inventoryImportGridBody');if(!body)return;if(!rows||!rows.length){body.innerHTML='<tr><td colspan="4">Sin filas.</td></tr>';return}body.innerHTML=rows.map(r=>`<tr class="${importReviewRowClass(r.compare_status)}"><td><strong class="mono">${esc(r.sku||'')}</strong><br><span class="small">${esc(r.compare_status||'')}</span></td><td>${importReviewPubs(r.tn_publications)}</td><td>${importReviewType(r.sku,r.item_type)}</td><td>${importReviewPubs(r.ml_publications)}</td></tr>`).join('')}
 async function loadInventoryImportGrid(offset=0){let limit=500;let t=token();let st=sessionToken();/* v1.85: sesión temporal; ADMIN_TOKEN sólo compatibilidad */if(!st&&!t){setStatus('inventoryImportStatus','Sesión XelerIA vacía. Entrá desde inicio.html o pegá ADMIN_TOKEN legacy sólo para debug.',false);saveLastJson({ok:false,path:'/admin/inventory/import-grid',detail:'sesión/admin token vacío en frontend',tenant_id:tenantId()});return}setStatus('inventoryImportStatus','Cargando grilla importada...');try{let tokenQuery=t?('&token='+encodeURIComponent(t)):'';let d=await fetchJson('/admin/inventory/import-grid?limit='+encodeURIComponent(limit)+'&offset='+encodeURIComponent(offset)+tokenQuery);updateInventoryImportConnectionsFromGrid(d);renderInventoryImportGrid(d.rows||[]);let batch=d.batch||{};let counts=batch.counts||{};let summary=`Filas: ${esc(d.total??0)} · Batch: ${esc(batch.id||'—')} · ML: ${esc(counts.ML??'—')} · TN: ${esc(counts.TN??'—')}`;if(d.fallback_source)summary+=' · usando staging anterior como fallback';if(qs('inventoryImportSummary'))qs('inventoryImportSummary').textContent=summary;if(qs('inventoryImportPager'))qs('inventoryImportPager').innerHTML=`<button ${offset<=0?'disabled':''} onclick="loadInventoryImportGrid(${Math.max(0,offset-limit)})">Anterior</button><button ${(offset+limit)>=Number(d.total||0)?'disabled':''} onclick="loadInventoryImportGrid(${offset+limit})">Siguiente</button>`;setStatus('inventoryImportStatus','Grilla cargada.',true);saveLastJson(d)}catch(e){setStatus('inventoryImportStatus','Error grilla importada: '+errText(e),false);renderLastJsonPanel&&renderLastJsonPanel();}}
 
+
+function handleOAuthReturn(){
+  try{
+    let u=new URL(location.href);
+    let oauth=u.searchParams.get('oauth');
+    let status=u.searchParams.get('status');
+    if(oauth&&status){
+      if(status==='connected'){
+        setStatus('inventoryImportStatus',`${oauth.toUpperCase()} conectado. Verificando cuenta...`);
+        loadConnectionStatus(true);
+      }else if(status==='error'){
+        setStatus('inventoryImportStatus',`Error OAuth ${oauth.toUpperCase()}: ${u.searchParams.get('error')||''}`,false);
+      }
+      u.searchParams.delete('oauth');
+      u.searchParams.delete('status');
+      u.searchParams.delete('error');
+      history.replaceState({},'',u.toString());
+    }
+  }catch(e){console.warn('oauth return parse',e)}
+}
+
 cleanTokenFromUrl();
 loadMLQuestionPrefs();renderMLQuickButtons();
-loadSettings();health();startAlertPolling();
+loadSettings();health();handleOAuthReturn();startAlertPolling();
 </script>
 </body>
 </html>
