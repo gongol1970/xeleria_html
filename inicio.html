@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>XelerIA · Inicio</title>
-  <!-- XELERIA_INICIO_V21_SESSION_EXPIRY_RESET -->
+  <!-- XELERIA_INICIO_V22_VERSION_BAR -->
 
   <script>
     if (location.protocol === 'http:' && location.hostname.endsWith('xeleria.com.ar')) {
@@ -175,6 +175,23 @@
       margin-top: 10px;
     }
 
+    .xeleria-version-bar {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 999999;
+      height: 21px;
+      background: #050505;
+      color: #b8f7d4;
+      font: 11px/21px Consolas, 'Courier New', monospace;
+      padding: 0 10px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      border-top: 1px solid #222;
+    }
+
     @media (max-width: 820px) {
       .wrap { grid-template-columns: 1fr; }
       .hero,
@@ -225,10 +242,43 @@
     </section>
   </div>
 
+  <div id="xeleriaVersionBar" class="xeleria-version-bar">
+    FE inicio-v22-version-bar | BE consultando…
+  </div>
+
   <script>
     const API_BASE = 'https://api.xeleria.com.ar';
+    const FRONTEND_VERSION = 'inicio-v22-version-bar';
+    const VERSION_BAR = document.getElementById('xeleriaVersionBar');
     const NEXT_PAGE = new URLSearchParams(location.search).get('next') || 'admin_erp.html';
     localStorage.setItem('xeleria_next', NEXT_PAGE);
+
+    function shortId(value) {
+      const s = String(value || '');
+      if (!s) return '?';
+      if (s.length <= 12) return s;
+      return s.slice(0, 8) + '…';
+    }
+
+    function updateVersionBar(text) {
+      if (VERSION_BAR) VERSION_BAR.textContent = text;
+    }
+
+    async function loadVersionBar() {
+      const tenant = localStorage.getItem('xeleria_tenant_id') || '';
+      const exp = localStorage.getItem('xeleria_session_expires_at') || '';
+      const sess = localStorage.getItem('xeleria_session_token') ? 'sí' : 'no';
+      try {
+        const r = await fetch(`${API_BASE}/admin/health`, { cache: 'no-store' });
+        const h = await r.json();
+        const modules = h.module_versions || {};
+        updateVersionBar(
+          `FE ${FRONTEND_VERSION} | BE ${h.version || '?'} | oauth_ml ${modules.oauth_ml || '?'} | sessions ${modules.sessions || '?'} | grid ${modules.inventory_import_grid || '?'} | tenant ${shortId(tenant || h.tenant_id)} | sesión ${sess}${exp ? ' exp ' + exp : ''} | ML ${h.ml_configurado ? 'ok' : 'no'} | TN ${h.tn_configurado ? 'ok' : 'no'}`
+        );
+      } catch (e) {
+        updateVersionBar(`FE ${FRONTEND_VERSION} | BE sin respuesta | tenant ${shortId(tenant)} | sesión ${sess}`);
+      }
+    }
 
     const betaAccessCodeInput = document.getElementById('betaAccessCode');
     const statusBox = document.getElementById('status');
@@ -291,6 +341,7 @@
       if (data.session && data.session.expires_at) {
         localStorage.setItem('xeleria_session_expires_at', data.session.expires_at);
       }
+      loadVersionBar();
       return { tenantId, sessionToken };
     }
 
@@ -343,6 +394,8 @@
       event.preventDefault();
       startChannel('ml');
     });
+
+    loadVersionBar();
 
     document.getElementById('tn').addEventListener('click', event => {
       event.preventDefault();
