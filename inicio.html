@@ -240,9 +240,10 @@
 
     async function ensureTenant() {
       const existing = localStorage.getItem('xeleria_tenant_id') || '';
+      const existingSession = localStorage.getItem('xeleria_session_token') || '';
 
-      if (existing && existing !== '00000000-0000-0000-0000-000000000001') {
-        return existing;
+      if (existing && existingSession && existing !== '00000000-0000-0000-0000-000000000001') {
+        return { tenantId: existing, sessionToken: existingSession };
       }
 
       const response = await fetch(`${API_BASE}/tenant/bootstrap`, {
@@ -261,14 +262,22 @@
         throw new Error(data.error || 'No se pudo generar el tenant.');
       }
 
-      const tenantId = data.tenant && data.tenant.id;
+      const tenantId = (data.tenant && data.tenant.id) || data.tenant_id;
+      const sessionToken = data.session && data.session.token;
 
       if (!tenantId) {
         throw new Error('El backend no devolvió tenant_id.');
       }
+      if (!sessionToken) {
+        throw new Error('El backend no devolvió sesión.');
+      }
 
       localStorage.setItem('xeleria_tenant_id', tenantId);
-      return tenantId;
+      localStorage.setItem('xeleria_session_token', sessionToken);
+      if (data.session && data.session.expires_at) {
+        localStorage.setItem('xeleria_session_expires_at', data.session.expires_at);
+      }
+      return { tenantId, sessionToken };
     }
 
     async function startChannel(channel) {
@@ -281,7 +290,8 @@
 
         setStatus('Creando espacio de trabajo…');
 
-        const tenantId = await ensureTenant();
+        const session = await ensureTenant();
+        const tenantId = session.tenantId;
 
         setStatus('Redirigiendo…');
 
