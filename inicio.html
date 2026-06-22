@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>XelerIA · Inicio</title>
-  <!-- XELERIA_INICIO_V19_OAUTH_SESSION_TOKEN -->
+  <!-- XELERIA_INICIO_V20_OAUTH_POST_OPAQUE_STATE -->
 
   <script>
     if (location.protocol === 'http:' && location.hostname.endsWith('xeleria.com.ar')) {
@@ -299,9 +299,32 @@
         const session = await ensureTenant();
         const tenantId = session.tenantId;
 
-        setStatus('Redirigiendo…');
+        setStatus('Preparando autorización…');
 
-        location.href = `${API_BASE}/oauth/${channel}/start?tenant_id=${encodeURIComponent(tenantId)}&session_token=${encodeURIComponent(session.sessionToken)}&next=${encodeURIComponent(NEXT_PAGE)}`;
+        const oauthResponse = await fetch(`${API_BASE}/oauth/${channel}/prepare`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tenant_id: tenantId,
+            session_token: session.sessionToken,
+            next: NEXT_PAGE
+          })
+        });
+
+        let oauthData = {};
+        try {
+          oauthData = await oauthResponse.json();
+        } catch (_) {
+          oauthData = {};
+        }
+
+        if (!oauthResponse.ok || !oauthData.ok || !oauthData.authorization_url) {
+          const detail = oauthData.detail || oauthData.error || oauthData.message || `HTTP ${oauthResponse.status}`;
+          throw new Error(typeof detail === 'string' ? detail : JSON.stringify(detail));
+        }
+
+        setStatus('Redirigiendo a Mercado Libre…');
+        location.href = oauthData.authorization_url;
       } catch (error) {
         setStatus('');
         alert(error.message || 'No se pudo iniciar.');
