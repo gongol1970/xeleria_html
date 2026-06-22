@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>XelerIA · Inicio</title>
-  <!-- XELERIA_INICIO_V20_OAUTH_POST_OPAQUE_STATE -->
+  <!-- XELERIA_INICIO_V21_SESSION_EXPIRY_RESET -->
 
   <script>
     if (location.protocol === 'http:' && location.hostname.endsWith('xeleria.com.ar')) {
@@ -241,8 +241,16 @@
     async function ensureTenant() {
       const existing = localStorage.getItem('xeleria_tenant_id') || '';
       const existingSession = localStorage.getItem('xeleria_session_token') || '';
+      const expiresAtRaw = localStorage.getItem('xeleria_session_expires_at') || '';
+      const expiresAtMs = expiresAtRaw ? Date.parse(expiresAtRaw) : 0;
+      const sessionLooksValid = existingSession && expiresAtMs && Date.now() < (expiresAtMs - 30000);
 
-      if (existing && existingSession && existing !== '00000000-0000-0000-0000-000000000001') {
+      if (existing && existingSession && !sessionLooksValid) {
+        localStorage.removeItem('xeleria_session_token');
+        localStorage.removeItem('xeleria_session_expires_at');
+      }
+
+      if (existing && existingSession && sessionLooksValid && existing !== '00000000-0000-0000-0000-000000000001') {
         return { tenantId: existing, sessionToken: existingSession };
       }
 
