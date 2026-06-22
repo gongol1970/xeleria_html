@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>XelerIA · Inicio</title>
-  <!-- XELERIA_INICIO_V18_BETA_ACCESS_CODE_NAMING -->
+  <!-- XELERIA_INICIO_V19_OAUTH_SESSION_TOKEN -->
 
   <script>
     if (location.protocol === 'http:' && location.hostname.endsWith('xeleria.com.ar')) {
@@ -301,7 +301,7 @@
 
         setStatus('Redirigiendo…');
 
-        location.href = `${API_BASE}/oauth/${channel}/start?beta_access_code=${encodeURIComponent(betaAccessCode())}&tenant_id=${encodeURIComponent(tenantId)}&next=${encodeURIComponent(NEXT_PAGE)}`;
+        location.href = `${API_BASE}/oauth/${channel}/start?tenant_id=${encodeURIComponent(tenantId)}&session_token=${encodeURIComponent(session.sessionToken)}&next=${encodeURIComponent(NEXT_PAGE)}`;
       } catch (error) {
         setStatus('');
         alert(error.message || 'No se pudo iniciar.');
