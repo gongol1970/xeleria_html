@@ -256,10 +256,16 @@
         })
       });
 
-      const data = await response.json();
+      let data = {};
+      try {
+        data = await response.json();
+      } catch (_) {
+        data = {};
+      }
 
-      if (!data.ok) {
-        throw new Error(data.error || 'No se pudo generar el tenant.');
+      if (!response.ok || !data.ok) {
+        const detail = data.detail || data.error || data.message || `HTTP ${response.status}`;
+        throw new Error(detail || 'No se pudo generar el tenant.');
       }
 
       const tenantId = (data.tenant && data.tenant.id) || data.tenant_id;
