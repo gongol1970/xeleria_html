@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>XelerIA · Inicio</title>
-  <!-- XELERIA_INICIO_V15_APIBASE_FIX_V1 -->
+  <!-- XELERIA_INICIO_V18_BETA_ACCESS_CODE_NAMING -->
 
   <script>
     if (location.protocol === 'http:' && location.hostname.endsWith('xeleria.com.ar')) {
@@ -209,8 +209,8 @@
 
       <p class="small">Elegí tu canal principal para empezar.</p>
 
-      <label class="small" for="ownerKey">Código beta privado</label>
-      <input class="input" id="ownerKey" type="password" placeholder="Código de acceso">
+      <label class="small" for="betaAccessCode">Código beta privado</label>
+      <input class="input" id="betaAccessCode" type="password" placeholder="Código de acceso">
 
       <div class="actions">
         <a class="btn primary" id="ml" href="#">Entrar con Mercado Libre <span>ML</span></a>
@@ -230,12 +230,12 @@
     const NEXT_PAGE = new URLSearchParams(location.search).get('next') || 'admin_erp.html';
     localStorage.setItem('xeleria_next', NEXT_PAGE);
 
-    const ownerKeyInput = document.getElementById('ownerKey');
+    const betaAccessCodeInput = document.getElementById('betaAccessCode');
     const statusBox = document.getElementById('status');
 
-    ownerKeyInput.value = localStorage.getItem('xeleria_owner_key') || '';
+    betaAccessCodeInput.value = localStorage.getItem('xeleria_beta_access_code') || '';
 
-    const ownerKey = () => ownerKeyInput.value.trim();
+    const betaAccessCode = () => betaAccessCodeInput.value.trim();
     const setStatus = msg => statusBox.textContent = msg || '';
 
     async function ensureTenant() {
@@ -250,7 +250,7 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          owner_key: ownerKey(),
+          beta_access_code: betaAccessCode(),
           display_name: '',
           next: NEXT_PAGE
         })
@@ -288,11 +288,11 @@
 
     async function startChannel(channel) {
       try {
-        if (!ownerKey()) {
+        if (!betaAccessCode()) {
           throw new Error('Cargá el código beta privado.');
         }
 
-        localStorage.setItem('xeleria_owner_key', ownerKey());
+        localStorage.setItem('xeleria_beta_access_code', betaAccessCode());
 
         setStatus('Creando espacio de trabajo…');
 
@@ -301,7 +301,7 @@
 
         setStatus('Redirigiendo…');
 
-        location.href = `${API_BASE}/oauth/${channel}/start?owner_key=${encodeURIComponent(ownerKey())}&tenant_id=${encodeURIComponent(tenantId)}&next=${encodeURIComponent(NEXT_PAGE)}`;
+        location.href = `${API_BASE}/oauth/${channel}/start?beta_access_code=${encodeURIComponent(betaAccessCode())}&tenant_id=${encodeURIComponent(tenantId)}&next=${encodeURIComponent(NEXT_PAGE)}`;
       } catch (error) {
         setStatus('');
         alert(error.message || 'No se pudo iniciar.');
