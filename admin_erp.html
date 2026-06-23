@@ -142,7 +142,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 <div class="navTitle">Local físico</div><div class="sub"><button class="navBtn" data-view="arca-manual">Emitir comprobante manual</button></div>
 <div class="navTitle">Gestión</div><div class="sub"><div class="navParent">Inventario</div><div class="sub2"><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="combos">Combos / Kits</button><button class="navBtn" data-view="full-inbound">Envío a Full</button><button class="navBtn" data-view="movimientos">Movimientos de stock</button></div><button class="navBtn" data-view="clientes">Clientes ML / TN</button><button class="navBtn" data-view="base-conocimiento">Base de Conocimiento IA</button><button class="navBtn" data-view="arca-reportes">ARCA reportes</button></div>
 <div class="navTitle">Sistema</div><div class="sub"><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="ultimo-json">Último JSON</button></div>
-</nav><div class="sidebarFoot">Frontend: 1.86<br>Backend: <span id="footBackendVer">?</span></div>
+</nav><div class="sidebarFoot">Frontend: 1.87<br>Backend: <span id="footBackendVer">?</span></div>
 </aside>
 <main>
 <div class="topbar"><div><h2 id="pageTitle">Inicio</h2><div class="crumb" id="pageCrumb">Panel operativo</div></div><div class="tokenBox"><div><label>API</label><input id="apiUrl" value="https://api.xeleria.com.ar"></div><div><label>ADMIN_TOKEN</label><input id="token" type="password" placeholder="Token"></div><button class="primary" onclick="saveSettings()">Guardar</button><button class="secondary" onclick="health()">Probar</button></div></div>
@@ -300,8 +300,8 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 <div id="xeleriaVersionBar" class="xeleriaVersionBar">FE 1.86 | BE consultando…</div>
 <div id="erpBusyOverlay" class="erpBusyOverlay"><div class="erpBusyBox"><div class="erpSpinner"></div><div id="erpBusyTitle" class="erpBusyTitle">Procesando...</div><div id="erpBusyMsg" class="erpBusyMsg">No cierres esta pantalla.</div></div></div>
 <script>
-const FRONTEND_VERSION='1.86';
-const FRONTEND_BUILD='admin-erp-v186-tenant-connection-status';
+const FRONTEND_VERSION='1.87';
+const FRONTEND_BUILD='admin-erp-v187-channel-login-gate';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[],comboItems:[],pendingBundleDraft:null};let timers={};
 
 const ALERT_KEYS={
@@ -535,6 +535,37 @@ function cleanOauthParamsFromUrl(){
     history.replaceState({},'',u.toString());
   }catch(e){}
 }
+function redirectToInicio(reason='no_channel_connected'){
+  try{
+    let next=(location.pathname.split('/').pop()||'admin_erp.html')+location.search;
+    let p=new URLSearchParams({next:next,reason:reason});
+    setStatus('inventoryImportStatus','Sin canal conectado. Redirigiendo al login inicial...',false);
+    updateVersionBar('redirigiendo a inicio');
+    window.location.href='inicio.html?'+p.toString();
+  }catch(e){
+    window.location.href='inicio.html?next=admin_erp.html&reason='+encodeURIComponent(reason);
+  }
+}
+function authExpiredError(e){
+  let txt=errText(e).toLowerCase();
+  return txt.includes('sesión inválida')||txt.includes('sesion invalida')||txt.includes('sesión expirada')||txt.includes('sesion expirada')||txt.includes('sesión requerida')||txt.includes('401');
+}
+function gateIfNoConnectedChannels(ml,tn,source='connections'){
+  let mlOk=!!(ml&&ml.connected);
+  let tnOk=!!(tn&&tn.connected);
+  if(mlOk||tnOk)return false;
+
+  let p=oauthReturnParams();
+  if(p.status==='connected'&&!state._oauthConnectionRetryDone){
+    state._oauthConnectionRetryDone=true;
+    setStatus('inventoryImportStatus','OAuth volvió conectado. Esperando confirmación de canal...',true);
+    setTimeout(()=>loadTenantConnectionStatus(true),900);
+    return true;
+  }
+
+  setTimeout(()=>redirectToInicio('no_channel_connected_'+source),350);
+  return true;
+}
 async function loadTenantConnectionStatus(force=true){
   let mlPrev=state.connections&&state.connections.ml;let tnPrev=state.connections&&state.connections.tn;
   if(!mlPrev)setImportChannelCard('ML',false,'',{checking:true});
@@ -546,10 +577,16 @@ async function loadTenantConnectionStatus(force=true){
     let ml=state.connections.ml||{},tn=state.connections.tn||{};
     if(qs('inventoryImportStatus'))setStatus('inventoryImportStatus',`Conexiones revisadas · ML: ${ml.connected?'conectado':'no conectado'} · TN: ${tn.connected?'conectado':'no conectado'}`,!!(ml.connected||tn.connected));
     updateVersionBar();
+    gateIfNoConnectedChannels(ml,tn,'status');
     return d;
   }catch(e){
     setImportChannelCard('ML',false,'',{});
     setImportChannelCard('TN',false,'',{});
+    if(authExpiredError(e)){
+      setStatus('inventoryImportStatus','Sesión inválida o expirada. Volviendo al inicio...',false);
+      setTimeout(()=>redirectToInicio('session_invalid'),350);
+      return null;
+    }
     if(qs('inventoryImportStatus'))setStatus('inventoryImportStatus','No pude revisar conexiones: '+errText(e),false);
     updateVersionBar('conn error '+errText(e));
     return null;
