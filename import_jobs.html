@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>XelerIA · Importación ML</title>
+  <link rel="icon" href="./favicon_xeleria.png?v=20260620" />
+  <style>
+    :root{--bg:#f2f0eb;--surface:#fffdf8;--ink:#171717;--muted:#6b665c;--line:#ded4be;--brand:#d2b66f;--ok:#067647;--bad:#b42318;--warn:#b54708;--shadow:0 10px 30px rgba(17,17,17,.08)}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,Arial,sans-serif;font-size:14px}.wrap{max-width:980px;margin:0 auto;padding:26px 16px 56px}.brand{display:flex;align-items:center;gap:12px;margin-bottom:18px}.mark{width:54px;height:54px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 0 0 1px rgba(0,0,0,.1)}.mark img{width:112%;height:112%;object-fit:cover}.brand h1{margin:0;font-size:28px}.brand p{margin:2px 0 0;color:var(--muted)}.card{background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:18px;margin:14px 0}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.col-4{grid-column:span 4}.col-6{grid-column:span 6}.col-8{grid-column:span 8}.col-12{grid-column:span 12}.stat{border:1px solid var(--line);border-radius:16px;background:#fff;padding:14px}.k{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:900}.v{font-size:26px;font-weight:950;margin-top:4px}.muted{color:var(--muted)}button,.btn{border:1px solid #b79543;border-radius:12px;background:var(--brand);color:#111;padding:10px 14px;font-weight:900;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px}button.secondary,.btn.secondary{background:#fffaf0}button:disabled{opacity:.55;cursor:not-allowed}.btnrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.status{min-height:24px;margin-top:10px;color:var(--muted)}.oktxt{color:var(--ok);font-weight:900}.badtxt{color:var(--bad);font-weight:900}.warntxt{color:var(--warn);font-weight:900}.bar{height:18px;border-radius:999px;background:#eee2c8;overflow:hidden;border:1px solid #d6c7a8}.barInner{height:100%;width:0%;background:var(--brand);transition:width .25s ease}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px}.table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;overflow:hidden}.table th,.table td{border-bottom:1px solid #eee2c8;padding:8px 9px;text-align:left}.table th{background:#151515;color:#fff}.pill{display:inline-flex;border-radius:999px;padding:4px 8px;font-size:12px;font-weight:900;background:#efe7d5}.pill.ok{background:#ecfdf3;color:var(--ok)}.pill.bad{background:#fef3f2;color:var(--bad)}.pill.warn{background:#fff7ed;color:var(--warn)}pre{background:#111;color:#e8f7ee;border-radius:14px;padding:12px;overflow:auto;max-height:320px}.hidden{display:none}@media(max-width:760px){.grid{grid-template-columns:1fr}.col-4,.col-6,.col-8,.col-12{grid-column:1/-1}.brand h1{font-size:24px}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="brand">
+      <span class="mark"><img src="./favicon_xeleria.png?v=20260620" alt="XelerIA"></span>
+      <div>
+        <h1>XelerIA · Importación ML</h1>
+        <p>Job server-side de Carga general. Sin loop eterno en el navegador.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="btnrow">
+        <a class="btn secondary" href="./admin_erp.html">← Volver al Backoffice</a>
+        <button class="secondary" onclick="checkHealth()">Probar backend</button>
+        <button id="startBtn" onclick="startJob()">Importar Mercado Libre</button>
+        <button class="secondary" onclick="loadNotifications()">Ver notificaciones</button>
+      </div>
+      <div id="mainStatus" class="status">Listo para probar. Primero conviene tocar “Probar backend”.</div>
+    </div>
+
+    <div class="grid">
+      <div class="col-4 stat"><div class="k">Estado</div><div class="v" id="stStatus">—</div><div class="muted" id="stStage">Sin job activo</div></div>
+      <div class="col-4 stat"><div class="k">Procesadas</div><div class="v" id="stProcessed">0 / 0</div><div class="muted">items ML recorridos</div></div>
+      <div class="col-4 stat"><div class="k">Guardadas</div><div class="v" id="stSaved">0</div><div class="muted">filas en staging</div></div>
+      <div class="col-12 card">
+        <h3>Progreso</h3>
+        <div class="bar"><div id="progressBar" class="barInner"></div></div>
+        <div id="progressText" class="status">Esperando inicio.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Job actual</h3>
+      <div id="jobBox" class="mono muted">Todavía no hay job.</div>
+    </div>
+
+    <div class="card">
+      <h3>Notificaciones</h3>
+      <div id="notificationsBox" class="muted">Todavía no cargadas.</div>
+    </div>
+
+    <div class="card">
+      <h3>JSON técnico</h3>
+      <pre id="debugBox">—</pre>
+    </div>
+  </div>
+
+<script>
+const DEFAULT_API = 'https://api.xeleria.com.ar';
+let currentJobId = '';
+let pollTimer = null;
+
+function qs(id){return document.getElementById(id)}
+function apiBase(){return (localStorage.getItem('pc_erp_api') || localStorage.getItem('xeleria_api_url') || DEFAULT_API).replace(/\/$/,'').replace(/\/api$/,'')}
+function sessionToken(){return (localStorage.getItem('xeleria_session_token') || sessionStorage.getItem('xeleria_session_token') || '').trim()}
+function adminToken(){return (localStorage.getItem('pc_erp_token') || localStorage.getItem('xeleria_admin_token') || '').trim()}
+function tenantId(){let qp=new URLSearchParams(location.search);let fromUrl=qp.get('tenant_id')||qp.get('tenant')||'';if(fromUrl)localStorage.setItem('xeleria_tenant_id',fromUrl);return fromUrl||localStorage.getItem('xeleria_tenant_id')||'00000000-0000-0000-0000-000000000001'}
+function url(path){const sep=path.includes('?')?'&':'?';return `${apiBase()}${path}${sep}tenant_id=${encodeURIComponent(tenantId())}`}
+function headers(){const st=sessionToken();const at=adminToken();const h={'Content-Type':'application/json','x-xeleria-tenant':tenantId()};if(st){h['x-session-token']=st;h['Authorization']='Bearer '+st}else if(at){h['x-admin-token']=at;h['Authorization']='Bearer '+at}return h}
+function setStatus(msg,kind=''){const el=qs('mainStatus');el.className='status '+(kind==='ok'?'oktxt':kind==='bad'?'badtxt':kind==='warn'?'warntxt':'');el.textContent=msg||''}
+function debug(obj){qs('debugBox').textContent=typeof obj==='string'?obj:JSON.stringify(obj,null,2)}
+function esc(s){return String(s??'').replace(/[&<>\"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
+async function fetchJson(path, opts={}){const res=await fetch(url(path),{...opts,headers:{...headers(),...(opts.headers||{})}});let txt=await res.text();let data;try{data=txt?JSON.parse(txt):{}}catch{data={raw:txt}};if(!res.ok){throw data}return data}
+function requireToken(){if(sessionToken()||adminToken())return true;setStatus('No encontré sesión/token. Entrá primero al Backoffice, logueate, y volvé a abrir esta pantalla.', 'bad');return false}
+
+async function checkHealth(){
+  try{
+    const res = await fetch(`${apiBase()}/admin/inventory/import-jobs/health`);
+    const data = await res.json();
+    debug(data);
+    if(data.ok)setStatus(`Backend OK · ${data.version || ''}`, 'ok');
+    else setStatus('El backend respondió, pero no vino OK.', 'warn');
+  }catch(e){debug(e);setStatus('No pude consultar health.', 'bad')}
+}
+
+function renderJob(job){
+  if(!job)return;
+  qs('stStatus').textContent = job.status || '—';
+  qs('stStage').textContent = job.last_stage || '—';
+  const total = Number(job.total_items||0);
+  const processed = Number(job.processed_items||0);
+  const saved = Number(job.saved_rows||0);
+  const errors = Number(job.error_count||0);
+  qs('stProcessed').textContent = `${processed} / ${total}`;
+  qs('stSaved').textContent = String(saved);
+  const pct = total ? Math.max(0, Math.min(100, Math.round(processed*100/total))) : (processed?100:0);
+  qs('progressBar').style.width = pct + '%';
+  qs('progressText').textContent = `${pct}% · Procesadas: ${processed}/${total} · Guardadas: ${saved} · Errores: ${errors}`;
+  qs('jobBox').innerHTML = `<div><b>ID:</b> <span class="mono">${esc(job.id||currentJobId||'')}</span></div><div><b>Batch:</b> <span class="mono">${esc(job.batch_id||'')}</span></div><div><b>Último error:</b> ${esc(job.last_error||'—')}</div>`;
+  debug(job);
+  if(['completed','failed','cancelled'].includes(String(job.status||''))){
+    clearInterval(pollTimer); pollTimer=null; qs('startBtn').disabled=false;
+    setStatus(job.status==='completed'?'Importación terminada. Ya debería haber filas en staging/revisión.':'Job terminó con estado '+job.status, job.status==='completed'?'ok':'warn');
+    loadNotifications();
+  }
+}
+
+async function pollJob(){
+  if(!currentJobId)return;
+  try{
+    const data = await fetchJson(`/admin/inventory/import-jobs/${encodeURIComponent(currentJobId)}`);
+    renderJob(data.job || data);
+  }catch(e){debug(e);setStatus('Error consultando estado del job.', 'bad')}
+}
+
+async function startJob(){
+  if(!requireToken())return;
+  qs('startBtn').disabled=true;
+  setStatus('Arrancando importación ML...', 'warn');
+  try{
+    const data = await fetchJson('/admin/inventory/import-jobs/start',{
+      method:'POST',
+      body:JSON.stringify({channels:['ML'], source:'app-import-jobs-screen'})
+    });
+    currentJobId = data.job_id || data.id || '';
+    debug(data);
+    setStatus(`Job iniciado: ${currentJobId}`, 'ok');
+    if(pollTimer)clearInterval(pollTimer);
+    await pollJob();
+    pollTimer=setInterval(pollJob,2500);
+  }catch(e){
+    qs('startBtn').disabled=false;
+    debug(e);
+    setStatus('No pude iniciar el job: '+(e.detail||e.error||e.message||JSON.stringify(e)), 'bad');
+  }
+}
+
+async function loadNotifications(){
+  if(!requireToken())return;
+  try{
+    const data = await fetchJson('/admin/notifications?limit=10');
+    const items = data.notifications || data.items || [];
+    if(!items.length){qs('notificationsBox').textContent='Sin notificaciones.';return}
+    qs('notificationsBox').innerHTML = `<table class="table"><thead><tr><th>Tipo</th><th>Título</th><th>Detalle</th><th>Fecha</th></tr></thead><tbody>${items.map(n=>`<tr><td><span class="pill ${n.severity==='error'?'bad':n.severity==='warning'?'warn':'ok'}">${esc(n.severity||'info')}</span></td><td><b>${esc(n.title||'')}</b></td><td>${esc(n.body||'')}</td><td class="mono">${esc(n.created_at||'')}</td></tr>`).join('')}</tbody></table>`;
+  }catch(e){debug(e);setStatus('No pude cargar notificaciones.', 'bad')}
+}
+
+checkHealth();
+</script>
+</body>
+</html>
