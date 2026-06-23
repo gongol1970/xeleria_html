@@ -80,8 +80,6 @@ function setStatus(msg,kind=''){const el=qs('mainStatus');el.className='status '
 function debug(obj){qs('debugBox').textContent=typeof obj==='string'?obj:JSON.stringify(obj,null,2)}
 function esc(s){return String(s??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
 async function fetchJson(path, opts={}, auth=true){
-  // Importante: no mandamos headers custom ni Content-Type para evitar preflight CORS.
-  // La sesión viaja por query param, que el backend nuevo ya entiende.
   const res=await fetch(url(path,auth),opts);
   let txt=await res.text();
   let data;
@@ -136,8 +134,8 @@ async function startJob(){
   qs('startBtn').disabled=true;
   setStatus('Arrancando importación ML...', 'warn');
   try{
-    // POST simple, sin body y sin headers: evita preflight CORS.
-    const data = await fetchJson('/admin/inventory/import-jobs/start',{method:'POST'}, true);
+    // GET de arranque para evitar preflight CORS desde GitHub Pages.
+    const data = await fetchJson('/admin/inventory/import-jobs/start-get?channels=ML&page_limit=10',{method:'GET'}, true);
     currentJobId = data.job_id || data.id || '';
     debug(data);
     setStatus(`Job iniciado: ${currentJobId}`, 'ok');
