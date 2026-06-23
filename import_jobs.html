@@ -65,19 +65,35 @@ let pollTimer = null;
 function qs(id){return document.getElementById(id)}
 function apiBase(){return (localStorage.getItem('pc_erp_api') || localStorage.getItem('xeleria_api_url') || DEFAULT_API).replace(/\/$/,'').replace(/\/api$/,'')}
 function sessionToken(){return (localStorage.getItem('xeleria_session_token') || sessionStorage.getItem('xeleria_session_token') || '').trim()}
-function adminToken(){return (localStorage.getItem('pc_erp_token') || localStorage.getItem('xeleria_admin_token') || '').trim()}
 function tenantId(){let qp=new URLSearchParams(location.search);let fromUrl=qp.get('tenant_id')||qp.get('tenant')||'';if(fromUrl)localStorage.setItem('xeleria_tenant_id',fromUrl);return fromUrl||localStorage.getItem('xeleria_tenant_id')||'00000000-0000-0000-0000-000000000001'}
-function url(path){const sep=path.includes('?')?'&':'?';return `${apiBase()}${path}${sep}tenant_id=${encodeURIComponent(tenantId())}`}
-function headers(){const st=sessionToken();const at=adminToken();const h={'Content-Type':'application/json','x-xeleria-tenant':tenantId()};if(st){h['x-session-token']=st;h['Authorization']='Bearer '+st}else if(at){h['x-admin-token']=at;h['Authorization']='Bearer '+at}return h}
+function url(path, auth=false){
+  const base = apiBase();
+  const u = new URL(base + path);
+  u.searchParams.set('tenant_id', tenantId());
+  if(auth){
+    const st = sessionToken();
+    if(st) u.searchParams.set('session_token', st);
+  }
+  return u.toString();
+}
 function setStatus(msg,kind=''){const el=qs('mainStatus');el.className='status '+(kind==='ok'?'oktxt':kind==='bad'?'badtxt':kind==='warn'?'warntxt':'');el.textContent=msg||''}
 function debug(obj){qs('debugBox').textContent=typeof obj==='string'?obj:JSON.stringify(obj,null,2)}
-function esc(s){return String(s??'').replace(/[&<>\"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
-async function fetchJson(path, opts={}){const res=await fetch(url(path),{...opts,headers:{...headers(),...(opts.headers||{})}});let txt=await res.text();let data;try{data=txt?JSON.parse(txt):{}}catch{data={raw:txt}};if(!res.ok){throw data}return data}
-function requireToken(){if(sessionToken()||adminToken())return true;setStatus('No encontré sesión/token. Entrá primero al Backoffice, logueate, y volvé a abrir esta pantalla.', 'bad');return false}
+function esc(s){return String(s??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
+async function fetchJson(path, opts={}, auth=true){
+  // Importante: no mandamos headers custom ni Content-Type para evitar preflight CORS.
+  // La sesión viaja por query param, que el backend nuevo ya entiende.
+  const res=await fetch(url(path,auth),opts);
+  let txt=await res.text();
+  let data;
+  try{data=txt?JSON.parse(txt):{}}catch{data={raw:txt}}
+  if(!res.ok){throw data}
+  return data;
+}
+function requireSession(){if(sessionToken())return true;setStatus('No encontré sesión. Entrá primero al Backoffice, logueate, y volvé a abrir esta pantalla.', 'bad');return false}
 
 async function checkHealth(){
   try{
-    const res = await fetch(`${apiBase()}/admin/inventory/import-jobs/health`);
+    const res = await fetch(url('/admin/inventory/import-jobs/health', false));
     const data = await res.json();
     debug(data);
     if(data.ok)setStatus(`Backend OK · ${data.version || ''}`, 'ok');
@@ -110,20 +126,18 @@ function renderJob(job){
 async function pollJob(){
   if(!currentJobId)return;
   try{
-    const data = await fetchJson(`/admin/inventory/import-jobs/${encodeURIComponent(currentJobId)}`);
+    const data = await fetchJson(`/admin/inventory/import-jobs/${encodeURIComponent(currentJobId)}`, {method:'GET'}, true);
     renderJob(data.job || data);
   }catch(e){debug(e);setStatus('Error consultando estado del job.', 'bad')}
 }
 
 async function startJob(){
-  if(!requireToken())return;
+  if(!requireSession())return;
   qs('startBtn').disabled=true;
   setStatus('Arrancando importación ML...', 'warn');
   try{
-    const data = await fetchJson('/admin/inventory/import-jobs/start',{
-      method:'POST',
-      body:JSON.stringify({channels:['ML'], source:'app-import-jobs-screen'})
-    });
+    // POST simple, sin body y sin headers: evita preflight CORS.
+    const data = await fetchJson('/admin/inventory/import-jobs/start',{method:'POST'}, true);
     currentJobId = data.job_id || data.id || '';
     debug(data);
     setStatus(`Job iniciado: ${currentJobId}`, 'ok');
@@ -138,9 +152,9 @@ async function startJob(){
 }
 
 async function loadNotifications(){
-  if(!requireToken())return;
+  if(!requireSession())return;
   try{
-    const data = await fetchJson('/admin/notifications?limit=10');
+    const data = await fetchJson('/admin/notifications?limit=10', {method:'GET'}, true);
     const items = data.notifications || data.items || [];
     if(!items.length){qs('notificationsBox').textContent='Sin notificaciones.';return}
     qs('notificationsBox').innerHTML = `<table class="table"><thead><tr><th>Tipo</th><th>Título</th><th>Detalle</th><th>Fecha</th></tr></thead><tbody>${items.map(n=>`<tr><td><span class="pill ${n.severity==='error'?'bad':n.severity==='warning'?'warn':'ok'}">${esc(n.severity||'info')}</span></td><td><b>${esc(n.title||'')}</b></td><td>${esc(n.body||'')}</td><td class="mono">${esc(n.created_at||'')}</td></tr>`).join('')}</tbody></table>`;
