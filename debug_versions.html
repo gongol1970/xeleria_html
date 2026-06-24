@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>XelerIA · Versiones</title>
+  <style>
+    body{margin:0;background:#07111f;color:#f5f7fb;font-family:Arial,Helvetica,sans-serif;padding:24px 24px 54px}
+    h1{margin:0 0 8px;font-size:28px} p{color:#aab6c8}.card{border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:16px;margin:14px 0;background:rgba(255,255,255,.05)}
+    pre{white-space:pre-wrap;word-break:break-word;background:#050505;border:1px solid #222;border-radius:12px;padding:12px;color:#b8f7d4;font-size:12px}.bad{color:#ffb4a8}.ok{color:#b8f7d4}
+    #xeleriaVersionBar{position:fixed;left:0;right:0;bottom:0;z-index:999999;height:24px;background:#050505;color:#b8f7d4;font:12px/24px Consolas,'Courier New',monospace;padding:0 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-top:1px solid #222}
+  </style>
+</head>
+<body>
+  <h1>XelerIA · Diagnóstico de versiones</h1>
+  <p>Página temporal para verificar qué código está realmente deployado.</p>
+  <div class="card"><b>Resumen</b><pre id="summary">consultando…</pre></div>
+  <div class="card"><b>/health</b><pre id="rootHealth">consultando…</pre></div>
+  <div class="card"><b>/admin/health</b><pre id="adminHealth">consultando…</pre></div>
+  <div class="card"><b>/admin/debug/versions</b><pre id="debugVersions">consultando…</pre></div>
+  <div id="xeleriaVersionBar">FE debug_versions-v1 | BE consultando…</div>
+  <script>
+    const API_BASE = 'https://api.xeleria.com.ar';
+    const FE_VERSION = 'debug_versions-v1';
+    const bar = document.getElementById('xeleriaVersionBar');
+    const pretty = value => JSON.stringify(value, null, 2);
+    async function getJson(path){
+      const r = await fetch(API_BASE + path, {cache:'no-store'});
+      let data = null;
+      try { data = await r.json(); } catch(_) { data = {raw: await r.text()}; }
+      return {ok:r.ok, status:r.status, path, data};
+    }
+    function set(id, result){
+      const el = document.getElementById(id);
+      el.textContent = pretty(result);
+      el.className = result && result.ok ? 'ok' : 'bad';
+    }
+    async function load(){
+      const root = await getJson('/health').catch(e => ({ok:false,error:String(e)}));
+      const admin = await getJson('/admin/health').catch(e => ({ok:false,error:String(e)}));
+      const debug = await getJson('/admin/debug/versions').catch(e => ({ok:false,error:String(e)}));
+      set('rootHealth', root); set('adminHealth', admin); set('debugVersions', debug);
+      const rootV = root?.data?.version || root?.data?.app_version || '?';
+      const adminV = admin?.data?.version || '?';
+      const mods = admin?.data?.module_versions || debug?.data?.versions?.modules || {};
+      const line = `FE ${FE_VERSION} | /health ${rootV} | /admin/health ${adminV} | import_jobs ${mods.xeleria_import_jobs || mods.import_jobs || '?'} | app ${mods.xeleria_app || '?'} | sessions ${mods.sessions || '?'} | ML ${admin?.data?.ml_configurado ? 'ok' : 'no'} | TN ${admin?.data?.tn_configurado ? 'ok' : 'no'}`;
+      document.getElementById('summary').textContent = line;
+      bar.textContent = line;
+    }
+    load();
+    setInterval(load, 15000);
+  </script>
+</body>
+</html>
