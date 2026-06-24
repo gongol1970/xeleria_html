@@ -1,4 +1,4 @@
-<!-- XELERIA_CONFIG_INVENTORY_IMPORT_GRID_V1_86_CONNECTION_STATUS -->
+<!-- XELERIA_CONFIG_INVENTORY_IMPORT_GRID_V1_93_DEBUG_VERSION_BAR -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -142,7 +142,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 <div class="navTitle">Local físico</div><div class="sub"><button class="navBtn" data-view="arca-manual">Emitir comprobante manual</button></div>
 <div class="navTitle">Gestión</div><div class="sub"><div class="navParent">Inventario</div><div class="sub2"><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="combos">Combos / Kits</button><button class="navBtn" data-view="full-inbound">Envío a Full</button><button class="navBtn" data-view="movimientos">Movimientos de stock</button></div><button class="navBtn" data-view="clientes">Clientes ML / TN</button><button class="navBtn" data-view="base-conocimiento">Base de Conocimiento IA</button><button class="navBtn" data-view="arca-reportes">ARCA reportes</button></div>
 <div class="navTitle">Sistema</div><div class="sub"><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="ultimo-json">Último JSON</button></div>
-</nav><div class="sidebarFoot">Frontend: 1.92<br>Backend: <span id="footBackendVer">?</span></div>
+</nav><div class="sidebarFoot">Frontend: 1.93<br>Backend: <span id="footBackendVer">?</span></div>
 </aside>
 <main>
 <div class="topbar"><div><h2 id="pageTitle">Inicio</h2><div class="crumb" id="pageCrumb">Panel operativo</div></div><div class="tokenBox"><div><label>API</label><input id="apiUrl" value="https://api.xeleria.com.ar"></div><div><label>ADMIN_TOKEN</label><input id="token" type="password" placeholder="Token"></div><button class="primary" onclick="saveSettings()">Guardar</button><button class="secondary" onclick="health()">Probar</button></div></div>
@@ -300,9 +300,9 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 <div id="xeleriaVersionBar" class="xeleriaVersionBar">FE 1.86 | BE consultando…</div>
 <div id="erpBusyOverlay" class="erpBusyOverlay"><div class="erpBusyBox"><div class="erpSpinner"></div><div id="erpBusyTitle" class="erpBusyTitle">Procesando...</div><div id="erpBusyMsg" class="erpBusyMsg">No cierres esta pantalla.</div></div></div>
 <script>
-const FRONTEND_VERSION='1.92';
-const FRONTEND_BUILD='admin-erp-v192-import-stepwise-5';
-let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[],comboItems:[],pendingBundleDraft:null};let timers={};
+const FRONTEND_VERSION='1.93';
+const FRONTEND_BUILD='admin-erp-v193-debug-version-bar';
+let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[],comboItems:[],pendingBundleDraft:null};state.debugVersions=null;state.debugVersionError=null;let timers={};
 
 const ALERT_KEYS={
   ml_questions:{view:'ml-preguntas',label:'Preguntas ML'},
@@ -512,6 +512,33 @@ async function fetchJson(path,opt={}){
   return data;
 }
 
+function debugModuleVersion(name){
+  let mods=state.debugVersions&&state.debugVersions.modules?state.debugVersions.modules:null;
+  if(!mods)return'?';
+  let item=mods[name];
+  if(!item)return'?';
+  if(typeof item==='string')return item||'?';
+  if(item.version)return item.version;
+  if(item.ok===false)return 'err:'+(item.error||'no');
+  return'?';
+}
+async function loadDebugVersions(){
+  try{
+    let d=await fetchJson('/admin/debug/versions');
+    state.debugVersions=d||{};
+    state.debugVersionError=null;
+    if(d&&d.versions){
+      state.backendVersion=d.versions.xeleria_app||state.backendVersion;
+    }
+    updateVersionBar();
+    return d;
+  }catch(e){
+    state.debugVersions=null;
+    state.debugVersionError=errText(e);
+    updateVersionBar('debug err '+state.debugVersionError);
+    return null;
+  }
+}
 function updateVersionBar(extra){
   let el=qs('xeleriaVersionBar');
   if(!el)return;
@@ -519,7 +546,12 @@ function updateVersionBar(extra){
   let tn=state.connections&&state.connections.tn?state.connections.tn:null;
   let mlTxt=ml?(ml.connected?'ML ok '+(ml.label||''):'ML no'):'ML ?';
   let tnTxt=tn?(tn.connected?'TN ok '+(tn.label||''):'TN no'):'TN ?';
-  el.textContent=`FE ${FRONTEND_VERSION} ${FRONTEND_BUILD} | BE ${state.backendVersion||'?'} | tenant ${shortTenantId(tenantId())} | ${mlTxt} | ${tnTxt}${extra?' | '+extra:''}`;
+  let appV=debugModuleVersion('xeleria_app');
+  let importV=debugModuleVersion('xeleria_import_jobs');
+  let tenantDbV=debugModuleVersion('xeleria_tenant_db');
+  let appV2=debugModuleVersion('app_v2');
+  let be=state.backendVersion||appV||'?';
+  el.textContent=`FE ${FRONTEND_VERSION} ${FRONTEND_BUILD} | BE ${be} | app ${appV} | import_jobs ${importV} | tenant_db ${tenantDbV} | app_v2 ${appV2} | tenant ${shortTenantId(tenantId())} | ${mlTxt} | ${tnTxt}${extra?' | '+extra:''}`;
 }
 function shortTenantId(v){let s=String(v||'');return s.length>8?s.slice(0,8)+'…':(s||'?')}
 function oauthReturnParams(){
@@ -596,7 +628,7 @@ function handleOauthReturn(){
   let p=oauthReturnParams();
   if(!p.oauth&&!p.status&&!p.error)return;
   if(p.status==='connected'){
-    setStatus('inventoryImportStatus',`${String(p.oauth||'').toUpperCase()} conectado. Revisando cuenta...`,true);
+    setStatus('inventoryImportStatus',`${String(p.oauth||'').toUpperCase()} conectado.`,true);
     loadTenantConnectionStatus(true).finally(cleanOauthParamsFromUrl);
   }else{
     setStatus('inventoryImportStatus',`OAuth ${p.oauth||''}: ${p.error||p.status||'sin estado'}`,false);
@@ -605,7 +637,30 @@ function handleOauthReturn(){
 }
 
 async function fetchText(path,opt={}){let r=await fetch(url(path),{...opt,headers:xeleriaHeaders(opt.headers||{})});let txt=await r.text();if(!r.ok)throw {ok:false,http_status:r.status,path,raw_text:txt};return txt}
-async function health(){setStatus('homeStatus','Probando conexión...');setStatus('connStatus','Probando conexión...');try{let d=await fetchJson('/admin/health');let v=d.version||d.app_version||d.backend_version||'?';state.backendVersion=v;if(qs('footBackendVer'))qs('footBackendVer').textContent=shortVer(v);if(qs('dashBackendVer'))qs('dashBackendVer').textContent=shortVer(v);if(qs('stErp'))qs('stErp').textContent='OK';updateVersionBar();setStatus('homeStatus','Backend OK · '+shortVer(v),true);setStatus('connStatus','Backend OK · '+shortVer(v),true);loadTenantConnectionStatus(false);return d}catch(e){setStatus('homeStatus','Error conexión: '+errText(e),false);setStatus('connStatus','Error conexión: '+errText(e),false);renderInventoryImportConnections({});updateVersionBar('BE error: '+errText(e));showLastJson()}}
+async function health(){
+  setStatus('homeStatus','Probando conexión...');
+  setStatus('connStatus','Probando conexión...');
+  try{
+    let d=await fetchJson('/admin/health');
+    let v=d.version||d.app_version||d.backend_version||'?';
+    state.backendVersion=v;
+    if(qs('footBackendVer'))qs('footBackendVer').textContent=shortVer(v);
+    if(qs('dashBackendVer'))qs('dashBackendVer').textContent=shortVer(v);
+    if(qs('stErp'))qs('stErp').textContent='OK';
+    updateVersionBar();
+    loadDebugVersions();
+    setStatus('homeStatus','Backend OK · '+shortVer(v),true);
+    setStatus('connStatus','Backend OK · '+shortVer(v),true);
+    loadTenantConnectionStatus(false);
+    return d;
+  }catch(e){
+    setStatus('homeStatus','Error conexión: '+errText(e),false);
+    setStatus('connStatus','Error conexión: '+errText(e),false);
+    renderInventoryImportConnections({});
+    updateVersionBar('BE error: '+errText(e));
+    showLastJson();
+  }
+}
 function dashMoney(n){return money(Number(n||0))||'$0'}
 function dashSet(id,val){let el=qs(id);if(el)el.textContent=val}
 function dashChannelBox(obj,ch){return (obj&&obj.channels&&obj.channels[ch])?obj.channels[ch]:{count:0,total_amount:0,items:[],types:{}}}
