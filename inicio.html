@@ -4,403 +4,71 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>XelerIA · Inicio</title>
-  <!-- XELERIA_INICIO_V22_VERSION_BAR -->
-
+  <!-- XELERIA_INICIO_V23_SESSION_TENANT_GUARD -->
   <script>
     if (location.protocol === 'http:' && location.hostname.endsWith('xeleria.com.ar')) {
       location.replace('https://' + location.host + location.pathname + location.search + location.hash);
     }
   </script>
-
   <link rel="icon" type="image/png" href="./favicon_xeleria.png?v=1">
-
   <style>
-    :root {
-      --bg: #07111f;
-      --text: #f5f7fb;
-      --muted: #aab6c8;
-      --accent: #5eead4;
-      --border: rgba(255,255,255,.14);
-      --ml: #ffe600;
-      --tn: #202849;
-    }
-
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: Arial, Helvetica, sans-serif;
-      background:
-        radial-gradient(circle at top left, rgba(94,234,212,.18), transparent 34%),
-        radial-gradient(circle at bottom right, rgba(96,165,250,.14), transparent 30%),
-        var(--bg);
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 26px;
-    }
-
-    .wrap {
-      width: min(980px, 100%);
-      display: grid;
-      grid-template-columns: 1.1fr .9fr;
-      gap: 18px;
-    }
-
-    .hero,
-    .panel {
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,.04);
-      border-radius: 28px;
-      padding: 30px;
-      box-shadow: 0 22px 70px rgba(0,0,0,.22);
-    }
-
-    .brand {
-      display: flex;
-      gap: 14px;
-      align-items: center;
-      margin-bottom: 28px;
-    }
-
-    .brand img {
-      width: 54px;
-      height: 54px;
-      border-radius: 16px;
-    }
-
-    .brand strong {
-      font-size: 32px;
-      letter-spacing: -.06em;
-    }
-
-    .brand span { color: var(--accent); }
-
-    h1 {
-      font-size: clamp(42px, 6vw, 74px);
-      line-height: .9;
-      margin: 0 0 18px;
-      letter-spacing: -.08em;
-    }
-
-    h2 {
-      font-size: 34px;
-      margin: 0 0 10px;
-    }
-
-    p {
-      color: var(--muted);
-      line-height: 1.55;
-    }
-
-    .badge {
-      display: inline-flex;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 8px 12px;
-      color: var(--accent);
-      font-size: 12px;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      margin-bottom: 16px;
-    }
-
-    .actions {
-      display: grid;
-      gap: 10px;
-      margin-top: 18px;
-    }
-
-    .btn {
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      background: rgba(255,255,255,.07);
-      color: var(--text);
-      padding: 14px 16px;
-      text-decoration: none;
-      font-weight: 800;
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      cursor: pointer;
-    }
-
-    .btn:hover {
-      border-color: var(--accent);
-      color: var(--accent);
-    }
-
-    .primary {
-      background: var(--ml);
-      color: #111;
-      border: 0;
-    }
-
-    .primary:hover { color: #111; }
-
-    .tn {
-      background: var(--tn);
-      color: #fff;
-    }
-
-    .small {
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    .input {
-      width: 100%;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,.05);
-      color: var(--text);
-      border-radius: 14px;
-      padding: 13px;
-      margin: 7px 0 12px;
-    }
-
-    .line {
-      height: 1px;
-      background: var(--border);
-      margin: 18px 0;
-    }
-
-    .ok,
-    .status { color: var(--accent); }
-
-    .status {
-      font-size: 12px;
-      min-height: 18px;
-      margin-top: 10px;
-    }
-
-    .xeleria-version-bar {
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 999999;
-      height: 21px;
-      background: #050505;
-      color: #b8f7d4;
-      font: 11px/21px Consolas, 'Courier New', monospace;
-      padding: 0 10px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      border-top: 1px solid #222;
-    }
-
-    @media (max-width: 820px) {
-      .wrap { grid-template-columns: 1fr; }
-      .hero,
-      .panel { padding: 22px; }
-    }
+    :root{--bg:#07111f;--text:#f5f7fb;--muted:#aab6c8;--accent:#5eead4;--border:rgba(255,255,255,.14);--ml:#ffe600;--tn:#202849;--bad:#fca5a5}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:Arial,Helvetica,sans-serif;background:radial-gradient(circle at top left,rgba(94,234,212,.18),transparent 34%),radial-gradient(circle at bottom right,rgba(96,165,250,.14),transparent 30%),var(--bg);color:var(--text);display:flex;align-items:center;justify-content:center;padding:26px}.wrap{width:min(980px,100%);display:grid;grid-template-columns:1.1fr .9fr;gap:18px}.hero,.panel{border:1px solid var(--border);background:rgba(255,255,255,.04);border-radius:28px;padding:30px;box-shadow:0 22px 70px rgba(0,0,0,.22)}.brand{display:flex;gap:14px;align-items:center;margin-bottom:28px}.brand img{width:54px;height:54px;border-radius:16px}.brand strong{font-size:32px;letter-spacing:-.06em}.brand span{color:var(--accent)}h1{font-size:clamp(42px,6vw,74px);line-height:.9;margin:0 0 18px;letter-spacing:-.08em}h2{font-size:34px;margin:0 0 10px}p{color:var(--muted);line-height:1.55}.badge{display:inline-flex;border:1px solid var(--border);border-radius:999px;padding:8px 12px;color:var(--accent);font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:16px}.actions{display:grid;gap:10px;margin-top:18px}.btn{border:1px solid var(--border);border-radius:16px;background:rgba(255,255,255,.07);color:var(--text);padding:14px 16px;text-decoration:none;font-weight:800;display:flex;justify-content:space-between;gap:10px;cursor:pointer}.btn:hover{border-color:var(--accent);color:var(--accent)}.primary{background:var(--ml);color:#111;border:0}.primary:hover{color:#111}.tn{background:var(--tn);color:#fff}.small{font-size:12px;color:var(--muted)}.input{width:100%;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--text);border-radius:14px;padding:13px;margin:7px 0 12px}.line{height:1px;background:var(--border);margin:18px 0}.ok,.status{color:var(--accent)}.status{font-size:12px;min-height:18px;margin-top:10px;white-space:pre-wrap}.status.bad{color:var(--bad)}.xeleria-version-bar{position:fixed;left:0;right:0;bottom:0;z-index:999999;height:21px;background:#050505;color:#b8f7d4;font:11px/21px Consolas,'Courier New',monospace;padding:0 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-top:1px solid #222}@media(max-width:820px){.wrap{grid-template-columns:1fr}.hero,.panel{padding:22px}}
   </style>
 </head>
-
 <body>
   <div class="wrap">
     <section class="hero">
-      <div class="brand">
-        <img src="./favicon_xeleria.png?v=1" alt="XelerIA">
-        <strong>Xeler<span>IA</span></strong>
-      </div>
-
+      <div class="brand"><img src="./favicon_xeleria.png?v=1" alt="XelerIA"><strong>Xeler<span>IA</span></strong></div>
       <div class="badge">15 días de prueba</div>
-
       <h1>Probá XelerIA</h1>
-
-      <p>
-        Entrás con Mercado Libre o Tienda Nube. XelerIA identifica tu cuenta y crea tu espacio interno si corresponde.
-      </p>
-
-      <p class="small">
-        Modo actual: <span class="ok">lectura + dry-run</span>. Escritura real bloqueada.
-      </p>
+      <p>Entrás con Mercado Libre o Tienda Nube. XelerIA identifica tu cuenta y usa tu comercio interno activo.</p>
+      <p class="small">Guardia nueva: si la sesión pertenece a otro comercio, no entra al backoffice.</p>
     </section>
-
     <section class="panel">
       <h2>Ingresar</h2>
-
       <p class="small">Elegí tu canal principal para empezar.</p>
-
       <label class="small" for="betaAccessCode">Código beta privado</label>
       <input class="input" id="betaAccessCode" type="password" placeholder="Código de acceso">
-
       <div class="actions">
         <a class="btn primary" id="ml" href="#">Entrar con Mercado Libre <span>ML</span></a>
         <a class="btn tn" id="tn" href="#">Entrar con Tienda Nube <span>TN</span></a>
       </div>
-
       <div class="status" id="status"></div>
-
       <div class="line"></div>
-
       <p class="small">No escribe cambios reales en ML/TN durante la prueba.</p>
     </section>
   </div>
-
-  <div id="xeleriaVersionBar" class="xeleria-version-bar">
-    FE inicio-v22-version-bar | BE consultando…
-  </div>
-
-  <script>
-    const API_BASE = 'https://api.xeleria.com.ar';
-    const FRONTEND_VERSION = 'inicio-v22-version-bar';
-    const VERSION_BAR = document.getElementById('xeleriaVersionBar');
-    const NEXT_PAGE = new URLSearchParams(location.search).get('next') || 'admin_erp.html';
-    localStorage.setItem('xeleria_next', NEXT_PAGE);
-
-    function shortId(value) {
-      const s = String(value || '');
-      if (!s) return '?';
-      if (s.length <= 12) return s;
-      return s.slice(0, 8) + '…';
-    }
-
-    function updateVersionBar(text) {
-      if (VERSION_BAR) VERSION_BAR.textContent = text;
-    }
-
-    async function loadVersionBar() {
-      const tenant = localStorage.getItem('xeleria_tenant_id') || '';
-      const exp = localStorage.getItem('xeleria_session_expires_at') || '';
-      const sess = localStorage.getItem('xeleria_session_token') ? 'sí' : 'no';
-      try {
-        const r = await fetch(`${API_BASE}/admin/health`, { cache: 'no-store' });
-        const h = await r.json();
-        const modules = h.module_versions || {};
-        updateVersionBar(
-          `FE ${FRONTEND_VERSION} | BE ${h.version || '?'} | oauth_ml ${modules.oauth_ml || '?'} | sessions ${modules.sessions || '?'} | grid ${modules.inventory_import_grid || '?'} | tenant ${shortId(tenant || h.tenant_id)} | sesión ${sess}${exp ? ' exp ' + exp : ''} | ML ${h.ml_configurado ? 'ok' : 'no'} | TN ${h.tn_configurado ? 'ok' : 'no'}`
-        );
-      } catch (e) {
-        updateVersionBar(`FE ${FRONTEND_VERSION} | BE sin respuesta | tenant ${shortId(tenant)} | sesión ${sess}`);
-      }
-    }
-
-    const betaAccessCodeInput = document.getElementById('betaAccessCode');
-    const statusBox = document.getElementById('status');
-
-    betaAccessCodeInput.value = localStorage.getItem('xeleria_beta_access_code') || '';
-
-    const betaAccessCode = () => betaAccessCodeInput.value.trim();
-    const setStatus = msg => statusBox.textContent = msg || '';
-
-    async function ensureTenant() {
-      const existing = localStorage.getItem('xeleria_tenant_id') || '';
-      const existingSession = localStorage.getItem('xeleria_session_token') || '';
-      const expiresAtRaw = localStorage.getItem('xeleria_session_expires_at') || '';
-      const expiresAtMs = expiresAtRaw ? Date.parse(expiresAtRaw) : 0;
-      const sessionLooksValid = existingSession && expiresAtMs && Date.now() < (expiresAtMs - 30000);
-
-      if (existing && existingSession && !sessionLooksValid) {
-        localStorage.removeItem('xeleria_session_token');
-        localStorage.removeItem('xeleria_session_expires_at');
-      }
-
-      if (existing && existingSession && sessionLooksValid && existing !== '00000000-0000-0000-0000-000000000001') {
-        return { tenantId: existing, sessionToken: existingSession };
-      }
-
-      const response = await fetch(`${API_BASE}/tenant/bootstrap`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          beta_access_code: betaAccessCode(),
-          display_name: '',
-          next: NEXT_PAGE
-        })
-      });
-
-      let data = {};
-      try {
-        data = await response.json();
-      } catch (_) {
-        data = {};
-      }
-
-      if (!response.ok || !data.ok) {
-        const detail = data.detail || data.error || data.message || `HTTP ${response.status}`;
-        throw new Error(detail || 'No se pudo generar el tenant.');
-      }
-
-      const tenantId = (data.tenant && data.tenant.id) || data.tenant_id;
-      const sessionToken = data.session && data.session.token;
-
-      if (!tenantId) {
-        throw new Error('El backend no devolvió tenant_id.');
-      }
-      if (!sessionToken) {
-        throw new Error('El backend no devolvió sesión.');
-      }
-
-      localStorage.setItem('xeleria_tenant_id', tenantId);
-      localStorage.setItem('xeleria_session_token', sessionToken);
-      if (data.session && data.session.expires_at) {
-        localStorage.setItem('xeleria_session_expires_at', data.session.expires_at);
-      }
-      loadVersionBar();
-      return { tenantId, sessionToken };
-    }
-
-    async function startChannel(channel) {
-      try {
-        if (!betaAccessCode()) {
-          throw new Error('Cargá el código beta privado.');
-        }
-
-        localStorage.setItem('xeleria_beta_access_code', betaAccessCode());
-
-        setStatus('Creando espacio de trabajo…');
-
-        const session = await ensureTenant();
-        const tenantId = session.tenantId;
-
-        setStatus('Preparando autorización…');
-
-        const oauthResponse = await fetch(`${API_BASE}/oauth/${channel}/prepare`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            tenant_id: tenantId,
-            session_token: session.sessionToken,
-            next: NEXT_PAGE
-          })
-        });
-
-        let oauthData = {};
-        try {
-          oauthData = await oauthResponse.json();
-        } catch (_) {
-          oauthData = {};
-        }
-
-        if (!oauthResponse.ok || !oauthData.ok || !oauthData.authorization_url) {
-          const detail = oauthData.detail || oauthData.error || oauthData.message || `HTTP ${oauthResponse.status}`;
-          throw new Error(typeof detail === 'string' ? detail : JSON.stringify(detail));
-        }
-
-        setStatus('Redirigiendo a Mercado Libre…');
-        location.href = oauthData.authorization_url;
-      } catch (error) {
-        setStatus('');
-        alert(error.message || 'No se pudo iniciar.');
-      }
-    }
-
-    document.getElementById('ml').addEventListener('click', event => {
-      event.preventDefault();
-      startChannel('ml');
-    });
-
-    loadVersionBar();
-
-    document.getElementById('tn').addEventListener('click', event => {
-      event.preventDefault();
-      startChannel('tn');
-    });
-  </script>
+  <div id="xeleriaVersionBar" class="xeleria-version-bar">FE inicio-v23-session-tenant-guard | BE consultando…</div>
+<script>
+const API_BASE='https://api.xeleria.com.ar';
+const FRONTEND_VERSION='inicio-v23-session-tenant-guard';
+const VERSION_BAR=document.getElementById('xeleriaVersionBar');
+const params=new URLSearchParams(location.search);
+const NEXT_PAGE=params.get('next')||'admin_erp.html';
+const REASON=params.get('reason')||'';
+localStorage.setItem('xeleria_next',NEXT_PAGE);
+const betaAccessCodeInput=document.getElementById('betaAccessCode');
+const statusBox=document.getElementById('status');
+betaAccessCodeInput.value=localStorage.getItem('xeleria_beta_access_code')||'';
+const betaAccessCode=()=>betaAccessCodeInput.value.trim();
+function shortId(v){const s=String(v||'');return s.length>12?s.slice(0,8)+'…':(s||'?')}
+function setStatus(msg,bad=false){statusBox.textContent=msg||'';statusBox.classList.toggle('bad',!!bad)}
+function updateVersionBar(text){if(VERSION_BAR)VERSION_BAR.textContent=text}
+function cleanSessionOnly(){localStorage.removeItem('xeleria_session_token');localStorage.removeItem('xeleria_session_expires_at');sessionStorage.removeItem('xeleria_session_token')}
+function saveSession(data){const tenantId=(data.tenant&&data.tenant.id)||data.tenant_id;const sessionToken=data.session&&data.session.token;if(!tenantId)throw new Error('El backend no devolvió tenant_id.');if(!sessionToken)throw new Error('El backend no devolvió sesión.');localStorage.setItem('xeleria_tenant_id',tenantId);localStorage.setItem('xeleria_session_token',sessionToken);if(data.session&&data.session.expires_at)localStorage.setItem('xeleria_session_expires_at',data.session.expires_at);return {tenantId,sessionToken}}
+async function readJson(response){let data={};try{data=await response.json()}catch{}return data}
+function sessionLooksValid(){const token=localStorage.getItem('xeleria_session_token')||'';const exp=localStorage.getItem('xeleria_session_expires_at')||'';const ms=exp?Date.parse(exp):0;return !!(token&&ms&&Date.now()<(ms-30000))}
+async function loadVersionBar(){const tenant=localStorage.getItem('xeleria_tenant_id')||'';const exp=localStorage.getItem('xeleria_session_expires_at')||'';const sess=localStorage.getItem('xeleria_session_token')?'sí':'no';try{const r=await fetch(`${API_BASE}/admin/health`,{cache:'no-store'});const h=await r.json();const modules=h.module_versions||{};updateVersionBar(`FE ${FRONTEND_VERSION} | BE ${h.version||'?'} | import_jobs ${modules.xeleria_import_jobs||modules.import_jobs||'?'} | tenant ${shortId(tenant||h.tenant_id)} | sesión ${sess}${exp?' exp '+exp:''} | ML ${h.ml_configurado?'ok':'no'} | TN ${h.tn_configurado?'ok':'no'}`)}catch(e){updateVersionBar(`FE ${FRONTEND_VERSION} | BE sin respuesta | tenant ${shortId(tenant)} | sesión ${sess}`)}}
+async function validateExistingSession(existing,sessionToken){const r=await fetch(`${API_BASE}/admin/session/context?tenant_id=${encodeURIComponent(existing)}`,{headers:{'x-session-token':sessionToken,'Authorization':'Bearer '+sessionToken,'x-xeleria-tenant':existing},cache:'no-store'});const d=await readJson(r);if(r.status===409){cleanSessionOnly();throw new Error('La sesión guardada pertenecía a otro comercio. La cerré para no mezclar datos. Tocá de nuevo Entrar para restaurar la sesión correcta.')}if(!r.ok||!d.ok){cleanSessionOnly();throw new Error(d.detail||d.message||'Sesión inválida. Tocá de nuevo Entrar para restaurar.')}if(String(d.tenant_id)!==String(existing)){cleanSessionOnly();throw new Error('Tenant inconsistente. Sesión cerrada por seguridad.')}return {tenantId:d.tenant_id,sessionToken}}
+async function restoreExistingTenant(existing){if(!betaAccessCode())throw new Error('Cargá el código beta privado para restaurar la sesión del comercio existente.');const r=await fetch(`${API_BASE}/tenant/session/restore`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tenant_id:existing,beta_access_code:betaAccessCode(),next:NEXT_PAGE})});const d=await readJson(r);if(!r.ok||!d.ok){throw new Error(d.detail||d.message||`No pude restaurar sesión del tenant ${shortId(existing)}`)}return saveSession(d)}
+async function bootstrapNewTenant(){const r=await fetch(`${API_BASE}/tenant/bootstrap`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({beta_access_code:betaAccessCode(),display_name:'',next:NEXT_PAGE})});const d=await readJson(r);if(!r.ok||!d.ok){throw new Error(d.detail||d.error||d.message||`HTTP ${r.status}`)}return saveSession(d)}
+async function ensureTenant(){const existing=localStorage.getItem('xeleria_tenant_id')||'';const existingSession=localStorage.getItem('xeleria_session_token')||'';if(existing&&existingSession&&sessionLooksValid()&&existing!=='00000000-0000-0000-0000-000000000001'){return validateExistingSession(existing,existingSession)}if(existing&&existing!=='00000000-0000-0000-0000-000000000001'){return restoreExistingTenant(existing)}return bootstrapNewTenant()}
+async function startChannel(channel){try{if(!betaAccessCode())throw new Error('Cargá el código beta privado.');localStorage.setItem('xeleria_beta_access_code',betaAccessCode());setStatus('Validando comercio y sesión…');const session=await ensureTenant();setStatus('Preparando autorización…');const oauthResponse=await fetch(`${API_BASE}/oauth/${channel}/prepare`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tenant_id:session.tenantId,session_token:session.sessionToken,next:NEXT_PAGE})});const oauthData=await readJson(oauthResponse);if(!oauthResponse.ok||!oauthData.ok||!oauthData.authorization_url){throw new Error(typeof(oauthData.detail||oauthData.error||oauthData.message)==='string'?(oauthData.detail||oauthData.error||oauthData.message):JSON.stringify(oauthData.detail||oauthData))}setStatus('Redirigiendo…');location.href=oauthData.authorization_url}catch(error){setStatus(error.message||'No se pudo iniciar.',true);alert(error.message||'No se pudo iniciar.')}finally{loadVersionBar()}}
+document.getElementById('ml').addEventListener('click',e=>{e.preventDefault();startChannel('ml')});
+document.getElementById('tn').addEventListener('click',e=>{e.preventDefault();startChannel('tn')});
+if(REASON==='tenant_mismatch')setStatus('Sesión cerrada por seguridad: pertenecía a otro comercio. Tocá Entrar para restaurar la sesión correcta.',true);
+loadVersionBar();
+</script>
 </body>
 </html>
