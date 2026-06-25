@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>XelerIA · Inicio</title>
-  <!-- XELERIA_INICIO_V23_SESSION_TENANT_GUARD -->
+  <!-- XELERIA_INICIO_V24_AUTO_RESTORE_DUPLICATE_TENANT -->
   <script>
     if (location.protocol === 'http:' && location.hostname.endsWith('xeleria.com.ar')) {
       location.replace('https://' + location.host + location.pathname + location.search + location.hash);
@@ -42,7 +42,7 @@
   <div id="xeleriaVersionBar" class="xeleria-version-bar">FE inicio-v23-session-tenant-guard | BE consultando…</div>
 <script>
 const API_BASE='https://api.xeleria.com.ar';
-const FRONTEND_VERSION='inicio-v23-session-tenant-guard';
+const FRONTEND_VERSION='inicio-v24-auto-restore-duplicate-tenant';
 const VERSION_BAR=document.getElementById('xeleriaVersionBar');
 const params=new URLSearchParams(location.search);
 const NEXT_PAGE=params.get('next')||'admin_erp.html';
@@ -60,7 +60,7 @@ function saveSession(data){const tenantId=(data.tenant&&data.tenant.id)||data.te
 async function readJson(response){let data={};try{data=await response.json()}catch{}return data}
 function sessionLooksValid(){const token=localStorage.getItem('xeleria_session_token')||'';const exp=localStorage.getItem('xeleria_session_expires_at')||'';const ms=exp?Date.parse(exp):0;return !!(token&&ms&&Date.now()<(ms-30000))}
 async function loadVersionBar(){const tenant=localStorage.getItem('xeleria_tenant_id')||'';const exp=localStorage.getItem('xeleria_session_expires_at')||'';const sess=localStorage.getItem('xeleria_session_token')?'sí':'no';try{const r=await fetch(`${API_BASE}/admin/health`,{cache:'no-store'});const h=await r.json();const modules=h.module_versions||{};updateVersionBar(`FE ${FRONTEND_VERSION} | BE ${h.version||'?'} | import_jobs ${modules.xeleria_import_jobs||modules.import_jobs||'?'} | tenant ${shortId(tenant||h.tenant_id)} | sesión ${sess}${exp?' exp '+exp:''} | ML ${h.ml_configurado?'ok':'no'} | TN ${h.tn_configurado?'ok':'no'}`)}catch(e){updateVersionBar(`FE ${FRONTEND_VERSION} | BE sin respuesta | tenant ${shortId(tenant)} | sesión ${sess}`)}}
-async function validateExistingSession(existing,sessionToken){const r=await fetch(`${API_BASE}/admin/session/context?tenant_id=${encodeURIComponent(existing)}`,{headers:{'x-session-token':sessionToken,'Authorization':'Bearer '+sessionToken,'x-xeleria-tenant':existing},cache:'no-store'});const d=await readJson(r);if(r.status===409){cleanSessionOnly();throw new Error('La sesión guardada pertenecía a otro comercio. La cerré para no mezclar datos. Tocá de nuevo Entrar para restaurar la sesión correcta.')}if(!r.ok||!d.ok){cleanSessionOnly();throw new Error(d.detail||d.message||'Sesión inválida. Tocá de nuevo Entrar para restaurar.')}if(String(d.tenant_id)!==String(existing)){cleanSessionOnly();throw new Error('Tenant inconsistente. Sesión cerrada por seguridad.')}return {tenantId:d.tenant_id,sessionToken}}
+async function validateExistingSession(existing,sessionToken){const r=await fetch(`${API_BASE}/admin/session/context?tenant_id=${encodeURIComponent(existing)}`,{headers:{'x-session-token':sessionToken,'Authorization':'Bearer '+sessionToken,'x-xeleria-tenant':existing},cache:'no-store'});const d=await readJson(r);if(r.status===409){cleanSessionOnly();return restoreExistingTenant(existing)}if(!r.ok||!d.ok){cleanSessionOnly();throw new Error(d.detail||d.message||'Sesión inválida. Tocá de nuevo Entrar para restaurar.')}if(String(d.tenant_id)!==String(existing)){cleanSessionOnly();throw new Error('Tenant inconsistente. Sesión cerrada por seguridad.')}return {tenantId:d.tenant_id,sessionToken}}
 async function restoreExistingTenant(existing){if(!betaAccessCode())throw new Error('Cargá el código beta privado para restaurar la sesión del comercio existente.');const r=await fetch(`${API_BASE}/tenant/session/restore`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tenant_id:existing,beta_access_code:betaAccessCode(),next:NEXT_PAGE})});const d=await readJson(r);if(!r.ok||!d.ok){throw new Error(d.detail||d.message||`No pude restaurar sesión del tenant ${shortId(existing)}`)}return saveSession(d)}
 async function bootstrapNewTenant(){const r=await fetch(`${API_BASE}/tenant/bootstrap`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({beta_access_code:betaAccessCode(),display_name:'',next:NEXT_PAGE})});const d=await readJson(r);if(!r.ok||!d.ok){throw new Error(d.detail||d.error||d.message||`HTTP ${r.status}`)}return saveSession(d)}
 async function ensureTenant(){const existing=localStorage.getItem('xeleria_tenant_id')||'';const existingSession=localStorage.getItem('xeleria_session_token')||'';if(existing&&existingSession&&sessionLooksValid()&&existing!=='00000000-0000-0000-0000-000000000001'){return validateExistingSession(existing,existingSession)}if(existing&&existing!=='00000000-0000-0000-0000-000000000001'){return restoreExistingTenant(existing)}return bootstrapNewTenant()}
