@@ -302,8 +302,8 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 <div id="xeleriaVersionBar" class="xeleriaVersionBar">FE 1.86 | BE consultando…</div>
 <div id="erpBusyOverlay" class="erpBusyOverlay"><div class="erpBusyBox"><div class="erpSpinner"></div><div id="erpBusyTitle" class="erpBusyTitle">Procesando...</div><div id="erpBusyMsg" class="erpBusyMsg">No cierres esta pantalla.</div></div></div>
 <script>
-const FRONTEND_VERSION='1.98';
-const FRONTEND_BUILD='admin-erp-v198-import-save-commit';
+const FRONTEND_VERSION='1.99';
+const FRONTEND_BUILD='admin-erp-v199-grid-from-staging-until-save';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[],comboItems:[],pendingBundleDraft:null};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 
 const ALERT_KEYS={
@@ -1848,7 +1848,7 @@ async function loadInventoryImportGrid(offset=0){
   setStatus('inventoryImportStatus','Cargando grilla importada...');
   try{
     let tokenQuery=t?('&token='+encodeURIComponent(t)):'';
-    let d=await fetchJson('/admin/inventory/import-grid?limit='+encodeURIComponent(limit)+'&offset='+encodeURIComponent(offset)+tokenQuery);
+    let d=await fetchJson('/admin/inventory/import-jobs/grid?limit='+encodeURIComponent(limit)+'&offset='+encodeURIComponent(offset)+tokenQuery);
     renderInventoryImportResult(d,offset,limit,'grid');
     setStatus('inventoryImportStatus','Grilla cargada.',true);
   }catch(e){
