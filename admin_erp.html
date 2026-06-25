@@ -145,7 +145,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 <div class="navTitle">Local físico</div><div class="sub"><button class="navBtn" data-view="arca-manual">Emitir comprobante manual</button></div>
 <div class="navTitle">Gestión</div><div class="sub"><div class="navParent">Inventario</div><div class="sub2"><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="combos">Combos / Kits</button><button class="navBtn" data-view="full-inbound">Envío a Full</button><button class="navBtn" data-view="movimientos">Movimientos de stock</button></div><button class="navBtn" data-view="clientes">Clientes ML / TN</button><button class="navBtn" data-view="base-conocimiento">Base de Conocimiento IA</button><button class="navBtn" data-view="arca-reportes">ARCA reportes</button></div>
 <div class="navTitle">Sistema</div><div class="sub"><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="ultimo-json">Último JSON</button></div>
-</nav><div class="sidebarFoot">FE: <span id="footFrontendVer">2.04</span><br>BE: <span id="footBackendVer">?</span></div>
+</nav><div class="sidebarFoot">FE: <span id="footFrontendVer">2.05</span><br>BE: <span id="footBackendVer">?</span></div>
 </aside>
 <main>
 <div class="topbar"><div><h2 id="pageTitle">Inicio</h2><div class="crumb" id="pageCrumb">Panel operativo</div></div><div class="tokenBox"><div><label>API</label><input id="apiUrl" value="https://api.xeleria.com.ar"></div><div><label>ADMIN_TOKEN</label><input id="token" type="password" placeholder="Token"></div><button class="primary" onclick="saveSettings()">Guardar</button><button class="secondary" onclick="health()">Probar</button></div></div>
@@ -303,8 +303,8 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 <div id="xeleriaVersionBar" class="xeleriaVersionBar">FE 1.86 | BE consultando…</div>
 <div id="erpBusyOverlay" class="erpBusyOverlay"><div class="erpBusyBox"><div class="erpSpinner"></div><div id="erpBusyTitle" class="erpBusyTitle">Procesando...</div><div id="erpBusyMsg" class="erpBusyMsg">No cierres esta pantalla.</div></div></div>
 <script>
-const FRONTEND_VERSION='2.04';
-const FRONTEND_BUILD='admin-erp-v204-two-line-version-bar';
+const FRONTEND_VERSION='2.05';
+const FRONTEND_BUILD='admin-erp-v205-sql-rpc-save-notice';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[],comboItems:[],pendingBundleDraft:null};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 
 const ALERT_KEYS={
@@ -433,6 +433,7 @@ function renderArcaManualPreview(d){
 function setBusy(on,title='Procesando...',msg='No cierres esta pantalla.'){let ov=qs('erpBusyOverlay');if(!ov)return;document.body.classList.toggle('erpBusy',!!on);ov.classList.toggle('active',!!on);if(qs('erpBusyTitle'))qs('erpBusyTitle').textContent=title;if(qs('erpBusyMsg'))qs('erpBusyMsg').textContent=msg}function setArcaAndSalesStatus(ch,msg,ok=null){setStatus('arcaStatus',msg,ok);setStatus(String(ch||'').toLowerCase()+'VentasStatus',msg,ok)}
 function syncConnectionFields(){['apiUrl','cfgApiUrl'].forEach(id=>{let el=qs(id);if(el)el.value=state.api});['token','cfgToken'].forEach(id=>{let el=qs(id);if(el)el.value=state.token})}function saveSettings(){state.api=apiBase();state.token=token().trim();localStorage.setItem('pc_erp_api',state.api);localStorage.setItem('pc_erp_token',state.token);localStorage.setItem('xeleria_admin_token',state.token);syncConnectionFields();setStatus('homeStatus','Guardado.',true);setStatus('connStatus',state.token?'Guardado.':'Guardado, pero ADMIN_TOKEN quedó vacío.',!!state.token);syncLinks()}function saveSettingsFromConfig(){saveSettings()}function loadSettings(){state.api=localStorage.getItem('pc_erp_api')||localStorage.getItem('xeleria_api_url')||state.api;state.token=localStorage.getItem('pc_erp_token')||localStorage.getItem('xeleria_admin_token')||'';syncConnectionFields();loadViewPrefs();loadConfig();syncLinks()}function syncLinks(){let d=qs('downloadCsv');if(d)d.href=url('/erp/export_inventory')}function prefKey(section,key){return `pc_erp_pref_${section}_${key}`}function saveViewPref(section,key,value){localStorage.setItem(prefKey(section,key),String(value??''))}function loadViewPrefs(){let jl=localStorage.getItem(prefKey('jobs','limit'));if(jl&&qs('jobsLimit'))qs('jobsLimit').value=jl;let ml=localStorage.getItem(prefKey('ventas_ml','limit'));if(ml&&qs('mlVentasLimit'))qs('mlVentasLimit').value=ml;let tl=localStorage.getItem(prefKey('ventas_tn','limit'));if(tl&&qs('tnVentasLimit'))qs('tnVentasLimit').value=tl;let il=localStorage.getItem(prefKey('inventario','limit'));if(il&&qs('invLimit'))qs('invLimit').value=il;let mpl=localStorage.getItem(prefKey('publicaciones_ml','limit'));if(mpl&&qs('mlPubLimit'))qs('mlPubLimit').value=mpl;let tpl=localStorage.getItem(prefKey('publicaciones_tn','limit'));if(tpl&&qs('tnPubLimit'))qs('tnPubLimit').value=tpl}
 function showView(id){
+  if(id!=='inventario')clearInventoryImportTransientSaveUi();
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   let view=qs(id); if(view)view.classList.add('active');
   document.querySelectorAll('.navBtn').forEach(b=>b.classList.toggle('active',b.dataset.view===id));
@@ -1807,6 +1808,7 @@ function renderInventoryImportGrid(rows){let body=qs('inventoryImportGridBody');
 function inventoryImportBatchIdFromGridPayload(d){let b=(d&&d.batch)||{};return String((d&&d.batch_id)||b.id||b.batch_id||(d&&d.current_batch_id)||state.inventoryImportActiveBatchId||'').trim()}
 function collectInventoryImportItemTypes(){let out={};document.querySelectorAll('#inventoryImportGridBody input[type="radio"][data-sku]:checked').forEach(inp=>{let sku=String(inp.dataset.sku||'').trim();let val=String(inp.value||'simple').trim();if(sku)out[sku]=val==='bundle'?'bundle':'simple'});return out}
 function setInventoryImportSaveBusy(busy){state.inventoryImportSaving=!!busy;let btn=qs('inventoryImportSaveBtn');if(btn){btn.disabled=!!busy;btn.classList.toggle('disabled',!!busy);btn.textContent=busy?'Guardando...':'Guardar'}}
+function clearInventoryImportTransientSaveUi(){if(!state.inventoryImportSaveNoticeActive)return;state.inventoryImportSaveNoticeActive=false;state.inventoryImportSaving=false;let el=qs('inventoryImportStatus');if(el){el.textContent='';el.className='status'}let btn=qs('inventoryImportSaveBtn');if(btn){btn.disabled=false;btn.classList.remove('disabled');btn.textContent='Guardar'}}
 function inventoryImportSaveButtonHtml(d={}){let canSave=(d.can_save!==false)&&!(d.readonly===true)&&!['confirmed','confirmed_with_errors','saved','saved_with_errors','closed'].includes(String(d.batch&&d.batch.status||d.status||'').toLowerCase());if(!canSave)return '<span class="pill ok">Grilla guardada / cerrada</span>';let disabled=state.inventoryImportSaving?' disabled':'';let label=state.inventoryImportSaving?'Guardando...':'Guardar';return `<button id="inventoryImportSaveBtn" class="primary" onclick="saveInventoryImportBatch()"${disabled}>${label}</button>`}
 function renderInventoryImportResult(d,offset=0,limit=500,source='grid'){updateInventoryImportConnectionsFromGrid(d);state.inventoryImportCurrentBatchId=inventoryImportBatchIdFromGridPayload(d);state.inventoryImportGridLoaded=true;renderInventoryImportGrid(d.rows||[]);inventoryImportClearSummary();if(qs('inventoryImportPager'))qs('inventoryImportPager').innerHTML=inventoryImportSaveButtonHtml(d);saveLastJson(d)}
 function inventoryImportSaveDoneStatus(st){return ['saved','saved_with_errors','confirmed','confirmed_with_errors','closed'].includes(String(st||'').toLowerCase())}
@@ -1864,12 +1866,15 @@ async function saveInventoryImportBatch(){
   let batchId=state.inventoryImportCurrentBatchId||state.inventoryImportActiveBatchId||'';
   let payload={batch_id:batchId||undefined,item_types:collectInventoryImportItemTypes()};
   setInventoryImportSaveBusy(true);
+  state.inventoryImportSaveNoticeActive=true;
   document.querySelectorAll('#inventoryImportGridBody input[type="radio"]').forEach(inp=>inp.disabled=true);
-  setStatus('inventoryImportStatus','Iniciando guardado en background... podés dejar esta pantalla abierta, no vuelvas a tocar Guardar.');
+  setStatus('inventoryImportStatus','Guardando. Te notificaremos cuando hayamos finalizado.','warn');
+  if(qs('inventoryImportPager'))qs('inventoryImportPager').innerHTML='<span class="pill warn">Guardando</span>';
   try{
     let d=await fetchJson('/admin/inventory/import-jobs/save',{method:'POST',body:JSON.stringify(payload)});
     saveLastJson(d);
     if(d.already_saved){
+      state.inventoryImportSaveNoticeActive=false;
       setStatus('inventoryImportStatus','La grilla ya estaba guardada/cerrada.',true);
       if(qs('inventoryImportPager'))qs('inventoryImportPager').innerHTML='<span class="pill ok">Guardado cerrado</span>';
       state.inventoryImportGridLoaded=false;
@@ -1877,18 +1882,22 @@ async function saveInventoryImportBatch(){
       return;
     }
     if(d.background||String(d.status||'').toLowerCase()==='saving'){
-      setStatus('inventoryImportStatus',`Guardado iniciado en servidor. Job ${d.job_id||''}. Esperando progreso...`,'warn');
-      await pollInventoryImportSaveJob(d.job_id);
+      state.inventoryImportSaveJobId=d.job_id||'';
+      state.inventoryImportActiveJobId=d.job_id||state.inventoryImportActiveJobId||'';
+      setStatus('inventoryImportStatus','Guardando. Te notificaremos cuando hayamos finalizado.','warn');
+      if(qs('inventoryImportPager'))qs('inventoryImportPager').innerHTML='<span class="pill warn">Guardando</span>';
       return;
     }
     let c=d.counts||{};
-    let msg=`Guardado OK. Items nuevos: ${c.created_items||0}. Items actualizados: ${c.updated_items||0}. Publicaciones nuevas: ${c.created_listings||0}. Publicaciones actualizadas: ${c.updated_listings||0}. Sin SKU: ${c.skipped_missing_sku||0}. Ya guardadas: ${c.skipped_already_saved||0}.`;
+    let msg=`Guardado OK. Items nuevos: ${c.created_items||0}. Items actualizados: ${c.updated_items||0}. Publicaciones nuevas: ${c.created_listings||0}. Publicaciones actualizadas: ${c.updated_listings||0}. Sin SKU: ${c.skipped_missing_sku||0}. Errores: ${c.errors||0}.`;
+    state.inventoryImportSaveNoticeActive=false;
     setStatus('inventoryImportStatus',msg,d.ok!==false);
     if(qs('inventoryImportPager'))qs('inventoryImportPager').innerHTML='<span class="pill ok">Guardado cerrado</span>';
     state.inventoryImportGridLoaded=false;
     state.inventoryImportActiveJobId='';
-    state.inventoryImportSaving=false;
+    setInventoryImportSaveBusy(false);
   }catch(e){
+    state.inventoryImportSaveNoticeActive=false;
     state.inventoryImportSaving=false;
     document.querySelectorAll('#inventoryImportGridBody input[type="radio"]').forEach(inp=>inp.disabled=false);
     setInventoryImportSaveBusy(false);
