@@ -13,7 +13,7 @@
 aside{position:fixed;left:0;top:0;bottom:0;width:282px;background:linear-gradient(180deg,#101010,#191919);color:#fff;display:flex;flex-direction:column;z-index:20;box-shadow:8px 0 28px rgba(0,0,0,.18)}
 .brand{padding:22px 18px 16px;border-bottom:1px solid rgba(220,197,143,.25)}.brandTop{display:grid;grid-template-columns:60px 1fr auto;gap:12px;align-items:center}.appMark{width:60px;height:60px;border-radius:50%;background:#fff;display:inline-flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 0 0 1px rgba(220,197,143,.35)}.appMark img{width:112%;height:112%;object-fit:cover;display:block}.brandName{font-size:24px;font-weight:950;letter-spacing:.02em;color:#fff;line-height:1}.brandTenantLogo{min-width:58px;max-width:86px;height:42px;border-radius:10px;background:rgba(255,255,255,.08);border:1px solid rgba(220,197,143,.25);display:flex;align-items:center;justify-content:center;padding:5px;color:#d8d0c0;font-size:10px;font-weight:900}.brandTenantLogo.hasLogo{background:#fff}.brandTenantLogo img{max-width:76px;max-height:32px;object-fit:contain;display:block}.brand p{margin:12px 0 0;color:#d8d0c0;font-size:12px}.configLogoPreview{min-height:96px;border:1px dashed var(--line);border-radius:16px;background:#fffaf0;display:flex;align-items:center;justify-content:center;padding:14px}.configLogoPreview.hasLogo{border-style:solid;background:#fff}.configLogoPreview img{max-width:260px;max-height:86px;object-fit:contain}.logoPlaceholder{width:82px;height:82px;border-radius:18px;background:var(--brand);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:28px;color:#111}.configHint{font-size:12px;color:var(--muted);line-height:1.45}.dividerLine{height:1px;background:var(--line);margin:12px 0}
 nav{padding:14px 12px;overflow:auto;flex:1}.navBtn,.navTitle,.navParent{width:100%;border:0;background:transparent;color:#eee;display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:12px;text-align:left;cursor:pointer;font-weight:700}.navTitle{color:#d5c6a2;font-size:12px;text-transform:uppercase;letter-spacing:.08em;margin-top:8px;cursor:default}.navParent{cursor:default;color:#d8c48f;font-size:14px;font-weight:850;letter-spacing:.02em}.navBtn:hover{background:rgba(220,197,143,.11)}.navBtn.active{background:var(--brand);color:#111}.sub{position:relative;margin-left:0;padding-left:18px}.sub:before{content:"";position:absolute;left:6px;top:8px;bottom:8px;width:1px;background:rgba(220,197,143,.24)}.sub .navBtn,.sub .navParent{font-weight:650;color:#e8e2d4;padding:9px 10px;font-size:13px}.sub .navBtn.active{color:#111}.sub2{position:relative;margin-left:12px;padding-left:18px;margin-bottom:6px}.sub2:before{content:"";position:absolute;left:6px;top:2px;bottom:2px;width:1px;background:rgba(220,197,143,.34)}.sub2 .navBtn{font-size:12.5px;padding:8px 10px;color:#f3ead8}.sidebarFoot{padding:10px 18px;border-top:1px solid rgba(220,197,143,.25);font-size:11px;line-height:1.35;color:#cfc7ba}
-main{margin-left:282px;width:calc(100% - 282px);padding:22px 26px 60px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}.topbar h2{margin:0;font-size:26px}.crumb{color:var(--muted);font-size:13px;margin-top:4px}.tokenBox{display:flex;gap:8px;align-items:end;background:var(--surface);padding:12px;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}.tokenBox input{width:270px}
+main{margin-left:282px;width:calc(100% - 282px);padding:22px 26px 88px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}.topbar h2{margin:0;font-size:26px}.crumb{color:var(--muted);font-size:13px;margin-top:4px}.tokenBox{display:flex;gap:8px;align-items:end;background:var(--surface);padding:12px;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}.tokenBox input{width:270px}
 .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.col-2{grid-column:span 2}.col-3{grid-column:span 3}.col-4{grid-column:span 4}.col-5{grid-column:span 5}.col-6{grid-column:span 6}.col-8{grid-column:span 8}.col-10{grid-column:span 10}.col-12{grid-column:span 12}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;margin-bottom:14px}.card h3{margin:0 0 12px;font-size:18px}.card p{margin:6px 0;color:var(--muted)}label{display:block;font-size:12px;font-weight:800;color:#504b43;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
 input,select,textarea{width:100%;border:1px solid #cfc4ad;border-radius:12px;background:#fff;padding:10px 11px;font-size:14px;color:var(--ink);outline:none}
@@ -125,7 +125,8 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 .lastJsonBox pre{white-space:pre-wrap;user-select:text;max-height:620px}
 .lastJsonBox textarea{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;min-height:420px;white-space:pre;overflow:auto}
 
-.xeleriaVersionBar{position:fixed;left:282px;right:0;bottom:0;z-index:99998;height:22px;background:#050505;color:#b8f7d4;font:11px/22px Consolas,'Courier New',monospace;padding:0 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-top:1px solid #222}
+.xeleriaVersionBar{position:fixed;left:282px;right:0;bottom:0;z-index:99998;min-height:42px;background:#050505;color:#b8f7d4;font:11px/18px Consolas,'Courier New',monospace;padding:3px 10px;white-space:normal;overflow:hidden;border-top:1px solid #222}
+.xeleriaVersionBar .xeleriaVersionLine{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media(max-width:1050px){.xeleriaVersionBar{left:235px}}
 @media(max-width:760px){.xeleriaVersionBar{left:0}}
 
@@ -144,7 +145,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 <div class="navTitle">Local físico</div><div class="sub"><button class="navBtn" data-view="arca-manual">Emitir comprobante manual</button></div>
 <div class="navTitle">Gestión</div><div class="sub"><div class="navParent">Inventario</div><div class="sub2"><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="combos">Combos / Kits</button><button class="navBtn" data-view="full-inbound">Envío a Full</button><button class="navBtn" data-view="movimientos">Movimientos de stock</button></div><button class="navBtn" data-view="clientes">Clientes ML / TN</button><button class="navBtn" data-view="base-conocimiento">Base de Conocimiento IA</button><button class="navBtn" data-view="arca-reportes">ARCA reportes</button></div>
 <div class="navTitle">Sistema</div><div class="sub"><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="ultimo-json">Último JSON</button></div>
-</nav><div class="sidebarFoot">Frontend: 1.98<br>Backend: <span id="footBackendVer">?</span></div>
+</nav><div class="sidebarFoot">FE: <span id="footFrontendVer">2.04</span><br>BE: <span id="footBackendVer">?</span></div>
 </aside>
 <main>
 <div class="topbar"><div><h2 id="pageTitle">Inicio</h2><div class="crumb" id="pageCrumb">Panel operativo</div></div><div class="tokenBox"><div><label>API</label><input id="apiUrl" value="https://api.xeleria.com.ar"></div><div><label>ADMIN_TOKEN</label><input id="token" type="password" placeholder="Token"></div><button class="primary" onclick="saveSettings()">Guardar</button><button class="secondary" onclick="health()">Probar</button></div></div>
@@ -302,8 +303,8 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 <div id="xeleriaVersionBar" class="xeleriaVersionBar">FE 1.86 | BE consultando…</div>
 <div id="erpBusyOverlay" class="erpBusyOverlay"><div class="erpBusyBox"><div class="erpSpinner"></div><div id="erpBusyTitle" class="erpBusyTitle">Procesando...</div><div id="erpBusyMsg" class="erpBusyMsg">No cierres esta pantalla.</div></div></div>
 <script>
-const FRONTEND_VERSION='2.03';
-const FRONTEND_BUILD='admin-erp-v203-import-save-background-poll';
+const FRONTEND_VERSION='2.04';
+const FRONTEND_BUILD='admin-erp-v204-two-line-version-bar';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[],comboItems:[],pendingBundleDraft:null};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 
 const ALERT_KEYS={
@@ -541,19 +542,51 @@ async function loadDebugVersions(){
     return null;
   }
 }
+function versionFromDebug(name){
+  let d=state.debugVersions||{};
+  let versions=d.versions||{};
+  if(versions[name]!==undefined&&versions[name]!==null&&String(versions[name]).trim()!=='')return versions[name];
+  return debugModuleVersion(name);
+}
 function updateVersionBar(extra){
   let el=qs('xeleriaVersionBar');
   if(!el)return;
   let ml=state.connections&&state.connections.ml?state.connections.ml:null;
   let tn=state.connections&&state.connections.tn?state.connections.tn:null;
-  let mlTxt=ml?(ml.connected?'ML ok '+(ml.label||''):'ML no'):'ML ?';
-  let tnTxt=tn?(tn.connected?'TN ok '+(tn.label||''):'TN no'):'TN ?';
-  let appV=debugModuleVersion('xeleria_app');
-  let importV=debugModuleVersion('xeleria_import_jobs');
-  let tenantDbV=debugModuleVersion('xeleria_tenant_db');
-  let appV2=debugModuleVersion('app_v2');
+  let mlTxt=ml?(ml.connected?'ML ok':'ML no'):'ML ?';
+  let tnTxt=tn?(tn.connected?'TN ok':'TN no'):'TN ?';
+  let appV=versionFromDebug('xeleria_app');
+  let appV2=versionFromDebug('app_v2');
+  let importV=versionFromDebug('xeleria_import_jobs');
+  let tenantDbV=versionFromDebug('xeleria_tenant_db');
+  let personalizationV=versionFromDebug('xeleria_personalization');
   let be=state.backendVersion||appV||'?';
-  el.textContent=`FE ${FRONTEND_VERSION} ${FRONTEND_BUILD} | BE ${be} | app ${appV} | import_jobs ${importV} | tenant_db ${tenantDbV} | app_v2 ${appV2} | tenant ${shortTenantId(tenantId())} | ${mlTxt} | ${tnTxt}${extra?' | '+extra:''}`;
+  let sessionsV=versionFromDebug('sessions');
+  let oauthV=versionFromDebug('oauth_ml');
+  let importGridV=versionFromDebug('inventory_import_grid');
+  let importChannelsV=versionFromDebug('import_connected_channels');
+  let debugV=versionFromDebug('debug_versions');
+  if(qs('footFrontendVer'))qs('footFrontendVer').textContent=shortVer(FRONTEND_VERSION);
+  if(qs('footBackendVer'))qs('footBackendVer').textContent=shortVer(be);
+  let line1=[
+    `admin_erp.html ${shortVer(FRONTEND_VERSION)}`,
+    `xeleria_app.py ${shortVer(appV)}`,
+    `app_v2.py ${shortVer(appV2)}`,
+    `xeleria_import_jobs.py ${shortVer(importV)}`
+  ].join(' | ');
+  let line2=[
+    `sessions ${shortVer(sessionsV)}`,
+    `oauth_ml ${shortVer(oauthV)}`,
+    `inventory_import_grid ${shortVer(importGridV)}`,
+    `import_connected_channels ${shortVer(importChannelsV)}`,
+    `debug_versions ${shortVer(debugV)}`,
+    `tenant_db ${shortVer(tenantDbV)}`,
+    `personalization ${shortVer(personalizationV)}`,
+    `tenant ${shortTenantId(tenantId())}`,
+    mlTxt,
+    tnTxt
+  ].join(' | ')+(extra?` | ${extra}`:'');
+  el.innerHTML=`<span class="xeleriaVersionLine">${esc(line1)}</span><span class="xeleriaVersionLine">${esc(line2)}</span>`;
 }
 function shortTenantId(v){let s=String(v||'');return s.length>8?s.slice(0,8)+'…':(s||'?')}
 function oauthReturnParams(){
@@ -1778,6 +1811,7 @@ function inventoryImportSaveButtonHtml(d={}){let canSave=(d.can_save!==false)&&!
 function renderInventoryImportResult(d,offset=0,limit=500,source='grid'){updateInventoryImportConnectionsFromGrid(d);state.inventoryImportCurrentBatchId=inventoryImportBatchIdFromGridPayload(d);state.inventoryImportGridLoaded=true;renderInventoryImportGrid(d.rows||[]);inventoryImportClearSummary();if(qs('inventoryImportPager'))qs('inventoryImportPager').innerHTML=inventoryImportSaveButtonHtml(d);saveLastJson(d)}
 function inventoryImportSaveDoneStatus(st){return ['saved','saved_with_errors','confirmed','confirmed_with_errors','closed'].includes(String(st||'').toLowerCase())}
 function inventoryImportSaveFailedStatus(st){return ['save_failed','failed','error'].includes(String(st||'').toLowerCase())}
+function inventoryImportSaveNeutralStatus(st){return ['completed','cancelled'].includes(String(st||'').toLowerCase())}
 async function pollInventoryImportSaveJob(jobId){
   if(!jobId)return;
   state.inventoryImportSaveJobId=jobId;
@@ -1808,6 +1842,14 @@ async function pollInventoryImportSaveJob(jobId){
       setStatus('inventoryImportStatus',`Falló el guardado background. Estado: ${st}. Revisá último JSON/logs.`,false);
       setInventoryImportSaveBusy(false);
       document.querySelectorAll('#inventoryImportGridBody input[type="radio"]').forEach(inp=>inp.disabled=false);
+      return;
+    }
+    if(inventoryImportSaveNeutralStatus(st)){
+      setStatus('inventoryImportStatus',`Job liberado en estado ${st}. No quedó guardado cerrado; no vuelvas a tocar Guardar hasta subir app_v2.py 2.0.221.`, 'warn');
+      setInventoryImportSaveBusy(false);
+      state.inventoryImportSaveJobId='';
+      document.querySelectorAll('#inventoryImportGridBody input[type="radio"]').forEach(inp=>inp.disabled=false);
+      if(qs('inventoryImportPager'))qs('inventoryImportPager').innerHTML=inventoryImportSaveButtonHtml({can_save:true});
       return;
     }
   }
