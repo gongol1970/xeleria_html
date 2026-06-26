@@ -145,7 +145,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 <div class="navTitle">Local físico</div><div class="sub"><button class="navBtn" data-view="arca-manual">Emitir comprobante manual</button></div>
 <div class="navTitle">Gestión</div><div class="sub"><div class="navParent">Inventario</div><div class="sub2"><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="combos">Combos / Kits</button><button class="navBtn" data-view="full-inbound">Envío a Full</button><button class="navBtn" data-view="movimientos">Movimientos de stock</button></div><button class="navBtn" data-view="clientes">Clientes ML / TN</button><button class="navBtn" data-view="base-conocimiento">Base de Conocimiento IA</button><button class="navBtn" data-view="arca-reportes">ARCA reportes</button></div>
 <div class="navTitle">Sistema</div><div class="sub"><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="ultimo-json">Último JSON</button></div>
-</nav><div class="sidebarFoot">FE: <span id="footFrontendVer">2.08</span><br>BE: <span id="footBackendVer">?</span></div>
+</nav><div class="sidebarFoot">FE: <span id="footFrontendVer">2.09</span><br>BE: <span id="footBackendVer">?</span></div>
 </aside>
 <main>
 <div class="topbar"><div><h2 id="pageTitle">Inicio</h2><div class="crumb" id="pageCrumb">Panel operativo</div></div><div class="tokenBox"><div><label>API</label><input id="apiUrl" value="https://api.xeleria.com.ar"></div><div><label>ADMIN_TOKEN</label><input id="token" type="password" placeholder="Token"></div><button class="primary" onclick="saveSettings()">Guardar</button><button class="secondary" onclick="health()">Probar</button></div></div>
@@ -303,8 +303,8 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 <div id="xeleriaVersionBar" class="xeleriaVersionBar">FE 1.86 | BE consultando…</div>
 <div id="erpBusyOverlay" class="erpBusyOverlay"><div class="erpBusyBox"><div class="erpSpinner"></div><div id="erpBusyTitle" class="erpBusyTitle">Procesando...</div><div id="erpBusyMsg" class="erpBusyMsg">No cierres esta pantalla.</div></div></div>
 <script>
-const FRONTEND_VERSION='2.08';
-const FRONTEND_BUILD='admin-erp-v208-alerts-polling-disabled';
+const FRONTEND_VERSION='2.09';
+const FRONTEND_BUILD='admin-erp-v209-grid-bootstrap-disabled';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[],comboItems:[],pendingBundleDraft:null};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 
 const ALERT_KEYS={
@@ -1768,10 +1768,12 @@ function setInventoryImportGridButtonEnabled(enabled){let btn=qs('inventoryImpor
 function inventoryImportClearGridPoll(){if(state.inventoryImportGridPollTimer){clearInterval(state.inventoryImportGridPollTimer);state.inventoryImportGridPollTimer=null}}
 async function inventoryImportTryLoadGridFromPoll(){try{await loadInventoryImportGrid(0,{force:true,fromPoll:true});return !!state.inventoryImportGridLoaded}catch(e){console.debug('inventoryImportTryLoadGridFromPoll',e);return false}}
 function inventoryImportScheduleGridPoll(){inventoryImportClearGridPoll();let attempts=0;state.inventoryImportGridPollTimer=setInterval(async()=>{attempts++;if(attempts>90){inventoryImportClearGridPoll();return}if(state.inventoryImportSaving)return;let ok=await inventoryImportTryLoadGridFromPoll();if(ok)inventoryImportClearGridPoll()},4000)}
-async function inventoryImportBootstrapGridButton(){let btn=qs('inventoryImportViewGridBtn');if(!btn)return;let st=sessionToken(),t=token();if(!st&&!t)return;try{let limit=1;let tokenQuery=t?('&token='+encodeURIComponent(t)):'';let d=await fetchJson('/admin/inventory/import-jobs/grid?limit='+encodeURIComponent(limit)+'&offset=0'+tokenQuery);let hasRows=(Array.isArray(d.rows)&&d.rows.length>0)||Number(d.total||0)>0;state.inventoryImportCurrentBatchId=inventoryImportBatchIdFromGridPayload(d);setInventoryImportGridButtonEnabled(hasRows);if(hasRows&&!state.inventoryImportGridLoaded)inventoryImportSetGridMessage('Hay una grilla importada lista para revisar.')}catch(e){let et=errText(e);if(et.includes('No hay filas staging')||et.includes('No hay batch'))setInventoryImportGridButtonEnabled(false);else console.debug('inventoryImportBootstrapGridButton',e)}}
-const INVENTORY_IMPORT_STARTED_MESSAGE='Importando publicaciones, te avisaremos cuando termine.';
-const INVENTORY_IMPORT_RUNNING_MESSAGE='La importación todavía está en curso. Esperá a que finalice para ver la grilla completa.';
-function inventoryImportJobIdFromPayload(d){return String((d&&d.job_id)||(d&&d.job&&d.job.id)||(d&&d.progress&&d.progress.job_id)||'').trim()}
+async function inventoryImportBootstrapGridButton(){
+  // GRID_BOOTSTRAP_DISABLED_2_09
+  // No consultar /admin/inventory/import-jobs/grid al refrescar: esa ruta puede no estar montada en runtime y ensucia consola con 404.
+  // El usuario carga la grilla manualmente con el botón cuando corresponde.
+  return;
+}
 function inventoryImportStartedPayload(d,p={}){let jobStatus=String((p&&p.status)||(d&&d.status)||(d&&d.job&&d.job.status)||'').toLowerCase();let jobStage=String((p&&p.stage)||(p&&p.last_stage)||(d&&d.stage)||(d&&d.last_stage)||(d&&d.job&&d.job.last_stage)||'').toLowerCase();return Boolean((d&&(d.job_id||d.job||d.status_url||d.batch_id))||jobStatus==='running'||jobStatus==='queued'||jobStage)}
 function setInventoryImportStartedUi(d={},p={}){let jobId=inventoryImportJobIdFromPayload(d);if(jobId)state.inventoryImportActiveJobId=jobId;if(d.batch_id)state.inventoryImportActiveBatchId=d.batch_id;setInventoryImportGridButtonEnabled(false);inventoryImportClearSummary();inventoryImportSetGridMessage('Importación en curso. La grilla se habilita sola al finalizar.');setStatus('inventoryImportStatus',INVENTORY_IMPORT_STARTED_MESSAGE,true);inventoryImportScheduleGridPoll()}
 function isInventoryImportRunningText(e){let txt=errText(e);return txt.includes(INVENTORY_IMPORT_RUNNING_MESSAGE)||txt.includes('importación todavía está en curso')||txt.includes('importacion todavia esta en curso')}
@@ -1976,7 +1978,7 @@ async function loadInventoryImportGrid(offset=0,opts={}){
 
 cleanTokenFromUrl();
 loadMLQuestionPrefs();renderMLQuickButtons();
-loadSettings();health();handleOauthReturn();updateVersionBar();startAlertPolling();setTimeout(inventoryImportBootstrapGridButton,500);
+loadSettings();health();handleOauthReturn();updateVersionBar();startAlertPolling();/* GRID_BOOTSTRAP_DISABLED_2_09: evita 404 al refrescar; la grilla se carga solo con el botón */
 </script>
 </body>
 </html>
