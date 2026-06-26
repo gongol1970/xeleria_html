@@ -1,4 +1,4 @@
-<!-- XELERIA_CONFIG_INVENTORY_IMPORT_GRID_V1_97_CLEAN_RADIOS_RUNNING_GUARD -->
+<!-- XELERIA_CONFIG_INVENTORY_IMPORT_GRID_V1_98_ALERTS_NOOP -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -145,7 +145,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 <div class="navTitle">Local físico</div><div class="sub"><button class="navBtn" data-view="arca-manual">Emitir comprobante manual</button></div>
 <div class="navTitle">Gestión</div><div class="sub"><div class="navParent">Inventario</div><div class="sub2"><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="combos">Combos / Kits</button><button class="navBtn" data-view="full-inbound">Envío a Full</button><button class="navBtn" data-view="movimientos">Movimientos de stock</button></div><button class="navBtn" data-view="clientes">Clientes ML / TN</button><button class="navBtn" data-view="base-conocimiento">Base de Conocimiento IA</button><button class="navBtn" data-view="arca-reportes">ARCA reportes</button></div>
 <div class="navTitle">Sistema</div><div class="sub"><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="ultimo-json">Último JSON</button></div>
-</nav><div class="sidebarFoot">FE: <span id="footFrontendVer">2.07</span><br>BE: <span id="footBackendVer">?</span></div>
+</nav><div class="sidebarFoot">FE: <span id="footFrontendVer">2.08</span><br>BE: <span id="footBackendVer">?</span></div>
 </aside>
 <main>
 <div class="topbar"><div><h2 id="pageTitle">Inicio</h2><div class="crumb" id="pageCrumb">Panel operativo</div></div><div class="tokenBox"><div><label>API</label><input id="apiUrl" value="https://api.xeleria.com.ar"></div><div><label>ADMIN_TOKEN</label><input id="token" type="password" placeholder="Token"></div><button class="primary" onclick="saveSettings()">Guardar</button><button class="secondary" onclick="health()">Probar</button></div></div>
@@ -303,8 +303,8 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 <div id="xeleriaVersionBar" class="xeleriaVersionBar">FE 1.86 | BE consultando…</div>
 <div id="erpBusyOverlay" class="erpBusyOverlay"><div class="erpBusyBox"><div class="erpSpinner"></div><div id="erpBusyTitle" class="erpBusyTitle">Procesando...</div><div id="erpBusyMsg" class="erpBusyMsg">No cierres esta pantalla.</div></div></div>
 <script>
-const FRONTEND_VERSION='2.07';
-const FRONTEND_BUILD='admin-erp-v206-import-grid-guard-type-merge';
+const FRONTEND_VERSION='2.08';
+const FRONTEND_BUILD='admin-erp-v208-alerts-polling-disabled';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[],comboItems:[],pendingBundleDraft:null};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 
 const ALERT_KEYS={
@@ -360,44 +360,16 @@ function playAlertSoundOnce(){
   }catch(e){console.debug('audio alert bloqueado/no disponible',e)}
 }
 async function pollAlerts(){
-  if(!token())return;
-  try{
-    const snap=await fetchJson('/admin/alerts/snapshot');
-    let shouldSound=false;
-    for(const key of Object.keys(ALERT_KEYS)){
-      const events=Array.isArray(snap[key])?snap[key]:[];
-      const notified=getNotifiedSet(key);
-      const visible=[];
-      for(const ev of events){
-        const id=eventId(key,ev);
-        if(!id)continue;
-        if(!state.alertsBaselineReady){
-          notified.add(id);
-          continue;
-        }
-        if(!notified.has(id)){
-          notified.add(id);
-          visible.push(ev);
-          shouldSound=true;
-        }
-      }
-      saveNotifiedSet(key,notified);
-      if(state.alertsBaselineReady && visible.length){
-        state.alerts[key]=[...(state.alerts[key]||[]),...visible];
-      }
-    }
-    if(!state.alertsBaselineReady)state.alertsBaselineReady=true;
-    renderAlerts();
-    if(shouldSound)playAlertSoundOnce();
-  }catch(e){
-    console.debug('pollAlerts error',e);
-  }
+  // ALERTS_POLLING_DISABLED_2_08
+  // Polling legacy apagado hasta implementar Notificaciones reales desde DB.
+  // Evita 500/CORS falsos en consola sin tocar importación, Guardar ni conectores.
+  return {ok:true, disabled:true};
 }
 console.info('XelerIA tenant', tenantId());
 function startAlertPolling(){
-  if(timers.alertPolling)return;
-  setTimeout(pollAlerts,2500);
-  timers.alertPolling=setInterval(pollAlerts,60000);
+  // ALERTS_POLLING_DISABLED_2_08
+  timers.alertPolling='disabled';
+  return;
 }
 
 function qs(id){return document.getElementById(id)}function fieldVal(id){let el=qs(id);return el?el.value:''}function apiBase(){return(fieldVal('cfgApiUrl')||fieldVal('apiUrl')||state.api).replace(/\/$/,'').replace(/\/api$/,'')}function token(){return (fieldVal('cfgToken')||fieldVal('token')||state.token||localStorage.getItem('pc_erp_token')||localStorage.getItem('xeleria_admin_token')||'').trim()}function sessionToken(){return (localStorage.getItem('xeleria_session_token')||sessionStorage.getItem('xeleria_session_token')||'').trim()}function tenantId(){let qp=new URLSearchParams(location.search);let fromUrl=qp.get('tenant_id')||qp.get('tenant')||'';if(fromUrl){localStorage.setItem('xeleria_tenant_id',fromUrl)}return fromUrl||localStorage.getItem('xeleria_tenant_id')||'00000000-0000-0000-0000-000000000001'}function url(path){let sep=path.includes('?')?'&':'?';return `${apiBase()}${path}${sep}tenant_id=${encodeURIComponent(tenantId())}`}function xeleriaHeaders(extra={}){let h={'Content-Type':'application/json','x-xeleria-tenant':tenantId(),...(extra||{})};let st=sessionToken();let t=token();if(st){h['x-session-token']=st;h['Authorization']='Bearer '+st}if(t){h['x-admin-token']=t;if(!st)h['Authorization']='Bearer '+t}return h}function cleanTokenFromUrl(){try{let u=new URL(location.href);let t=u.searchParams.get('token')||u.searchParams.get('admin_token')||u.searchParams.get('ADMIN_TOKEN');if(t){localStorage.setItem('pc_erp_token',t);localStorage.setItem('xeleria_admin_token',t);u.searchParams.delete('token');u.searchParams.delete('admin_token');u.searchParams.delete('ADMIN_TOKEN');history.replaceState({},'',u.toString())}}catch(e){}}
