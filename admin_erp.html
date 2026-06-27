@@ -1,4 +1,4 @@
-<!-- XELERIA_CONFIG_INVENTORY_IMPORT_GRID_V2_11_CONNECT_TN_NO_LOGIN_REDIRECT -->
+<!-- XELERIA_CONFIG_NOTIFICATIONS_DB_V2_12 -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -130,6 +130,15 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 @media(max-width:1050px){.xeleriaVersionBar{left:235px}}
 @media(max-width:760px){.xeleriaVersionBar{left:0}}
 
+/* NOTIFICATIONS_DB_V2_12 */
+.notificationSummary{display:grid;gap:10px}
+.notificationRow{display:grid;grid-template-columns:190px 1fr 86px 92px;gap:10px;align-items:center;border:1px solid #eee2c8;border-radius:14px;background:#fff;padding:10px}
+.notificationRow.zero{opacity:.72}.notificationSource{font-weight:950}.notificationSlot{font-weight:850}.notificationState{font-size:12px;color:var(--muted);line-height:1.35}
+.notificationCount{justify-content:center;font-size:14px;min-width:38px}.notificationMeta{font-size:12px;color:var(--muted);margin-top:2px}
+.notificationList{margin-top:14px}.notificationItem{border:1px solid #eee2c8;border-radius:14px;background:#fffaf0;padding:10px;margin-top:8px}
+.notificationItem h4{margin:0 0 4px;font-size:14px}.notificationItem p{margin:0;color:var(--muted);font-size:12px;line-height:1.35}
+@media(max-width:820px){.notificationRow{grid-template-columns:1fr}.notificationRow button{width:100%}}
+
 </style>
 <!-- UI_ALERTS_INVENTORY_FILTERS_FRONTEND_1_39 -->
 </head>
@@ -138,14 +147,14 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 <aside>
 <div class="brand"><div class="brandTop"><span class="appMark"><img src="./favicon_xeleria.png?v=20260620" alt="XelerIA"></span><div class="brandName">XelerIA</div><div class="brandTenantLogo" id="brandTenantLogo">LOGO</div><button class="mobileMenuToggle" type="button" onclick="toggleMobileMenu()">☰</button></div><button id="globalAlertBell" class="globalAlertBell hidden" title="Novedades" onclick="openFirstAlertView()">🔔<span id="globalAlertBadge">0</span></button><p>Backoffice operativo</p></div>
 <nav>
-<button class="navBtn active" data-view="inicio">⌂ Inicio / Dashboard</button><button class="navBtn" data-view="metricas">◈ Métricas</button>
+<button class="navBtn active" data-view="inicio">⌂ Inicio / Dashboard</button><button class="navBtn" data-view="notificaciones">🔔 Notificaciones<span class="navAlertBadge" id="navNotificationsBadge">0</span></button><button class="navBtn" data-view="metricas">◈ Métricas</button>
 <div class="navTitle">Mercado Libre</div><div class="sub"><button class="navBtn" data-view="ml-publicaciones">Publicaciones</button><button class="navBtn" data-view="ml-preguntas">Preguntas</button><button class="navBtn" data-view="ml-ventas">Ventas</button><button class="navBtn" data-view="ml-clientes">Clientes</button></div>
 <div class="navTitle">Tienda Nube</div><div class="sub"><button class="navBtn" data-view="tn-publicaciones">Publicaciones</button><button class="navBtn" data-view="tn-ventas">Ventas</button><button class="navBtn" data-view="tn-clientes">Clientes</button></div>
 
 <div class="navTitle">Local físico</div><div class="sub"><button class="navBtn" data-view="arca-manual">Emitir comprobante manual</button></div>
 <div class="navTitle">Gestión</div><div class="sub"><div class="navParent">Inventario</div><div class="sub2"><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="combos">Combos / Kits</button><button class="navBtn" data-view="full-inbound">Envío a Full</button><button class="navBtn" data-view="movimientos">Movimientos de stock</button></div><button class="navBtn" data-view="clientes">Clientes ML / TN</button><button class="navBtn" data-view="base-conocimiento">Base de Conocimiento IA</button><button class="navBtn" data-view="arca-reportes">ARCA reportes</button></div>
 <div class="navTitle">Sistema</div><div class="sub"><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="ultimo-json">Último JSON</button></div>
-</nav><div class="sidebarFoot">FE: <span id="footFrontendVer">2.11</span><br>BE: <span id="footBackendVer">?</span></div>
+</nav><div class="sidebarFoot">FE: <span id="footFrontendVer">2.12</span><br>BE: <span id="footBackendVer">?</span></div>
 </aside>
 <main>
 <div class="topbar"><div><h2 id="pageTitle">Inicio</h2><div class="crumb" id="pageCrumb">Panel operativo</div></div><div class="tokenBox"><div><label>API</label><input id="apiUrl" value="https://api.xeleria.com.ar"></div><div><label>ADMIN_TOKEN</label><input id="token" type="password" placeholder="Token"></div><button class="primary" onclick="saveSettings()">Guardar</button><button class="secondary" onclick="health()">Probar</button></div></div>
@@ -231,7 +240,22 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
     </div>
   </div>
 </section>
-<section id="dashboard" class="view"><div class="card"><h3>Dashboard</h3><p>El dashboard ahora vive en Inicio.</p><button class="primary" onclick="showView('inicio')">Abrir Inicio / Dashboard</button></div></section><section id="metricas" class="view"><div class="card"><h3>Métricas</h3><p>Reservado para margen, rotación y canales.</p></div></section>
+<section id="dashboard" class="view"><div class="card"><h3>Dashboard</h3><p>El dashboard ahora vive en Inicio.</p><button class="primary" onclick="showView('inicio')">Abrir Inicio / Dashboard</button></div></section>
+<section id="notificaciones" class="view">
+  <div class="card">
+    <div class="dashStatusLine">
+      <div>
+        <h3>Notificaciones</h3>
+        <p>Eventos reales del tenant activo. El contador sale de la base; la pantalla sólo lo muestra.</p>
+      </div>
+      <button class="secondary dashRefresh" onclick="loadNotifications(true)">Actualizar</button>
+    </div>
+    <div id="notificationsStatus" class="status"></div>
+    <div id="notificationsSummary" class="notificationSummary"></div>
+    <div id="notificationsList" class="notificationList"></div>
+  </div>
+</section>
+<section id="metricas" class="view"><div class="card"><h3>Métricas</h3><p>Reservado para margen, rotación y canales.</p></div></section>
 <section id="ml-ventas" class="view"><div class="card"><h3>Mercado Libre · Ventas capturadas</h3><div class="grid"><div class="col-8"><label>Buscar venta ML</label><input id="mlVentasSearch" oninput="debouncedSales('ML')" placeholder="Nombre, SKU, venta, orden API, envío ML, producto"></div><div class="col-2"><label>Mostrar</label><select id="mlVentasLimit" onchange="loadRecent('ML',0)"><option selected>20</option><option>40</option><option>50</option></select></div><div class="col-2"><label>&nbsp;</label><button class="secondary" onclick="clearSalesSearch('ML')">Limpiar</button></div></div><div class="btnrow" style="margin-top:10px"><button class="secondary" onclick="refreshShippingPending('ML')">Refrescar estados no entregadas</button><span class="small">Consulta solo ventas no terminales recientes, no todo el histórico.</span></div><div id="mlVentasStatus" class="status"></div><div id="mlVentasTable" style="margin-top:12px"></div><div id="mlVentasPager" class="btnrow" style="margin-top:12px"></div></div></section>
 <section id="tn-ventas" class="view"><div class="card"><h3>Tienda Nube · Ventas capturadas</h3><div class="grid"><div class="col-8"><label>Buscar venta TN</label><input id="tnVentasSearch" oninput="debouncedSales('TN')" placeholder="Nombre, SKU, número de venta, orden, teléfono, producto"></div><div class="col-2"><label>Mostrar</label><select id="tnVentasLimit" onchange="loadRecent('TN',0)"><option selected>20</option><option>40</option><option>50</option></select></div><div class="col-2"><label>&nbsp;</label><button class="secondary" onclick="clearSalesSearch('TN')">Limpiar</button></div></div><div class="btnrow" style="margin-top:10px"><button class="secondary" onclick="refreshShippingPending('TN')">Refrescar estados no entregadas</button><span class="small">Consulta solo ventas no terminales recientes, no todo el histórico.</span></div><div id="tnVentasStatus" class="status"></div><div id="tnVentasTable" style="margin-top:12px"></div><div id="tnVentasPager" class="btnrow" style="margin-top:12px"></div></div></section>
 <section id="ml-publicaciones" class="view"><div class="card"><h3>Mercado Libre · Publicaciones</h3><p>Vista solo lectura de publicaciones ML vinculadas al inventario. Para modificar stock/precio, usar Gestión · Inventario.</p><div class="grid"><div class="col-8"><label>Buscar publicación ML</label><input id="mlPubSearch" oninput="debouncedPublications('ML')" placeholder="SKU, producto, publicación, variante"></div><div class="col-2"><label>Mostrar</label><select id="mlPubLimit" onchange="loadPublications('ML',0,true)"><option selected>20</option><option>40</option><option>80</option><option>100</option></select></div><div class="col-2"><label>&nbsp;</label><button class="secondary" onclick="clearPubSearch('ML')">Limpiar</button></div></div><div id="mlPubStatus" class="status"></div><div id="mlPubResults" class="tableWrap inventoryWrap" style="margin-top:12px"></div><div id="mlPubPager" class="btnrow inventoryPager"></div></div></section><section id="tn-publicaciones" class="view"><div class="card"><h3>Tienda Nube · Publicaciones</h3><p>Vista solo lectura de publicaciones TN vinculadas al inventario. Para modificar stock/precio, usar Gestión · Inventario.</p><div class="grid"><div class="col-8"><label>Buscar publicación TN</label><input id="tnPubSearch" oninput="debouncedPublications('TN')" placeholder="SKU, producto, publicación, variante"></div><div class="col-2"><label>Mostrar</label><select id="tnPubLimit" onchange="loadPublications('TN',0,true)"><option selected>20</option><option>40</option><option>80</option><option>100</option></select></div><div class="col-2"><label>&nbsp;</label><button class="secondary" onclick="clearPubSearch('TN')">Limpiar</button></div></div><div id="tnPubStatus" class="status"></div><div id="tnPubResults" class="tableWrap inventoryWrap" style="margin-top:12px"></div><div id="tnPubPager" class="btnrow inventoryPager"></div></div></section>
@@ -295,17 +319,17 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 
 <section id="fallas" class="view"><div class="card"><h3>Gestión · Monitor de sync_jobs</h3><p>Solo monitoreo. La ejecución de jobs queda a cargo del autosync del ERP.</p><div class="grid"><div class="col-2"><label>Cantidad visible</label><select id="jobsLimit" class="limitSelect" onchange="loadSyncJobs(0,true)"><option>20</option><option>50</option><option selected>100</option><option>200</option></select></div><div class="col-2"><label>&nbsp;</label><button onclick="loadSyncJobs(0,true)">Actualizar</button></div></div><div id="jobsStatus" class="status"></div><div id="jobsTable" class="tableWrap" style="margin-top:12px"></div><div id="jobsPager" class="btnrow jobsPager"></div><pre id="jobsOut" class="hidden"></pre></div></section>
 
-<section id="configuracion" class="view"><div class="card connectionSettings"><h3>Conexión XelerIA</h3><p>Conexión técnica del backoffice. El token no se muestra ni viaja en la URL.</p><div class="connGrid"><div><label>API</label><input id="cfgApiUrl" value="https://api.xeleria.com.ar"></div><div><label>ADMIN_TOKEN</label><input id="cfgToken" type="password" placeholder="Token" autocomplete="off"></div><button class="primary" onclick="saveSettingsFromConfig()">Guardar</button><button class="secondary" onclick="health()">Probar</button><button class="secondary" onclick="showLastJson()">Ver último JSON</button></div><div id="connStatus" class="status"></div></div><div class="card"><h3>Personalización</h3><p>Datos de empresa, fiscal y logo del tenant. Se guardan en la base de XelerIA.</p><div class="grid"><div class="col-6"><label>Nombre fantasía</label><input id="cfgNombreFantasia" placeholder="Nombre comercial"></div><div class="col-6"><label>Razón social</label><input id="cfgRazonSocial" placeholder="Razón social"></div><div class="col-3"><label>CUIT</label><input id="cfgCuit" placeholder="CUIT"></div><div class="col-3"><label>Condición IVA</label><input id="cfgCondIva" placeholder="Responsable Inscripto"></div><div class="col-3"><label>Punto venta ARCA</label><input id="cfgPtoVta" placeholder="0001"></div><div class="col-3"><label>Ambiente ARCA</label><select id="cfgArcaEnv"><option value="homologacion">Homologación</option><option value="produccion">Producción</option></select></div><div class="col-12"><label>Domicilio comercial</label><input id="cfgDomicilio" placeholder="Domicilio fiscal/comercial"></div></div><div class="dividerLine"></div><div class="grid"><div class="col-6"><h3>Logo / marca</h3><label>URL pública del logo</label><input id="cfgLogoUrl" placeholder="https://.../logo.png" oninput="previewConfigLogo()"><div class="btnrow" style="margin-top:10px"><label class="btn secondary" style="margin:0;text-transform:none;letter-spacing:0;color:#111">Cargar archivo<input id="cfgLogoFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" style="display:none" onchange="loadLogoFile(event)"></label><button class="secondary" onclick="clearLogoConfig()">Quitar logo</button></div></div><div class="col-6"><label>Vista previa</label><div id="cfgLogoPreview" class="configLogoPreview"><div class="logoPlaceholder">LOGO</div></div></div></div><div class="dividerLine"></div><div class="grid"><div class="col-4"><label>Facturación automática</label><select id="cfgAutoInvoice"><option value="false">OFF</option><option value="true">ON</option></select></div><div class="col-4"><label>Concepto default</label><select id="cfgConcepto"><option>Productos</option><option>Servicios</option><option>Productos y Servicios</option></select></div></div><div class="dividerLine"></div><div class="btnrow" style="justify-content:flex-end"><button class="primary" onclick="saveConfig()">Guardar personalización</button></div></div><div id="cfgStatus" class="status"></div>
-<div class="card"><div class="btnrow"><div><h3>Carga general de inventario</h3></div></div><div class="importConnectorGrid"><div id="inventoryImportMLCard" class="importConnectorCard"><h4>Mercado Libre</h4><div class="importConnectorMeta">Estado: <span id="inventoryImportMLStatus" class="pill">revisando</span><span id="inventoryImportMLDot" class="dot">·</span><span id="inventoryImportMLAccount" class="importConnectorAccount">—</span></div><div class="importConnectorActions"><button id="inventoryImportMLButton" class="secondary" onclick="connectInventoryChannel('ML')">Conectar ML</button></div></div><div id="inventoryImportTNCard" class="importConnectorCard"><h4>Tienda Nube</h4><div class="importConnectorMeta">Estado: <span id="inventoryImportTNStatus" class="pill">revisando</span><span id="inventoryImportTNDot" class="dot">·</span><span id="inventoryImportTNAccount" class="importConnectorAccount">—</span></div><div class="importConnectorActions"><button id="inventoryImportTNButton" class="secondary" onclick="connectInventoryChannel('TN')">Conectar TN</button></div></div></div><div class="btnrow importImportActions"><button class="primary" onclick="runInventoryImportRefresh(0)">Importar canales conectados</button><button id="inventoryImportViewGridBtn" class="secondary" onclick="loadInventoryImportGrid(0)" disabled title="Primero importá canales conectados">Ver grilla importada</button></div><div id="inventoryImportStatus" class="status"></div><div id="inventoryImportSummary" class="status"></div><div class="importReviewLegend importReviewLegendInline"><span class="pill ok">Verde: nuevo</span><span class="pill bad">Rojo: falta en refresh</span><span class="pill warn">Amarillo: SKU faltante</span></div><div class="importReviewGrid"><table><colgroup><col class="sku"><col class="tn"><col class="kind"><col class="ml"></colgroup><thead><tr><th>SKU</th><th>Tienda Nube</th><th title="Simple / Combo">S/C</th><th>Mercado Libre</th></tr></thead><tbody id="inventoryImportGridBody"><tr><td colspan="4">Cargá la grilla para ver publicaciones.</td></tr></tbody></table></div><div id="inventoryImportPager" class="btnrow" style="margin-top:12px"></div></div>
+<section id="configuracion" class="view"><div class="card connectionSettings"><h3>Conexión XelerIA</h3><p>Conexión técnica del backoffice. El token no se muestra ni viaja en la URL.</p><div class="connGrid"><div><label>API</label><input id="cfgApiUrl" value="https://api.xeleria.com.ar"></div><div><label>ADMIN_TOKEN</label><input id="cfgToken" type="password" placeholder="Token" autocomplete="off"></div><button class="primary" onclick="saveSettingsFromConfig()">Guardar</button><button class="secondary" onclick="health()">Probar</button><button class="secondary" onclick="showLastJson()">Ver último JSON</button></div><div id="connStatus" class="status"></div></div><div class="card"><h3>Personalización</h3><p>Datos de empresa, fiscal y logo del tenant. Se guardan en la base de XelerIA.</p><div class="grid"><div class="col-6"><label>Nombre fantasía</label><input id="cfgNombreFantasia" placeholder="Nombre comercial"></div><div class="col-6"><label>Razón social</label><input id="cfgRazonSocial" placeholder="Razón social"></div><div class="col-3"><label>CUIT</label><input id="cfgCuit" placeholder="CUIT"></div><div class="col-3"><label>Condición IVA</label><input id="cfgCondIva" placeholder="Responsable Inscripto"></div><div class="col-3"><label>Punto venta ARCA</label><input id="cfgPtoVta" placeholder="0001"></div><div class="col-3"><label>Ambiente ARCA</label><select id="cfgArcaEnv"><option value="homologacion">Homologación</option><option value="produccion">Producción</option></select></div><div class="col-12"><label>Domicilio comercial</label><input id="cfgDomicilio" placeholder="Domicilio fiscal/comercial"></div></div><div class="dividerLine"></div><div class="grid"><div class="col-6"><h3>Logo / marca</h3><label>URL pública del logo</label><input id="cfgLogoUrl" placeholder="https://.../logo.png" oninput="previewConfigLogo()"><div class="btnrow" style="margin-top:10px"><label class="btn secondary" style="margin:0;text-transform:none;letter-spacing:0;color:#111">Cargar archivo<input id="cfgLogoFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" style="display:none" onchange="loadLogoFile(event)"></label><button class="secondary" onclick="clearLogoConfig()">Quitar logo</button></div></div><div class="col-6"><label>Vista previa</label><div id="cfgLogoPreview" class="configLogoPreview"><div class="logoPlaceholder">LOGO</div></div></div></div><div class="dividerLine"></div><div class="grid"><div class="col-4"><label>Facturación automática</label><select id="cfgAutoInvoice"><option value="false">OFF</option><option value="true">ON</option></select></div><div class="col-4"><label>Concepto default</label><select id="cfgConcepto"><option>Productos</option><option>Servicios</option><option>Productos y Servicios</option></select></div><div class="col-4"><label>Sonido notificaciones</label><select id="cfgNotificationSound"><option value="off">OFF</option><option value="on">ON</option></select></div></div><div class="dividerLine"></div><div class="btnrow" style="justify-content:flex-end"><button class="primary" onclick="saveConfig()">Guardar personalización</button></div></div><div id="cfgStatus" class="status"></div>
+<div id="inventoryImportCard" class="card"><div class="btnrow"><div><h3>Carga general de inventario</h3></div></div><div class="importConnectorGrid"><div id="inventoryImportMLCard" class="importConnectorCard"><h4>Mercado Libre</h4><div class="importConnectorMeta">Estado: <span id="inventoryImportMLStatus" class="pill">revisando</span><span id="inventoryImportMLDot" class="dot">·</span><span id="inventoryImportMLAccount" class="importConnectorAccount">—</span></div><div class="importConnectorActions"><button id="inventoryImportMLButton" class="secondary" onclick="connectInventoryChannel('ML')">Conectar ML</button></div></div><div id="inventoryImportTNCard" class="importConnectorCard"><h4>Tienda Nube</h4><div class="importConnectorMeta">Estado: <span id="inventoryImportTNStatus" class="pill">revisando</span><span id="inventoryImportTNDot" class="dot">·</span><span id="inventoryImportTNAccount" class="importConnectorAccount">—</span></div><div class="importConnectorActions"><button id="inventoryImportTNButton" class="secondary" onclick="connectInventoryChannel('TN')">Conectar TN</button></div></div></div><div class="btnrow importImportActions"><button class="primary" onclick="runInventoryImportRefresh(0)">Importar canales conectados</button><button id="inventoryImportViewGridBtn" class="secondary" onclick="loadInventoryImportGrid(0)" disabled title="Primero importá canales conectados">Ver grilla importada</button></div><div id="inventoryImportStatus" class="status"></div><div id="inventoryImportSummary" class="status"></div><div class="importReviewLegend importReviewLegendInline"><span class="pill ok">Verde: nuevo</span><span class="pill bad">Rojo: falta en refresh</span><span class="pill warn">Amarillo: SKU faltante</span></div><div class="importReviewGrid"><table><colgroup><col class="sku"><col class="tn"><col class="kind"><col class="ml"></colgroup><thead><tr><th>SKU</th><th>Tienda Nube</th><th title="Simple / Combo">S/C</th><th>Mercado Libre</th></tr></thead><tbody id="inventoryImportGridBody"><tr><td colspan="4">Cargá la grilla para ver publicaciones.</td></tr></tbody></table></div><div id="inventoryImportPager" class="btnrow" style="margin-top:12px"></div></div>
 </section>
 <section id="ultimo-json" class="view"><div class="card lastJsonBox"><h3>Sistema · Último JSON</h3><p>Última respuesta técnica guardada por el backoffice. Copiable, sin popup.</p><div class="btnrow"><button class="secondary" onclick="renderLastJsonPanel()">Actualizar</button><button class="secondary" onclick="copyLastJson()">Copiar JSON</button><button class="secondary" onclick="clearLastJson()">Limpiar</button></div><div id="lastJsonStatus" class="status"></div><textarea id="lastJsonText" readonly spellcheck="false" style="margin-top:12px"></textarea></div></section>
 </main></div>
 <div id="xeleriaVersionBar" class="xeleriaVersionBar">FE 1.86 | BE consultando…</div>
 <div id="erpBusyOverlay" class="erpBusyOverlay"><div class="erpBusyBox"><div class="erpSpinner"></div><div id="erpBusyTitle" class="erpBusyTitle">Procesando...</div><div id="erpBusyMsg" class="erpBusyMsg">No cierres esta pantalla.</div></div></div>
 <script>
-const FRONTEND_VERSION='2.11';
-const FRONTEND_BUILD='admin-erp-v211-connect-tn-no-login-redirect';
-let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[],comboItems:[],pendingBundleDraft:null};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
+const FRONTEND_VERSION='2.12';
+const FRONTEND_BUILD='admin-erp-v212-db-notifications';
+let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[],comboItems:[],pendingBundleDraft:null};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};state.notifications={items:[],total:0,unread_count:0,groups:{}};state.notificationSound='off';state.notificationSoundPrimed=false;
 
 const ALERT_KEYS={
   ml_questions:{view:'ml-preguntas',label:'Preguntas ML'},
@@ -320,8 +344,8 @@ function alertStorageKey(key){return 'pc_erp_notified_'+key}
 function getNotifiedSet(key){try{return new Set(JSON.parse(localStorage.getItem(alertStorageKey(key))||'[]'))}catch{return new Set()}}
 function saveNotifiedSet(key,set){try{localStorage.setItem(alertStorageKey(key),JSON.stringify([...set].slice(-500)))}catch{}}
 function eventId(key,event){return String((event&&event.id)||'').trim()}
-function alertTotal(){return Object.values(state.alerts||{}).reduce((a,b)=>a+(Array.isArray(b)?b.length:0),0)}
-function openFirstAlertView(){for(const k of Object.keys(ALERT_KEYS)){if((state.alerts[k]||[]).length){showView(ALERT_KEYS[k].view);return}}}
+function alertTotal(){let legacy=Object.values(state.alerts||{}).reduce((a,b)=>a+(Array.isArray(b)?b.length:0),0);let real=Number(state.notifications&&state.notifications.unread_count||0);return legacy+real}
+function openFirstAlertView(){if(Number(state.notifications&&state.notifications.unread_count||0)>0){showView('notificaciones');return}for(const k of Object.keys(ALERT_KEYS)){if((state.alerts[k]||[]).length){showView(ALERT_KEYS[k].view);return}}}
 function ensureNavAlertBadges(){Object.values(ALERT_KEYS).forEach(cfg=>{let b=document.querySelector(`.navBtn[data-view="${cfg.view}"]`);if(b&&!b.querySelector('.navAlertBadge')){let s=document.createElement('span');s.className='navAlertBadge';s.textContent='0';b.appendChild(s)}})}
 function renderAlerts(){
   ensureNavAlertBadges();
@@ -367,9 +391,9 @@ async function pollAlerts(){
 }
 console.info('XelerIA tenant', tenantId());
 function startAlertPolling(){
-  // ALERTS_POLLING_DISABLED_2_08
-  timers.alertPolling='disabled';
-  return;
+  if(timers.alertPolling&&timers.alertPolling!=='disabled')clearInterval(timers.alertPolling);
+  loadNotifications(false);
+  timers.alertPolling=setInterval(()=>loadNotifications(false),60000);
 }
 
 function qs(id){return document.getElementById(id)}function fieldVal(id){let el=qs(id);return el?el.value:''}function apiBase(){return(fieldVal('cfgApiUrl')||fieldVal('apiUrl')||state.api).replace(/\/$/,'').replace(/\/api$/,'')}function token(){return (fieldVal('cfgToken')||fieldVal('token')||state.token||localStorage.getItem('pc_erp_token')||localStorage.getItem('xeleria_admin_token')||'').trim()}function sessionToken(){return (localStorage.getItem('xeleria_session_token')||sessionStorage.getItem('xeleria_session_token')||'').trim()}function tenantId(){let qp=new URLSearchParams(location.search);let fromUrl=qp.get('tenant_id')||qp.get('tenant')||'';if(fromUrl){localStorage.setItem('xeleria_tenant_id',fromUrl)}return fromUrl||localStorage.getItem('xeleria_tenant_id')||'00000000-0000-0000-0000-000000000001'}function url(path){let sep=path.includes('?')?'&':'?';return `${apiBase()}${path}${sep}tenant_id=${encodeURIComponent(tenantId())}`}function xeleriaHeaders(extra={}){let h={'Content-Type':'application/json','x-xeleria-tenant':tenantId(),...(extra||{})};let st=sessionToken();let t=token();if(st){h['x-session-token']=st;h['Authorization']='Bearer '+st}if(t){h['x-admin-token']=t;if(!st)h['Authorization']='Bearer '+t}return h}function cleanTokenFromUrl(){try{let u=new URL(location.href);let t=u.searchParams.get('token')||u.searchParams.get('admin_token')||u.searchParams.get('ADMIN_TOKEN');if(t){localStorage.setItem('pc_erp_token',t);localStorage.setItem('xeleria_admin_token',t);u.searchParams.delete('token');u.searchParams.delete('admin_token');u.searchParams.delete('ADMIN_TOKEN');history.replaceState({},'',u.toString())}}catch(e){}}
@@ -438,6 +462,7 @@ function showView(id){
   if(id==='combos')loadCombos();
   if(id==='full-inbound')clearFullInboundView();
   if(id==='configuracion')loadTenantConnectionStatus(false);
+  if(id==='notificaciones')loadNotifications(true);
 }
 function toggleMobileMenu(){let a=document.querySelector('aside');if(!a)return;a.classList.toggle('mobileOpen');document.body.classList.toggle('mobileMenuOpen',a.classList.contains('mobileOpen'))}
 function closeMobileMenu(){let a=document.querySelector('aside');if(!a)return;a.classList.remove('mobileOpen');document.body.classList.remove('mobileMenuOpen')}
@@ -486,6 +511,122 @@ async function fetchJson(path,opt={}){
     throw out;
   }
   return data;
+}
+
+
+const NOTIFICATION_GROUPS=[
+  {key:'ml_questions',source:'Mercado Libre',slot:'Preguntas',view:'ml-preguntas'},
+  {key:'ml_sales',source:'Mercado Libre',slot:'Ventas',view:'ml-ventas'},
+  {key:'tn_sales',source:'Tienda Nube',slot:'Ventas',view:'tn-ventas'},
+  {key:'inventory_import',source:'Carga general de inventario',slot:'Importación',view:'configuracion',scroll:'inventoryImportCard'}
+];
+
+function notificationIsUnread(n){return !n.read_at}
+function notificationType(n){return String((n&&n.type)||'').toLowerCase()}
+function notificationTarget(n){return String((n&&n.target_view)||'').toLowerCase()}
+function notificationGroupKey(n){
+  let t=notificationType(n), v=notificationTarget(n);
+  if(t.includes('inventory_import')||v.includes('inventory-import'))return 'inventory_import';
+  if((t.includes('question')||v.includes('ml-preguntas'))&&t.includes('ml'))return 'ml_questions';
+  if(v.includes('ml-preguntas')||t.includes('ml_question'))return 'ml_questions';
+  if((t.includes('sale')||t.includes('order')||v.includes('ml-ventas'))&&t.includes('ml'))return 'ml_sales';
+  if((t.includes('sale')||t.includes('order')||v.includes('tn-ventas'))&&t.includes('tn'))return 'tn_sales';
+  return 'system_other';
+}
+function notificationGroups(){
+  let groups={};
+  (state.notifications.items||[]).forEach(n=>{
+    let k=notificationGroupKey(n);
+    groups[k]=groups[k]||[];
+    groups[k].push(n);
+  });
+  Object.keys(groups).forEach(k=>groups[k].sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||''))));
+  return groups;
+}
+function notificationUnreadCountFor(key){
+  let g=notificationGroups()[key]||[];
+  return g.filter(notificationIsUnread).length;
+}
+function notificationImportState(items){
+  let n=(items||[])[0];
+  if(!n)return 'Sin novedades';
+  let t=notificationType(n), sev=String(n.severity||'').toLowerCase();
+  if(sev==='warning'||sev==='error'||sev==='bad')return (n.title||'Revisión').replace('Grilla de inventario guardada','Guardado con revisión');
+  if(t.includes('finished'))return 'Finalizado';
+  if(t.includes('saved'))return 'Guardado';
+  if(t.includes('running')||t.includes('started'))return 'Ejecutando';
+  return n.title||'Novedad';
+}
+function renderNotificationsBadge(){
+  let total=Number(state.notifications.unread_count||0);
+  let bell=qs('globalAlertBell'), badge=qs('globalAlertBadge');
+  if(bell)bell.classList.toggle('hidden',total<=0);
+  if(badge)badge.textContent=String(total);
+  let nb=document.querySelector('.navBtn[data-view="notificaciones"]');
+  if(nb){
+    nb.classList.toggle('hasAlert',total>0);
+    let s=nb.querySelector('.navAlertBadge');
+    if(s)s.textContent=String(total);
+  }
+}
+function renderNotifications(){
+  let groups=notificationGroups();
+  let rows=NOTIFICATION_GROUPS.map(g=>{
+    let items=groups[g.key]||[];
+    let unread=items.filter(notificationIsUnread).length;
+    let latest=items[0]||null;
+    let stateTxt=g.key==='inventory_import'?notificationImportState(items):(latest?(latest.title||'Novedad'):'Sin novedades');
+    let meta=latest?`<div class="notificationMeta">${dateAR(latest.created_at)}${latest.body?' · '+esc(latest.body):''}</div>`:'';
+    return `<div class="notificationRow ${unread?'':'zero'}">
+      <div class="notificationSource">${esc(g.source)}</div>
+      <div><div class="notificationSlot">${esc(g.slot)}</div><div class="notificationState">${esc(stateTxt)}</div>${meta}</div>
+      <div><span class="pill ${unread?'bad':'ok'} notificationCount">${unread}</span></div>
+      <button class="secondary" onclick="viewNotificationGroup('${g.key}')">Ver</button>
+    </div>`;
+  }).join('');
+  let host=qs('notificationsSummary');if(host)host.innerHTML=rows;
+  let unreadItems=(state.notifications.items||[]).filter(notificationIsUnread);
+  let list=qs('notificationsList');
+  if(list){
+    list.innerHTML=unreadItems.length?`<div class="card" style="box-shadow:none;margin-top:14px;background:#fffdf8"><h3>Últimas no leídas</h3>${unreadItems.slice(0,8).map(n=>`<div class="notificationItem"><h4>${esc(n.title||n.type||'Notificación')}</h4><p>${esc(n.body||'')}<br>${dateAR(n.created_at)}</p></div>`).join('')}</div>`:'<div class="dashEmpty" style="margin-top:14px">No hay notificaciones pendientes.</div>';
+  }
+  renderNotificationsBadge();
+}
+function maybePlayNotificationSound(prev,next){
+  if(!state.notificationSoundPrimed){state.notificationSoundPrimed=true;return}
+  if(String(state.notificationSound||'off')!=='on')return;
+  if(Number(next||0)>Number(prev||0))playAlertSoundOnce();
+}
+async function loadNotifications(manual=false){
+  let prev=Number(state.notifications&&state.notifications.unread_count||0);
+  if(manual)setStatus('notificationsStatus','Actualizando notificaciones...');
+  try{
+    let d=await fetchJson('/admin/notifications?unread_only=false&limit=80');
+    state.notifications={items:d.items||[],total:Number(d.total||0),unread_count:Number(d.unread_count||0)};
+    renderNotifications();
+    maybePlayNotificationSound(prev,state.notifications.unread_count);
+    if(manual)setStatus('notificationsStatus',`Pendientes: ${state.notifications.unread_count} · Total listado: ${state.notifications.total}`,true);
+    return d;
+  }catch(e){
+    renderNotificationsBadge();
+    if(manual)setStatus('notificationsStatus','Error leyendo notificaciones: '+errText(e),false);
+    console.warn('loadNotifications',e);
+    return null;
+  }
+}
+async function viewNotificationGroup(key){
+  let cfg=NOTIFICATION_GROUPS.find(x=>x.key===key)||{view:'notificaciones'};
+  let items=(notificationGroups()[key]||[]).filter(notificationIsUnread);
+  try{
+    for(const n of items){
+      if(n&&n.id)await fetchJson('/admin/notifications/'+encodeURIComponent(n.id)+'/read',{method:'POST'});
+    }
+    if(items.length)await loadNotifications(false);
+  }catch(e){
+    setStatus('notificationsStatus','No pude marcar leído: '+errText(e),false);
+  }
+  showView(cfg.view||'notificaciones');
+  if(cfg.scroll)setTimeout(()=>qs(cfg.scroll)?.scrollIntoView({behavior:'smooth',block:'start'}),120);
 }
 
 function debugModuleVersion(name){
@@ -1750,9 +1891,65 @@ function applyConfigLogo(src){let brand=qs('brandTenantLogo');let prev=qs('cfgLo
 function previewConfigLogo(){let val=cfgGet('cfgLogoUrl').trim();if(val){localStorage.removeItem('xeleria_company_logo_data');applyConfigLogo(val)}else{applyConfigLogo(configLogoValue())}}
 function loadLogoFile(ev){let f=ev.target.files&&ev.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{localStorage.setItem('xeleria_company_logo_data',String(r.result||''));cfgSet('cfgLogoUrl','');applyConfigLogo(String(r.result||''));setStatus('cfgStatus','Logo cargado. Tocá Guardar personalización para persistirlo en la base.',true)};r.onerror=()=>setStatus('cfgStatus','No pude leer el archivo del logo.',false);r.readAsDataURL(f)}
 function clearLogoConfig(){localStorage.removeItem('xeleria_company_logo_data');cfgSet('cfgLogoUrl','');applyConfigLogo('');setStatus('cfgStatus','Logo quitado. Tocá Guardar personalización para persistir el cambio.',true)}
-function personalizationPayload(){let logoData=localStorage.getItem('xeleria_company_logo_data')||'';let logoUrl=cfgGet('cfgLogoUrl').trim();let auto=cfgGet('cfgAutoInvoice')==='true';return {display_name:cfgGet('cfgNombreFantasia'),fiscal_razon_social:cfgGet('cfgRazonSocial'),fiscal_cuit:cfgGet('cfgCuit'),fiscal_iva_condition:cfgGet('cfgCondIva'),fiscal_pos_arca:cfgGet('cfgPtoVta'),fiscal_address:cfgGet('cfgDomicilio'),logo_url:logoUrl,logo_png_500_base64:logoData,auto_invoice_ml:auto,auto_invoice_tn:auto,arca_env:cfgGet('cfgArcaEnv'),default_invoice_concept:cfgGet('cfgConcepto')}}
-async function saveConfig(){setStatus('cfgStatus','Guardando personalización en base...');try{let d=await fetchJson('/admin/tenant/settings',{method:'PUT',body:JSON.stringify(personalizationPayload())});setStatus('cfgStatus','Personalización guardada en base.',true);saveLastJson(d)}catch(e){setStatus('cfgStatus','No pude guardar en base: '+errText(e),false);showPre('uploadOut',e)}}
-async function loadConfig(){try{let d=await fetchJson('/admin/tenant/settings');let s=d.settings||{};cfgSet('cfgNombreFantasia',s.display_name||'');cfgSet('cfgRazonSocial',s.fiscal_razon_social||'');cfgSet('cfgCuit',s.fiscal_cuit||'');cfgSet('cfgCondIva',s.fiscal_iva_condition||'');cfgSet('cfgPtoVta',s.fiscal_pos_arca||'');cfgSet('cfgDomicilio',s.fiscal_address||'');cfgSet('cfgLogoUrl',s.logo_url||'');cfgSet('cfgAutoInvoice',(s.auto_invoice_ml||s.auto_invoice_tn)?'true':'false');cfgSet('cfgArcaEnv',s.arca_env||'homologacion');cfgSet('cfgConcepto',s.default_invoice_concept||'Productos');if(s.logo_png_500_base64){localStorage.setItem('xeleria_company_logo_data',s.logo_png_500_base64)}else{localStorage.removeItem('xeleria_company_logo_data')}applyConfigLogo(configLogoValue())}catch(e){applyConfigLogo(configLogoValue());setStatus('cfgStatus','Personalización todavía no cargó desde base: '+errText(e),false)}}
+function personalizationPayload(){
+  let logoData=localStorage.getItem('xeleria_company_logo_data')||'';
+  let logoUrl=cfgGet('cfgLogoUrl').trim();
+  let auto=cfgGet('cfgAutoInvoice')==='true';
+  let sound=(cfgGet('cfgNotificationSound')||'off').trim()==='on'?'on':'off';
+  return {
+    display_name:cfgGet('cfgNombreFantasia'),
+    fiscal_razon_social:cfgGet('cfgRazonSocial'),
+    fiscal_cuit:cfgGet('cfgCuit'),
+    fiscal_iva_condition:cfgGet('cfgCondIva'),
+    fiscal_pos_arca:cfgGet('cfgPtoVta'),
+    fiscal_address:cfgGet('cfgDomicilio'),
+    logo_url:logoUrl,
+    logo_png_500_base64:logoData,
+    auto_invoice_ml:auto,
+    auto_invoice_tn:auto,
+    arca_env:cfgGet('cfgArcaEnv'),
+    default_invoice_concept:cfgGet('cfgConcepto'),
+    settings:{notification_sound:sound}
+  }
+}
+async function saveConfig(){
+  setStatus('cfgStatus','Guardando personalización en base...');
+  try{
+    let d=await fetchJson('/admin/tenant/settings',{method:'PUT',body:JSON.stringify(personalizationPayload())});
+    state.notificationSound=(cfgGet('cfgNotificationSound')||'off')==='on'?'on':'off';
+    setStatus('cfgStatus','Personalización guardada en base.',true);
+    saveLastJson(d);
+    loadNotifications(false);
+  }catch(e){
+    setStatus('cfgStatus','No pude guardar en base: '+errText(e),false);
+    showPre('uploadOut',e);
+  }
+}
+async function loadConfig(){
+  try{
+    let d=await fetchJson('/admin/tenant/settings');
+    let s=d.settings||{};
+    cfgSet('cfgNombreFantasia',s.display_name||'');
+    cfgSet('cfgRazonSocial',s.fiscal_razon_social||'');
+    cfgSet('cfgCuit',s.fiscal_cuit||'');
+    cfgSet('cfgCondIva',s.fiscal_iva_condition||'');
+    cfgSet('cfgPtoVta',s.fiscal_pos_arca||'');
+    cfgSet('cfgDomicilio',s.fiscal_address||'');
+    cfgSet('cfgLogoUrl',s.logo_url||'');
+    cfgSet('cfgAutoInvoice',(s.auto_invoice_ml||s.auto_invoice_tn)?'true':'false');
+    cfgSet('cfgArcaEnv',s.arca_env||'homologacion');
+    cfgSet('cfgConcepto',s.default_invoice_concept||'Productos');
+    let sound=(s.notification_sound||(s.raw_settings&&s.raw_settings.notification_sound)||'off')==='on'?'on':'off';
+    cfgSet('cfgNotificationSound',sound);
+    state.notificationSound=sound;
+    if(s.logo_png_500_base64){localStorage.setItem('xeleria_company_logo_data',s.logo_png_500_base64)}else{localStorage.removeItem('xeleria_company_logo_data')}
+    applyConfigLogo(configLogoValue());
+    renderNotificationsBadge();
+  }catch(e){
+    applyConfigLogo(configLogoValue());
+    setStatus('cfgStatus','Personalización todavía no cargó desde base: '+errText(e),false);
+  }
+}
 
 
 function importReviewMoney(v){if(v===null||v===undefined||v==='')return'';let n=Number(v);return Number.isFinite(n)?('$ '+n.toLocaleString('es-AR',{maximumFractionDigits:2})):esc(v)}
