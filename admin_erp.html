@@ -328,11 +328,11 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 <div id="xeleriaVersionBar" class="xeleriaVersionBar">FE 1.86 | BE consultando…</div>
 <div id="erpBusyOverlay" class="erpBusyOverlay"><div class="erpBusyBox"><div class="erpSpinner"></div><div id="erpBusyTitle" class="erpBusyTitle">Procesando...</div><div id="erpBusyMsg" class="erpBusyMsg">No cierres esta pantalla.</div></div></div>
 <script>
-const FRONTEND_VERSION='2.21';
+const FRONTEND_VERSION='2.22';
 const FRONTEND_BUILD='admin-erp-v221-import-grid-clean-errors';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[],comboItems:[],pendingBundleDraft:null};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
-const INVENTORY_IMPORT_STARTED_MESSAGE='Importación en curso. La grilla se habilita cuando finalice.';
-const INVENTORY_IMPORT_RUNNING_MESSAGE='Importación todavía en curso. Esperá a que termine para ver la grilla.';state.notifications={items:[],total:0,unread_count:0,groups:{}};state.notificationSound='off';state.notificationSoundPrimed=false;
+const INVENTORY_IMPORT_STARTED_MESSAGE='Importación en curso.';
+const INVENTORY_IMPORT_RUNNING_MESSAGE='Importación en curso.';state.notifications={items:[],total:0,unread_count:0,groups:{}};state.notificationSound='off';state.notificationSoundPrimed=false;
 
 const ALERT_KEYS={
   ml_questions:{view:'ml-preguntas',label:'Preguntas ML'},
@@ -2035,9 +2035,9 @@ function inventoryImportClearErrors(){let el=qs('inventoryImportErrors');if(el){
 function inventoryImportCloseGrid(msg=''){state.inventoryImportGridLoaded=false;inventoryImportClearSummary();inventoryImportClearErrors();inventoryImportSetGridVisible(false);let body=qs('inventoryImportGridBody');if(body)body.innerHTML='';if(qs('inventoryImportPager'))qs('inventoryImportPager').innerHTML='';if(msg)setStatus('inventoryImportStatus',msg,true)}
 function setInventoryImportGridButtonEnabled(enabled){state.inventoryImportCanViewGrid=!!enabled}
 function inventoryImportErrorsFromPayload(d={}){let job=d.job||{};let errs=job.item_errors||d.item_errors||((d.payload||{}).item_errors)||[];if(!Array.isArray(errs))errs=errs?[errs]:[];if(!errs.length&&(job.last_error||d.last_error)){errs=[{stage:job.last_stage||d.last_stage||'',type:'error',detail:job.last_error||d.last_error}]};return errs}
-function renderInventoryImportErrors(d={}){let el=qs('inventoryImportErrors');if(!el)return;let errs=inventoryImportErrorsFromPayload(d);let job=d.job||{};let count=Number(job.error_count||d.error_count||errs.length||0);if(!count&&!errs.length){el.classList.add('hidden');el.innerHTML='';return}let rows=errs.map(e=>`<tr><td>${esc(e.stage||'-')}</td><td>${esc(e.item_id||e.sku||e.external_full_id||'-')}</td><td>${esc(e.type||'-')}</td><td>${esc(e.detail||e.message||JSON.stringify(e))}</td></tr>`).join('');el.classList.remove('hidden');el.innerHTML=`<div class="importErrorsBox"><strong>Errores de importación: ${count}</strong><div class="small">No frenan la revisión de las filas que sí entraron. Son publicaciones que no se pudieron leer/insertar en esta corrida.</div><div class="tableWrap"><table><thead><tr><th>Etapa</th><th>Publicación/SKU</th><th>Tipo</th><th>Detalle</th></tr></thead><tbody>${rows||'<tr><td colspan="4">Sin detalle técnico.</td></tr>'}</tbody></table></div></div>`}
+function renderInventoryImportErrors(d={}){let el=qs('inventoryImportErrors');if(!el)return;let errs=inventoryImportErrorsFromPayload(d);let job=d.job||{};let count=Number(job.error_count||d.error_count||errs.length||0);if(!count&&!errs.length){el.classList.add('hidden');el.innerHTML='';return}let rows=errs.map(e=>`<tr><td>${esc(e.stage||'-')}</td><td>${esc(e.item_id||e.sku||e.external_full_id||'-')}</td><td>${esc(e.type||'-')}</td><td>${esc(e.detail||e.message||JSON.stringify(e))}</td></tr>`).join('');el.classList.remove('hidden');el.innerHTML=`<div class="importErrorsBox"><strong>Detalles técnicos: ${count}</strong><div class="small">Publicaciones que no entraron en esta corrida después de estabilizar la importación.</div><div class="tableWrap"><table><thead><tr><th>Etapa</th><th>Publicación/SKU</th><th>Tipo</th><th>Detalle</th></tr></thead><tbody>${rows||'<tr><td colspan="4">Sin detalle técnico.</td></tr>'}</tbody></table></div></div>`}
 function inventoryImportSelectedChannels(){let channels=[];let ml=String(qs('inventoryImportMLStatus')?.textContent||'').toLowerCase();let tn=String(qs('inventoryImportTNStatus')?.textContent||'').toLowerCase();if(ml.includes('conectado'))channels.push('ML');if(tn.includes('conectado'))channels.push('TN');return channels}
-function inventoryImportFinalStatus(st){return ['completed','done','success','failed','error','cancelled','stale'].includes(String(st||'').toLowerCase())}
+function inventoryImportFinalStatus(st){return ['completed','completed_with_errors','done','success','failed','error','cancelled','stale'].includes(String(st||'').toLowerCase())}
 function inventoryImportSleep(ms){return new Promise(r=>setTimeout(r,ms))}
 function inventoryImportClearGridPoll(){if(state.inventoryImportGridPollTimer){clearInterval(state.inventoryImportGridPollTimer);state.inventoryImportGridPollTimer=null}}
 async function inventoryImportTryLoadGridFromPoll(){try{await loadInventoryImportGrid(0,{force:true,fromPoll:true});return !!state.inventoryImportGridLoaded}catch(e){console.debug('inventoryImportTryLoadGridFromPoll',e);return false}}
@@ -2054,9 +2054,9 @@ function inventoryImportJobIdFromPayload(d={}){
   let raw=d.job_id||d.import_job_id||job.job_id||job.id||'';
   return String(raw||'').trim();
 }
-function setInventoryImportStartedUi(d={},p={}){let jobId=inventoryImportJobIdFromPayload(d);if(jobId)state.inventoryImportActiveJobId=jobId;if(d.batch_id)state.inventoryImportActiveBatchId=d.batch_id;setInventoryImportGridButtonEnabled(false);inventoryImportClearSummary();inventoryImportSetGridMessage('Importación en curso. La grilla se abre sola al finalizar.');setStatus('inventoryImportStatus',INVENTORY_IMPORT_STARTED_MESSAGE,true);inventoryImportScheduleGridPoll()}
+function setInventoryImportStartedUi(d={},p={}){let jobId=inventoryImportJobIdFromPayload(d);if(jobId)state.inventoryImportActiveJobId=jobId;if(d.batch_id)state.inventoryImportActiveBatchId=d.batch_id;setInventoryImportGridButtonEnabled(false);inventoryImportClearSummary();inventoryImportSetGridMessage('Importación en curso.');setStatus('inventoryImportStatus',INVENTORY_IMPORT_STARTED_MESSAGE,true);inventoryImportScheduleGridPoll()}
 function isInventoryImportRunningText(e){let txt=errText(e);return txt.includes(INVENTORY_IMPORT_RUNNING_MESSAGE)||txt.includes('importación todavía está en curso')||txt.includes('importacion todavia esta en curso')}
-async function inventoryImportActiveJobIsRunning(){let jobId=state.inventoryImportActiveJobId;if(!jobId)return false;try{let d=await fetchJson('/admin/inventory/import-jobs/'+encodeURIComponent(jobId));let st=String((d.job&&d.job.status)||d.status||'').toLowerCase();if(st==='running'||st==='queued')return true;if(['completed','done','success','failed','cancelled','stale'].includes(st)){state.inventoryImportActiveJobId='';return false}}catch(e){console.debug('inventoryImportActiveJobIsRunning',e)}return false}
+async function inventoryImportActiveJobIsRunning(){let jobId=state.inventoryImportActiveJobId;if(!jobId)return false;try{let d=await fetchJson('/admin/inventory/import-jobs/'+encodeURIComponent(jobId));let st=String((d.job&&d.job.status)||d.status||'').toLowerCase();if(st==='running'||st==='queued')return true;if(['completed','completed_with_errors','done','success','failed','cancelled','stale'].includes(st)){state.inventoryImportActiveJobId='';return false}}catch(e){console.debug('inventoryImportActiveJobIsRunning',e)}return false}
 function setImportChannelCard(ch,connected,account,raw={}){let key=ch==='ML'?'ML':'TN';let card=qs('inventoryImport'+key+'Card'),st=qs('inventoryImport'+key+'Status'),acc=qs('inventoryImport'+key+'Account'),btn=qs('inventoryImport'+key+'Button');let label=key==='ML'?'ML':'TN';if(card){card.classList.toggle('connected',!!connected);card.classList.toggle('disconnected',!connected);card.classList.toggle('checking',raw.checking===true)}if(st){st.textContent=raw.checking?'revisando':(connected?'conectado':'no conectado');st.className='pill '+(raw.checking?'warn':(connected?'ok':'bad'))}if(acc){let txt=account||raw.account||raw.label||raw.nickname||raw.user||raw.email||raw.store||'';acc.textContent=raw.checking?'—':(txt?String(txt):'—')}if(btn){btn.textContent=connected?(label+' conectado'):('Conectar '+label);btn.disabled=!!connected;btn.className=connected?'secondary':'primary'}}
 function importConnectionObj(d,ch){let c=d.connections||{};let k=ch==='ML'?'ml':'tn';return c[k]||d[k]||{}}
 function renderInventoryImportConnections(d={}){let mlObj=importConnectionObj(d,'ML');let tnObj=importConnectionObj(d,'TN');let ml=!!(mlObj.connected??d.ml_connected??d.mercadolibre_connected??d.ml_ok);let tn=!!(tnObj.connected??d.tn_connected??d.tiendanube_connected??d.tn_ok);let mlAccount=mlObj.label||mlObj.nickname||d.ml_account||d.ml_user||d.ml_nickname||d.mercadolibre_account||'';let tnAccount=tnObj.label||d.tn_account||d.tn_email||d.tn_store||d.tiendanube_account||'';setImportChannelCard('ML',ml,mlAccount,mlObj);setImportChannelCard('TN',tn,tnAccount,tnObj);state.connections=d.connections||state.connections||{};updateVersionBar()}
@@ -2211,9 +2211,8 @@ async function inventoryImportWaitForJob(jobId,batchId){
     let d=await fetchJson('/admin/inventory/import-jobs/'+encodeURIComponent(jobId));
     let job=d.job||{};let p=d.progress||{};
     let st=String(job.status||p.status||d.status||'').toLowerCase();
-    let done=Number(p.processed_items||job.processed_items||0),total=Number(p.total_items||job.total_items||0),saved=Number(p.saved_rows||job.saved_rows||d.staging_rows||0),errs=Number(p.error_count||job.error_count||0);
-    let totalLabel=total||'?';
-    setStatus('inventoryImportStatus',`Importando... ${done}/${totalLabel} publicaciones · staging: ${saved}${errs?` · errores: ${errs}`:''}`,errs?'warn':true);
+    let done=Number(p.processed_items||job.processed_items||0),total=Number(p.total_items||job.total_items||0);
+    setStatus('inventoryImportStatus','Importación en curso.',true);
     if(inventoryImportFinalStatus(st)){
       state.inventoryImportActiveJobId='';
       if(batchId)state.inventoryImportActiveBatchId=batchId;
@@ -2249,7 +2248,7 @@ async function runInventoryImportRefresh(offset=0){
     let batchId=d.batch_id||(d.job&&d.job.batch_id)||'';
     if(jobId)state.inventoryImportActiveJobId=jobId;
     if(batchId)state.inventoryImportActiveBatchId=batchId;
-    setStatus('inventoryImportStatus','Importación iniciada: '+channels.join(' + ')+'. La grilla se abre cuando termina.',true);
+    setStatus('inventoryImportStatus','Importación iniciada.',true);
     if(jobId)await inventoryImportWaitForJob(jobId,batchId);
     else {inventoryImportScheduleGridPoll();}
   }catch(e){
@@ -2268,7 +2267,7 @@ async function loadInventoryImportGrid(offset=0,opts={}){
     if(!opts.fromPoll){setStatus('inventoryImportStatus',INVENTORY_IMPORT_RUNNING_MESSAGE,'warn');inventoryImportSetGridMessage(INVENTORY_IMPORT_RUNNING_MESSAGE)}
     return;
   }
-  if(!opts.fromPoll)setStatus('inventoryImportStatus','Cargando grilla importada...');
+  if(!opts.fromPoll)setStatus('inventoryImportStatus','Preparando grilla...');
   try{
     let tokenQuery=t?('&token='+encodeURIComponent(t)):'';
     let batchId=String(state.inventoryImportCurrentBatchId||state.inventoryImportActiveBatchId||'').trim();
@@ -2276,7 +2275,7 @@ async function loadInventoryImportGrid(offset=0,opts={}){
     let d=await fetchJson('/admin/inventory/import-jobs/grid?limit='+encodeURIComponent(limit)+'&offset='+encodeURIComponent(offset)+batchQuery+tokenQuery);
     renderInventoryImportResult(d,offset,limit,'grid');
     inventoryImportClearGridPoll();
-    let ec=Number((d.job&&d.job.error_count)||d.error_count||0);setStatus('inventoryImportStatus',ec?`Importación lista para revisar, con ${ec} errores.`:'Importación lista para revisar.',ec?'warn':true);clearStatusLater('inventoryImportStatus',ec?12000:4500);
+    let ec=Number((d.job&&d.job.error_count)||d.error_count||0);setStatus('inventoryImportStatus','Importación lista para revisar.',true);clearStatusLater('inventoryImportStatus',4500);
   }catch(e){
     if(isInventoryImportRunningText(e)){
       if(!opts.fromPoll){setStatus('inventoryImportStatus',INVENTORY_IMPORT_RUNNING_MESSAGE,'warn');inventoryImportSetGridMessage(INVENTORY_IMPORT_RUNNING_MESSAGE)}
@@ -2290,7 +2289,7 @@ async function loadInventoryImportGrid(offset=0,opts={}){
 
 cleanTokenFromUrl();
 loadMLQuestionPrefs();renderMLQuickButtons();
-loadSettings();health();handleOauthReturn();updateVersionBar();startAlertPolling();/* GRID_BOOTSTRAP_DISABLED_2_09: evita 404 al refrescar; la grilla se carga solo con el botón */
+loadSettings();health();handleOauthReturn();updateVersionBar();startAlertPolling();/* GRID_BOOTSTRAP_DISABLED_2_22: evita 404 al refrescar; la grilla se abre al finalizar la importación */
 </script>
 </body>
 </html>
