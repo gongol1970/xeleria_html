@@ -1,4 +1,4 @@
-<!-- XELERIA_CONFIG_NOTIFICATIONS_DB_V2_12 -->
+<!-- XELERIA_CONFIG_NOTIFICATIONS_DB_V2_14_NO_BIG_BELL_SOUND_CHOICES -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -40,7 +40,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 .mlQuestionImg{width:82px;height:82px;object-fit:contain;background:#fff;border:1px solid #eee2c8;border-radius:14px;padding:4px}.mlQuestionBody{padding:14px}.mlQuestionText{font-size:16px;font-weight:900;margin-bottom:8px}.mlAnswerPreview{background:#111;color:#fff;border-radius:14px;padding:12px;margin-top:10px;white-space:pre-wrap}.mlCorrectionBox{background:#fffaf0;border:1px solid #eee2c8;border-radius:14px;padding:10px;margin-top:10px}.mlCorrectionBox textarea{background:#fff}.mlQuestionActions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-top:12px}.inlineCheck{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:800;color:#504b43}.inlineCheck input{width:auto}.mlQToolbar{align-items:flex-end}.mlQToolbar button{white-space:nowrap}.mlQuestionMeta{font-size:12px;color:var(--muted);line-height:1.45}.mlQuickDock{position:sticky;bottom:0;z-index:12;margin:16px -18px -18px;padding:12px 18px;background:linear-gradient(180deg,rgba(255,253,248,.92),#fffdf8);border-top:1px solid var(--line);box-shadow:0 -10px 26px rgba(17,17,17,.08);border-radius:0 0 var(--radius) var(--radius)}.mlQuickDockHead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}.mlQuickDockTitle{font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}.mlQuickButtons{display:flex;gap:8px;flex-wrap:wrap}.mlQuickButtons button{background:#fff;color:#111;border:1px solid var(--line);padding:9px 12px}.mlQuickButtons button:hover{background:#fffaf0}.mlQuickConfig{font-size:12px;color:var(--muted)}
 
 
-.globalAlertBell{position:relative;margin:12px auto 0;width:58px;height:58px;border-radius:18px;background:transparent;color:#f5c84b;border:0;font-size:42px;line-height:1;display:flex;align-items:center;justify-content:center;text-shadow:0 2px 0 rgba(0,0,0,.22);animation:bellPulse 1.5s ease-in-out infinite}.globalAlertBell:hover{background:rgba(220,197,143,.08)}.globalAlertBell.hidden{display:none!important}.globalAlertBell span{position:absolute;right:-7px;top:-5px;min-width:24px;height:24px;border-radius:999px;background:#e11d2e;color:#fff;font-size:14px;font-weight:950;display:flex;align-items:center;justify-content:center;padding:0 6px;text-shadow:none;border:2px solid #101010}.navBtn{position:relative}.navAlertBadge{position:absolute;right:10px;top:50%;transform:translateY(-50%);min-width:20px;height:20px;border-radius:999px;background:#e11d2e;color:#fff;font-size:12px;font-weight:950;display:none;align-items:center;justify-content:center;padding:0 6px}.navBtn.hasAlert{box-shadow:0 0 0 1px rgba(225,29,46,.35),0 0 18px rgba(225,29,46,.18)}.navBtn.hasAlert .navAlertBadge{display:flex}@keyframes bellPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.globalAlertBell{display:none!important;position:relative;margin:12px auto 0;width:58px;height:58px;border-radius:18px;background:transparent;color:#f5c84b;border:0;font-size:42px;line-height:1;display:flex;align-items:center;justify-content:center;text-shadow:0 2px 0 rgba(0,0,0,.22);animation:bellPulse 1.5s ease-in-out infinite}.globalAlertBell:hover{background:rgba(220,197,143,.08)}.globalAlertBell.hidden{display:none!important}.globalAlertBell span{position:absolute;right:-7px;top:-5px;min-width:24px;height:24px;border-radius:999px;background:#e11d2e;color:#fff;font-size:14px;font-weight:950;display:flex;align-items:center;justify-content:center;padding:0 6px;text-shadow:none;border:2px solid #101010}.navBtn{position:relative}.navAlertBadge{position:absolute;right:10px;top:50%;transform:translateY(-50%);min-width:20px;height:20px;border-radius:999px;background:#e11d2e;color:#fff;font-size:12px;font-weight:950;display:none;align-items:center;justify-content:center;padding:0 6px}.navBtn.hasAlert{box-shadow:0 0 0 1px rgba(225,29,46,.35),0 0 18px rgba(225,29,46,.18)}.navBtn.hasAlert .navAlertBadge{display:flex}@keyframes bellPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
 .inventoryFilters .col-stockle{grid-column:span 1}.inventoryFilters .col-small{grid-column:span 1}.inventoryFilters .col-search{grid-column:span 5}@media(max-width:1050px){.inventoryFilters .col-stockle,.inventoryFilters .col-small,.inventoryFilters .col-search{grid-column:span 12}}
 
 @media(max-width:1050px){aside{width:235px}main{margin-left:235px;width:calc(100% - 235px)}.col-2,.col-3,.col-4,.col-5,.col-6,.col-8{grid-column:span 12}.tokenBox{flex-wrap:wrap}.tokenBox input{width:220px}.orderHead,.lineItem,.marketBox{grid-template-columns:1fr}.tableWrap{max-height:none}}
@@ -145,7 +145,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 <body>
 <div class="app">
 <aside>
-<div class="brand"><div class="brandTop"><span class="appMark"><img src="./favicon_xeleria.png?v=20260620" alt="XelerIA"></span><div class="brandName">XelerIA</div><div class="brandTenantLogo" id="brandTenantLogo">LOGO</div><button class="mobileMenuToggle" type="button" onclick="toggleMobileMenu()">☰</button></div><button id="globalAlertBell" class="globalAlertBell hidden" title="Novedades" onclick="openFirstAlertView()">🔔<span id="globalAlertBadge">0</span></button><p>Backoffice operativo</p></div>
+<div class="brand"><div class="brandTop"><span class="appMark"><img src="./favicon_xeleria.png?v=20260620" alt="XelerIA"></span><div class="brandName">XelerIA</div><div class="brandTenantLogo" id="brandTenantLogo">LOGO</div><button class="mobileMenuToggle" type="button" onclick="toggleMobileMenu()">☰</button></div><p>Backoffice operativo</p></div>
 <nav>
 <button class="navBtn active" data-view="inicio">⌂ Inicio / Dashboard</button><button class="navBtn" data-view="notificaciones">🔔 Notificaciones<span class="navAlertBadge" id="navNotificationsBadge">0</span></button><button class="navBtn" data-view="metricas">◈ Métricas</button>
 <div class="navTitle">Mercado Libre</div><div class="sub"><button class="navBtn" data-view="ml-publicaciones">Publicaciones</button><button class="navBtn" data-view="ml-preguntas">Preguntas</button><button class="navBtn" data-view="ml-ventas">Ventas</button><button class="navBtn" data-view="ml-clientes">Clientes</button></div>
@@ -154,7 +154,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 <div class="navTitle">Local físico</div><div class="sub"><button class="navBtn" data-view="arca-manual">Emitir comprobante manual</button></div>
 <div class="navTitle">Gestión</div><div class="sub"><div class="navParent">Inventario</div><div class="sub2"><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="combos">Combos / Kits</button><button class="navBtn" data-view="full-inbound">Envío a Full</button><button class="navBtn" data-view="movimientos">Movimientos de stock</button></div><button class="navBtn" data-view="clientes">Clientes ML / TN</button><button class="navBtn" data-view="base-conocimiento">Base de Conocimiento IA</button><button class="navBtn" data-view="arca-reportes">ARCA reportes</button></div>
 <div class="navTitle">Sistema</div><div class="sub"><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="ultimo-json">Último JSON</button></div>
-</nav><div class="sidebarFoot">FE: <span id="footFrontendVer">2.12</span><br>BE: <span id="footBackendVer">?</span></div>
+</nav><div class="sidebarFoot">FE: <span id="footFrontendVer">2.14</span><br>BE: <span id="footBackendVer">?</span></div>
 </aside>
 <main>
 <div class="topbar"><div><h2 id="pageTitle">Inicio</h2><div class="crumb" id="pageCrumb">Panel operativo</div></div><div class="tokenBox"><div><label>API</label><input id="apiUrl" value="https://api.xeleria.com.ar"></div><div><label>ADMIN_TOKEN</label><input id="token" type="password" placeholder="Token"></div><button class="primary" onclick="saveSettings()">Guardar</button><button class="secondary" onclick="health()">Probar</button></div></div>
@@ -319,7 +319,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 
 <section id="fallas" class="view"><div class="card"><h3>Gestión · Monitor de sync_jobs</h3><p>Solo monitoreo. La ejecución de jobs queda a cargo del autosync del ERP.</p><div class="grid"><div class="col-2"><label>Cantidad visible</label><select id="jobsLimit" class="limitSelect" onchange="loadSyncJobs(0,true)"><option>20</option><option>50</option><option selected>100</option><option>200</option></select></div><div class="col-2"><label>&nbsp;</label><button onclick="loadSyncJobs(0,true)">Actualizar</button></div></div><div id="jobsStatus" class="status"></div><div id="jobsTable" class="tableWrap" style="margin-top:12px"></div><div id="jobsPager" class="btnrow jobsPager"></div><pre id="jobsOut" class="hidden"></pre></div></section>
 
-<section id="configuracion" class="view"><div class="card connectionSettings"><h3>Conexión XelerIA</h3><p>Conexión técnica del backoffice. El token no se muestra ni viaja en la URL.</p><div class="connGrid"><div><label>API</label><input id="cfgApiUrl" value="https://api.xeleria.com.ar"></div><div><label>ADMIN_TOKEN</label><input id="cfgToken" type="password" placeholder="Token" autocomplete="off"></div><button class="primary" onclick="saveSettingsFromConfig()">Guardar</button><button class="secondary" onclick="health()">Probar</button><button class="secondary" onclick="showLastJson()">Ver último JSON</button></div><div id="connStatus" class="status"></div></div><div class="card"><h3>Personalización</h3><p>Datos de empresa, fiscal y logo del tenant. Se guardan en la base de XelerIA.</p><div class="grid"><div class="col-6"><label>Nombre fantasía</label><input id="cfgNombreFantasia" placeholder="Nombre comercial"></div><div class="col-6"><label>Razón social</label><input id="cfgRazonSocial" placeholder="Razón social"></div><div class="col-3"><label>CUIT</label><input id="cfgCuit" placeholder="CUIT"></div><div class="col-3"><label>Condición IVA</label><input id="cfgCondIva" placeholder="Responsable Inscripto"></div><div class="col-3"><label>Punto venta ARCA</label><input id="cfgPtoVta" placeholder="0001"></div><div class="col-3"><label>Ambiente ARCA</label><select id="cfgArcaEnv"><option value="homologacion">Homologación</option><option value="produccion">Producción</option></select></div><div class="col-12"><label>Domicilio comercial</label><input id="cfgDomicilio" placeholder="Domicilio fiscal/comercial"></div></div><div class="dividerLine"></div><div class="grid"><div class="col-6"><h3>Logo / marca</h3><label>URL pública del logo</label><input id="cfgLogoUrl" placeholder="https://.../logo.png" oninput="previewConfigLogo()"><div class="btnrow" style="margin-top:10px"><label class="btn secondary" style="margin:0;text-transform:none;letter-spacing:0;color:#111">Cargar archivo<input id="cfgLogoFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" style="display:none" onchange="loadLogoFile(event)"></label><button class="secondary" onclick="clearLogoConfig()">Quitar logo</button></div></div><div class="col-6"><label>Vista previa</label><div id="cfgLogoPreview" class="configLogoPreview"><div class="logoPlaceholder">LOGO</div></div></div></div><div class="dividerLine"></div><div class="grid"><div class="col-4"><label>Facturación automática</label><select id="cfgAutoInvoice"><option value="false">OFF</option><option value="true">ON</option></select></div><div class="col-4"><label>Concepto default</label><select id="cfgConcepto"><option>Productos</option><option>Servicios</option><option>Productos y Servicios</option></select></div><div class="col-4"><label>Sonido notificaciones</label><select id="cfgNotificationSound"><option value="off">OFF</option><option value="on">ON</option></select></div></div><div class="dividerLine"></div><div class="btnrow" style="justify-content:flex-end"><button class="primary" onclick="saveConfig()">Guardar personalización</button></div></div><div id="cfgStatus" class="status"></div>
+<section id="configuracion" class="view"><div class="card connectionSettings"><h3>Conexión XelerIA</h3><p>Conexión técnica del backoffice. El token no se muestra ni viaja en la URL.</p><div class="connGrid"><div><label>API</label><input id="cfgApiUrl" value="https://api.xeleria.com.ar"></div><div><label>ADMIN_TOKEN</label><input id="cfgToken" type="password" placeholder="Token" autocomplete="off"></div><button class="primary" onclick="saveSettingsFromConfig()">Guardar</button><button class="secondary" onclick="health()">Probar</button><button class="secondary" onclick="showLastJson()">Ver último JSON</button></div><div id="connStatus" class="status"></div></div><div class="card"><h3>Personalización</h3><p>Datos de empresa, fiscal y logo del tenant. Se guardan en la base de XelerIA.</p><div class="grid"><div class="col-6"><label>Nombre fantasía</label><input id="cfgNombreFantasia" placeholder="Nombre comercial"></div><div class="col-6"><label>Razón social</label><input id="cfgRazonSocial" placeholder="Razón social"></div><div class="col-3"><label>CUIT</label><input id="cfgCuit" placeholder="CUIT"></div><div class="col-3"><label>Condición IVA</label><input id="cfgCondIva" placeholder="Responsable Inscripto"></div><div class="col-3"><label>Punto venta ARCA</label><input id="cfgPtoVta" placeholder="0001"></div><div class="col-3"><label>Ambiente ARCA</label><select id="cfgArcaEnv"><option value="homologacion">Homologación</option><option value="produccion">Producción</option></select></div><div class="col-12"><label>Domicilio comercial</label><input id="cfgDomicilio" placeholder="Domicilio fiscal/comercial"></div></div><div class="dividerLine"></div><div class="grid"><div class="col-6"><h3>Logo / marca</h3><label>URL pública del logo</label><input id="cfgLogoUrl" placeholder="https://.../logo.png" oninput="previewConfigLogo()"><div class="btnrow" style="margin-top:10px"><label class="btn secondary" style="margin:0;text-transform:none;letter-spacing:0;color:#111">Cargar archivo<input id="cfgLogoFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" style="display:none" onchange="loadLogoFile(event)"></label><button class="secondary" onclick="clearLogoConfig()">Quitar logo</button></div></div><div class="col-6"><label>Vista previa</label><div id="cfgLogoPreview" class="configLogoPreview"><div class="logoPlaceholder">LOGO</div></div></div></div><div class="dividerLine"></div><div class="grid"><div class="col-4"><label>Facturación automática</label><select id="cfgAutoInvoice"><option value="false">OFF</option><option value="true">ON</option></select></div><div class="col-4"><label>Concepto default</label><select id="cfgConcepto"><option>Productos</option><option>Servicios</option><option>Productos y Servicios</option></select></div><div class="col-4"><label>Sonido notificaciones</label><select id="cfgNotificationSound"><option value="off">OFF</option><option value="bell">Campanita</option><option value="ding">Ding</option><option value="double">Doble bip</option><option value="soft">Suave</option></select><div class="btnrow" style="margin-top:8px"><button type="button" class="secondary" onclick="testNotificationSound()">Probar sonido</button></div></div></div><div class="dividerLine"></div><div class="btnrow" style="justify-content:flex-end"><button class="primary" onclick="saveConfig()">Guardar personalización</button></div></div><div id="cfgStatus" class="status"></div>
 <div id="inventoryImportCard" class="card"><div class="btnrow"><div><h3>Carga general de inventario</h3></div></div><div class="importConnectorGrid"><div id="inventoryImportMLCard" class="importConnectorCard"><h4>Mercado Libre</h4><div class="importConnectorMeta">Estado: <span id="inventoryImportMLStatus" class="pill">revisando</span><span id="inventoryImportMLDot" class="dot">·</span><span id="inventoryImportMLAccount" class="importConnectorAccount">—</span></div><div class="importConnectorActions"><button id="inventoryImportMLButton" class="secondary" onclick="connectInventoryChannel('ML')">Conectar ML</button></div></div><div id="inventoryImportTNCard" class="importConnectorCard"><h4>Tienda Nube</h4><div class="importConnectorMeta">Estado: <span id="inventoryImportTNStatus" class="pill">revisando</span><span id="inventoryImportTNDot" class="dot">·</span><span id="inventoryImportTNAccount" class="importConnectorAccount">—</span></div><div class="importConnectorActions"><button id="inventoryImportTNButton" class="secondary" onclick="connectInventoryChannel('TN')">Conectar TN</button></div></div></div><div class="btnrow importImportActions"><button class="primary" onclick="runInventoryImportRefresh(0)">Importar canales conectados</button><button id="inventoryImportViewGridBtn" class="secondary" onclick="loadInventoryImportGrid(0)" disabled title="Primero importá canales conectados">Ver grilla importada</button></div><div id="inventoryImportStatus" class="status"></div><div id="inventoryImportSummary" class="status"></div><div class="importReviewLegend importReviewLegendInline"><span class="pill ok">Verde: nuevo</span><span class="pill bad">Rojo: falta en refresh</span><span class="pill warn">Amarillo: SKU faltante</span></div><div class="importReviewGrid"><table><colgroup><col class="sku"><col class="tn"><col class="kind"><col class="ml"></colgroup><thead><tr><th>SKU</th><th>Tienda Nube</th><th title="Simple / Combo">S/C</th><th>Mercado Libre</th></tr></thead><tbody id="inventoryImportGridBody"><tr><td colspan="4">Cargá la grilla para ver publicaciones.</td></tr></tbody></table></div><div id="inventoryImportPager" class="btnrow" style="margin-top:12px"></div></div>
 </section>
 <section id="ultimo-json" class="view"><div class="card lastJsonBox"><h3>Sistema · Último JSON</h3><p>Última respuesta técnica guardada por el backoffice. Copiable, sin popup.</p><div class="btnrow"><button class="secondary" onclick="renderLastJsonPanel()">Actualizar</button><button class="secondary" onclick="copyLastJson()">Copiar JSON</button><button class="secondary" onclick="clearLastJson()">Limpiar</button></div><div id="lastJsonStatus" class="status"></div><textarea id="lastJsonText" readonly spellcheck="false" style="margin-top:12px"></textarea></div></section>
@@ -327,8 +327,8 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 <div id="xeleriaVersionBar" class="xeleriaVersionBar">FE 1.86 | BE consultando…</div>
 <div id="erpBusyOverlay" class="erpBusyOverlay"><div class="erpBusyBox"><div class="erpSpinner"></div><div id="erpBusyTitle" class="erpBusyTitle">Procesando...</div><div id="erpBusyMsg" class="erpBusyMsg">No cierres esta pantalla.</div></div></div>
 <script>
-const FRONTEND_VERSION='2.12';
-const FRONTEND_BUILD='admin-erp-v212-db-notifications';
+const FRONTEND_VERSION='2.14';
+const FRONTEND_BUILD='admin-erp-v214-notifications-no-big-bell-sound-choices';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[],comboItems:[],pendingBundleDraft:null};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};state.notifications={items:[],total:0,unread_count:0,groups:{}};state.notificationSound='off';state.notificationSoundPrimed=false;
 
 const ALERT_KEYS={
@@ -350,9 +350,6 @@ function ensureNavAlertBadges(){Object.values(ALERT_KEYS).forEach(cfg=>{let b=do
 function renderAlerts(){
   ensureNavAlertBadges();
   const total=alertTotal();
-  let bell=qs('globalAlertBell'), badge=qs('globalAlertBadge');
-  if(bell)bell.classList.toggle('hidden',total<=0);
-  if(badge)badge.textContent=String(total);
   for(const [key,cfg] of Object.entries(ALERT_KEYS)){
     let count=(state.alerts[key]||[]).length;
     let b=document.querySelector(`.navBtn[data-view="${cfg.view}"]`);
@@ -367,21 +364,59 @@ function clearAlertForView(viewId){
   }
   renderAlerts();
 }
-function playAlertSoundOnce(){
+function normalizeNotificationSound(v){
+  let s=String(v||'off').trim().toLowerCase();
+  if(s==='on')return 'bell';
+  if(['bell','ding','double','soft'].includes(s))return s;
+  return 'off';
+}
+function playTone(ctx,freq,start,duration,gain=0.14,type='sine'){
+  let o=ctx.createOscillator(), g=ctx.createGain();
+  o.type=type;
+  o.frequency.setValueAtTime(freq,ctx.currentTime+start);
+  g.gain.setValueAtTime(0.0001,ctx.currentTime+start);
+  g.gain.exponentialRampToValueAtTime(Math.max(0.001,gain),ctx.currentTime+start+0.015);
+  g.gain.exponentialRampToValueAtTime(0.0001,ctx.currentTime+start+duration);
+  o.connect(g);g.connect(ctx.destination);
+  o.start(ctx.currentTime+start);o.stop(ctx.currentTime+start+duration+0.02);
+}
+function playNotificationSound(kind){
+  kind=normalizeNotificationSound(kind||state.notificationSound);
+  if(kind==='off')return;
   try{
     const Ctx=window.AudioContext||window.webkitAudioContext;
     if(!Ctx)return;
     const ctx=new Ctx();
-    const o=ctx.createOscillator();
-    const g=ctx.createGain();
-    o.type='sine';
-    o.frequency.setValueAtTime(880,ctx.currentTime);
-    o.frequency.setValueAtTime(660,ctx.currentTime+0.12);
-    g.gain.setValueAtTime(0.0001,ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.16,ctx.currentTime+0.02);
-    g.gain.exponentialRampToValueAtTime(0.0001,ctx.currentTime+0.28);
-    o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+0.30);
+    if(kind==='ding'){
+      playTone(ctx,1046,0,0.18,0.13,'sine');
+      return;
+    }
+    if(kind==='double'){
+      playTone(ctx,880,0,0.12,0.12,'square');
+      playTone(ctx,1175,0.16,0.13,0.10,'square');
+      return;
+    }
+    if(kind==='soft'){
+      playTone(ctx,660,0,0.22,0.07,'sine');
+      playTone(ctx,880,0.10,0.24,0.045,'sine');
+      return;
+    }
+    playTone(ctx,880,0,0.18,0.14,'sine');
+    playTone(ctx,660,0.12,0.18,0.10,'sine');
   }catch(e){console.debug('audio alert bloqueado/no disponible',e)}
+}
+function playAlertSoundOnce(){playNotificationSound(state.notificationSound)}
+function testNotificationSound(){
+  let val=normalizeNotificationSound(cfgGet('cfgNotificationSound')||state.notificationSound);
+  state.notificationSound=val;
+  state.notificationSoundPrimed=true;
+  playNotificationSound(val);
+  if(val==='off')setStatus('cfgStatus','Sonido de notificaciones desactivado.',true);
+  else setStatus('cfgStatus','Prueba de sonido: '+notificationSoundLabel(val)+'.',true);
+}
+function notificationSoundLabel(v){
+  v=normalizeNotificationSound(v);
+  return ({off:'OFF',bell:'Campanita',ding:'Ding',double:'Doble bip',soft:'Suave'}[v]||'OFF');
 }
 async function pollAlerts(){
   // ALERTS_POLLING_DISABLED_2_08
@@ -559,9 +594,6 @@ function notificationImportState(items){
 }
 function renderNotificationsBadge(){
   let total=Number(state.notifications.unread_count||0);
-  let bell=qs('globalAlertBell'), badge=qs('globalAlertBadge');
-  if(bell)bell.classList.toggle('hidden',total<=0);
-  if(badge)badge.textContent=String(total);
   let nb=document.querySelector('.navBtn[data-view="notificaciones"]');
   if(nb){
     nb.classList.toggle('hasAlert',total>0);
@@ -594,8 +626,8 @@ function renderNotifications(){
 }
 function maybePlayNotificationSound(prev,next){
   if(!state.notificationSoundPrimed){state.notificationSoundPrimed=true;return}
-  if(String(state.notificationSound||'off')!=='on')return;
-  if(Number(next||0)>Number(prev||0))playAlertSoundOnce();
+  if(normalizeNotificationSound(state.notificationSound)==='off')return;
+  if(Number(next||0)>Number(prev||0))playNotificationSound(state.notificationSound);
 }
 async function loadNotifications(manual=false){
   let prev=Number(state.notifications&&state.notifications.unread_count||0);
@@ -1895,7 +1927,7 @@ function personalizationPayload(){
   let logoData=localStorage.getItem('xeleria_company_logo_data')||'';
   let logoUrl=cfgGet('cfgLogoUrl').trim();
   let auto=cfgGet('cfgAutoInvoice')==='true';
-  let sound=(cfgGet('cfgNotificationSound')||'off').trim()==='on'?'on':'off';
+  let sound=normalizeNotificationSound(cfgGet('cfgNotificationSound')||'off');
   return {
     display_name:cfgGet('cfgNombreFantasia'),
     fiscal_razon_social:cfgGet('cfgRazonSocial'),
@@ -1916,7 +1948,7 @@ async function saveConfig(){
   setStatus('cfgStatus','Guardando personalización en base...');
   try{
     let d=await fetchJson('/admin/tenant/settings',{method:'PUT',body:JSON.stringify(personalizationPayload())});
-    state.notificationSound=(cfgGet('cfgNotificationSound')||'off')==='on'?'on':'off';
+    state.notificationSound=normalizeNotificationSound(cfgGet('cfgNotificationSound')||'off');
     setStatus('cfgStatus','Personalización guardada en base.',true);
     saveLastJson(d);
     loadNotifications(false);
@@ -1939,7 +1971,7 @@ async function loadConfig(){
     cfgSet('cfgAutoInvoice',(s.auto_invoice_ml||s.auto_invoice_tn)?'true':'false');
     cfgSet('cfgArcaEnv',s.arca_env||'homologacion');
     cfgSet('cfgConcepto',s.default_invoice_concept||'Productos');
-    let sound=(s.notification_sound||(s.raw_settings&&s.raw_settings.notification_sound)||'off')==='on'?'on':'off';
+    let sound=normalizeNotificationSound(s.notification_sound||(s.raw_settings&&s.raw_settings.notification_sound)||'off');
     cfgSet('cfgNotificationSound',sound);
     state.notificationSound=sound;
     if(s.logo_png_500_base64){localStorage.setItem('xeleria_company_logo_data',s.logo_png_500_base64)}else{localStorage.removeItem('xeleria_company_logo_data')}
