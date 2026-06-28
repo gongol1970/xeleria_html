@@ -328,8 +328,8 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 <div id="xeleriaVersionBar" class="xeleriaVersionBar">FE 1.86 | BE consultando…</div>
 <div id="erpBusyOverlay" class="erpBusyOverlay"><div class="erpBusyBox"><div class="erpSpinner"></div><div id="erpBusyTitle" class="erpBusyTitle">Procesando...</div><div id="erpBusyMsg" class="erpBusyMsg">No cierres esta pantalla.</div></div></div>
 <script>
-const FRONTEND_VERSION='2.23';
-const FRONTEND_BUILD='admin-erp-v221-import-grid-clean-errors';
+const FRONTEND_VERSION='2.24';
+const FRONTEND_BUILD='admin-erp-v224-import-poll-resilient';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[],comboItems:[],pendingBundleDraft:null};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importación iniciada. Podés seguir usando la aplicación; te notificaremos cuando esté lista.';
 const INVENTORY_IMPORT_RUNNING_MESSAGE='Importación en curso. Podés seguir usando la aplicación; te notificaremos cuando esté lista.';state.notifications={items:[],total:0,unread_count:0,groups:{}};state.notificationSound='off';state.notificationSoundPrimed=false;
@@ -661,12 +661,13 @@ function maybePlayNotificationSound(prev,next){
 }
 function inventoryImportNotificationIsFinal(n){let t=notificationType(n);return t.includes('inventory_import_finished')||t.includes('inventory_import_failed')||t.includes('inventory_import_saved')}
 function inventoryImportHandleNotificationCompletion(){
-  if(!state.inventoryImportRunning)return;
   let items=(notificationGroups().inventory_import||[]);
   let activeJob=String(state.inventoryImportActiveJobId||'').trim();
+  let activeBatch=String(state.inventoryImportActiveBatchId||'').trim();
   let n=items.find(x=>inventoryImportNotificationIsFinal(x)&&(!activeJob||String((x.payload||{}).job_id||'')===activeJob));
   if(!n)return;
   let payload=n.payload||{};
+  if(!state.inventoryImportRunning&&!activeJob&&!activeBatch)return;
   if(payload.batch_id)state.inventoryImportActiveBatchId=payload.batch_id;
   state.inventoryImportActiveJobId='';
   setInventoryImportRunBusy(false);
@@ -2223,8 +2224,24 @@ async function saveInventoryImportBatch(){
 
 async function importPageSimple(urlPath){let fullUrl=apiBase()+urlPath;let r,txt='',data=null;try{r=await fetch(fullUrl,{method:'GET',mode:'cors',credentials:'omit'});txt=await r.text();try{data=JSON.parse(txt)}catch{data={ok:r.ok,text:txt}}saveLastJson({ok:r.ok,http_status:r.status,path:urlPath,method:'GET-simple',response:data});if(!r.ok)throw {ok:false,http_status:r.status,path:urlPath,response:data,raw_text:txt};return data}catch(e){let out=e&&e.http_status?e:{ok:false,network:true,message:e?.message||String(e),path:urlPath,method:'GET-simple'};saveLastJson(out);throw out}}
 async function inventoryImportWaitForJob(jobId,batchId){
+  let networkMisses=0;
   for(let attempt=0;attempt<180;attempt++){
-    let d=await fetchJson('/admin/inventory/import-jobs/'+encodeURIComponent(jobId));
+    let d=null;
+    try{
+      d=await fetchJson('/admin/inventory/import-jobs/'+encodeURIComponent(jobId));
+      networkMisses=0;
+    }catch(e){
+      networkMisses++;
+      saveLastJson(e);
+      console.debug('inventoryImport status poll skipped',e);
+      setStatus('inventoryImportStatus',INVENTORY_IMPORT_STARTED_MESSAGE,true);
+      if(networkMisses>=2){
+        inventoryImportScheduleGridPoll();
+        loadNotifications(false).catch(err=>console.debug('inventoryImport notifications after poll miss',err));
+      }
+      await inventoryImportSleep(Math.min(12000,3000+(networkMisses*2000)));
+      continue;
+    }
     let job=d.job||{};let p=d.progress||{};
     let st=String(job.status||p.status||d.status||'').toLowerCase();
     setStatus('inventoryImportStatus',INVENTORY_IMPORT_RUNNING_MESSAGE,true);
@@ -2272,12 +2289,19 @@ async function runInventoryImportRefresh(offset=0){
     if(jobId)state.inventoryImportActiveJobId=jobId;
     if(batchId)state.inventoryImportActiveBatchId=batchId;
     setStatus('inventoryImportStatus','Importación iniciada. Podés seguir usando la aplicación; te notificaremos cuando esté lista.',true);
-    if(jobId)await inventoryImportWaitForJob(jobId,batchId);
-    else {inventoryImportScheduleGridPoll();}
+    if(jobId){
+      inventoryImportWaitForJob(jobId,batchId).catch(e=>{
+        saveLastJson(e);
+        console.debug('inventoryImport background wait detached',e);
+        setStatus('inventoryImportStatus',INVENTORY_IMPORT_STARTED_MESSAGE,true);
+        inventoryImportScheduleGridPoll();
+        loadNotifications(false).catch(err=>console.debug('inventoryImport notifications after detached wait',err));
+      });
+    }else {inventoryImportScheduleGridPoll();}
   }catch(e){
-    setInventoryImportRunBusy(false);
     let txt=errText(e);
-    setStatus('inventoryImportStatus','Error importando canales: '+txt,false);
+    setInventoryImportRunBusy(false);
+    setStatus('inventoryImportStatus','Error iniciando importación: '+txt,false);
     saveLastJson(e);
     renderLastJsonPanel&&renderLastJsonPanel();
   }
