@@ -2079,7 +2079,14 @@ function inventoryImportCloseGrid(msg=''){state.inventoryImportGridLoaded=false;
 function setInventoryImportGridButtonEnabled(enabled){state.inventoryImportCanViewGrid=!!enabled}
 function inventoryImportErrorsFromPayload(d={}){let job=d.job||{};let errs=job.item_errors||d.item_errors||((d.payload||{}).item_errors)||[];if(!Array.isArray(errs))errs=errs?[errs]:[];if(!errs.length&&(job.last_error||d.last_error)){errs=[{stage:job.last_stage||d.last_stage||'',type:'error',detail:job.last_error||d.last_error}]};return errs}
 function renderInventoryImportErrors(d={}){let el=qs('inventoryImportErrors');if(!el)return;let errs=inventoryImportErrorsFromPayload(d);let job=d.job||{};let count=Number(job.error_count||d.error_count||errs.length||0);if(!count&&!errs.length){el.classList.add('hidden');el.innerHTML='';return}let rows=errs.map(e=>`<tr><td>${esc(e.stage||'-')}</td><td>${esc(e.item_id||e.sku||e.external_full_id||'-')}</td><td>${esc(e.type||'-')}</td><td>${esc(e.detail||e.message||JSON.stringify(e))}</td></tr>`).join('');el.classList.remove('hidden');el.innerHTML=`<div class="importErrorsBox"><strong>Detalles técnicos: ${count}</strong><div class="small">Publicaciones que no entraron en esta corrida después de estabilizar la importación.</div><div class="tableWrap"><table><thead><tr><th>Etapa</th><th>Publicación/SKU</th><th>Tipo</th><th>Detalle</th></tr></thead><tbody>${rows||'<tr><td colspan="4">Sin detalle técnico.</td></tr>'}</tbody></table></div></div>`}
-function inventoryImportSelectedChannels(){let channels=[];let ml=String(qs('inventoryImportMLStatus')?.textContent||'').toLowerCase();let tn=String(qs('inventoryImportTNStatus')?.textContent||'').toLowerCase();if(ml.includes('conectado'))channels.push('ML');if(tn.includes('conectado'))channels.push('TN');return channels}
+function inventoryImportSelectedChannels(){
+  let channels=[];
+  let mlOk=!!(state.connections&&state.connections.ml&&state.connections.ml.connected);
+  let tnOk=!!(state.connections&&state.connections.tn&&state.connections.tn.connected);
+  if(mlOk)channels.push('ML');
+  if(tnOk)channels.push('TN');
+  return channels;
+}
 function inventoryImportFinalStatus(st){return ['completed','completed_with_errors','done','success','failed','error','cancelled','stale'].includes(String(st||'').toLowerCase())}
 function inventoryImportSleep(ms){return new Promise(r=>setTimeout(r,ms))}
 function inventoryImportClearGridPoll(){if(state.inventoryImportGridPollTimer){clearInterval(state.inventoryImportGridPollTimer);state.inventoryImportGridPollTimer=null}}
