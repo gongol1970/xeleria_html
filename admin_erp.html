@@ -110,10 +110,10 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 .importReviewGrid th:last-child,.importReviewGrid td:last-child{border-right:0}
 .importReviewGrid th{position:sticky;top:0;z-index:3;background:#efe7d8;color:#111;border-bottom:2px solid #9f9786;font-weight:950}
 .importReviewGrid col.sku{width:14%}.importReviewGrid col.tn{width:41%}.importReviewGrid col.kind{width:5%}.importReviewGrid col.ml{width:40%}
-.importReviewGrid td.cell-new{background:var(--import-green-bg)}.importReviewGrid td.cell-missing_in_refresh{background:var(--import-red-bg)}.importReviewGrid td.cell-missing_sku{background:var(--import-yellow-bg)}.importReviewGrid td.cell-type-changed,.importReviewTypeCell.changed{background:var(--import-green-bg)}.importReviewGrid td.cell-type-changed{box-shadow:inset 0 0 0 2px rgba(4,120,87,.28)}
+.importReviewGrid td.cell-new{background:var(--import-green-bg)}.importReviewGrid td.cell-missing_in_refresh{background:var(--import-red-bg)}.importReviewGrid td.cell-missing_sku{background:var(--import-yellow-bg)}.importReviewGrid td.cell-type-changed{background:var(--import-green-bg);box-shadow:none}.importReviewTypeCell.changed{background:transparent}
 .importReviewPub{margin-bottom:6px;padding-bottom:6px;border-bottom:1px dashed #b9b09d}.importReviewPub:last-child{border-bottom:0;margin-bottom:0}
 .importReviewPubTitle{font-weight:900;font-size:10.5px}.importReviewPubMeta{font-size:9px;color:#555;line-height:1.35}
-.importReviewTypeCell{display:flex;align-items:center;justify-content:center;gap:9px;font-size:10px;text-align:center;white-space:nowrap;min-width:48px}
+.importReviewGrid td.importReviewKindCell{vertical-align:middle;text-align:center;padding:0 6px}.importReviewTypeCell{display:flex;align-items:center;justify-content:center;gap:9px;font-size:10px;text-align:center;white-space:nowrap;min-width:48px;width:100%;min-height:56px;margin:0 auto}
 .importReviewTypeCell label{display:inline-flex;align-items:center;justify-content:center;text-transform:none;letter-spacing:0;font-size:10px;font-weight:800;margin:0;color:#111;line-height:1}
 .importReviewTypeCell input{width:16px;height:16px;margin:0;cursor:pointer}
 .importReviewTypeCell.missing{color:var(--muted);font-size:11px}
@@ -155,7 +155,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 <div class="navTitle">Local físico</div><div class="sub"><button class="navBtn" data-view="arca-manual">Emitir comprobante manual</button></div>
 <div class="navTitle">Gestión</div><div class="sub"><div class="navParent">Inventario</div><div class="sub2"><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="combos">Combos / Kits</button><button class="navBtn" data-view="full-inbound">Envío a Full</button><button class="navBtn" data-view="movimientos">Movimientos de stock</button></div><button class="navBtn" data-view="clientes">Clientes ML / TN</button><button class="navBtn" data-view="base-conocimiento">Base de Conocimiento IA</button><button class="navBtn" data-view="arca-reportes">ARCA reportes</button></div>
 <div class="navTitle">Sistema</div><div class="sub"><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="ultimo-json">Último JSON</button></div>
-</nav><div class="sidebarFoot">FE: <span id="footFrontendVer">2.26</span><br>BE: <span id="footBackendVer">?</span></div>
+</nav><div class="sidebarFoot">FE: <span id="footFrontendVer">2.29</span><br>BE: <span id="footBackendVer">?</span></div>
 </aside>
 <main>
 <div class="topbar"><div><h2 id="pageTitle">Inicio</h2><div class="crumb" id="pageCrumb">Panel operativo</div></div><div class="tokenBox"><div><label>API</label><input id="apiUrl" value="https://api.xeleria.com.ar"></div><div><label>ADMIN_TOKEN</label><input id="token" type="password" placeholder="Token"></div><button class="primary" onclick="saveSettings()">Guardar</button><button class="secondary" onclick="health()">Probar</button></div></div>
@@ -328,9 +328,9 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 <div id="xeleriaVersionBar" class="xeleriaVersionBar">FE 1.86 | BE consultando…</div>
 <div id="erpBusyOverlay" class="erpBusyOverlay"><div class="erpBusyBox"><div class="erpSpinner"></div><div id="erpBusyTitle" class="erpBusyTitle">Procesando...</div><div id="erpBusyMsg" class="erpBusyMsg">No cierres esta pantalla.</div></div></div>
 <script>
-const FRONTEND_VERSION='2.28';
+const FRONTEND_VERSION='2.29';
 const FRONTEND_BUILD='admin-erp-v228-grid-cell-color-logic';
-let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[],comboItems:[],pendingBundleDraft:null};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
+let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[],comboItems:[],pendingBundleDraft:null};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importación iniciada. Podés seguir usando la aplicación; te notificaremos cuando esté lista.';
 const INVENTORY_IMPORT_RUNNING_MESSAGE='Importación en curso. Podés seguir usando la aplicación; te notificaremos cuando esté lista.';state.notifications={items:[],total:0,unread_count:0,groups:{}};state.notificationSound='off';state.notificationSoundPrimed=false;
 
@@ -2051,8 +2051,12 @@ function importReviewSkuStatus(r){
   return st==='new'?'new':'';
 }
 function importReviewSkuCellClass(r){let st=importReviewSkuStatus(r);return st&&st!=='existing'?'cell-'+st:''}
-function importReviewType(r){if(importReviewIsMissingSku(r))return '<div class="importReviewTypeCell missing" title="Primero resolvé el SKU">—</div>';let sku=(r&&r.sku)||'';let value=(r&&r.item_type)||'simple';let safe=importReviewSafeName(sku);let v=value==='bundle'?'bundle':'simple';let skuAttr=esc(sku);return`<div class="importReviewTypeCell" data-original-type="${esc(v)}"><label title="Simple"><input aria-label="Simple" data-sku="${skuAttr}" data-original-type="${esc(v)}" onchange="inventoryImportTypeChanged(this)" type="radio" name="inventory_import_type_${safe}" value="simple" ${v==='simple'?'checked':''}></label><label title="Combo"><input aria-label="Combo" data-sku="${skuAttr}" data-original-type="${esc(v)}" onchange="inventoryImportTypeChanged(this)" type="radio" name="inventory_import_type_${safe}" value="bundle" ${v==='bundle'?'checked':''}></label></div>`}
-function inventoryImportTypeChanged(inp){try{let cell=inp&&inp.closest?inp.closest('.importReviewTypeCell'):null;let td=inp&&inp.closest?inp.closest('td'):null;if(!cell)return;let original=String(cell.dataset.originalType||inp.dataset.originalType||'simple');let checked=cell.querySelector('input[type="radio"]:checked');let current=String((checked&&checked.value)||'simple');let changed=current!==original;cell.classList.toggle('changed',changed);if(td)td.classList.toggle('cell-type-changed',changed)}catch(e){}}
+function importReviewOriginalType(r){return String((r&&r.item_type)||'simple').toLowerCase()==='bundle'?'bundle':'simple'}
+function inventoryImportSkuKey(r){return String((r&&r.sku)||'').trim()}
+function inventoryImportEffectiveType(r){let sku=inventoryImportSkuKey(r);let pending=sku&&state.inventoryImportItemTypes?state.inventoryImportItemTypes[sku]:'';if(pending==='bundle'||pending==='simple')return pending;return importReviewOriginalType(r)}
+function importReviewTypeCellClass(r){if(importReviewIsMissingSku(r))return'';return inventoryImportEffectiveType(r)!==importReviewOriginalType(r)?'cell-type-changed':''}
+function importReviewType(r){if(importReviewIsMissingSku(r))return '<div class="importReviewTypeCell missing" title="Primero resolvé el SKU">—</div>';let sku=inventoryImportSkuKey(r);let original=importReviewOriginalType(r);let current=inventoryImportEffectiveType(r);let changed=current!==original;let safe=importReviewSafeName(sku);let skuAttr=esc(sku);return`<div class="importReviewTypeCell${changed?' changed':''}" data-original-type="${esc(original)}"><label title="Simple"><input aria-label="Simple" data-sku="${skuAttr}" data-original-type="${esc(original)}" onchange="inventoryImportTypeChanged(this)" type="radio" name="inventory_import_type_${safe}" value="simple" ${current==='simple'?'checked':''}></label><label title="Combo"><input aria-label="Combo" data-sku="${skuAttr}" data-original-type="${esc(original)}" onchange="inventoryImportTypeChanged(this)" type="radio" name="inventory_import_type_${safe}" value="bundle" ${current==='bundle'?'checked':''}></label></div>`}
+function inventoryImportTypeChanged(inp){try{let cell=inp&&inp.closest?inp.closest('.importReviewTypeCell'):null;let td=inp&&inp.closest?inp.closest('td'):null;if(!cell)return;let sku=String(inp.dataset.sku||'').trim();let original=String(cell.dataset.originalType||inp.dataset.originalType||'simple');let checked=cell.querySelector('input[type="radio"]:checked');let current=String((checked&&checked.value)||'simple');state.inventoryImportItemTypes=state.inventoryImportItemTypes||{};if(sku){if(current===original)delete state.inventoryImportItemTypes[sku];else state.inventoryImportItemTypes[sku]=current}let changed=current!==original;cell.classList.toggle('changed',changed);if(td)td.classList.toggle('cell-type-changed',changed)}catch(e){}}
 function importReviewPubStatus(p){
   if(!p)return'';
   let st=String((p.compare_status)||'').trim().toLowerCase();
@@ -2176,7 +2180,7 @@ async function connectInventoryChannel(ch){
     alert(msg);
   }
 }
-function renderInventoryImportGrid(rows){let body=qs('inventoryImportGridBody');if(!body)return;if(!rows||!rows.length){body.innerHTML='';inventoryImportSetGridVisible(false);return}inventoryImportSetGridVisible(true);body.innerHTML=rows.map(r=>`<tr><td class="${importReviewSkuCellClass(r)}">${importReviewSkuCell(r)}</td><td class="${importReviewCellClass(r.tn_publications)}">${importReviewPubs(r.tn_publications)}</td><td>${importReviewType(r)}</td><td class="${importReviewCellClass(r.ml_publications)}">${importReviewPubs(r.ml_publications)}</td></tr>`).join('')}
+function renderInventoryImportGrid(rows){let body=qs('inventoryImportGridBody');if(!body)return;if(!rows||!rows.length){body.innerHTML='';inventoryImportSetGridVisible(false);return}inventoryImportSetGridVisible(true);body.innerHTML=rows.map(r=>`<tr><td class="${importReviewSkuCellClass(r)}">${importReviewSkuCell(r)}</td><td class="${importReviewCellClass(r.tn_publications)}">${importReviewPubs(r.tn_publications)}</td><td class="importReviewKindCell ${importReviewTypeCellClass(r)}">${importReviewType(r)}</td><td class="${importReviewCellClass(r.ml_publications)}">${importReviewPubs(r.ml_publications)}</td></tr>`).join('')}
 function inventoryImportBatchIdFromGridPayload(d){let b=(d&&d.batch)||{};return String((d&&d.batch_id)||b.id||b.batch_id||(d&&d.current_batch_id)||state.inventoryImportActiveBatchId||'').trim()}
 function collectInventoryImportItemTypes(){let out={};document.querySelectorAll('#inventoryImportGridBody input[type="radio"][data-sku]:checked').forEach(inp=>{let sku=String(inp.dataset.sku||'').trim();let val=String(inp.value||'simple').trim();if(sku)out[sku]=val==='bundle'?'bundle':'simple'});return out}
 function setInventoryImportRunBusy(busy){state.inventoryImportRunning=!!busy;let btn=qs('inventoryImportRunButton');if(btn){btn.disabled=!!busy;btn.classList.toggle('disabled',!!busy);btn.textContent=busy?'Importación en curso':'Importar canales conectados'}}
@@ -2331,6 +2335,7 @@ async function runInventoryImportRefresh(offset=0){
   state.inventoryImportActiveBatchId='';
   state.inventoryImportCurrentBatchId='';
   state.inventoryImportGridLoaded=false;
+  state.inventoryImportItemTypes={};
   inventoryImportClearGridPoll();
   setInventoryImportRunBusy(true);
   setInventoryImportGridButtonEnabled(false);
