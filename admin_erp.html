@@ -328,8 +328,8 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 <div id="xeleriaVersionBar" class="xeleriaVersionBar">FE 1.86 | BE consultando…</div>
 <div id="erpBusyOverlay" class="erpBusyOverlay"><div class="erpBusyBox"><div class="erpSpinner"></div><div id="erpBusyTitle" class="erpBusyTitle">Procesando...</div><div id="erpBusyMsg" class="erpBusyMsg">No cierres esta pantalla.</div></div></div>
 <script>
-const FRONTEND_VERSION='2.26';
-const FRONTEND_BUILD='admin-erp-v226-cell-colors-type-change';
+const FRONTEND_VERSION='2.27';
+const FRONTEND_BUILD='admin-erp-v227-bootstrap-staging-grid';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[],comboItems:[],pendingBundleDraft:null};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importación iniciada. Podés seguir usando la aplicación; te notificaremos cuando esté lista.';
 const INVENTORY_IMPORT_RUNNING_MESSAGE='Importación en curso. Podés seguir usando la aplicación; te notificaremos cuando esté lista.';state.notifications={items:[],total:0,unread_count:0,groups:{}};state.notificationSound='off';state.notificationSoundPrimed=false;
@@ -2069,10 +2069,34 @@ function inventoryImportClearGridPoll(){if(state.inventoryImportGridPollTimer){c
 async function inventoryImportTryLoadGridFromPoll(){try{await loadInventoryImportGrid(0,{force:true,fromPoll:true});return !!state.inventoryImportGridLoaded}catch(e){console.debug('inventoryImportTryLoadGridFromPoll',e);return false}}
 function inventoryImportScheduleGridPoll(){inventoryImportClearGridPoll();let attempts=0;state.inventoryImportGridPollTimer=setInterval(async()=>{attempts++;if(attempts>90){inventoryImportClearGridPoll();return}if(state.inventoryImportSaving)return;let ok=await inventoryImportTryLoadGridFromPoll();if(ok)inventoryImportClearGridPoll()},4000)}
 async function inventoryImportBootstrapGridButton(){
-  // GRID_BOOTSTRAP_DISABLED_2_09
-  // No consultar /admin/inventory/import-jobs/grid al refrescar: esa ruta puede no estar montada en runtime y ensucia consola con 404.
-  // La grilla se abre automáticamente al finalizar la importación.
-  return;
+  // GRID_BOOTSTRAP_STAGING_2_27
+  // Al refrescar: si existe staging pendiente con filas, mostrar la grilla.
+  // Si no hay staging/filas, no mostrar nada. No ensuciar la UI con mensajes falsos.
+  try{
+    if(state.inventoryImportRunning||state.inventoryImportSaving||state.inventoryImportGridLoaded)return;
+    let t=token(),st=sessionToken();
+    if(!st&&!t)return;
+    let tokenQuery=t?('&token='+encodeURIComponent(t)):'';
+    let d=await fetchJson('/admin/inventory/import-jobs/grid?limit=500&offset=0'+tokenQuery);
+    let total=Number(d.total||0);
+    let rows=Array.isArray(d.rows)?d.rows:[];
+    if(d.no_staging||(!rows.length&&!total)){
+      inventoryImportCloseGrid('');
+      if(qs('inventoryImportStatus'))qs('inventoryImportStatus').textContent='';
+      return;
+    }
+    renderInventoryImportResult(d,0,500,'bootstrap');
+    setStatus('inventoryImportStatus','Grilla pendiente recuperada.',true);
+    clearStatusLater('inventoryImportStatus',3500);
+  }catch(e){
+    let et=errText(e);
+    if(et.includes('No hay importación')||et.includes('No hay staging')||et.includes('No hay filas')||et.includes('404')){
+      inventoryImportCloseGrid('');
+      if(qs('inventoryImportStatus'))qs('inventoryImportStatus').textContent='';
+      return;
+    }
+    console.debug('inventoryImportBootstrapGridButton',e);
+  }
 }
 function inventoryImportStartedPayload(d,p={}){let jobStatus=String((p&&p.status)||(d&&d.status)||(d&&d.job&&d.job.status)||'').toLowerCase();let jobStage=String((p&&p.stage)||(p&&p.last_stage)||(d&&d.stage)||(d&&d.last_stage)||(d&&d.job&&d.job.last_stage)||'').toLowerCase();return Boolean((d&&(d.job_id||d.job||d.status_url||d.batch_id))||jobStatus==='running'||jobStatus==='queued'||jobStage)}
 function inventoryImportJobIdFromPayload(d={}){
@@ -2349,7 +2373,7 @@ async function loadInventoryImportGrid(offset=0,opts={}){
 
 cleanTokenFromUrl();
 loadMLQuestionPrefs();renderMLQuickButtons();
-loadSettings();health();handleOauthReturn();updateVersionBar();startAlertPolling();/* GRID_BOOTSTRAP_DISABLED_2_23: evita 404 al refrescar; la grilla se abre al finalizar la importación */
+loadSettings();health();handleOauthReturn();updateVersionBar();startAlertPolling();setTimeout(()=>inventoryImportBootstrapGridButton().catch(e=>console.debug('bootstrap staging grid',e)),1500);/* GRID_BOOTSTRAP_STAGING_2_27: si staging tiene rows muestra grilla; si no, no muestra nada */
 </script>
 </body>
 </html>
