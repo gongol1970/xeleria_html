@@ -340,7 +340,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 .comboFriendlyOk{display:inline-block;background:#ecfdf3;border:1px solid #75d0a4;border-radius:10px;padding:6px 10px;color:var(--ok);font-weight:900}
 
 
-/* COMBOS_MATRIZ_V13_NEW_ROW_CLEANUP */
+/* COMBOS_MATRIZ_V14_NEW_ROW_CLEANUP */
 .comboDraftRow input,
 .comboDraftRow .comboTopInput,
 .comboDraftRow .comboInlineName,
@@ -350,12 +350,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 .comboDraftRow td{
   vertical-align:middle!important;
 }
-.comboDraftRow td:nth-child(2)::after{
-  content:"Completá el alta en el formulario de abajo";
-  color:var(--muted);
-  font-size:12px;
-  font-weight:800;
-}
+
 .comboOrphanNote{
   margin-top:6px;
   color:var(--muted);
@@ -364,7 +359,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 }
 
 
-/* COMBOS_MATRIZ_V13_LIVE_SEARCH */
+/* COMBOS_MATRIZ_V14_LIVE_SEARCH */
 .comboLiveSearchLine{
   display:flex;
   align-items:center;
@@ -415,7 +410,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 <div class="navTitle">Local físico</div><div class="sub"><button class="navBtn" data-view="arca-manual">Emitir comprobante manual</button></div>
 <div class="navTitle">Gestión</div><div class="sub"><div class="navParent">Inventario</div><div class="sub2"><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="combos">Combos / Kits</button><button class="navBtn" data-view="full-inbound">Envío a Full</button><button class="navBtn" data-view="movimientos">Movimientos de stock</button></div><button class="navBtn" data-view="clientes">Clientes ML / TN</button><button class="navBtn" data-view="base-conocimiento">Base de Conocimiento IA</button><button class="navBtn" data-view="arca-reportes">ARCA reportes</button></div>
 <div class="navTitle">Sistema</div><div class="sub"><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="bitacora">Bitácora</button><button class="navBtn" data-view="ultimo-json">Último JSON</button></div>
-</nav><div class="sidebarFoot">FE: <span id="footFrontendVer">2.35</span><br>BE: <span id="footBackendVer">?</span></div>
+</nav><div class="sidebarFoot">FE: <span id="footFrontendVer">2.36</span><br>BE: <span id="footBackendVer">?</span></div>
 </aside>
 <main>
 <div class="topbar"><div><h2 id="pageTitle">Inicio</h2><div class="crumb" id="pageCrumb">Panel operativo</div></div><div class="tokenBox"><div><label>API</label><input id="apiUrl" value="https://api.xeleria.com.ar"></div><div><label>ADMIN_TOKEN</label><input id="token" type="password" placeholder="Token"></div><button class="primary" onclick="saveSettings()">Guardar</button><button class="secondary" onclick="health()">Probar</button></div></div>
@@ -629,8 +624,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.35';
-const FRONTEND_BUILD='admin-erp-v235-combos-matriz-live-search-v13';
+const FRONTEND_VERSION='2.36';
+const FRONTEND_BUILD='admin-erp-v236-combos-matriz-live-search-v14';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
 const INVENTORY_IMPORT_RUNNING_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
@@ -1648,7 +1643,7 @@ function comboAfterRender(){
 async function loadCombos(){comboEnsureState();let q=(qs('comboSearch')?.value||'').trim();let lim=comboLimit();setStatus('comboStatus','Buscando combos...');try{let d=await fetchJson(`/admin/v2/combos?limit=${encodeURIComponent(lim)}&offset=0&q=${encodeURIComponent(q)}`);state.comboItems=d.items||[];renderCombos();let missing=state.comboItems.filter(x=>x.requires_action).length;let total=d.total??state.comboItems.length;if(qs('comboSummary'))qs('comboSummary').textContent=`${total} combos · ${missing} requieren acción en esta vista`;setStatus('comboStatus',`Combos cargados: ${state.comboItems.length} visibles${q?' filtrados':''}.`,true)}catch(e){setStatus('comboStatus','Error combos: '+errText(e),false)}}
 function renderCombos(){comboEnsureState();let items=[...(state.comboItems||[])];if(state.comboNewOpen){items=[{_draft:true,sku:'',name:'',listings:[],components_preview:[],available_to_sell:'—'},...items]}let tbody='';if(!items.length){tbody='<tr><td colspan="6"><div class="comboSaasEmpty">Sin combos para este filtro.</div></td></tr>'}else{tbody=items.map(c=>comboRenderMatrixRows(c)).join('')}let el=qs('comboResults');if(el)el.innerHTML=`<table class="comboMatrixTable"><thead><tr><th>SKU Combo</th><th>Nombre</th><th>Publicaciones</th><th>Precio</th><th>Stock</th><th></th></tr></thead><tbody>${tbody}</tbody></table>`;if(state.comboExpanded&&state.comboExpanded!=='__new__'){comboLoadEditPanel(state.comboExpanded)}}
 function comboRenderMatrixRows(c){if(c._draft)return comboDraftRows();let sku=String(c.sku||'');let open=state.comboExpanded===sku;let main=`<tr class="comboMatrixMain ${comboRowState(c)} ${open?'editing':''}"><td><div class="comboMatrixSku comboSaasMono">${esc(sku)}</div></td><td><div class="comboMatrixName">${esc(c.name||'')}</div></td><td class="comboMatrixPubs">${comboListingsMatrixText(c)}</td><td class="comboMatrixPrice">${comboBestPrice(c)}</td><td class="comboMatrixStock">${esc(c.available_to_sell??'—')}</td><td><div class="comboMatrixActions"><button class="comboEditIcon" title="Modificar" onclick="comboOpenEdit('${jsq(sku)}')">✏️</button><button class="comboTrashIcon" title="Desactivar" onclick="comboDelete('${jsq(sku)}')">🗑</button></div></td></tr>`;let comp=`<tr><td></td><td colspan="4" class="comboComponentWrap">${comboComponentsPreviewTable(c)}</td><td></td></tr>`;let edit=open?`<tr><td colspan="6"><div id="comboEditPanel_${comboSafeKey(sku)}" class="comboEditPanelMatrix">Cargando...</div></td></tr>`:'';return main+comp+edit}
-function comboDraftRows(){let key='new';let main=`<tr class="comboMatrixMain comboNewFirstRow editing comboDraftRow"><td><span class="comboMatrixDraftLabel">Nuevo</span></td><td><div class="comboMatrixName muted">Completá el alta en el formulario de abajo</div></td><td class="comboMatrixPubs">${comboSelectedListingsMini(key)}</td><td class="comboMatrixPrice">—</td><td class="comboMatrixStock">calc.</td><td><div class="comboMatrixActions"><button class="comboTrashIcon" title="Cancelar" onclick="comboCloseNew()">🗑</button></div></td></tr>`;let panel=`<tr><td colspan="6"><div class="comboEditPanelMatrix">${comboFormInner(key,{mode:'create'})}</div></td></tr>`;return main+panel}
+function comboDraftRows(){let key='new';let main=`<tr class="comboMatrixMain comboNewFirstRow editing comboDraftRow"><td><span class="comboMatrixDraftLabel">Nuevo</span></td><td><span class="muted">Alta de combo nuevo</span></td><td class="comboMatrixPubs"></td><td class="comboMatrixPrice">—</td><td class="comboMatrixStock">calc.</td><td><div class="comboMatrixActions"><button class="comboTrashIcon" title="Cancelar" onclick="comboCloseNew()">🗑</button></div></td></tr>`;let panel=`<tr><td colspan="6"><div class="comboEditPanelMatrix">${comboFormInner(key,{mode:'create'})}</div></td></tr>`;return main+panel}
 function comboToggleNew(){comboEnsureState();state.comboNewOpen=true;state.comboForms.new=comboEmptyForm();renderCombos();comboLoadOrphans('new','ML');comboLoadOrphans('new','TN')}
 function comboCloseNew(){state.comboNewOpen=false;delete state.comboForms.new;renderCombos()}
 async function comboOpenEdit(sku){comboEnsureState();state.comboExpanded=state.comboExpanded===sku?'':sku;renderCombos()}
@@ -1720,7 +1715,7 @@ function comboComponentInput(key,i,value,inputEl,force=false){let f=comboForm(ke
 function comboPickComponent(key,i,sku,name,stock,price){let f=comboForm(key);if(!f.components[i])return;f.components[i]={...f.components[i],sku,name,stock,price,quantity:f.components[i].quantity||1};comboRenderComponents(key)}
 function comboRemoveComponent(key,i){let f=comboForm(key);f.components.splice(i,1);comboRenderComponents(key)}
 function comboDebouncedOrphans(key,market){clearTimeout(timers['comboOrph_'+key+'_'+market]);timers['comboOrph_'+key+'_'+market]=setTimeout(()=>comboLoadOrphans(key,market),350)}
-async function comboLoadOrphans(key,market){let list=qs(`comboOrphan_${key}_${market}`);if(!list)return;let q=(qs(`comboOrphan_${key}_${market}_q`)?.value||'').trim();let f=comboForm(key);let live=!!qs(`comboLiveSearch_${key}`)?.checked;if(q.length<3){f['orphan'+market]=[];list.innerHTML=q?'<div class="comboPubMiniItem"><span class="small">Ingresá al menos 3 caracteres para buscar.</span><span></span></div>':'';return}try{list.innerHTML=`<div class="comboPubMiniItem${live?' live':''}"><span class="small">${live?'Buscando en vivo en '+market+'...':'Buscando en base local...'}</span><span></span></div>`;let d=await fetchJson(`/admin/v2/marketplace/unlinked?marketplace=${encodeURIComponent(market)}&limit=60&q=${encodeURIComponent(q)}${live?'&live=true':''}`);f['orphan'+market]=d.items||[];comboRenderOrphans(key,market)}catch(e){f['orphan'+market]=[];let msg=live?'No pude consultar '+market+' en vivo. Revisá conexión/token del canal o probá búsqueda local.':'Sin resultados disponibles para este filtro.';list.innerHTML='<div class="comboPubMiniItem"><span class="small">'+esc(msg)+'</span><span></span></div>'}}
+async function comboLoadOrphans(key,market){let list=qs(`comboOrphan_${key}_${market}`);if(!list)return;let q=(qs(`comboOrphan_${key}_${market}_q`)?.value||'').trim();let f=comboForm(key);let live=!!qs(`comboLiveSearch_${key}`)?.checked;if(q.length<3){f['orphan'+market]=[];list.innerHTML=q?'<div class="comboPubMiniItem"><span class="small">Ingresá al menos 3 caracteres para buscar.</span><span></span></div>':'';return}try{list.innerHTML=`<div class="comboPubMiniItem${live?' live':''}"><span class="small">${live?'Buscando en vivo en '+market+'...':'Buscando en base local...'}</span><span></span></div>`;let d=await fetchJson(`/admin/v2/marketplace/unlinked?marketplace=${encodeURIComponent(market)}&limit=60&q=${encodeURIComponent(q)}${live?'&live=true':''}`);f['orphan'+market]=d.items||[];comboRenderOrphans(key,market)}catch(e){f['orphan'+market]=[];let msg=live?'No pude consultar '+market+' en vivo. Puede ser deploy pendiente, canal no conectado o credencial vencida. Probá base local o reintentá en unos minutos.':'Sin resultados disponibles para este filtro.';list.innerHTML='<div class="comboPubMiniItem"><span class="small">'+esc(msg)+'</span><span></span></div>'}}
 function comboRenderOrphans(key,market){let f=comboForm(key);let list=qs(`comboOrphan_${key}_${market}`);let rows=f['orphan'+market]||[];if(!list)return;let q=(qs(`comboOrphan_${key}_${market}_q`)?.value||'').trim();let live=!!qs(`comboLiveSearch_${key}`)?.checked;if(q.length<3){list.innerHTML='';return}list.innerHTML=rows.map((x,i)=>{let ref={marketplace:market,external_product_id:String(x.external_product_id||''),external_variant_id:String(x.external_variant_id||'0'),external_full_id:x.external_full_id,title:x.title||'',status:x.status||'',price:x.price};let already=f.listings.some(y=>comboListingKey(y)===comboListingKey(ref));let liveBadge=(x.source&&String(x.source).includes('live'))?'<span class="comboLiveBadge">en vivo</span>':'';return `<div class="comboPubMiniItem${live?' live':''}"><span><b>${esc(x.title||'')}</b>${liveBadge}<br><span class="comboSaasMini comboSaasMono">${esc(x.seller_sku||'sin SKU')} · ${esc(x.external_product_id||'')} · ${esc(x.status||'')} · ${money(x.price)}</span></span><button class="comboPubAddBtn" ${already?'disabled':''} onclick="comboAddListing('${key}','${market}',${i})">${already?'Agregada':'Agregar'}</button></div>`}).join('')||`<div class="comboPubMiniItem"><span class="small">${live?'Sin resultados en vivo para este filtro.':'Sin huérfanas en base local para este filtro.'}</span><span></span></div>`}
 function comboAddListing(key,market,i){let f=comboForm(key);let x=(f['orphan'+market]||[])[i];if(!x)return;let ref={marketplace:market,external_product_id:String(x.external_product_id||''),external_variant_id:String(x.external_variant_id||'0'),external_full_id:x.external_full_id,title:x.title||'',status:x.status||'',price:x.price};let k=comboListingKey(ref);if(!f.listings.some(y=>comboListingKey(y)===k))f.listings.push(ref);comboRenderSelectedListings(key);comboRenderOrphans(key,market)}
 function comboToggleListing(key,market,i,on){if(on!==false)comboAddListing(key,market,i)}
