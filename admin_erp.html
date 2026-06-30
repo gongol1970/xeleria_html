@@ -253,6 +253,48 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 }
 .comboCompSuggestInline .comboSaasSuggestItem:hover{background:#fff7ed!important}
 
+
+
+/* COMBOS_MATRIX_V7_FIT_AND_CLOSE */
+/* Evitar que la matriz y la edición se vayan del ancho visible del panel. */
+.comboSaasTable{overflow-x:hidden!important}
+.comboSaasTable table.comboMatrixTable{min-width:0!important;width:100%!important;table-layout:fixed!important}
+.comboMatrixTable th:nth-child(1){width:14%!important}
+.comboMatrixTable th:nth-child(2){width:37%!important}
+.comboMatrixTable th:nth-child(3){width:28%!important}
+.comboMatrixTable th:nth-child(4){width:8%!important}
+.comboMatrixTable th:nth-child(5){width:7%!important}
+.comboMatrixTable th:nth-child(6){width:6%!important}
+.comboComponentWrap{padding-right:0!important;overflow:hidden!important}
+.comboComponentInner{margin-left:40%!important;max-width:none!important;width:60%!important}
+.comboComponentTable{min-width:0!important;width:100%!important;table-layout:fixed!important}
+.comboComponentTable th:nth-child(1){width:30%!important}
+.comboComponentTable th:nth-child(2){width:auto!important}
+.comboComponentTable th:nth-child(3){width:9%!important}
+.comboComponentTable th:nth-child(4){width:8%!important}
+.comboComponentTable th:nth-child(5){width:8%!important}
+.comboComponentTable th:nth-child(6){width:10%!important}
+.comboComponentTable th:nth-child(7){width:6%!important}
+.comboComponentTable input[id^="comboCompSku_"]{min-width:0!important;width:100%!important}
+.comboEditPanelMatrix{margin-left:0!important;margin-right:0!important;padding-left:14px!important;padding-right:14px!important;overflow:visible!important}
+.comboEditTop{grid-template-columns:150px minmax(220px,1fr) auto!important}
+.comboEditTop>input{min-width:0!important;width:100%!important}
+.comboEditBottomActions{padding-bottom:2px!important}
+@media(max-width:1350px){
+  .comboMatrixTable th:nth-child(1){width:14%!important}
+  .comboMatrixTable th:nth-child(2){width:34%!important}
+  .comboMatrixTable th:nth-child(3){width:30%!important}
+  .comboMatrixTable th:nth-child(4){width:9%!important}
+  .comboMatrixTable th:nth-child(5){width:7%!important}
+  .comboMatrixTable th:nth-child(6){width:6%!important}
+  .comboComponentInner{margin-left:38%!important;width:62%!important}
+}
+@media(max-width:1050px){
+  .comboSaasTable{overflow-x:auto!important}
+  .comboSaasTable table.comboMatrixTable{min-width:980px!important}
+  .comboComponentInner{margin-left:0!important;width:100%!important}
+}
+
 </style>
 <!-- UI_ALERTS_INVENTORY_FILTERS_FRONTEND_1_39 -->
 </head>
@@ -1537,7 +1579,32 @@ function comboAddListing(key,market,i){let f=comboForm(key);let x=(f['orphan'+ma
 function comboToggleListing(key,market,i,on){if(on!==false)comboAddListing(key,market,i)}
 function comboRenderSelectedListings(key){let el=qs('comboSelectedListings_'+key);if(el)el.innerHTML=comboSelectedListingsMini(key)}
 function comboRemoveSelectedListing(key,i){let f=comboForm(key);f.listings.splice(i,1);comboRenderSelectedListings(key);['ML','TN'].forEach(m=>comboRenderOrphans(key,m));renderCombos()}
-async function comboSaveForm(key,mode){let f=comboForm(key);let st=qs('comboFormStatus_'+key);if(st){st.className='status';st.innerHTML='<span class="comboFriendlyOk">Guardando...</span>'}try{let payload={sku:String(f.sku||'').trim(),name:String(f.name||'').trim(),components:(f.components||[]).filter(c=>String(c.sku||'').trim()).map(c=>({component_sku:c.sku,quantity:Number(c.quantity||1)})),listings:(f.listings||[]).map(l=>({marketplace:String(l.marketplace||'').toUpperCase(),external_product_id:String(l.external_product_id||''),external_variant_id:String(l.external_variant_id||'0'),external_full_id:l.external_full_id||l.external_product_id}))};if(!payload.components.length)throw {message:'El combo debe tener al menos un componente'};let path=mode==='create'?'/admin/v2/inventory/create-bundle':'/admin/v2/inventory/update-bundle';let d=await fetchJson(path,{method:'POST',body:JSON.stringify(payload)});if(st){st.className='status oktxt';st.innerHTML='<span class="comboFriendlyOk">Guardado OK · disponible '+esc(d.available_to_sell??'—')+'</span>'}if(mode==='create')comboCloseNew();await loadCombos()}catch(e){if(st){st.className='status badtxt';st.innerHTML='<span class="comboFriendlyError">'+esc(comboFriendlyComboError(e))+'</span>'}}}
+async function comboSaveForm(key,mode){
+  let f=comboForm(key);
+  let st=qs('comboFormStatus_'+key);
+  if(st){st.className='status';st.innerHTML='<span class="comboFriendlyOk">Guardando...</span>'}
+  try{
+    let payload={
+      sku:String(f.sku||'').trim(),
+      name:String(f.name||'').trim(),
+      components:(f.components||[]).filter(c=>String(c.sku||'').trim()).map(c=>({component_sku:c.sku,quantity:Number(c.quantity||1)})),
+      listings:(f.listings||[]).map(l=>({marketplace:String(l.marketplace||'').toUpperCase(),external_product_id:String(l.external_product_id||''),external_variant_id:String(l.external_variant_id||'0'),external_full_id:l.external_full_id||l.external_product_id}))
+    };
+    if(!payload.components.length)throw {message:'El combo debe tener al menos un componente'};
+    let path=mode==='create'?'/admin/v2/inventory/create-bundle':'/admin/v2/inventory/update-bundle';
+    let d=await fetchJson(path,{method:'POST',body:JSON.stringify(payload)});
+    if(st){st.className='status oktxt';st.innerHTML='<span class="comboFriendlyOk">Guardado OK · disponible '+esc(d.available_to_sell??'—')+'</span>'}
+    if(mode==='create'){
+      comboCloseNew();
+    }else{
+      state.comboExpanded='';
+      delete state.comboForms[key];
+    }
+    await loadCombos();
+  }catch(e){
+    if(st){st.className='status badtxt';st.innerHTML='<span class="comboFriendlyError">'+esc(comboFriendlyComboError(e))+'</span>'}
+  }
+}
 async function comboDelete(sku){if(!confirm('¿Desactivar combo '+sku+'?\n\nNo borra publicaciones del canal.'))return;try{setStatus('comboStatus','Desactivando combo...');await fetchJson('/admin/v2/bundles/'+encodeURIComponent(sku),{method:'DELETE'});setStatus('comboStatus','Combo desactivado.',true);await loadCombos()}catch(e){setStatus('comboStatus','Error desactivando: '+errText(e),false)}}
 
 
