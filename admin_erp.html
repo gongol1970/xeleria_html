@@ -340,7 +340,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 .comboFriendlyOk{display:inline-block;background:#ecfdf3;border:1px solid #75d0a4;border-radius:10px;padding:6px 10px;color:var(--ok);font-weight:900}
 
 
-/* COMBOS_MATRIZ_V14_NEW_ROW_CLEANUP */
+/* COMBOS_MATRIZ_V15_NEW_ROW_CLEANUP */
 .comboDraftRow input,
 .comboDraftRow .comboTopInput,
 .comboDraftRow .comboInlineName,
@@ -359,7 +359,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 }
 
 
-/* COMBOS_MATRIZ_V14_LIVE_SEARCH */
+/* COMBOS_MATRIZ_V15_LIVE_SEARCH */
 .comboLiveSearchLine{
   display:flex;
   align-items:center;
@@ -395,6 +395,24 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
   color:#3730a3;
 }
 
+
+/* VERSIONES_PAGE_V15 */
+.versionGrid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
+.versionCard{grid-column:span 6;background:#fffdf8;border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:var(--shadow)}
+.versionCard.full{grid-column:span 12}
+.versionTable{width:100%;border-collapse:collapse;font-size:13px}
+.versionTable th{background:#050505;color:#fff;text-align:left;padding:9px 10px;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+.versionTable td{border-bottom:1px solid #eadfc9;padding:8px 10px;vertical-align:top}
+.versionTable td:nth-child(2){font-family:Consolas,'Courier New',monospace;font-size:12px;word-break:break-word}
+.versionBadge{display:inline-flex;align-items:center;border-radius:999px;padding:3px 8px;font-weight:900;font-size:12px;background:#eef7ee;color:#146c2e}
+.versionBadge.warn{background:#fff3cd;color:#7a4d00}
+.versionBadge.bad{background:#fdeaea;color:#a41010}
+.versionActions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px}
+.versionRaw{width:100%;min-height:240px;font-family:Consolas,'Courier New',monospace;font-size:12px;white-space:pre;overflow:auto}
+.sidebarFoot{display:none!important}
+.xeleriaVersionBar{display:none!important}
+@media(max-width:1050px){.versionCard{grid-column:span 12}}
+
 </style>
 <!-- UI_ALERTS_INVENTORY_FILTERS_FRONTEND_1_39 -->
 </head>
@@ -409,9 +427,8 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 
 <div class="navTitle">Local físico</div><div class="sub"><button class="navBtn" data-view="arca-manual">Emitir comprobante manual</button></div>
 <div class="navTitle">Gestión</div><div class="sub"><div class="navParent">Inventario</div><div class="sub2"><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="combos">Combos / Kits</button><button class="navBtn" data-view="full-inbound">Envío a Full</button><button class="navBtn" data-view="movimientos">Movimientos de stock</button></div><button class="navBtn" data-view="clientes">Clientes ML / TN</button><button class="navBtn" data-view="base-conocimiento">Base de Conocimiento IA</button><button class="navBtn" data-view="arca-reportes">ARCA reportes</button></div>
-<div class="navTitle">Sistema</div><div class="sub"><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="bitacora">Bitácora</button><button class="navBtn" data-view="ultimo-json">Último JSON</button></div>
-</nav><div class="sidebarFoot">FE: <span id="footFrontendVer">2.36</span><br>BE: <span id="footBackendVer">?</span></div>
-</aside>
+<div class="navTitle">Sistema</div><div class="sub"><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="bitacora">Bitácora</button><button class="navBtn" data-view="ultimo-json">Último JSON</button><button class="navBtn" data-view="versiones">Versión</button></div>
+</nav></aside>
 <main>
 <div class="topbar"><div><h2 id="pageTitle">Inicio</h2><div class="crumb" id="pageCrumb">Panel operativo</div></div><div class="tokenBox"><div><label>API</label><input id="apiUrl" value="https://api.xeleria.com.ar"></div><div><label>ADMIN_TOKEN</label><input id="token" type="password" placeholder="Token"></div><button class="primary" onclick="saveSettings()">Guardar</button><button class="secondary" onclick="health()">Probar</button></div></div>
 <section id="inicio" class="view active">
@@ -609,8 +626,42 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 </section>
 <section id="bitacora" class="view"><div class="card"><div class="dashStatusLine"><div><h3>Bitácora operativa</h3><p>Errores y advertencias accionables. Sin columnas: cada evento trae contexto, acción sugerida y detalle técnico plegable.</p></div><button class="secondary dashRefresh" onclick="loadOpsLog(true)">Actualizar</button></div><div id="opsLogStatus" class="status"></div><div id="opsLogList" class="opsLogList"></div></div></section>
 <section id="ultimo-json" class="view"><div class="card lastJsonBox"><h3>Sistema · Último JSON</h3><p>Última respuesta técnica guardada por el backoffice. Copiable, sin popup.</p><div class="btnrow"><button class="secondary" onclick="renderLastJsonPanel()">Actualizar</button><button class="secondary" onclick="copyLastJson()">Copiar JSON</button><button class="secondary" onclick="clearLastJson()">Limpiar</button></div><div id="lastJsonStatus" class="status"></div><textarea id="lastJsonText" readonly spellcheck="false" style="margin-top:12px"></textarea></div></section>
+
+<section id="versiones" class="view">
+  <div class="card">
+    <h3>Versiones</h3>
+    <p>Control de versiones del frontend, backend y módulos cargados. Esta pantalla reemplaza el pie inferior.</p>
+    <div class="versionActions">
+      <button class="primary" onclick="loadVersionsPage(true)">Actualizar versiones</button>
+      <button class="secondary" onclick="copyVersionsJson()">Copiar JSON</button>
+    </div>
+    <div id="versionsStatus" class="status">Pendiente de consulta.</div>
+  </div>
+  <div class="versionGrid">
+    <div class="versionCard">
+      <h3>Frontend</h3>
+      <table class="versionTable">
+        <tbody id="versionsFrontendBody"></tbody>
+      </table>
+    </div>
+    <div class="versionCard">
+      <h3>Backend principal</h3>
+      <table class="versionTable">
+        <tbody id="versionsBackendBody"></tbody>
+      </table>
+    </div>
+    <div class="versionCard full">
+      <h3>Módulos reportados por backend</h3>
+      <div id="versionsModulesBody"></div>
+    </div>
+    <div class="versionCard full">
+      <h3>JSON crudo</h3>
+      <textarea id="versionsRaw" class="versionRaw" readonly spellcheck="false"></textarea>
+    </div>
+  </div>
+</section>
+
 </main></div>
-<div id="xeleriaVersionBar" class="xeleriaVersionBar">FE 1.86 | BE consultando…</div>
 <div id="erpBusyOverlay" class="erpBusyOverlay"><div class="erpBusyBox"><div class="erpSpinner"></div><div id="erpBusyTitle" class="erpBusyTitle">Procesando...</div><div id="erpBusyMsg" class="erpBusyMsg">No cierres esta pantalla.</div></div></div>
 <script>
 
@@ -624,8 +675,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.36';
-const FRONTEND_BUILD='admin-erp-v236-combos-matriz-live-search-v14';
+const FRONTEND_VERSION='2.37';
+const FRONTEND_BUILD='admin-erp-v237-versiones-page-v15';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
 const INVENTORY_IMPORT_RUNNING_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
@@ -790,6 +841,67 @@ function renderArcaManualPreview(d){
 }
 function setBusy(on,title='Procesando...',msg='No cierres esta pantalla.'){let ov=qs('erpBusyOverlay');if(!ov)return;document.body.classList.toggle('erpBusy',!!on);ov.classList.toggle('active',!!on);if(qs('erpBusyTitle'))qs('erpBusyTitle').textContent=title;if(qs('erpBusyMsg'))qs('erpBusyMsg').textContent=msg}function setArcaAndSalesStatus(ch,msg,ok=null){setStatus('arcaStatus',msg,ok);setStatus(String(ch||'').toLowerCase()+'VentasStatus',msg,ok)}
 function syncConnectionFields(){['apiUrl','cfgApiUrl'].forEach(id=>{let el=qs(id);if(el)el.value=state.api});['token','cfgToken'].forEach(id=>{let el=qs(id);if(el)el.value=state.token})}function saveSettings(){state.api=apiBase();state.token=token().trim();localStorage.setItem('pc_erp_api',state.api);localStorage.setItem('pc_erp_token',state.token);localStorage.setItem('xeleria_admin_token',state.token);syncConnectionFields();setStatus('homeStatus','Guardado.',true);setStatus('connStatus',state.token?'Guardado.':'Guardado, pero ADMIN_TOKEN quedó vacío.',!!state.token);syncLinks()}function saveSettingsFromConfig(){saveSettings()}function loadSettings(){state.api=localStorage.getItem('pc_erp_api')||localStorage.getItem('xeleria_api_url')||state.api;state.token=localStorage.getItem('pc_erp_token')||localStorage.getItem('xeleria_admin_token')||'';syncConnectionFields();loadViewPrefs();loadConfig();syncLinks()}function syncLinks(){let d=qs('downloadCsv');if(d)d.href=url('/erp/export_inventory')}function prefKey(section,key){return `pc_erp_pref_${section}_${key}`}function saveViewPref(section,key,value){localStorage.setItem(prefKey(section,key),String(value??''))}function loadViewPrefs(){let jl=localStorage.getItem(prefKey('jobs','limit'));if(jl&&qs('jobsLimit'))qs('jobsLimit').value=jl;let ml=localStorage.getItem(prefKey('ventas_ml','limit'));if(ml&&qs('mlVentasLimit'))qs('mlVentasLimit').value=ml;let tl=localStorage.getItem(prefKey('ventas_tn','limit'));if(tl&&qs('tnVentasLimit'))qs('tnVentasLimit').value=tl;let il=localStorage.getItem(prefKey('inventario','limit'));if(il&&qs('invLimit'))qs('invLimit').value=il;let mpl=localStorage.getItem(prefKey('publicaciones_ml','limit'));if(mpl&&qs('mlPubLimit'))qs('mlPubLimit').value=mpl;let tpl=localStorage.getItem(prefKey('publicaciones_tn','limit'));if(tpl&&qs('tnPubLimit'))qs('tnPubLimit').value=tpl}
+
+function versionCell(v){
+  let s=String(v===undefined||v===null?'?':v);
+  let cls=s==='?'?'warn':(s.startsWith('err:')?'bad':'');
+  return `<span class="versionBadge ${cls}">${esc(s)}</span>`;
+}
+function versionRows(obj){
+  let rows=Object.keys(obj||{}).sort((a,b)=>a.localeCompare(b)).map(k=>`<tr><th>${esc(k)}</th><td>${versionCell(obj[k])}</td></tr>`).join('');
+  return rows||'<tr><td colspan="2" class="muted">Sin datos.</td></tr>';
+}
+function normalizeModuleVersionValue(v){
+  if(v===undefined||v===null)return'?';
+  if(typeof v==='string'||typeof v==='number'||typeof v==='boolean')return String(v);
+  if(v.version!==undefined&&v.version!==null&&String(v.version).trim()!=='')return String(v.version);
+  if(v.APP_VERSION!==undefined&&v.APP_VERSION!==null)return String(v.APP_VERSION);
+  if(v.COMBO_ADMIN_VERSION!==undefined&&v.COMBO_ADMIN_VERSION!==null)return String(v.COMBO_ADMIN_VERSION);
+  if(v.ok===false)return 'err:'+(v.error||'no');
+  try{return JSON.stringify(v)}catch{return String(v)}
+}
+function renderVersionsPage(){
+  let d=state.debugVersions||{};
+  let versions=d.versions||{};
+  let modules=d.modules||{};
+  let frontend={
+    'admin_erp.html':FRONTEND_VERSION,
+    'FRONTEND_BUILD':FRONTEND_BUILD,
+    'API':state.api||'?',
+    'tenant':tenantId()||'?'
+  };
+  let backend={
+    'xeleria_app.py':versionFromDebug('xeleria_app'),
+    'app_v2.py':versionFromDebug('app_v2'),
+    'xeleria_import_jobs.py':versionFromDebug('xeleria_import_jobs'),
+    'xeleria_combo_admin_core.py':versionFromDebug('xeleria_combo_admin_core'),
+    'xeleria_tenant_db.py':versionFromDebug('xeleria_tenant_db'),
+    'sessions':versionFromDebug('sessions'),
+    'oauth_ml':versionFromDebug('oauth_ml'),
+    'debug_versions':versionFromDebug('debug_versions')
+  };
+  Object.keys(versions||{}).forEach(k=>{ if(backend[k]===undefined) backend[k]=versions[k]; });
+  if(qs('versionsFrontendBody'))qs('versionsFrontendBody').innerHTML=versionRows(frontend);
+  if(qs('versionsBackendBody'))qs('versionsBackendBody').innerHTML=versionRows(backend);
+
+  let modMap={};
+  Object.keys(modules||{}).forEach(k=>{modMap[k]=normalizeModuleVersionValue(modules[k]);});
+  let table=`<table class="versionTable"><thead><tr><th>Módulo</th><th>Versión / estado</th></tr></thead><tbody>${versionRows(modMap)}</tbody></table>`;
+  if(qs('versionsModulesBody'))qs('versionsModulesBody').innerHTML=table;
+  if(qs('versionsRaw'))qs('versionsRaw').value=JSON.stringify({frontend,backend,debug:d},null,2);
+  if(qs('versionsStatus'))setStatus('versionsStatus',state.debugVersionError?('Error consultando backend: '+state.debugVersionError):'Versiones actualizadas.',!state.debugVersionError);
+}
+async function loadVersionsPage(manual=false){
+  if(manual)setStatus('versionsStatus','Consultando versiones...');
+  await loadDebugVersions();
+  renderVersionsPage();
+}
+function copyVersionsJson(){
+  let t=qs('versionsRaw')?.value||'';
+  if(!t){setStatus('versionsStatus','No hay JSON para copiar. Actualizá versiones primero.','warn');return}
+  navigator.clipboard?.writeText(t).then(()=>setStatus('versionsStatus','JSON copiado.',true)).catch(()=>setStatus('versionsStatus','No pude copiar automáticamente. Seleccioná el texto manualmente.','warn'));
+}
+
 function showView(id){
   if(id!=='configuracion')clearInventoryImportTransientSaveUi();
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
@@ -826,6 +938,7 @@ function showView(id){
   if(id==='configuracion')loadTenantConnectionStatus(false);
   if(id==='notificaciones')loadNotifications(true);
   if(id==='bitacora')loadOpsLog(true);
+  if(id==='versiones')loadVersionsPage(false);
 }
 
 function toggleMobileMenu(){let a=document.querySelector('aside');if(!a)return;a.classList.toggle('mobileOpen');document.body.classList.toggle('mobileMenuOpen',a.classList.contains('mobileOpen'))}
@@ -2863,7 +2976,7 @@ async function loadInventoryImportGrid(offset=0,opts={}){
 
 cleanTokenFromUrl();
 loadMLQuestionPrefs();renderMLQuickButtons();
-loadSettings();health();handleOauthReturn();updateVersionBar();startAlertPolling();setTimeout(()=>inventoryImportBootstrapGridButton().catch(e=>console.debug('bootstrap staging grid',e)),1500);/* GRID_BOOTSTRAP_STAGING_2_27: si staging tiene rows muestra grilla; si no, no muestra nada */
+loadSettings();health();handleOauthReturn();updateVersionBar();startAlertPolling();/* V15: no se llama automáticamente a import-jobs/grid al iniciar para evitar 404 legacy en consola. La grilla se carga sólo durante/tras una importación real. */
 </script>
 </body>
 </html>
