@@ -427,6 +427,43 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
   margin-top:18px;
 }
 
+
+
+/* PRODUCTS_MATRIX_V1_240 */
+#inventario .card{border-color:#d8c8a8}
+#inventario>.card:first-child{background:linear-gradient(135deg,#fffdf8,#fbf4e5);border-left:6px solid var(--brand2)}
+#inventario .inventoryFilters{background:#fff;border:1px solid #eee2c8;border-radius:16px;padding:12px;box-shadow:0 5px 16px rgba(17,17,17,.035)}
+#inventario #invStatus:not(:empty){display:inline-flex;align-items:center;gap:8px;min-height:0;margin-top:12px;padding:8px 12px;border-radius:999px;background:#fffaf0;border:1px solid #eee2c8;font-size:12px;font-weight:900}
+#inventario #invStatus.oktxt:not(:empty){background:#ecfdf3;border-color:#b7ebc9;color:var(--ok)}
+#inventario #invStatus.badtxt:not(:empty){background:#fef3f2;border-color:#fecaca;color:var(--bad)}
+#inventario .inventoryWrap{max-height:none!important;overflow-x:hidden!important;background:#fffdf8!important;border-color:#d8c8a8!important}
+#inventario table.productMatrixTable{min-width:0!important;width:100%!important;table-layout:fixed!important;border-collapse:collapse;background:#fffdf8;font-size:13px}
+.productMatrixTable th{background:#050505!important;color:#fff!important;font-size:12px!important;text-transform:uppercase;letter-spacing:.04em;padding:6px 7px!important}
+.productMatrixTable th:nth-child(1){width:14%!important}.productMatrixTable th:nth-child(2){width:37%!important}.productMatrixTable th:nth-child(3){width:28%!important}.productMatrixTable th:nth-child(4){width:8%!important}.productMatrixTable th:nth-child(5){width:7%!important}.productMatrixTable th:nth-child(6){width:6%!important}
+.productMatrixMain td{background:#fff9eb;border-bottom:0!important;padding:7px 8px!important;vertical-align:top}.productMatrixMain.bundle td{background:#f7f7f7}.productMatrixMain.simple td{background:#f7fff9}.productMatrixMain:hover td{filter:brightness(.985)}
+.productMatrixMain .comboMatrixSku{font-weight:950}.productMatrixMain .comboMatrixName{font-weight:700;line-height:1.32}
+.productDetailRow .productPublicationWrap{padding:0 8px 10px 8px;background:#fffdf8;border-bottom:1px solid #eadfc9}
+.productPubList{display:grid;gap:6px;max-width:100%;margin-left:14%;padding:4px 0}
+.productPubLine{display:grid;grid-template-columns:42px minmax(180px,1fr) 90px 70px 86px;gap:8px;align-items:center;background:#fff;border:1px solid #eee2c8;border-radius:10px;padding:7px 9px;font-size:12px}
+.productPubTitle{min-width:0;overflow-wrap:anywhere}.productPubPrice{text-align:right;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}.productPubStock{text-align:center;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.productStockRead{text-align:center;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}.productStockRead strong{font-size:15px}.productStockRead.bundle strong{opacity:.8}
+.productEditCard .productEditListings{background:#fff;border:1px solid #eee2c8;border-radius:12px;padding:8px;max-height:260px;overflow:auto}
+.productEditCard .productPubList{margin-left:0}
+.productKebab .kebabPanel,.comboKebab .kebabPanel{min-width:160px}
+.comboMatrixActions details.kebabMenu summary,.comboLineActions details.kebabMenu summary,.productKebab summary{
+  border:1px solid var(--line)!important;background:#fff!important;color:#111!important;font-size:18px!important;line-height:1!important;min-width:34px!important;min-height:30px!important;padding:5px 10px!important;border-radius:10px!important;box-shadow:none!important
+}
+.comboMatrixActions details.kebabMenu button,.comboLineActions details.kebabMenu button,.productKebab .kebabPanel button{
+  width:100%!important;justify-content:flex-start!important;background:#fff!important;color:#111!important;border:1px solid #eee2c8!important;font-size:13px!important;min-height:34px!important;padding:8px 10px!important;box-shadow:none!important
+}
+.comboMatrixActions details.kebabMenu button:hover,.comboLineActions details.kebabMenu button:hover,.productKebab .kebabPanel button:hover{background:#fffaf0!important}
+.comboMatrixActions details.kebabMenu button.danger,.comboLineActions details.kebabMenu button.danger,.productKebab .kebabPanel button.danger{color:#991b1b!important;border-color:#fecaca!important}
+.comboLineKebab .kebabPanel{min-width:140px!important}
+@media(max-width:1050px){
+  #inventario .inventoryWrap{overflow-x:auto!important}
+  #inventario table.productMatrixTable{min-width:980px!important}
+  .productPubList{margin-left:0}
+}
 </style>
 <!-- UI_ALERTS_INVENTORY_FILTERS_FRONTEND_1_39 -->
 </head>
@@ -556,8 +593,6 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
   <div class="col-small"><label>&nbsp;</label><button onclick="searchInventory(0,true)">Filtrar</button></div>
   <div class="col-12"><div class="btnrow" style="margin-top:4px">
     <button class="primary" onclick="toggleInventoryTool('product')">Agregar producto</button>
-    <button class="secondary" onclick="showView('combos')">Combos / Kits</button>
-    <button class="secondary" onclick="toggleInventoryTool('link')">Vincular publicaciones</button>
     <a class="btn secondary" id="downloadCsv" href="#">Bajar planilla inventario</a>
     <input type="file" id="csvFile" accept=".csv" style="max-width:340px">
     <button class="secondary" onclick="uploadCsv()">Subir planilla inventario</button>
@@ -689,8 +724,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.39';
-const FRONTEND_BUILD='admin-erp-v239-delete-refresh-v17';
+const FRONTEND_VERSION='2.40';
+const FRONTEND_BUILD='admin-erp-v240-products-matrix-menu-v18';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
 const INVENTORY_IMPORT_RUNNING_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
@@ -1717,11 +1752,74 @@ function saleNeedsAction(o,ch){
   if(ch==='TN'&&String(logistic).toLowerCase().includes('retiro')&&!state.includes('entregado'))return 'Coordinar retiro';
   return '';
 }
-async function searchInventory(offset=0,savePref=false){let q=qs('invSearch').value.trim();let lim=invLimit();let market=qs('invMarket')?.value||'';let maxStock=(qs('invMaxStock')?.value||'').trim();if(savePref)saveViewPref('inventario','limit',lim);state.inventory.offset=offset;setStatus('invStatus','Buscando inventario + publicaciones...');try{let d=await fetchJson(`/admin/inventory/search?q=${encodeURIComponent(q)}&limit=${encodeURIComponent(lim)}&offset=${encodeURIComponent(offset)}&marketplace=${encodeURIComponent(market)}&include_listings=true${maxStock!==''?'&max_stock='+encodeURIComponent(maxStock):''}`);state.inventoryItems=d.items||[];state.inventory.total=Number(d.total||0);renderInventory();let linked=Number(d.publications_visible??state.inventoryItems.reduce((a,i)=>a+(Array.isArray(i.listings)?i.listings.length:0),0));if(qs('invPager'))qs('invPager').innerHTML=inventoryPagerHtml(d);let filtro=(market?` · canal ${market}`:'')+(maxStock!==''?` · stock <= ${maxStock}`:'');setStatus('invStatus',`Inventario: ${state.inventoryItems.length} de ${state.inventory.total} ítems${filtro} · Publicaciones visibles: ${linked}`,true)}catch(e){setStatus('invStatus','Error inventario: '+JSON.stringify(e),false)}}function listingMarket(l){return String(l.marketplace||l.channel||'').toUpperCase()}function listingProductId(l){return l.external_product_id??l.listing_id??l.item_id??l.product_id??l.external_full_id??''}function listingVariantId(l){return l.external_variant_id??l.variant_id??l.variation_id??''}function listingPrice(l){return l.price??l.marketplace_price??l.target_price??''}function listingStock(l){return l.stock??l.available_quantity??l.marketplace_stock??''}function listingStatus(l){return l.status??l.state??''}function listingUrl(l){return l.url??l.permalink??''}
-function renderListingsForItem(item){let market=qs('invMarket')?.value||'';let arr=(Array.isArray(item.listings)?item.listings:[]).filter(l=>!market||listingMarket(l)===market);if(!arr.length)return '<span class="muted">Sin publicaciones vinculadas para este filtro.</span>';arr.sort((a,b)=>(listingMarket(a)+listingProductId(a)+listingVariantId(a)).localeCompare(listingMarket(b)+listingProductId(b)+listingVariantId(b)));return arr.map((l,idx)=>{let m=listingMarket(l),pid=listingProductId(l),vid=listingVariantId(l),price=listingPrice(l),stock=listingStock(l),st=listingStatus(l);let key=esc(`${item.sku}_${idx}`);return `<div class="marketBox"><div><span class="pill ${m==='ML'?'info':'ok'}">${esc(m||'?')}</span></div>${pubVarBlock(pid,vid)}<div><input class="priceInput" id="price_${key}" value="${esc(price)}" title="Precio marketplace"></div><div><input class="stockInput" value="${esc(stock)}" disabled title="Stock marketplace informado"></div><div><span class="pill marketStatus ${listingStatusClass(st)}">${esc(listingStatusLabel(st))}</span></div></div>`}).join('')}
-function inventoryStockCell(i,idx){let isBundle=String(i.item_type||'').toLowerCase()==='bundle';if(isBundle){return `<div class="invStockBox" style="opacity:.58"><div class="stockControls"><input class="stockInput" type="number" step="1" id="stock_${idx}" value="${esc(i.stock??0)}" disabled title="Stock calculado desde componentes"><span class="small">actual ERP: ${esc(i.stock??0)}</span></div></div><div id="rowStatus_${idx}" class="small">Bundle: stock calculado por componentes.</div>`}return `<div class="invStockBox"><div class="stockControls"><input class="stockInput" type="number" step="1" id="stock_${idx}" value="${esc(i.stock??0)}"><span class="small">actual ERP: ${esc(i.stock??0)}</span></div><button class="ok" onclick="saveInventoryStock(${idx})">Guardar</button></div><div id="rowStatus_${idx}" class="small"></div>`}
-function inventoryActionsCell(i,idx){let isBundle=String(i.item_type||'').toLowerCase()==='bundle';let sku=esc(i.sku||'');if(isBundle){return `<details class="kebabMenu"><summary title="Más acciones">⋮</summary><div class="kebabPanel"><button onclick="showView('combos')">Abrir Combos / Kits</button></div></details>`}let edit=`<button onclick="renderEditProductTool(${idx})">Modificar</button>`;let link=`<button onclick="renderLinkPublicationsTool('${sku}')">Vincular publicaciones</button>`;let del=`<button class="danger" onclick="deleteInventoryItem(${idx})">Eliminar</button>`;return `<details class="kebabMenu"><summary title="Más acciones">⋮</summary><div class="kebabPanel">${edit}${link}${del}</div></details>`}
-function renderInventory(){let items=state.inventoryItems||[];let tbody='';if(!items.length){tbody='<tr><td colspan="5" class="muted" style="text-align:center;padding:24px">Sin resultados para este filtro.</td></tr>'}else{tbody=items.map((i,idx)=>`<tr><td><strong class="mono">${esc(i.sku)}</strong><br><span class="small">${esc(i.item_type||'')}</span></td><td>${esc(i.name||'')}<br><span class="small">${esc(i.category||'')}</span></td><td>${inventoryStockCell(i,idx)}</td><td>${renderListingsForItem(i)}</td><td class="actionCell">${inventoryActionsCell(i,idx)}</td></tr>`).join('')}qs('invResults').innerHTML=`<table class="inventoryTable"><thead><tr><th>SKU</th><th>Producto</th><th>Stock ERP editable</th><th>Publicaciones / variantes / precio / stock</th><th>⋮</th></tr></thead><tbody>${tbody}</tbody></table>`}
+async function searchInventory(offset=0,savePref=false){let q=qs('invSearch').value.trim();let lim=invLimit();let market=qs('invMarket')?.value||'';let maxStock=(qs('invMaxStock')?.value||'').trim();if(q&&q.length<3){state.inventoryItems=[];state.inventory.total=0;renderInventory();if(qs('invPager'))qs('invPager').innerHTML='';setStatus('invStatus','Ingresá al menos 3 caracteres para buscar productos.');return;}if(savePref)saveViewPref('inventario','limit',lim);state.inventory.offset=offset;setStatus('invStatus','Buscando inventario + publicaciones...');try{let d=await fetchJson(`/admin/inventory/search?q=${encodeURIComponent(q)}&limit=${encodeURIComponent(lim)}&offset=${encodeURIComponent(offset)}&marketplace=${encodeURIComponent(market)}&include_listings=true${maxStock!==''?'&max_stock='+encodeURIComponent(maxStock):''}`);state.inventoryItems=d.items||[];state.inventory.total=Number(d.total||0);renderInventory();let linked=Number(d.publications_visible??state.inventoryItems.reduce((a,i)=>a+(Array.isArray(i.listings)?i.listings.length:0),0));if(qs('invPager'))qs('invPager').innerHTML=inventoryPagerHtml(d);let filtro=(market?` · canal ${market}`:'')+(maxStock!==''?` · stock <= ${maxStock}`:'');setStatus('invStatus',`Inventario: ${state.inventoryItems.length} de ${state.inventory.total} ítems${filtro} · Publicaciones visibles: ${linked}`,true)}catch(e){setStatus('invStatus','Error inventario: '+JSON.stringify(e),false)}}function listingMarket(l){return String(l.marketplace||l.channel||'').toUpperCase()}function listingProductId(l){return l.external_product_id??l.listing_id??l.item_id??l.product_id??l.external_full_id??''}function listingVariantId(l){return l.external_variant_id??l.variant_id??l.variation_id??''}function listingPrice(l){return l.price??l.marketplace_price??l.target_price??''}function listingStock(l){return l.stock??l.available_quantity??l.marketplace_stock??''}function listingStatus(l){return l.status??l.state??''}function listingUrl(l){return l.url??l.permalink??''}
+function renderListingsForItem(item){
+  let market=qs('invMarket')?.value||'';
+  let arr=(Array.isArray(item.listings)?item.listings:[]).filter(l=>!market||listingMarket(l)===market);
+  if(!arr.length)return '<span class="muted">Sin publicaciones vinculadas para este filtro.</span>';
+  arr.sort((a,b)=>(listingMarket(a)+listingProductId(a)+listingVariantId(a)).localeCompare(listingMarket(b)+listingProductId(b)+listingVariantId(b)));
+  return `<div class="productPubList">${arr.map((l,idx)=>{
+    let m=listingMarket(l),pid=listingProductId(l),vid=listingVariantId(l),price=listingPrice(l),stock=listingStock(l),st=listingStatus(l),url=listingUrl(l);
+    return `<div class="productPubLine">
+      <span class="pill ${m==='ML'?'info':'ok'}">${esc(m||'?')}</span>
+      <span class="productPubTitle"><b>${esc(l.title||l.name||'Publicación')}</b><br><span class="comboSaasMini comboSaasMono">Pub: ${esc(pid)} · Var: ${esc(vid||'0')} · ${url?`<a href="${esc(url)}" target="_blank" rel="noopener">abrir</a>`:''}</span></span>
+      <span class="productPubPrice">${money(price)}</span>
+      <span class="productPubStock">${esc(stock??'—')}</span>
+      <span class="pill marketStatus ${listingStatusClass(st)}">${esc(listingStatusLabel(st))}</span>
+    </div>`;
+  }).join('')}</div>`;
+}
+function inventoryIsBundle(i){return ['bundle','combo','kit'].includes(String(i.item_type||'').toLowerCase())}
+function inventoryTypePill(i){let b=inventoryIsBundle(i);return `<span class="pill ${b?'dark':'ok'}">${b?'combo':'simple'}</span>`}
+function inventoryListingSummary(item){
+  let arr=Array.isArray(item.listings)?item.listings:[];
+  let ml=arr.filter(l=>listingMarket(l)==='ML').length;
+  let tn=arr.filter(l=>listingMarket(l)==='TN').length;
+  let parts=[];
+  if(ml)parts.push(`ML x${ml}`);
+  if(tn)parts.push(`TN x${tn}`);
+  return parts.length?parts.join(' / '):'Sin publicaciones';
+}
+function inventoryBestPrice(item){
+  let arr=Array.isArray(item.listings)?item.listings:[];
+  let priced=arr.map(l=>({m:listingMarket(l),p:Number(listingPrice(l)||0)})).filter(x=>Number.isFinite(x.p)&&x.p>0);
+  if(!priced.length)return '—';
+  priced.sort((a,b)=>a.m==='ML'&&b.m!=='ML'?-1:a.m!== 'ML'&&b.m==='ML'?1:0);
+  return money(priced[0].p);
+}
+function inventoryStockMatrixCell(i,idx){
+  let isBundle=inventoryIsBundle(i);
+  let label=isBundle?'calculado':'ERP';
+  return `<div class="productStockRead ${isBundle?'bundle':''}"><strong>${esc(i.stock??0)}</strong><br><span class="small">${label}</span></div><div id="rowStatus_${idx}" class="small"></div>`;
+}
+function inventoryActionsCell(i,idx){
+  let edit=`<button onclick="renderEditProductTool(${idx})">Modificar</button>`;
+  let del=`<button class="danger" onclick="deleteInventoryItem(${idx})">Eliminar</button>`;
+  return `<details class="kebabMenu productKebab"><summary title="Más acciones">⋮</summary><div class="kebabPanel">${edit}${del}</div></details>`;
+}
+function renderInventory(){
+  let items=state.inventoryItems||[];
+  let tbody='';
+  if(!items.length){
+    tbody='<tr><td colspan="6"><div class="comboSaasEmpty">Sin productos para este filtro.</div></td></tr>';
+  }else{
+    tbody=items.map((i,idx)=>{
+      let isBundle=inventoryIsBundle(i);
+      return `<tr class="comboMatrixMain productMatrixMain ${isBundle?'bundle':'simple'}">
+        <td><div class="comboMatrixSku comboSaasMono">${esc(i.sku)}</div><div class="small">${inventoryTypePill(i)}</div></td>
+        <td><div class="comboMatrixName">${esc(i.name||'')}</div><span class="small">${esc(i.category||'')}</span></td>
+        <td class="comboMatrixPubs">${esc(inventoryListingSummary(i))}</td>
+        <td class="comboMatrixPrice">${inventoryBestPrice(i)}</td>
+        <td class="comboMatrixStock">${inventoryStockMatrixCell(i,idx)}</td>
+        <td class="actionCell">${inventoryActionsCell(i,idx)}</td>
+      </tr>
+      <tr class="productDetailRow">
+        <td></td><td colspan="4" class="comboComponentWrap productPublicationWrap">${renderListingsForItem(i)}</td><td></td>
+      </tr>`;
+    }).join('');
+  }
+  qs('invResults').innerHTML=`<table class="comboMatrixTable productMatrixTable"><thead><tr><th>SKU</th><th>Producto</th><th>Publicaciones</th><th>Precio</th><th>Stock</th><th>⋮</th></tr></thead><tbody>${tbody}</tbody></table>`;
+}
 
 function comboLimit(){return Number(qs('comboLimit')?.value||100)}
 function comboEnsureState(){state.comboItems=state.comboItems||[];state.comboForms=state.comboForms||{};state.comboExpanded=state.comboExpanded||'';state.comboNewOpen=!!state.comboNewOpen;state.comboDraftVisible=!!state.comboDraftVisible;}
@@ -1767,17 +1865,26 @@ function comboAfterRender(){
   comboInjectOrphanNote();
 }
 
-async function loadCombos(){comboEnsureState();let q=(qs('comboSearch')?.value||'').trim();let lim=comboLimit();setStatus('comboStatus','Buscando combos...');try{let d=await fetchJson(`/admin/v2/combos?limit=${encodeURIComponent(lim)}&offset=0&q=${encodeURIComponent(q)}`);state.comboItems=d.items||[];renderCombos();let missing=state.comboItems.filter(x=>x.requires_action).length;let total=d.total??state.comboItems.length;if(qs('comboSummary'))qs('comboSummary').textContent=`${total} combos · ${missing} requieren acción en esta vista`;setStatus('comboStatus',`Combos cargados: ${state.comboItems.length} visibles${q?' filtrados':''}.`,true)}catch(e){setStatus('comboStatus','Error combos: '+errText(e),false)}}
+async function loadCombos(){comboEnsureState();let q=(qs('comboSearch')?.value||'').trim();let lim=comboLimit();if(q&&q.length<3){state.comboItems=[];renderCombos();if(qs('comboSummary'))qs('comboSummary').textContent='Ingresá al menos 3 caracteres para buscar combos';setStatus('comboStatus','Ingresá al menos 3 caracteres para buscar combos.');return;}setStatus('comboStatus','Buscando combos...');try{let d=await fetchJson(`/admin/v2/combos?limit=${encodeURIComponent(lim)}&offset=0&q=${encodeURIComponent(q)}`);state.comboItems=d.items||[];renderCombos();let missing=state.comboItems.filter(x=>x.requires_action).length;let total=d.total??state.comboItems.length;if(qs('comboSummary'))qs('comboSummary').textContent=`${total} combos · ${missing} requieren acción en esta vista`;setStatus('comboStatus',`Combos cargados: ${state.comboItems.length} visibles${q?' filtrados':''}.`,true)}catch(e){setStatus('comboStatus','Error combos: '+errText(e),false)}}
 function renderCombos(){comboEnsureState();let items=[...(state.comboItems||[])];if(state.comboNewOpen){items=[{_draft:true,sku:'',name:'',listings:[],components_preview:[],available_to_sell:'—'},...items]}let tbody='';if(!items.length){tbody='<tr><td colspan="6"><div class="comboSaasEmpty">Sin combos para este filtro.</div></td></tr>'}else{tbody=items.map(c=>comboRenderMatrixRows(c)).join('')}let el=qs('comboResults');if(el)el.innerHTML=`<table class="comboMatrixTable"><thead><tr><th>SKU Combo</th><th>Nombre</th><th>Publicaciones</th><th>Precio</th><th>Stock</th><th></th></tr></thead><tbody>${tbody}</tbody></table>`;if(state.comboExpanded&&state.comboExpanded!=='__new__'){comboLoadEditPanel(state.comboExpanded)}}
-function comboRenderMatrixRows(c){if(c._draft)return comboDraftRows();let sku=String(c.sku||'');let open=state.comboExpanded===sku;let main=`<tr class="comboMatrixMain ${comboRowState(c)} ${open?'editing':''}"><td><div class="comboMatrixSku comboSaasMono">${esc(sku)}</div></td><td><div class="comboMatrixName">${esc(c.name||'')}</div></td><td class="comboMatrixPubs">${comboListingsMatrixText(c)}</td><td class="comboMatrixPrice">${comboBestPrice(c)}</td><td class="comboMatrixStock">${esc(c.available_to_sell??'—')}</td><td><div class="comboMatrixActions"><button class="comboEditIcon" title="Modificar" onclick="comboOpenEdit('${jsq(sku)}')">✏️</button><button class="comboTrashIcon" title="Desactivar" onclick="comboDelete('${jsq(sku)}')">🗑</button></div></td></tr>`;let comp=`<tr><td></td><td colspan="4" class="comboComponentWrap">${comboComponentsPreviewTable(c)}</td><td></td></tr>`;let edit=open?`<tr><td colspan="6"><div id="comboEditPanel_${comboSafeKey(sku)}" class="comboEditPanelMatrix">Cargando...</div></td></tr>`:'';return main+comp+edit}
-function comboDraftRows(){let key='new';let main=`<tr class="comboMatrixMain comboNewFirstRow editing comboDraftRow"><td><span class="comboMatrixDraftLabel">Nuevo</span></td><td><span class="muted">Alta de combo nuevo</span></td><td class="comboMatrixPubs"></td><td class="comboMatrixPrice">—</td><td class="comboMatrixStock">calc.</td><td><div class="comboMatrixActions"><button class="comboTrashIcon" title="Cancelar" onclick="comboCloseNew()">🗑</button></div></td></tr>`;let panel=`<tr><td colspan="6"><div class="comboEditPanelMatrix">${comboFormInner(key,{mode:'create'})}</div></td></tr>`;return main+panel}
+function comboMatrixMenu(sku){
+  return `<details class="kebabMenu comboKebab"><summary title="Más acciones">⋮</summary><div class="kebabPanel"><button onclick="comboOpenEdit('${jsq(sku)}')">Modificar</button><button class="danger" onclick="comboDelete('${jsq(sku)}')">Eliminar</button></div></details>`;
+}
+function comboDraftMenu(){
+  return `<details class="kebabMenu comboKebab"><summary title="Más acciones">⋮</summary><div class="kebabPanel"><button onclick="comboCloseNew()">Cancelar</button></div></details>`;
+}
+function comboComponentMenu(key,i){
+  return `<details class="kebabMenu comboKebab comboLineKebab"><summary title="Más acciones">⋮</summary><div class="kebabPanel"><button onclick="qs('comboCompSku_${key}_${i}')?.focus()">Editar SKU</button><button class="danger" onclick="comboRemoveComponent('${key}',${i})">Quitar</button></div></details>`;
+}
+function comboRenderMatrixRows(c){if(c._draft)return comboDraftRows();let sku=String(c.sku||'');let open=state.comboExpanded===sku;let main=`<tr class="comboMatrixMain ${comboRowState(c)} ${open?'editing':''}"><td><div class="comboMatrixSku comboSaasMono">${esc(sku)}</div></td><td><div class="comboMatrixName">${esc(c.name||'')}</div></td><td class="comboMatrixPubs">${comboListingsMatrixText(c)}</td><td class="comboMatrixPrice">${comboBestPrice(c)}</td><td class="comboMatrixStock">${esc(c.available_to_sell??'—')}</td><td><div class="comboMatrixActions">${comboMatrixMenu(sku)}</div></td></tr>`;let comp=`<tr><td></td><td colspan="4" class="comboComponentWrap">${comboComponentsPreviewTable(c)}</td><td></td></tr>`;let edit=open?`<tr><td colspan="6"><div id="comboEditPanel_${comboSafeKey(sku)}" class="comboEditPanelMatrix">Cargando...</div></td></tr>`:'';return main+comp+edit}
+function comboDraftRows(){let key='new';let main=`<tr class="comboMatrixMain comboNewFirstRow editing comboDraftRow"><td><span class="comboMatrixDraftLabel">Nuevo</span></td><td><span class="muted">Alta de combo nuevo</span></td><td class="comboMatrixPubs"></td><td class="comboMatrixPrice">—</td><td class="comboMatrixStock">calc.</td><td><div class="comboMatrixActions">${comboDraftMenu()}</div></td></tr>`;let panel=`<tr><td colspan="6"><div class="comboEditPanelMatrix">${comboFormInner(key,{mode:'create'})}</div></td></tr>`;return main+panel}
 function comboToggleNew(){comboEnsureState();state.comboNewOpen=true;state.comboForms.new=comboEmptyForm();renderCombos();comboLoadOrphans('new','ML');comboLoadOrphans('new','TN')}
 function comboCloseNew(){state.comboNewOpen=false;delete state.comboForms.new;renderCombos()}
 async function comboOpenEdit(sku){comboEnsureState();state.comboExpanded=state.comboExpanded===sku?'':sku;renderCombos()}
 async function comboLoadEditPanel(sku){let panel=qs('comboEditPanel_'+comboSafeKey(sku));if(!panel)return;try{let d=await fetchJson('/admin/v2/bundles/'+encodeURIComponent(sku));let key=comboFormKeyForSku(sku);let f=comboEmptyForm();f.sku=d.bundle?.sku||sku;f.name=d.bundle?.name||'';f.components=(d.components||[]).map(x=>({sku:x.component_sku||'',name:x.component_name||'',stock:x.component_stock,price:x.component_price??x.price??x.cost??x.component?.price??x.component?.cost??'',quantity:comboQtyInt(x.quantity)}));f.existingListings=(d.listings||[]).map(x=>({marketplace:String(x.marketplace||'').toUpperCase(),external_product_id:String(x.external_product_id||''),external_variant_id:String(x.external_variant_id||'0'),title:x.title||'',status:x.status||'',price:x.price}));f.listings=[...f.existingListings];state.comboForms[key]=f;panel.innerHTML=comboFormInner(key,{mode:'edit',sku});comboRenderComponents(key);comboRenderSelectedListings(key);comboLoadOrphans(key,'ML');comboLoadOrphans(key,'TN')}catch(e){panel.innerHTML='<div class="status badtxt">Error abriendo combo: '+esc(errText(e))+'</div>'}}
 function comboFormInner(key,opt){let f=comboForm(key);let edit=opt.mode==='edit';return `<div class="comboEditTop"><div>${edit?`<b class="comboSaasMono">${esc(f.sku)}</b>`:`<input value="${esc(f.sku)}" oninput="comboForm('${key}').sku=this.value" placeholder="SKU nuevo">`}</div><div><input value="${esc(f.name)}" oninput="comboForm('${key}').name=this.value" placeholder="Nombre del combo"></div><div style="text-align:right"><button class="secondary" onclick="${edit?`comboOpenEdit('${jsq(opt.sku)}')`:'comboCloseNew()'}">Cerrar</button></div><div class="comboPubEditor"><label>Publicaciones asociadas</label><div id="comboSelectedListings_${key}">${comboSelectedListingsMini(key)}</div><label class="comboLiveSearchLine"><input id="comboLiveSearch_${key}" type="checkbox" onchange="['ML','TN'].forEach(m=>comboLoadOrphans('${key}',m))"> Buscar en vivo en ML/TN</label><div class="comboLiveSearchHint">Apagado: busca en base local. Encendido: consulta el canal en vivo. Mínimo 3 caracteres.</div><div class="comboPubSearchGrid"><div><label>Buscar ML huérfana</label><input id="comboOrphan_${key}_ML_q" oninput="comboDebouncedOrphans('${key}','ML')" placeholder="Título, SKU o ID"><div id="comboOrphan_${key}_ML" class="comboPubMiniList"></div></div><div><label>Buscar TN huérfana</label><input id="comboOrphan_${key}_TN_q" oninput="comboDebouncedOrphans('${key}','TN')" placeholder="Título, SKU o ID"><div id="comboOrphan_${key}_TN" class="comboPubMiniList"></div></div></div></div></div><div class="comboSectionTitle comboComponentsSectionTitle">COMPONENTES</div><div style="margin-top:10px" id="comboComponents_${key}"></div><div class="btnrow" style="justify-content:center;margin-top:8px"><button class="comboAddComponentBtn" onclick="comboAddBlankComponent('${key}')">Agregar</button></div><div class="comboEditBottomActions"><button class="ok" onclick="comboSaveForm('${key}','${opt.mode}')">Guardar combo</button><span id="comboFormStatus_${key}" class="status comboEditStatus"></span></div>`}
 function comboSelectedListingsMini(key){let f=comboForm(key);let rows=f.listings||[];if(!rows.length)return '<span class="muted">Sin publicaciones asociadas.</span>';return `<div class="comboPubSelected">${rows.map((l,i)=>`<div class="comboPubSelectedLine"><span class="pill ${String(l.marketplace||'').toUpperCase()==='TN'?'ok':'info'}">${esc(l.marketplace)}</span><span><b>${esc(l.title||l.external_product_id||'Publicación')}</b><br><span class="muted comboSaasMono">${esc(l.external_product_id)} · Var: ${esc(l.external_variant_id||'0')} · ${esc(l.status||'')}</span></span></div>`).join('')}</div>`}
-function comboRenderComponents(key){let f=comboForm(key);let el=qs('comboComponents_'+key);if(!el)return;let rows=(f.components||[]).map((c,i)=>`<tr><td><div class="comboCompField"><input id="comboCompSku_${key}_${i}" value="${esc(c.sku)}" oninput="comboComponentInput('${key}',${i},this.value,this)" onfocus="comboComponentInput('${key}',${i},this.value,this,true)" placeholder="SKU o nombre"><div id="comboCompSuggest_${key}_${i}" class="comboCompSuggestInline hidden"></div></div></td><td>${esc(c.name||'')}</td><td><input class="comboQtyInput" type="number" min="1" step="1" value="${esc(c.quantity||1)}" oninput="comboForm('${key}').components[${i}].quantity=comboNormalizeQtyInput(this)"></td><td class="comboReadOnlyCell">${esc(comboPriceValue(c.price))}</td><td class="comboReadOnlyStock">${esc(c.stock??'—')}</td><td><button class="comboLineSave" onclick="comboSaveForm('${key}','${key==='new'?'create':'edit'}')">Guardar</button></td><td><div class="comboLineActions"><button class="comboEditIcon" title="Editar SKU" onclick="qs('comboCompSku_${key}_${i}').focus()">✏️</button><button class="comboTrashIcon" title="Quitar" onclick="comboRemoveComponent('${key}',${i})">🗑</button></div></td></tr>`).join('');if(!rows)rows='<tr><td colspan="7" class="muted" style="text-align:center">Sin componentes. Presioná Agregar para cargar la primera línea.</td></tr>';el.innerHTML=`<table class="comboComponentTable"><thead><tr><th>SKU</th><th>Nombre</th><th>CANT</th><th>PRECIO</th><th>STOCK</th><th></th><th></th></tr></thead><tbody>${rows}</tbody></table>`}
+function comboRenderComponents(key){let f=comboForm(key);let el=qs('comboComponents_'+key);if(!el)return;let rows=(f.components||[]).map((c,i)=>`<tr><td><div class="comboCompField"><input id="comboCompSku_${key}_${i}" value="${esc(c.sku)}" oninput="comboComponentInput('${key}',${i},this.value,this)" onfocus="comboComponentInput('${key}',${i},this.value,this,true)" placeholder="SKU o nombre"><div id="comboCompSuggest_${key}_${i}" class="comboCompSuggestInline hidden"></div></div></td><td>${esc(c.name||'')}</td><td><input class="comboQtyInput" type="number" min="1" step="1" value="${esc(c.quantity||1)}" oninput="comboForm('${key}').components[${i}].quantity=comboNormalizeQtyInput(this)"></td><td class="comboReadOnlyCell">${esc(comboPriceValue(c.price))}</td><td class="comboReadOnlyStock">${esc(c.stock??'—')}</td><td><button class="comboLineSave" onclick="comboSaveForm('${key}','${key==='new'?'create':'edit'}')">Guardar</button></td><td><div class="comboLineActions">${comboComponentMenu(key,i)}</div></td></tr>`).join('');if(!rows)rows='<tr><td colspan="7" class="muted" style="text-align:center">Sin componentes. Presioná Agregar para cargar la primera línea.</td></tr>';el.innerHTML=`<table class="comboComponentTable"><thead><tr><th>SKU</th><th>Nombre</th><th>CANT</th><th>PRECIO</th><th>STOCK</th><th></th><th></th></tr></thead><tbody>${rows}</tbody></table>`}
 function comboAddBlankComponent(key){let f=comboForm(key);f.components.push({sku:'',name:'',quantity:1,price:'',stock:''});comboRenderComponents(key);let idx=f.components.length-1;setTimeout(()=>qs(`comboCompSku_${key}_${idx}`)?.focus(),30)}
 function comboFriendlyComboError(e){
   let raw=errText(e);
@@ -1785,7 +1892,7 @@ function comboFriendlyComboError(e){
   if(plain.includes('Componentes inexistentes')||plain.includes('missing_skus')){
     let miss='';
     try{let m=plain.match(/missing_skus[^\[]*\[([^\]]+)\]/);if(m)miss=m[1].replace(/[\"']/g,'').trim()}catch(_e){}
-    return 'No guardé: hay componente sin seleccionar o inexistente'+(miss?` (${miss})`:'')+'. Escribí 2 o más letras y elegí una opción de la lista.';
+    return 'No guardé: hay componente sin seleccionar o inexistente'+(miss?` (${miss})`:'')+'. Escribí 3 o más caracteres y elegí una opción de la lista.';
   }
   if(plain.includes('Elegí el componente desde la lista'))return 'No guardé: elegí el componente desde la lista desplegable antes de guardar.';
   if(plain.includes('El combo debe tener al menos un componente'))return 'No guardé: agregá al menos un componente al combo.';
@@ -1819,6 +1926,8 @@ function comboPlaceSuggestBox(box,inputEl){
 function comboNormalizeSearchItem(x){return {sku:x.sku||'',name:x.name||x.title||'',stock:x.stock??x.master_stock??x.available_quantity??'',price:x.price??x.cost??'',item_type:x.item_type||''}}
 function comboIsSimpleSearchItem(x){let t=normalizar(x.item_type||'');return !['bundle','combo','kit'].includes(t)}
 async function comboSearchComponentItems(q){
+  q=String(q||'').trim();
+  if(q.length<3)return [];
   let firstErr=null;
   try{
     let d=await fetchJson('/admin/v2/inventory/search-components?q='+encodeURIComponent(q)+'&limit=30',{skipLastJson:true});
@@ -1838,7 +1947,7 @@ async function comboSearchComponentItems(q){
     throw e2;
   }
 }
-function comboComponentInput(key,i,value,inputEl,force=false){let f=comboForm(key);if(!f.components[i])return;f.components[i].sku=value;let box=qs(`comboCompSuggest_${key}_${i}`);let q=String(value||'').trim();if(!box)return;if(q.length<2){box.classList.add('hidden');box.style.display='none';box.innerHTML='';return}comboPlaceSuggestBox(box,inputEl||qs(`comboCompSku_${key}_${i}`));box.classList.remove('hidden');box.innerHTML='<div class="comboSaasSuggestItem">Buscando...</div>';if(force!==true){clearTimeout(timers[`comboCompLine_${key}_${i}`])}timers[`comboCompLine_${key}_${i}`]=setTimeout(async()=>{try{let items=await comboSearchComponentItems(q);comboPlaceSuggestBox(box,inputEl||qs(`comboCompSku_${key}_${i}`));box.innerHTML=items.map(x=>`<div class="comboSaasSuggestItem" onclick="comboPickComponent('${key}',${i},'${jsq(x.sku||'')}','${jsq(x.name||'')}','${jsq(x.stock??'')}','${jsq(x.price??'')}')"><b class="comboSaasMono">${esc(x.sku||'')}</b><div class="comboSaasMini">${esc(x.name||'')} · precio ${esc(comboPriceValue(x.price))} · stock ${esc(x.stock??'—')}</div></div>`).join('')||'<div class="comboSaasSuggestItem">Sin resultados. Probá con otra parte del SKU o del nombre.</div>';box.classList.remove('hidden');box.style.display='block'}catch(e){comboPlaceSuggestBox(box,inputEl||qs(`comboCompSku_${key}_${i}`));box.innerHTML='<div class="comboSaasSuggestItem">No pude buscar componentes ahora.</div>';box.classList.remove('hidden');box.style.display='block'}},force===true?0:250)}
+function comboComponentInput(key,i,value,inputEl,force=false){let f=comboForm(key);if(!f.components[i])return;f.components[i].sku=value;let box=qs(`comboCompSuggest_${key}_${i}`);let q=String(value||'').trim();if(!box)return;if(q.length<3){box.classList.add('hidden');box.style.display='none';box.innerHTML='';return}comboPlaceSuggestBox(box,inputEl||qs(`comboCompSku_${key}_${i}`));box.classList.remove('hidden');box.innerHTML='<div class="comboSaasSuggestItem">Buscando...</div>';if(force!==true){clearTimeout(timers[`comboCompLine_${key}_${i}`])}timers[`comboCompLine_${key}_${i}`]=setTimeout(async()=>{try{let items=await comboSearchComponentItems(q);comboPlaceSuggestBox(box,inputEl||qs(`comboCompSku_${key}_${i}`));box.innerHTML=items.map(x=>`<div class="comboSaasSuggestItem" onclick="comboPickComponent('${key}',${i},'${jsq(x.sku||'')}','${jsq(x.name||'')}','${jsq(x.stock??'')}','${jsq(x.price??'')}')"><b class="comboSaasMono">${esc(x.sku||'')}</b><div class="comboSaasMini">${esc(x.name||'')} · precio ${esc(comboPriceValue(x.price))} · stock ${esc(x.stock??'—')}</div></div>`).join('')||'<div class="comboSaasSuggestItem">Sin resultados. Probá con otra parte del SKU o del nombre.</div>';box.classList.remove('hidden');box.style.display='block'}catch(e){comboPlaceSuggestBox(box,inputEl||qs(`comboCompSku_${key}_${i}`));box.innerHTML='<div class="comboSaasSuggestItem">No pude buscar componentes ahora.</div>';box.classList.remove('hidden');box.style.display='block'}},force===true?0:250)}
 function comboPickComponent(key,i,sku,name,stock,price){let f=comboForm(key);if(!f.components[i])return;f.components[i]={...f.components[i],sku,name,stock,price,quantity:f.components[i].quantity||1};comboRenderComponents(key)}
 function comboRemoveComponent(key,i){let f=comboForm(key);f.components.splice(i,1);comboRenderComponents(key)}
 function comboDebouncedOrphans(key,market){clearTimeout(timers['comboOrph_'+key+'_'+market]);timers['comboOrph_'+key+'_'+market]=setTimeout(()=>comboLoadOrphans(key,market),350)}
@@ -2427,8 +2536,66 @@ function renderLinkPublicationsTool(prefillSku=''){inventoryToolBox().innerHTML=
     invToolStatus('Error vinculando: '+(e?.detail?JSON.stringify(e.detail):JSON.stringify(e)),false)
   }
 }
-function renderEditProductTool(idx){let item=state.inventoryItems[idx];if(!item)return;inventoryToolBox().classList.remove('hidden');inventoryToolBox().innerHTML=`<div class="card" style="background:#fffaf0;border-color:#eee2c8"><h3>Modificar producto</h3><p>Actualiza datos operativos del SKU. No cambia historial ni publicaciones vinculadas.</p><div class="grid"><div class="col-3"><label>SKU</label><input id="editSku" value="${esc(item.sku||'')}" disabled></div><div class="col-5"><label>Producto *</label><input id="editName" value="${esc(item.name||'')}"></div><div class="col-2"><label>Estado</label><select id="editActive"><option value="true" ${item.active!==false?'selected':''}>Activo</option><option value="false" ${item.active===false?'selected':''}>Inactivo</option></select></div><div class="col-2"><label>Costo</label><input id="editCost" type="number" step="0.01" value="${esc(item.cost??'')}"></div><div class="col-3"><label>Variante</label><input id="editVariant" value="${esc(item.variant_name||'')}"></div><div class="col-4"><label>Categoría</label><input id="editCategory" value="${esc(item.category||'')}"></div><div class="col-5"><label>Descripción</label><input id="editDesc" value="${esc(item.description||'')}"></div></div><div class="btnrow" style="margin-top:12px"><button class="ok" onclick="saveInventoryProduct(${idx})">Guardar cambios</button><button class="secondary" onclick="renderLinkPublicationsTool('${esc(item.sku||'')}')">Vincular publicaciones</button><button class="secondary" onclick="inventoryToolBox().classList.add('hidden')">Cerrar</button></div><div id="inventoryToolStatus" class="status"></div></div>`;scrollToInventoryTool()}
-async function saveInventoryProduct(idx){let item=state.inventoryItems[idx];if(!item)return;let costTxt=(qs('editCost').value||'').trim();let body={sku:item.sku,name:qs('editName').value||'',variant_name:qs('editVariant').value||'',category:qs('editCategory').value||'',description:qs('editDesc').value||'',active:qs('editActive').value==='true'};if(costTxt!=='')body.cost=Number(costTxt);invToolStatus('Guardando producto...');try{let d=await fetchJson('/admin/inventory/update-item',{method:'POST',body:JSON.stringify(body)});invToolStatus('Producto actualizado OK',true);qs('invSearch').value=item.sku;await searchInventory(state.inventory.offset||0,true)}catch(e){invToolStatus('Error modificando producto: '+(e?.detail?JSON.stringify(e.detail):JSON.stringify(e)),false)}}
+function renderEditProductTool(idx){
+  let item=state.inventoryItems[idx];if(!item)return;
+  let isBundle=inventoryIsBundle(item);
+  inventoryToolBox().classList.remove('hidden');
+  inventoryToolBox().innerHTML=`<div class="card productEditCard" style="background:#fffaf0;border-color:#eee2c8">
+    <h3>Modificar SKU</h3>
+    <p>${isBundle?'Combo listado como SKU: stock calculado y componentes se administran en Combos/Kits. Acá se editan datos y publicaciones.':'Producto simple: datos operativos, stock ERP y publicaciones asociadas.'}</p>
+    <div class="grid">
+      <div class="col-3"><label>SKU</label><input id="editSku" value="${esc(item.sku||'')}" disabled></div>
+      <div class="col-5"><label>Producto *</label><input id="editName" value="${esc(item.name||'')}"></div>
+      <div class="col-2"><label>Tipo</label><input value="${isBundle?'combo':'simple'}" disabled></div>
+      <div class="col-2"><label>Estado</label><select id="editActive"><option value="true" ${item.active!==false?'selected':''}>Activo</option><option value="false" ${item.active===false?'selected':''}>Inactivo</option></select></div>
+      <div class="col-2"><label>Stock ERP</label><input id="editStock" type="number" step="1" value="${esc(item.stock??0)}" ${isBundle?'disabled title="Stock calculado desde componentes"':''}></div>
+      <div class="col-2"><label>Costo</label><input id="editCost" type="number" step="0.01" value="${esc(item.cost??'')}"></div>
+      <div class="col-3"><label>Variante</label><input id="editVariant" value="${esc(item.variant_name||'')}"></div>
+      <div class="col-5"><label>Categoría</label><input id="editCategory" value="${esc(item.category||'')}"></div>
+      <div class="col-12"><label>Descripción</label><input id="editDesc" value="${esc(item.description||'')}"></div>
+      <div class="col-12"><label>Publicaciones asociadas</label><div class="productEditListings">${renderListingsForItem(item)}</div></div>
+    </div>
+    <div class="btnrow" style="margin-top:12px">
+      <button class="ok" onclick="saveInventoryProduct(${idx})">Guardar cambios</button>
+      <button class="secondary" onclick="renderLinkPublicationsTool('${jsq(item.sku||'')}')">Buscar / asociar publicaciones</button>
+      <button class="secondary" onclick="inventoryToolBox().classList.add('hidden')">Cerrar</button>
+    </div>
+    <div id="inventoryToolStatus" class="status"></div>
+  </div>`;
+  scrollToInventoryTool();
+}
+
+async function saveInventoryProduct(idx){
+  let item=state.inventoryItems[idx];if(!item)return;
+  let isBundle=inventoryIsBundle(item);
+  let costTxt=(qs('editCost').value||'').trim();
+  let body={
+    sku:item.sku,
+    name:qs('editName').value||'',
+    variant_name:qs('editVariant').value||'',
+    category:qs('editCategory').value||'',
+    description:qs('editDesc').value||'',
+    active:qs('editActive').value==='true'
+  };
+  if(costTxt!=='')body.cost=Number(costTxt);
+  invToolStatus('Guardando SKU...');
+  try{
+    await fetchJson('/admin/inventory/update-item',{method:'POST',body:JSON.stringify(body)});
+    if(!isBundle&&qs('editStock')){
+      let newStock=Number(qs('editStock').value);
+      if(!Number.isFinite(newStock))throw {message:'Stock inválido'};
+      if(Math.trunc(newStock)!==Math.trunc(Number(item.stock??0))){
+        await fetchJson('/admin/stock/set',{method:'POST',body:JSON.stringify({sku:item.sku,new_stock:Math.trunc(newStock),channel:'ADMIN',notes:'Ajuste desde Productos > Modificar',dry_run:false})});
+      }
+    }
+    invToolStatus('SKU actualizado OK',true);
+    qs('invSearch').value=item.sku;
+    await searchInventory(state.inventory.offset||0,true);
+  }catch(e){
+    invToolStatus('Error modificando SKU: '+(e?.detail?JSON.stringify(e.detail):(e?.message||JSON.stringify(e))),false);
+  }
+}
+
 /* COMBOS_LEGACY_MONOUSER_EDIT_JS_REMOVED */
 
 async function deleteInventoryItem(idx){let item=state.inventoryItems[idx];if(!item)return;let isBundle=String(item.item_type||'').toLowerCase()==='bundle';let label=isBundle?'combo':'producto';let msg=`Eliminar ${label} ${item.sku}?\n\nSi tiene historial, ventas, movimientos o publicaciones, se desactiva y conserva trazabilidad. Si no tiene referencias, se borra físicamente.`;if(!confirm(msg))return;let inCombos=!!(qs('combos')&&qs('combos').classList.contains('active'));let statusId=inCombos?'comboStatus':'invStatus';setStatus(statusId,`Eliminando ${item.sku}...`);try{let d=await fetchJson('/admin/inventory/delete-item',{method:'POST',body:JSON.stringify({sku:item.sku,set_stock_zero:true,force_physical_delete_if_safe:true})});setStatus(statusId,`${item.sku}: ${d.action==='hard_deleted'?'borrado':'desactivado'} OK`,true);if(inCombos){await loadCombos()}else{await searchInventory(state.inventory.offset||0,true)}}catch(e){setStatus(statusId,'Error eliminando: '+(e?.detail?JSON.stringify(e.detail):JSON.stringify(e)),false)}}
