@@ -854,6 +854,54 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
   }
 }
 
+
+/* PRODUCTS_V254_COMBO_COMPONENTS_ALIGNED */
+/*
+  Sólo Productos > componentes de combos.
+  No toca la pantalla Combos/Kits ni JS.
+  El recuadro de componentes arranca alineado con el bloque de publicaciones.
+*/
+#inventario .productDetailRow .comboComponentWrap.productDetailFullWidth{
+  padding:0 10px 10px 10px!important;
+  background:#fffdf8!important;
+  border-bottom:1px solid #eadfc9!important;
+}
+#inventario .productDetailRow .comboComponentWrap.productDetailFullWidth .comboComponentInner{
+  margin-left:calc(13% + 68px)!important;
+  max-width:none!important;
+  width:calc(87% - 86px)!important;
+}
+#inventario .productDetailRow .comboComponentWrap.productDetailFullWidth .comboComponentTable{
+  width:100%!important;
+  table-layout:fixed!important;
+  font-size:12px!important;
+}
+#inventario .productDetailRow .comboComponentWrap.productDetailFullWidth .comboComponentTable th:nth-child(1){
+  width:150px!important;
+}
+#inventario .productDetailRow .comboComponentWrap.productDetailFullWidth .comboComponentTable th:nth-child(2){
+  width:auto!important;
+}
+#inventario .productDetailRow .comboComponentWrap.productDetailFullWidth .comboComponentTable th:nth-child(3){
+  width:80px!important;
+}
+#inventario .productDetailRow .comboComponentWrap.productDetailFullWidth .comboComponentTable th:nth-child(4){
+  width:90px!important;
+}
+#inventario .productDetailRow .comboComponentWrap.productDetailFullWidth .comboComponentTable th:nth-child(5){
+  width:80px!important;
+}
+#inventario .productDetailRow .comboComponentWrap.productDetailFullWidth .comboComponentTable td,
+#inventario .productDetailRow .comboComponentWrap.productDetailFullWidth .comboComponentTable th{
+  padding:4px 7px!important;
+}
+@media(max-width:1050px){
+  #inventario .productDetailRow .comboComponentWrap.productDetailFullWidth .comboComponentInner{
+    margin-left:calc(13% + 54px)!important;
+    width:calc(87% - 68px)!important;
+  }
+}
+
 </style>
 <!-- UI_ALERTS_INVENTORY_FILTERS_FRONTEND_1_39 -->
 </head>
@@ -1114,8 +1162,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.53';
-const FRONTEND_BUILD='admin-erp-v253-products-marked-grid-v31';
+const FRONTEND_VERSION='2.54';
+const FRONTEND_BUILD='admin-erp-v254-products-combo-components-aligned-v32';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
 const INVENTORY_IMPORT_RUNNING_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
