@@ -718,65 +718,27 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 }
 
 
-/* PRODUCTS_V251_ALIGNMENT_FINETUNE */
-/* Ajuste fino: bloque de publicaciones alineado con columnas reales de la grilla. */
-.productPublicationDetailRow .productPubList{
-  margin-left:13%!important;
-  width:87%!important;
-  padding-left:8px!important;
-  padding-right:10px!important;
-}
-.productPublicationDetailRow .productPubAlignedLine{
-  grid-template-columns:34fr 19fr 14fr 12fr 8fr!important;
-  gap:10px!important;
-  align-items:baseline!important;
-}
-.productPublicationDetailRow .productPubName{
-  grid-template-columns:36px minmax(0,1fr)!important;
-  gap:10px!important;
-}
-.productPublicationDetailRow .productPubRef{
-  grid-template-columns:minmax(92px,1fr) minmax(74px,92px)!important;
-  gap:10px!important;
-  padding-right:8px!important;
-}
-.productPublicationDetailRow .productPubId,
-.productPublicationDetailRow .productPubVar{
-  max-width:none!important;
-}
-.productPublicationDetailRow .productPubPrice{
-  text-align:right!important;
-  padding-right:20px!important;
-}
-.productPublicationDetailRow .productPubStock{
-  text-align:center!important;
-  padding-right:10px!important;
-}
-.productPublicationDetailRow .productStatusText{
-  display:inline-block!important;
-  min-width:62px!important;
-}
-@media(max-width:1050px){
-  .productPublicationDetailRow .productPubList{
-    margin-left:13%!important;
-    width:87%!important;
-  }
-  .productPublicationDetailRow .productPubAlignedLine{
-    grid-template-columns:32fr 21fr 14fr 12fr 8fr!important;
-  }
-  .productPublicationDetailRow .productPubRef{
-    grid-template-columns:minmax(88px,1fr) minmax(70px,88px)!important;
-  }
-}
-
-
-/* PRODUCTS_V252_INVISIBLE_GRID */
+/* PRODUCTS_V253_MARKED_GRID */
 /*
-  Grilla invisible:
-  mismas 6 columnas que la fila principal:
-  SKU | Producto | Publicaciones | Precio lista | Stock | Acciones/Estado.
-  No toca combos ni reestructura JS.
+  Ajustado sobre la captura marcada:
+  SKU 13 | Producto 51 | Publicaciones 16 | Precio lista 10 | Stock 5 | Estado/acciones 5.
+  Las publicaciones usan la misma grilla invisible, pero el título arranca indentado dentro de Producto.
 */
+.productMatrixTable th:nth-child(1){width:13%!important}
+.productMatrixTable th:nth-child(2){width:51%!important}
+.productMatrixTable th:nth-child(3){width:16%!important}
+.productMatrixTable th:nth-child(4){width:10%!important}
+.productMatrixTable th:nth-child(5){width:5%!important}
+.productMatrixTable th:nth-child(6){width:5%!important}
+
+.productMatrixTable td.productListPrice{
+  text-align:right!important;
+  padding-right:28px!important;
+}
+.productMatrixTable td.comboMatrixStock{
+  text-align:center!important;
+}
+
 .productPublicationDetailWrap.productDetailFullWidth{
   padding:0!important;
 }
@@ -787,7 +749,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 }
 .productPublicationDetailRow .productPubAlignedLine{
   display:grid!important;
-  grid-template-columns:13fr 37fr 16fr 14fr 12fr 8fr!important;
+  grid-template-columns:13fr 51fr 16fr 10fr 5fr 5fr!important;
   gap:0!important;
   align-items:baseline!important;
   background:transparent!important;
@@ -800,14 +762,13 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
   display:block!important;
 }
 .productPublicationDetailRow .productPubName{
-  grid-column:auto!important;
   min-width:0!important;
   display:grid!important;
-  grid-template-columns:36px minmax(0,1fr)!important;
-  gap:10px!important;
+  grid-template-columns:42px minmax(0,1fr)!important;
+  gap:18px!important;
   align-items:baseline!important;
-  padding-left:8px!important;
-  padding-right:10px!important;
+  padding-left:68px!important;
+  padding-right:12px!important;
 }
 .productPublicationDetailRow .productPubMarket{
   font-weight:900!important;
@@ -822,29 +783,41 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 .productPublicationDetailRow .productPubRef{
   min-width:0!important;
   display:grid!important;
-  grid-template-columns:minmax(0,1fr) minmax(72px,92px)!important;
-  gap:10px!important;
+  grid-template-columns:104px 92px!important;
+  gap:12px!important;
   align-items:baseline!important;
   padding-left:8px!important;
-  padding-right:10px!important;
+  padding-right:8px!important;
 }
 .productPublicationDetailRow .productPubId,
 .productPublicationDetailRow .productPubVar{
+  display:block!important;
+  max-width:none!important;
+  min-width:0!important;
+  width:auto!important;
   font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace!important;
   font-size:11px!important;
   color:var(--muted)!important;
   white-space:nowrap!important;
-  overflow:hidden!important;
-  text-overflow:ellipsis!important;
-  max-width:none!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
 }
 .productPublicationDetailRow .productPubId a{
+  display:inline!important;
+  max-width:none!important;
+  width:auto!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  white-space:nowrap!important;
   font-family:inherit!important;
   font-size:inherit!important;
 }
+.productPublicationDetailRow .productPubVar{
+  text-align:left!important;
+}
 .productPublicationDetailRow .productPubPrice{
   text-align:right!important;
-  padding-right:18px!important;
+  padding-right:28px!important;
   font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace!important;
   white-space:nowrap!important;
 }
@@ -861,13 +834,23 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
   white-space:nowrap!important;
   font-weight:400!important;
 }
+.productStatusText.active{color:var(--ok)!important}
+.productStatusText.paused,.productStatusText.oculto{color:var(--bad)!important}
+.productStatusText.neutral{color:var(--muted)!important}
+
 @media(max-width:1050px){
-  #inventario table.productMatrixTable{min-width:1040px!important}
+  #inventario table.productMatrixTable{min-width:1120px!important}
   .productPublicationDetailRow .productPubAlignedLine{
-    grid-template-columns:13fr 37fr 16fr 14fr 12fr 8fr!important;
+    grid-template-columns:13fr 51fr 16fr 10fr 5fr 5fr!important;
+  }
+  .productPublicationDetailRow .productPubName{
+    padding-left:54px!important;
+    grid-template-columns:38px minmax(0,1fr)!important;
+    gap:14px!important;
   }
   .productPublicationDetailRow .productPubRef{
-    grid-template-columns:minmax(0,1fr) minmax(66px,84px)!important;
+    grid-template-columns:98px 84px!important;
+    gap:10px!important;
   }
 }
 
@@ -1131,8 +1114,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.52';
-const FRONTEND_BUILD='admin-erp-v252-products-invisible-grid-v30';
+const FRONTEND_VERSION='2.53';
+const FRONTEND_BUILD='admin-erp-v253-products-marked-grid-v31';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
 const INVENTORY_IMPORT_RUNNING_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
