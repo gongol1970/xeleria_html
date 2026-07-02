@@ -1162,8 +1162,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.54';
-const FRONTEND_BUILD='admin-erp-v254-products-combo-components-aligned-v32';
+const FRONTEND_VERSION='2.55';
+const FRONTEND_BUILD='admin-erp-v255-inventory-download-session-v33';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
 const INVENTORY_IMPORT_RUNNING_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
@@ -1327,7 +1327,35 @@ function renderArcaManualPreview(d){
   let st=qs('arcaManualStatus'); if(st)st.insertAdjacentElement('afterend',box); else host.appendChild(box);
 }
 function setBusy(on,title='Procesando...',msg='No cierres esta pantalla.'){let ov=qs('erpBusyOverlay');if(!ov)return;document.body.classList.toggle('erpBusy',!!on);ov.classList.toggle('active',!!on);if(qs('erpBusyTitle'))qs('erpBusyTitle').textContent=title;if(qs('erpBusyMsg'))qs('erpBusyMsg').textContent=msg}function setArcaAndSalesStatus(ch,msg,ok=null){setStatus('arcaStatus',msg,ok);setStatus(String(ch||'').toLowerCase()+'VentasStatus',msg,ok)}
-function syncConnectionFields(){['apiUrl','cfgApiUrl'].forEach(id=>{let el=qs(id);if(el)el.value=state.api});['token','cfgToken'].forEach(id=>{let el=qs(id);if(el)el.value=state.token})}function saveSettings(){state.api=apiBase();state.token=token().trim();localStorage.setItem('pc_erp_api',state.api);localStorage.setItem('pc_erp_token',state.token);localStorage.setItem('xeleria_admin_token',state.token);syncConnectionFields();setStatus('homeStatus','Guardado.',true);setStatus('connStatus',state.token?'Guardado.':'Guardado, pero ADMIN_TOKEN quedó vacío.',!!state.token);syncLinks()}function saveSettingsFromConfig(){saveSettings()}function loadSettings(){state.api=localStorage.getItem('pc_erp_api')||localStorage.getItem('xeleria_api_url')||state.api;state.token=localStorage.getItem('pc_erp_token')||localStorage.getItem('xeleria_admin_token')||'';syncConnectionFields();loadViewPrefs();loadConfig();syncLinks()}function syncLinks(){let d=qs('downloadCsv');if(d)d.href=url('/admin/v2/inventory/products/export')}function prefKey(section,key){return `pc_erp_pref_${section}_${key}`}function saveViewPref(section,key,value){localStorage.setItem(prefKey(section,key),String(value??''))}function loadViewPrefs(){let jl=localStorage.getItem(prefKey('jobs','limit'));if(jl&&qs('jobsLimit'))qs('jobsLimit').value=jl;let ml=localStorage.getItem(prefKey('ventas_ml','limit'));if(ml&&qs('mlVentasLimit'))qs('mlVentasLimit').value=ml;let tl=localStorage.getItem(prefKey('ventas_tn','limit'));if(tl&&qs('tnVentasLimit'))qs('tnVentasLimit').value=tl;let il=localStorage.getItem(prefKey('inventario','limit'));if(il&&qs('invLimit'))qs('invLimit').value=il;let mpl=localStorage.getItem(prefKey('publicaciones_ml','limit'));if(mpl&&qs('mlPubLimit'))qs('mlPubLimit').value=mpl;let tpl=localStorage.getItem(prefKey('publicaciones_tn','limit'));if(tpl&&qs('tnPubLimit'))qs('tnPubLimit').value=tpl}
+function syncConnectionFields(){['apiUrl','cfgApiUrl'].forEach(id=>{let el=qs(id);if(el)el.value=state.api});['token','cfgToken'].forEach(id=>{let el=qs(id);if(el)el.value=state.token})}function saveSettings(){state.api=apiBase();state.token=token().trim();localStorage.setItem('pc_erp_api',state.api);localStorage.setItem('pc_erp_token',state.token);localStorage.setItem('xeleria_admin_token',state.token);syncConnectionFields();setStatus('homeStatus','Guardado.',true);setStatus('connStatus',state.token?'Guardado.':'Guardado, pero ADMIN_TOKEN quedó vacío.',!!state.token);syncLinks()}function saveSettingsFromConfig(){saveSettings()}function loadSettings(){state.api=localStorage.getItem('pc_erp_api')||localStorage.getItem('xeleria_api_url')||state.api;state.token=localStorage.getItem('pc_erp_token')||localStorage.getItem('xeleria_admin_token')||'';syncConnectionFields();loadViewPrefs();loadConfig();syncLinks()}function syncLinks(){let d=qs('downloadCsv');if(d){d.href='#';d.onclick=(ev)=>{ev.preventDefault();downloadInventoryCsv();return false}}}
+async function downloadInventoryCsv(){
+  setStatus('invStatus','Preparando planilla...');
+  try{
+    let h=xeleriaHeaders();
+    delete h['Content-Type'];
+    let r=await fetch(url('/admin/v2/inventory/products/export'),{method:'GET',headers:h});
+    let txt='';
+    if(!r.ok){
+      try{txt=await r.text()}catch(_e){}
+      throw {http_status:r.status,http_status_text:r.statusText,raw_text:txt,detail:txt};
+    }
+    let blob=await r.blob();
+    let cd=r.headers.get('content-disposition')||'';
+    let m=cd.match(/filename="?([^";]+)"?/i);
+    let filename=(m&&m[1])?m[1]:'inventario_xeleria.csv';
+    let a=document.createElement('a');
+    let obj=URL.createObjectURL(blob);
+    a.href=obj;
+    a.download=filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(obj),1500);
+    setStatus('invStatus','Planilla descargada.',true);
+  }catch(e){
+    setStatus('invStatus','Error bajando planilla: '+friendlyInventoryError(e),false);
+  }
+}function prefKey(section,key){return `pc_erp_pref_${section}_${key}`}function saveViewPref(section,key,value){localStorage.setItem(prefKey(section,key),String(value??''))}function loadViewPrefs(){let jl=localStorage.getItem(prefKey('jobs','limit'));if(jl&&qs('jobsLimit'))qs('jobsLimit').value=jl;let ml=localStorage.getItem(prefKey('ventas_ml','limit'));if(ml&&qs('mlVentasLimit'))qs('mlVentasLimit').value=ml;let tl=localStorage.getItem(prefKey('ventas_tn','limit'));if(tl&&qs('tnVentasLimit'))qs('tnVentasLimit').value=tl;let il=localStorage.getItem(prefKey('inventario','limit'));if(il&&qs('invLimit'))qs('invLimit').value=il;let mpl=localStorage.getItem(prefKey('publicaciones_ml','limit'));if(mpl&&qs('mlPubLimit'))qs('mlPubLimit').value=mpl;let tpl=localStorage.getItem(prefKey('publicaciones_tn','limit'));if(tpl&&qs('tnPubLimit'))qs('tnPubLimit').value=tpl}
 
 function versionCell(v){
   let s=String(v===undefined||v===null?'?':v);
