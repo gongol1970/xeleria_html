@@ -464,6 +464,23 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
   #inventario table.productMatrixTable{min-width:980px!important}
   .productPubList{margin-left:0}
 }
+
+
+/* PRODUCTS_MATRIX_V2_242_COMPACT_FIXES */
+#inventario #invStatus.badtxt:not(:empty){display:block!important;border-radius:14px!important;white-space:normal!important;max-width:100%!important;line-height:1.35!important}
+#inventario .inventoryWrap{overflow-x:hidden!important}
+#inventario table.productMatrixTable{font-size:13px!important}
+.productMatrixTable th:nth-child(1){width:14%!important}.productMatrixTable th:nth-child(2){width:36%!important}.productMatrixTable th:nth-child(3){width:30%!important}.productMatrixTable th:nth-child(4){width:8%!important}.productMatrixTable th:nth-child(5){width:7%!important}.productMatrixTable th:nth-child(6){width:5%!important}
+.productMatrixMain td{padding:7px 9px!important}.productMatrixMain.bundle td{background:#f8f8f8!important}.productMatrixMain.simple td{background:#f7fff9!important}
+.productPubList{display:block!important;margin-left:0!important;padding:0!important;line-height:1.28!important;max-width:none!important}
+.productPubLine{display:grid!important;grid-template-columns:34px minmax(0,1fr) 78px 46px 58px!important;gap:6px!important;align-items:baseline!important;background:transparent!important;border:0!important;border-radius:0!important;padding:1px 0!important;font-size:11.5px!important;min-height:0!important}
+.productPubLine+.productPubLine{margin-top:2px!important}.productPubMarket{font-weight:900!important;color:#111!important}.productPubTitle{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;min-width:0!important}.productPubMeta{color:var(--muted)!important;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace!important;font-size:11px!important;white-space:nowrap!important}.productPubPrice,.productPubStock{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace!important;text-align:right!important;white-space:nowrap!important}.productPubStock{text-align:center!important}.productStatusText{font-weight:400!important;white-space:nowrap!important}.productStatusText.active{color:var(--ok)!important}.productStatusText.paused,.productStatusText.hidden{color:var(--bad)!important}.productStatusText.neutral{color:var(--muted)!important}
+.productDetailRow td{background:#fffdf8!important;padding:0 9px 8px!important;border-bottom:1px solid #eadfc9!important}.productDetailRow .comboComponentWrap{background:#fffdf8!important;border-bottom:0!important;padding-top:0!important}.productDetailRow .comboComponentInner{margin-left:14%!important;width:66%!important;max-width:none!important}.productDetailRow .comboComponentTable{font-size:11.5px!important;box-shadow:none!important}.productDetailRow .comboComponentTable th{font-size:10.5px!important;padding:4px 6px!important}.productDetailRow .comboComponentTable td{padding:4px 6px!important}
+.productKebabButton,.comboKebabButton,.comboLineKebabButton{border:1px solid var(--line)!important;background:#fff!important;color:#111!important;font-size:18px!important;line-height:1!important;min-width:34px!important;min-height:30px!important;padding:5px 10px!important;border-radius:10px!important;box-shadow:none!important}.productKebabButton:hover,.comboKebabButton:hover,.comboLineKebabButton:hover{background:#fffaf0!important}
+.floatingKebabPanel{position:fixed;z-index:2147483000;min-width:170px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 45px rgba(17,17,17,.22);padding:8px;display:grid;gap:6px}.floatingKebabPanel button{width:100%;justify-content:flex-start;background:#fff!important;color:#111!important;border:1px solid #eee2c8!important;font-size:13px!important;min-height:34px!important;padding:8px 10px!important;box-shadow:none!important}.floatingKebabPanel button:hover{background:#fffaf0!important}.floatingKebabPanel button.danger{color:#991b1b!important;border-color:#fecaca!important}
+.productEditPubLine{display:grid;grid-template-columns:54px minmax(0,1fr) 110px 82px 64px;gap:8px;align-items:center;border-bottom:1px dashed #eee2c8;padding:7px 0;font-size:12px}.productEditPubLine:last-child{border-bottom:0}.productEditPubLine input{min-height:32px!important;padding:6px 8px!important;border-radius:8px!important}.productEditPubTitle{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.productEditPubMeta{font-size:11px;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}.productEditPubStatus{font-size:12px}
+@media(max-width:1050px){#inventario .inventoryWrap{overflow-x:auto!important}#inventario table.productMatrixTable{min-width:980px!important}.productDetailRow .comboComponentInner{margin-left:0!important;width:100%!important}.productPubLine{grid-template-columns:34px minmax(0,1fr) 78px 46px 58px!important}}
+
 </style>
 <!-- UI_ALERTS_INVENTORY_FILTERS_FRONTEND_1_39 -->
 </head>
@@ -724,8 +741,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.41';
-const FRONTEND_BUILD='admin-erp-v241-products-saas-endpoints-v19';
+const FRONTEND_VERSION='2.42';
+const FRONTEND_BUILD='admin-erp-v242-products-compact-edit-v20';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
 const INVENTORY_IMPORT_RUNNING_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
@@ -1732,8 +1749,36 @@ function renderReadonlyListingsForItem(item,market){let arr=(Array.isArray(item.
 function renderPublicationsReadonly(market,items){let body='';if(!items.length){body='<tr><td colspan="4" class="muted" style="text-align:center;padding:24px">Sin publicaciones para este filtro.</td></tr>'}else{body=items.map(i=>`<tr><td><strong class="mono">${esc(i.sku)}</strong><br><span class="small">${esc(i.item_type||'')}</span></td><td>${esc(i.name||'')}<br><span class="small">${esc(i.category||'')}</span></td><td><strong>${esc(i.stock??0)}</strong><br><span class="small">stock ERP</span></td><td>${renderReadonlyListingsForItem(i,market)}</td></tr>`).join('')}qs(pubResultsId(market)).innerHTML=`<table class="inventoryTable"><thead><tr><th>SKU</th><th>Producto</th><th>Stock ERP</th><th>Publicaciones ${market} / variante / precio / stock</th></tr></thead><tbody>${body}</tbody></table>`}
 async function loadPublications(market,offset=0,savePref=false){let key=market==='ML'?'ml':'tn';let q=pubSearchEl(market)?.value.trim()||'';let lim=pubLimit(market);if(savePref)saveViewPref(market==='ML'?'publicaciones_ml':'publicaciones_tn','limit',lim);state.publications[market].offset=offset;setStatus(pubStatusId(market),`Consultando publicaciones ${market}...`);try{let d=await fetchJson(`/admin/v2/inventory/products?q=${encodeURIComponent(q)}&limit=${encodeURIComponent(lim)}&offset=${encodeURIComponent(offset)}&marketplace=${encodeURIComponent(market)}&include_listings=true`);let items=d.items||[];state.publications[market].total=Number(d.total||0);renderPublicationsReadonly(market,items);if(qs(pubPagerId(market)))qs(pubPagerId(market)).innerHTML=pubPagerHtml(market,d);let linked=Number(d.publications_visible??items.reduce((a,i)=>a+(Array.isArray(i.listings)?i.listings.filter(l=>listingMarket(l)===market).length:0),0));setStatus(pubStatusId(market),`Publicaciones ${market}: ${linked} visibles sobre ${items.length} de ${state.publications[market].total} ítems`,true)}catch(e){console.error('Error publicaciones '+market,e);setStatus(pubStatusId(market),'Error publicaciones: '+(e?.message||JSON.stringify(e)),false)}}
 
-function listingStatusLabel(st){let s=String(st||'').toLowerCase();if(s.includes('hidden')||s.includes('ocult'))return 'Oculta';if(s.includes('inactive')||s.includes('deleted')||s.includes('closed'))return 'Oculta';if(s.includes('paused')||s.includes('pause'))return 'Pausada';if(s.includes('active'))return 'Activa';return st||'-'}
-function listingStatusClass(st){let s=String(st||'').toLowerCase();if(s.includes('hidden')||s.includes('ocult'))return 'inactive';if(s.includes('inactive')||s.includes('deleted')||s.includes('closed'))return 'inactive';if(s.includes('paused')||s.includes('pause'))return 'warn';if(s.includes('active'))return 'ok';return 'info'}
+function listingStatusLabelForMarket(market,st){
+  let m=String(market||'').toUpperCase();
+  let s=String(st||'').toLowerCase();
+  if(m==='TN'){
+    if(s.includes('unpublish')||s.includes('hidden')||s.includes('ocult')||s.includes('inactive')||s.includes('deleted')||s.includes('closed'))return 'Oculto';
+    if(s.includes('publish')||s.includes('visible')||s.includes('active'))return 'Visible';
+    return st||'-';
+  }
+  if(s.includes('paused')||s.includes('pause'))return 'Pausada';
+  if(s.includes('hidden')||s.includes('ocult')||s.includes('inactive')||s.includes('deleted')||s.includes('closed'))return 'Oculta';
+  if(s.includes('active'))return 'Activa';
+  return st||'-';
+}
+function listingStatusClassForMarket(market,st){
+  let label=listingStatusLabelForMarket(market,st).toLowerCase();
+  if(label==='activa'||label==='visible')return 'active';
+  if(label==='pausada')return 'paused';
+  if(label==='oculta'||label==='oculto')return 'hidden';
+  return 'neutral';
+}
+function listingStatusLabel(st){return listingStatusLabelForMarket('',st)}
+function listingStatusClass(st){let c=listingStatusClassForMarket('',st);return c==='active'?'ok':(c==='paused'?'warn':(c==='hidden'?'inactive':'info'))}
+function listingStatusTextSpan(l){let m=listingMarket(l),st=listingStatus(l);return `<span class="productStatusText ${listingStatusClassForMarket(m,st)}">${esc(listingStatusLabelForMarket(m,st))}</span>`}
+function friendlyInventoryError(e){
+  let raw='';try{raw=JSON.stringify(e)}catch(_){raw=String(e||'')}
+  if(raw.includes('Resource temporarily unavailable')||raw.includes('[Errno 11]'))return 'La base respondió ocupada unos segundos. Mantengo la grilla anterior; reintentá Filtrar.';
+  if(raw.includes('404'))return 'Endpoint de Productos no disponible todavía. Falta que Render tome el deploy del backend.';
+  if(raw.includes('Sesión XelerIA requerida'))return 'La sesión venció. Volvé a ingresar y repetí la operación.';
+  return raw.length>260?raw.slice(0,260)+'…':raw;
+}
 function saleNeedsAction(o,ch){
   let logistic=logisticLabel(o,ch);
   let state=shippingStateLabel(o,ch).toLowerCase();
@@ -1752,20 +1797,52 @@ function saleNeedsAction(o,ch){
   if(ch==='TN'&&String(logistic).toLowerCase().includes('retiro')&&!state.includes('entregado'))return 'Coordinar retiro';
   return '';
 }
-async function searchInventory(offset=0,savePref=false){let q=qs('invSearch').value.trim();let lim=invLimit();let market=qs('invMarket')?.value||'';let maxStock=(qs('invMaxStock')?.value||'').trim();if(q&&q.length<3){state.inventoryItems=[];state.inventory.total=0;renderInventory();if(qs('invPager'))qs('invPager').innerHTML='';setStatus('invStatus','Ingresá al menos 3 caracteres para buscar productos.');return;}if(savePref)saveViewPref('inventario','limit',lim);state.inventory.offset=offset;setStatus('invStatus','Buscando inventario + publicaciones...');try{let d=await fetchJson(`/admin/v2/inventory/products?q=${encodeURIComponent(q)}&limit=${encodeURIComponent(lim)}&offset=${encodeURIComponent(offset)}&marketplace=${encodeURIComponent(market)}&include_listings=true${maxStock!==''?'&max_stock='+encodeURIComponent(maxStock):''}`);state.inventoryItems=d.items||[];state.inventory.total=Number(d.total||0);renderInventory();let linked=Number(d.publications_visible??state.inventoryItems.reduce((a,i)=>a+(Array.isArray(i.listings)?i.listings.length:0),0));if(qs('invPager'))qs('invPager').innerHTML=inventoryPagerHtml(d);let filtro=(market?` · canal ${market}`:'')+(maxStock!==''?` · stock <= ${maxStock}`:'');setStatus('invStatus',`Inventario: ${state.inventoryItems.length} de ${state.inventory.total} ítems${filtro} · Publicaciones visibles: ${linked}`,true)}catch(e){setStatus('invStatus','Error inventario: '+JSON.stringify(e),false)}}function listingMarket(l){return String(l.marketplace||l.channel||'').toUpperCase()}function listingProductId(l){return l.external_product_id??l.listing_id??l.item_id??l.product_id??l.external_full_id??''}function listingVariantId(l){return l.external_variant_id??l.variant_id??l.variation_id??''}function listingPrice(l){return l.price??l.marketplace_price??l.target_price??''}function listingStock(l){return l.stock??l.available_quantity??l.marketplace_stock??''}function listingStatus(l){return l.status??l.state??''}function listingUrl(l){return l.url??l.permalink??''}
+async function searchInventory(offset=0,savePref=false){
+  let q=qs('invSearch').value.trim();
+  let lim=invLimit();
+  let market=qs('invMarket')?.value||'';
+  let maxStock=(qs('invMaxStock')?.value||'').trim();
+  state.inventory.searchSeq=(state.inventory.searchSeq||0)+1;
+  let seq=state.inventory.searchSeq;
+  if(q&&q.length<3){
+    state.inventoryItems=[];state.inventory.total=0;renderInventory();
+    if(qs('invPager'))qs('invPager').innerHTML='';
+    setStatus('invStatus','Ingresá al menos 3 caracteres para buscar productos.');
+    return;
+  }
+  if(savePref)saveViewPref('inventario','limit',lim);
+  state.inventory.offset=offset;
+  setStatus('invStatus','Buscando inventario + publicaciones...');
+  try{
+    let d=await fetchJson(`/admin/v2/inventory/products?q=${encodeURIComponent(q)}&limit=${encodeURIComponent(lim)}&offset=${encodeURIComponent(offset)}&marketplace=${encodeURIComponent(market)}&include_listings=true${maxStock!==''?'&max_stock='+encodeURIComponent(maxStock):''}`);
+    if(seq!==state.inventory.searchSeq)return;
+    state.inventoryItems=d.items||[];
+    state.inventory.total=Number(d.total||0);
+    renderInventory();
+    let linked=Number(d.publications_visible??state.inventoryItems.reduce((a,i)=>a+(Array.isArray(i.listings)?i.listings.length:0),0));
+    if(qs('invPager'))qs('invPager').innerHTML=inventoryPagerHtml(d);
+    let filtro=(market?` · canal ${market}`:'')+(maxStock!==''?` · stock <= ${maxStock}`:'');
+    setStatus('invStatus',`Inventario: ${state.inventoryItems.length} de ${state.inventory.total} ítems${filtro} · Publicaciones visibles: ${linked}`,true)
+  }catch(e){
+    if(seq!==state.inventory.searchSeq)return;
+    setStatus('invStatus','Error inventario: '+friendlyInventoryError(e), rawIncludesResourceUnavailable(e)?'warn':false)
+  }
+}
+function rawIncludesResourceUnavailable(e){let raw='';try{raw=JSON.stringify(e)}catch(_){raw=String(e||'')}return raw.includes('Resource temporarily unavailable')||raw.includes('[Errno 11]')}
+function listingMarket(l){return String(l.marketplace||l.channel||'').toUpperCase()}function listingProductId(l){return l.external_product_id??l.listing_id??l.item_id??l.product_id??l.external_full_id??''}function listingVariantId(l){return l.external_variant_id??l.variant_id??l.variation_id??''}function listingPrice(l){return l.price??l.marketplace_price??l.target_price??''}function listingStock(l){return l.stock??l.available_quantity??l.marketplace_stock??''}function listingStatus(l){return l.status??l.state??''}function listingUrl(l){return l.url??l.permalink??''}
 function renderListingsForItem(item){
   let market=qs('invMarket')?.value||'';
   let arr=(Array.isArray(item.listings)?item.listings:[]).filter(l=>!market||listingMarket(l)===market);
-  if(!arr.length)return '<span class="muted">Sin publicaciones vinculadas para este filtro.</span>';
+  if(!arr.length)return '<span class="muted">Sin publicaciones vinculadas.</span>';
   arr.sort((a,b)=>(listingMarket(a)+listingProductId(a)+listingVariantId(a)).localeCompare(listingMarket(b)+listingProductId(b)+listingVariantId(b)));
-  return `<div class="productPubList">${arr.map((l,idx)=>{
-    let m=listingMarket(l),pid=listingProductId(l),vid=listingVariantId(l),price=listingPrice(l),stock=listingStock(l),st=listingStatus(l),url=listingUrl(l);
+  return `<div class="productPubList">${arr.map(l=>{
+    let m=listingMarket(l),pid=listingProductId(l),vid=listingVariantId(l),price=listingPrice(l),stock=listingStock(l),url=listingUrl(l);
     return `<div class="productPubLine">
-      <span class="pill ${m==='ML'?'info':'ok'}">${esc(m||'?')}</span>
-      <span class="productPubTitle"><b>${esc(l.title||l.name||'Publicación')}</b><br><span class="comboSaasMini comboSaasMono">Pub: ${esc(pid)} · Var: ${esc(vid||'0')} · ${url?`<a href="${esc(url)}" target="_blank" rel="noopener">abrir</a>`:''}</span></span>
-      <span class="productPubPrice">${money(price)}</span>
+      <span class="productPubMarket">${esc(m||'?')}</span>
+      <span class="productPubTitle" title="${esc(l.title||l.name||'Publicación')}">${esc(l.title||l.name||'Publicación')} <span class="productPubMeta">· ${esc(pid)} · Var: ${esc(vid||'0')} ${url?`· <a href="${esc(url)}" target="_blank" rel="noopener">abrir</a>`:''}</span></span>
+      <span class="productPubPrice">${money(price)||'—'}</span>
       <span class="productPubStock">${esc(stock??'—')}</span>
-      <span class="pill marketStatus ${listingStatusClass(st)}">${esc(listingStatusLabel(st))}</span>
+      ${listingStatusTextSpan(l)}
     </div>`;
   }).join('')}</div>`;
 }
@@ -1784,18 +1861,34 @@ function inventoryBestPrice(item){
   let arr=Array.isArray(item.listings)?item.listings:[];
   let priced=arr.map(l=>({m:listingMarket(l),p:Number(listingPrice(l)||0)})).filter(x=>Number.isFinite(x.p)&&x.p>0);
   if(!priced.length)return '—';
-  priced.sort((a,b)=>a.m==='ML'&&b.m!=='ML'?-1:a.m!== 'ML'&&b.m==='ML'?1:0);
-  return money(priced[0].p);
+  priced.sort((a,b)=>a.m==='ML'&&b.m!=='ML'?-1:a.m!=='ML'&&b.m==='ML'?1:0);
+  return money(priced[0].p)||'—';
 }
 function inventoryStockMatrixCell(i,idx){
   let isBundle=inventoryIsBundle(i);
   let label=isBundle?'calculado':'ERP';
   return `<div class="productStockRead ${isBundle?'bundle':''}"><strong>${esc(i.stock??0)}</strong><br><span class="small">${label}</span></div><div id="rowStatus_${idx}" class="small"></div>`;
 }
-function inventoryActionsCell(i,idx){
-  let edit=`<button onclick="renderEditProductTool(${idx})">Modificar</button>`;
-  let del=`<button class="danger" onclick="deleteInventoryItem(${idx})">Eliminar</button>`;
-  return `<details class="kebabMenu productKebab"><summary title="Más acciones">⋮</summary><div class="kebabPanel">${edit}${del}</div></details>`;
+function openFloatingActionMenu(ev,items){
+  try{ev.preventDefault();ev.stopPropagation()}catch(_e){}
+  document.querySelectorAll('.floatingKebabPanel').forEach(x=>x.remove());
+  let panel=document.createElement('div');panel.className='floatingKebabPanel';
+  panel.innerHTML=(items||[]).map(it=>`<button type="button" class="${it.cls||''}" onclick="${it.onclick};document.querySelectorAll('.floatingKebabPanel').forEach(x=>x.remove())">${esc(it.label)}</button>`).join('');
+  document.body.appendChild(panel);
+  let r=(ev.currentTarget||ev.target).getBoundingClientRect();
+  let w=panel.offsetWidth||180,h=panel.offsetHeight||90;
+  let left=Math.min(Math.max(8,r.right-w),window.innerWidth-w-8);
+  let top=Math.min(r.bottom+6,window.innerHeight-h-8);if(top<8)top=8;
+  panel.style.left=left+'px';panel.style.top=top+'px';
+}
+document.addEventListener('click',e=>{if(!e.target.closest('.floatingKebabPanel')&&!e.target.closest('.productKebabButton')&&!e.target.closest('.comboKebabButton')&&!e.target.closest('.comboLineKebabButton'))document.querySelectorAll('.floatingKebabPanel').forEach(x=>x.remove())},true);
+window.addEventListener('scroll',()=>document.querySelectorAll('.floatingKebabPanel').forEach(x=>x.remove()),true);
+function openProductActionMenu(ev,idx){openFloatingActionMenu(ev,[{label:'Modificar',onclick:`renderEditProductTool(${idx})`},{label:'Eliminar',cls:'danger',onclick:`deleteInventoryItem(${idx})`}])}
+function inventoryActionsCell(i,idx){return `<button type="button" class="productKebabButton" title="Más acciones" onclick="openProductActionMenu(event,${idx})">⋮</button>`}
+function renderProductComponentsDetail(i){
+  if(!inventoryIsBundle(i))return '';
+  let html=comboComponentsPreviewTable(i);
+  return `<tr class="productDetailRow"><td></td><td colspan="4" class="comboComponentWrap">${html}</td><td></td></tr>`;
 }
 function renderInventory(){
   let items=state.inventoryItems||[];
@@ -1808,17 +1901,14 @@ function renderInventory(){
       return `<tr class="comboMatrixMain productMatrixMain ${isBundle?'bundle':'simple'}">
         <td><div class="comboMatrixSku comboSaasMono">${esc(i.sku)}</div><div class="small">${inventoryTypePill(i)}</div></td>
         <td><div class="comboMatrixName">${esc(i.name||'')}</div><span class="small">${esc(i.category||'')}</span></td>
-        <td class="comboMatrixPubs">${esc(inventoryListingSummary(i))}</td>
+        <td class="comboMatrixPubs">${renderListingsForItem(i)}</td>
         <td class="comboMatrixPrice">${inventoryBestPrice(i)}</td>
         <td class="comboMatrixStock">${inventoryStockMatrixCell(i,idx)}</td>
         <td class="actionCell">${inventoryActionsCell(i,idx)}</td>
-      </tr>
-      <tr class="productDetailRow">
-        <td></td><td colspan="4" class="comboComponentWrap productPublicationWrap">${renderListingsForItem(i)}</td><td></td>
-      </tr>`;
+      </tr>${renderProductComponentsDetail(i)}`;
     }).join('');
   }
-  qs('invResults').innerHTML=`<table class="comboMatrixTable productMatrixTable"><thead><tr><th>SKU</th><th>Producto</th><th>Publicaciones</th><th>Precio</th><th>Stock</th><th>⋮</th></tr></thead><tbody>${tbody}</tbody></table>`;
+  qs('invResults').innerHTML=`<table class="comboMatrixTable productMatrixTable"><thead><tr><th>SKU</th><th>Producto</th><th>Publicaciones</th><th>Precio</th><th>Stock</th><th></th></tr></thead><tbody>${tbody}</tbody></table>`;
 }
 
 function comboLimit(){return Number(qs('comboLimit')?.value||100)}
@@ -1867,15 +1957,10 @@ function comboAfterRender(){
 
 async function loadCombos(){comboEnsureState();let q=(qs('comboSearch')?.value||'').trim();let lim=comboLimit();if(q&&q.length<3){state.comboItems=[];renderCombos();if(qs('comboSummary'))qs('comboSummary').textContent='Ingresá al menos 3 caracteres para buscar combos';setStatus('comboStatus','Ingresá al menos 3 caracteres para buscar combos.');return;}setStatus('comboStatus','Buscando combos...');try{let d=await fetchJson(`/admin/v2/combos?limit=${encodeURIComponent(lim)}&offset=0&q=${encodeURIComponent(q)}`);state.comboItems=d.items||[];renderCombos();let missing=state.comboItems.filter(x=>x.requires_action).length;let total=d.total??state.comboItems.length;if(qs('comboSummary'))qs('comboSummary').textContent=`${total} combos · ${missing} requieren acción en esta vista`;setStatus('comboStatus',`Combos cargados: ${state.comboItems.length} visibles${q?' filtrados':''}.`,true)}catch(e){setStatus('comboStatus','Error combos: '+errText(e),false)}}
 function renderCombos(){comboEnsureState();let items=[...(state.comboItems||[])];if(state.comboNewOpen){items=[{_draft:true,sku:'',name:'',listings:[],components_preview:[],available_to_sell:'—'},...items]}let tbody='';if(!items.length){tbody='<tr><td colspan="6"><div class="comboSaasEmpty">Sin combos para este filtro.</div></td></tr>'}else{tbody=items.map(c=>comboRenderMatrixRows(c)).join('')}let el=qs('comboResults');if(el)el.innerHTML=`<table class="comboMatrixTable"><thead><tr><th>SKU Combo</th><th>Nombre</th><th>Publicaciones</th><th>Precio</th><th>Stock</th><th></th></tr></thead><tbody>${tbody}</tbody></table>`;if(state.comboExpanded&&state.comboExpanded!=='__new__'){comboLoadEditPanel(state.comboExpanded)}}
-function comboMatrixMenu(sku){
-  return `<details class="kebabMenu comboKebab"><summary title="Más acciones">⋮</summary><div class="kebabPanel"><button onclick="comboOpenEdit('${jsq(sku)}')">Modificar</button><button class="danger" onclick="comboDelete('${jsq(sku)}')">Eliminar</button></div></details>`;
-}
-function comboDraftMenu(){
-  return `<details class="kebabMenu comboKebab"><summary title="Más acciones">⋮</summary><div class="kebabPanel"><button onclick="comboCloseNew()">Cancelar</button></div></details>`;
-}
-function comboComponentMenu(key,i){
-  return `<details class="kebabMenu comboKebab comboLineKebab"><summary title="Más acciones">⋮</summary><div class="kebabPanel"><button onclick="qs('comboCompSku_${key}_${i}')?.focus()">Editar SKU</button><button class="danger" onclick="comboRemoveComponent('${key}',${i})">Quitar</button></div></details>`;
-}
+function comboMatrixMenu(sku){return `<button type="button" class="comboKebabButton" title="Más acciones" onclick="openComboActionMenu(event,'${jsq(sku)}')">⋮</button>`}
+function openComboActionMenu(ev,sku){openFloatingActionMenu(ev,[{label:'Modificar',onclick:`comboOpenEdit('${jsq(sku)}')`},{label:'Eliminar',cls:'danger',onclick:`comboDelete('${jsq(sku)}')`}])}
+function comboDraftMenu(){return `<button type="button" class="comboKebabButton" title="Más acciones" onclick="openFloatingActionMenu(event,[{label:'Cancelar',onclick:'comboCloseNew()'}])">⋮</button>`}
+function comboComponentMenu(key,i){return `<button type="button" class="comboLineKebabButton" title="Más acciones" onclick="openFloatingActionMenu(event,[{label:'Editar SKU',onclick:\`qs(\'comboCompSku_${key}_${i}\')?.focus()\`},{label:'Quitar',cls:'danger',onclick:\`comboRemoveComponent(\'${key}\',${i})\`}])">⋮</button>`}
 function comboRenderMatrixRows(c){if(c._draft)return comboDraftRows();let sku=String(c.sku||'');let open=state.comboExpanded===sku;let main=`<tr class="comboMatrixMain ${comboRowState(c)} ${open?'editing':''}"><td><div class="comboMatrixSku comboSaasMono">${esc(sku)}</div></td><td><div class="comboMatrixName">${esc(c.name||'')}</div></td><td class="comboMatrixPubs">${comboListingsMatrixText(c)}</td><td class="comboMatrixPrice">${comboBestPrice(c)}</td><td class="comboMatrixStock">${esc(c.available_to_sell??'—')}</td><td><div class="comboMatrixActions">${comboMatrixMenu(sku)}</div></td></tr>`;let comp=`<tr><td></td><td colspan="4" class="comboComponentWrap">${comboComponentsPreviewTable(c)}</td><td></td></tr>`;let edit=open?`<tr><td colspan="6"><div id="comboEditPanel_${comboSafeKey(sku)}" class="comboEditPanelMatrix">Cargando...</div></td></tr>`:'';return main+comp+edit}
 function comboDraftRows(){let key='new';let main=`<tr class="comboMatrixMain comboNewFirstRow editing comboDraftRow"><td><span class="comboMatrixDraftLabel">Nuevo</span></td><td><span class="muted">Alta de combo nuevo</span></td><td class="comboMatrixPubs"></td><td class="comboMatrixPrice">—</td><td class="comboMatrixStock">calc.</td><td><div class="comboMatrixActions">${comboDraftMenu()}</div></td></tr>`;let panel=`<tr><td colspan="6"><div class="comboEditPanelMatrix">${comboFormInner(key,{mode:'create'})}</div></td></tr>`;return main+panel}
 function comboToggleNew(){comboEnsureState();state.comboNewOpen=true;state.comboForms.new=comboEmptyForm();renderCombos();comboLoadOrphans('new','ML');comboLoadOrphans('new','TN')}
@@ -2534,6 +2619,19 @@ function renderLinkPublicationsTool(prefillSku=''){inventoryToolBox().innerHTML=
     invToolStatus('Error vinculando: '+(e?.detail?JSON.stringify(e.detail):JSON.stringify(e)),false)
   }
 }
+function renderEditableListingsForItem(item,idx){
+  let arr=Array.isArray(item.listings)?item.listings:[];
+  if(!arr.length)return '<div class="muted" style="padding:8px 0">Sin publicaciones vinculadas.</div>';
+  arr.sort((a,b)=>(listingMarket(a)+listingProductId(a)+listingVariantId(a)).localeCompare(listingMarket(b)+listingProductId(b)+listingVariantId(b)));
+  item._editListings=arr;
+  return arr.map((l,j)=>`<div class="productEditPubLine">
+    <div><strong>${esc(listingMarket(l))}</strong></div>
+    <div class="productEditPubTitle" title="${esc(l.title||l.name||'Publicación')}">${esc(l.title||l.name||'Publicación')}<div class="productEditPubMeta">${esc(listingProductId(l))} · Var ${esc(listingVariantId(l)||'0')} ${listingUrl(l)?`· <a href="${esc(listingUrl(l))}" target="_blank" rel="noopener">abrir</a>`:''}</div></div>
+    <div><input id="editListingPrice_${idx}_${j}" type="number" step="0.01" value="${esc(listingPrice(l)??'')}"></div>
+    <div><input id="editListingStock_${idx}_${j}" type="number" step="1" value="${esc(listingStock(l)??'')}" title="Stock de la publicación registrado localmente"></div>
+    <div class="productEditPubStatus">${listingStatusTextSpan(l)}</div>
+  </div>`).join('');
+}
 function renderEditProductTool(idx){
   let item=state.inventoryItems[idx];if(!item)return;
   let isBundle=inventoryIsBundle(item);
@@ -2551,16 +2649,42 @@ function renderEditProductTool(idx){
       <div class="col-3"><label>Variante</label><input id="editVariant" value="${esc(item.variant_name||'')}"></div>
       <div class="col-5"><label>Categoría</label><input id="editCategory" value="${esc(item.category||'')}"></div>
       <div class="col-12"><label>Descripción</label><input id="editDesc" value="${esc(item.description||'')}"></div>
-      <div class="col-12"><label>Publicaciones asociadas</label><div class="productEditListings">${renderListingsForItem(item)}</div></div>
+      <div class="col-12"><label>Precios / stock de publicaciones asociadas</label><div class="productEditListings">${renderEditableListingsForItem(item,idx)}</div><div class="small">El stock ERP del producto se edita arriba. Estos campos actualizan el registro local de cada publicación vinculada.</div></div>
     </div>
     <div class="btnrow" style="margin-top:12px">
-      <button class="ok" onclick="saveInventoryProduct(${idx})">Guardar cambios</button>
+      <button class="ok" onclick="saveInventoryProduct(${idx})">Guardar datos / stock ERP</button>
+      <button class="secondary" onclick="saveInventoryListingPrices(${idx})">Guardar precios publicaciones</button>
       <button class="secondary" onclick="renderLinkPublicationsTool('${jsq(item.sku||'')}')">Buscar / asociar publicaciones</button>
       <button class="secondary" onclick="inventoryToolBox().classList.add('hidden')">Cerrar</button>
     </div>
     <div id="inventoryToolStatus" class="status"></div>
   </div>`;
   scrollToInventoryTool();
+}
+
+async function saveInventoryListingPrices(idx){
+  let item=state.inventoryItems[idx];if(!item)return;
+  let arr=item._editListings||item.listings||[];
+  if(!arr.length){invToolStatus('No hay publicaciones para guardar.',false);return}
+  let listings=arr.map((l,j)=>({
+    marketplace:listingMarket(l),
+    external_product_id:String(listingProductId(l)||''),
+    external_variant_id:String(listingVariantId(l)||'0'),
+    external_full_id:l.external_full_id||listingProductId(l),
+    title:l.title||l.name||item.name||item.sku,
+    price:qs(`editListingPrice_${idx}_${j}`)?.value!==''?Number(qs(`editListingPrice_${idx}_${j}`).value):null,
+    stock:qs(`editListingStock_${idx}_${j}`)?.value!==''?Math.trunc(Number(qs(`editListingStock_${idx}_${j}`).value)):null,
+    status:listingStatus(l)||null,
+    url:listingUrl(l)||null,
+    listing_type:l.listing_type||null,
+    raw_data:l.raw_data||{}
+  })).filter(x=>x.marketplace&&x.external_product_id);
+  invToolStatus('Guardando precios de publicaciones...');
+  try{
+    await fetchJson('/admin/v2/inventory/product/'+encodeURIComponent(item.sku)+'/link-listings',{method:'POST',body:JSON.stringify({listings})});
+    invToolStatus('Precios de publicaciones actualizados OK',true);
+    await searchInventory(state.inventory.offset||0,true);
+  }catch(e){invToolStatus('Error guardando publicaciones: '+friendlyInventoryError(e),false)}
 }
 
 async function saveInventoryProduct(idx){
