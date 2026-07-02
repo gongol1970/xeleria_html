@@ -481,6 +481,38 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 .productEditPubLine{display:grid;grid-template-columns:54px minmax(0,1fr) 110px 82px 64px;gap:8px;align-items:center;border-bottom:1px dashed #eee2c8;padding:7px 0;font-size:12px}.productEditPubLine:last-child{border-bottom:0}.productEditPubLine input{min-height:32px!important;padding:6px 8px!important;border-radius:8px!important}.productEditPubTitle{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.productEditPubMeta{font-size:11px;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}.productEditPubStatus{font-size:12px}
 @media(max-width:1050px){#inventario .inventoryWrap{overflow-x:auto!important}#inventario table.productMatrixTable{min-width:980px!important}.productDetailRow .comboComponentInner{margin-left:0!important;width:100%!important}.productPubLine{grid-template-columns:34px minmax(0,1fr) 78px 46px 58px!important}}
 
+
+/* PRODUCTS_MATRIX_V2_243_SECOND_ROW_SAVE_ALL */
+#inventario #invStatus.badtxt:not(:empty){font-size:12px!important;max-width:900px!important}
+.productMatrixTable th:nth-child(1){width:14%!important}
+.productMatrixTable th:nth-child(2){width:35%!important}
+.productMatrixTable th:nth-child(3){width:18%!important}
+.productMatrixTable th:nth-child(4){width:14%!important}
+.productMatrixTable th:nth-child(5){width:12%!important}
+.productMatrixTable th:nth-child(6){width:7%!important}
+.productTypeText{display:block!important;margin-top:4px!important;color:#59544b!important;font-size:12px!important;font-weight:700!important;line-height:1.2!important;background:transparent!important;border:0!important;border-radius:0!important;padding:0!important;text-transform:lowercase!important}
+.productTypeText.bundle{color:#111!important;font-weight:800!important}
+.productMatrixMain .comboMatrixName .productCategoryLine{display:none!important}
+.productPublicationDetailRow td{background:#fffdf8!important;padding:0 9px 7px!important;border-bottom:1px solid #eadfc9!important}
+.productPublicationDetailWrap{padding:0!important;background:#fffdf8!important}
+.productPublicationDetailRow .productPubList{margin-left:0!important;width:100%!important;max-width:none!important;padding:0!important}
+.productPublicationDetailRow .productPubLine{grid-template-columns:36px minmax(360px,1fr) 86px 46px 66px!important;gap:10px!important;font-size:12px!important;padding:1px 0!important}
+.productPublicationDetailRow .productPubTitle{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+.productPublicationDetailRow .productPubMeta{font-size:11px!important}
+.productPublicationDetailRow .productPubLine:first-child{padding-top:2px!important}
+.productPublicationDetailRow .productPubLine:last-child{padding-bottom:3px!important}
+.productStockRead strong{font-size:16px!important}.productStockRead .small{display:none!important}.productStockRead.bundle .small{display:inline!important}.productStockRead.bundle strong{font-size:15px!important}
+.productDetailRow .comboComponentWrap{background:#fffdf8!important;border-bottom:0!important;padding:0 9px 9px!important}
+.productDetailRow .comboComponentInner{margin-left:0!important;width:100%!important;max-width:none!important;padding-left:0!important}
+.productDetailRow .comboComponentTable{width:100%!important;table-layout:fixed!important}
+.productDetailRow .comboComponentTable th:nth-child(1){width:120px!important}.productDetailRow .comboComponentTable th:nth-child(2){width:auto!important}.productDetailRow .comboComponentTable th:nth-child(3){width:70px!important}.productDetailRow .comboComponentTable th:nth-child(4){width:82px!important}.productDetailRow .comboComponentTable th:nth-child(5){width:70px!important}
+.productDetailRow .comboComponentTable td:nth-child(2){white-space:normal!important;overflow-wrap:normal!important}
+.productEditCard .grid.compactEditGrid{grid-template-columns:repeat(12,1fr)!important}
+.productEditCard .productEditListings{max-height:330px!important}
+.productEditPubLine{grid-template-columns:46px minmax(260px,1fr) 120px 92px 74px!important}
+.productEditPubStatus .productStatusText{font-weight:400!important}
+@media(max-width:1050px){#inventario table.productMatrixTable{min-width:980px!important}.productPublicationDetailRow .productPubLine{grid-template-columns:36px minmax(320px,1fr) 86px 46px 66px!important}.productDetailRow .comboComponentInner{max-width:none!important}}
+
 </style>
 <!-- UI_ALERTS_INVENTORY_FILTERS_FRONTEND_1_39 -->
 </head>
@@ -601,7 +633,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 <section id="tn-ventas" class="view"><div class="card"><h3>Tienda Nube · Ventas capturadas</h3><div class="grid"><div class="col-8"><label>Buscar venta TN</label><input id="tnVentasSearch" oninput="debouncedSales('TN')" placeholder="Nombre, SKU, número de venta, orden, teléfono, producto"></div><div class="col-2"><label>Mostrar</label><select id="tnVentasLimit" onchange="loadRecent('TN',0)"><option selected>20</option><option>40</option><option>50</option></select></div><div class="col-2"><label>&nbsp;</label><button class="secondary" onclick="clearSalesSearch('TN')">Limpiar</button></div></div><div class="btnrow" style="margin-top:10px"><button class="secondary" onclick="refreshShippingPending('TN')">Refrescar estados no entregadas</button><span class="small">Consulta solo ventas no terminales recientes, no todo el histórico.</span></div><div id="tnVentasStatus" class="status"></div><div id="tnVentasTable" style="margin-top:12px"></div><div id="tnVentasPager" class="btnrow" style="margin-top:12px"></div></div></section>
 <section id="ml-publicaciones" class="view"><div class="card"><h3>Mercado Libre · Publicaciones</h3><p>Vista solo lectura de publicaciones ML vinculadas al inventario. Para modificar stock/precio, usar Gestión · Inventario.</p><div class="grid"><div class="col-8"><label>Buscar publicación ML</label><input id="mlPubSearch" oninput="debouncedPublications('ML')" placeholder="SKU, producto, publicación, variante"></div><div class="col-2"><label>Mostrar</label><select id="mlPubLimit" onchange="loadPublications('ML',0,true)"><option selected>20</option><option>40</option><option>80</option><option>100</option></select></div><div class="col-2"><label>&nbsp;</label><button class="secondary" onclick="clearPubSearch('ML')">Limpiar</button></div></div><div id="mlPubStatus" class="status"></div><div id="mlPubResults" class="tableWrap inventoryWrap" style="margin-top:12px"></div><div id="mlPubPager" class="btnrow inventoryPager"></div></div></section><section id="tn-publicaciones" class="view"><div class="card"><h3>Tienda Nube · Publicaciones</h3><p>Vista solo lectura de publicaciones TN vinculadas al inventario. Para modificar stock/precio, usar Gestión · Inventario.</p><div class="grid"><div class="col-8"><label>Buscar publicación TN</label><input id="tnPubSearch" oninput="debouncedPublications('TN')" placeholder="SKU, producto, publicación, variante"></div><div class="col-2"><label>Mostrar</label><select id="tnPubLimit" onchange="loadPublications('TN',0,true)"><option selected>20</option><option>40</option><option>80</option><option>100</option></select></div><div class="col-2"><label>&nbsp;</label><button class="secondary" onclick="clearPubSearch('TN')">Limpiar</button></div></div><div id="tnPubStatus" class="status"></div><div id="tnPubResults" class="tableWrap inventoryWrap" style="margin-top:12px"></div><div id="tnPubPager" class="btnrow inventoryPager"></div></div></section>
 <section id="ml-preguntas" class="view"><div class="card"><h3>Mercado Libre · Preguntas</h3><p>Pantalla principal: preguntas sin responder. Las respondidas quedan como consulta/historial y análisis de mejoras de publicación.</p><div class="grid"><div class="col-2"><label>Mostrar</label><select id="mlQLimit" onchange="loadMLQuestions(0)"><option>10</option><option selected>20</option><option>50</option></select></div><div class="col-10"><label>&nbsp;</label><div class="btnrow mlQToolbar"><button class="primary" onclick="setMLQuestionStatus('UNANSWERED')">Pendientes sin responder</button><button class="secondary" onclick="setMLQuestionStatus('ANSWERED')">Ver respondidas</button><button class="secondary" onclick="analyzeMLAnsweredQuestions()">Analizar respondidas</button><label class="inlineCheck"><input id="mlQGreetingDefault" type="checkbox" checked onchange="saveMLQuestionPrefs();renderMLQuestionPreviews()"> Saludo inicial</label><label class="inlineCheck"><input id="mlQSignatureDefault" type="checkbox" checked onchange="saveMLQuestionPrefs();renderMLQuestionPreviews()"> Firma / PLANETA CASA</label></div></div></div><div id="mlQStatusBox" class="status"></div><div id="mlQAnalysis" style="margin-top:12px"></div><div id="mlQList" style="margin-top:12px"></div><div id="mlQPager" class="btnrow" style="margin-top:12px"></div><div class="mlQuickDock"><div class="mlQuickDockHead"><div><div class="mlQuickDockTitle">Respuestas rápidas</div><div class="mlQuickConfig">El botón reemplaza solo el cuerpo de la respuesta.</div></div><button type="button" class="secondary mlQuickEditBtn" onclick="mlQToggleQuickEditor()">Editar</button></div><div id="mlQuickButtons" class="mlQuickButtons"></div><div id="mlQuickEditor" class="mlQuickEditor"></div></div></div></section><section id="ml-clientes" class="view"><div class="card"><h3>Mercado Libre · Clientes</h3><p>Clientes recopilados desde ventas ML. Permite completar teléfono, correo y datos fiscales si el canal no los trae.</p><div class="grid"><div class="col-2"><label>Mostrar</label><select id="mlClientesLimit" onchange="loadCustomers('ML')"><option>20</option><option selected>50</option><option>100</option></select></div><div class="col-8"><label>Buscar</label><input id="mlClientesSearch" placeholder="Nombre, documento, mail, teléfono, localidad, venta" onkeydown="if(event.key==='Enter')loadCustomers('ML')"></div><div class="col-2"><label>&nbsp;</label><button onclick="loadCustomers('ML')">Buscar / actualizar</button></div></div><div id="mlClientesStatus" class="status"></div><div id="mlClientesTools" style="margin-top:12px"></div><div id="mlClientesTable" class="tableWrap" style="margin-top:12px"></div></div></section><section id="tn-clientes" class="view"><div class="card"><h3>Tienda Nube · Clientes</h3><p>Clientes recopilados desde ventas TN. Permite editar/completar contacto y datos fiscales.</p><div class="grid"><div class="col-2"><label>Mostrar</label><select id="tnClientesLimit" onchange="loadCustomers('TN')"><option>20</option><option selected>50</option><option>100</option></select></div><div class="col-8"><label>Buscar</label><input id="tnClientesSearch" placeholder="Nombre, documento, mail, teléfono, localidad, venta" onkeydown="if(event.key==='Enter')loadCustomers('TN')"></div><div class="col-2"><label>&nbsp;</label><button onclick="loadCustomers('TN')">Buscar / actualizar</button></div></div><div id="tnClientesStatus" class="status"></div><div id="tnClientesTools" style="margin-top:12px"></div><div id="tnClientesTable" class="tableWrap" style="margin-top:12px"></div></div></section><section id="clientes" class="view"><div class="card"><h3>Gestión · Clientes ML / TN</h3><p>Vista conjunta de clientes recopilados desde Mercado Libre y Tienda Nube, ordenada alfabéticamente.</p><div class="grid"><div class="col-2"><label>Mostrar</label><select id="allClientesLimit" onchange="loadCustomers('ALL')"><option>20</option><option selected>50</option><option>100</option><option>200</option></select></div><div class="col-8"><label>Buscar</label><input id="allClientesSearch" placeholder="Nombre, documento, mail, teléfono, localidad, canal, venta" onkeydown="if(event.key==='Enter')loadCustomers('ALL')"></div><div class="col-2"><label>&nbsp;</label><button onclick="loadCustomers('ALL')">Buscar / actualizar</button></div></div><div id="allClientesStatus" class="status"></div><div id="allClientesTools" style="margin-top:12px"></div><div id="allClientesTable" class="tableWrap" style="margin-top:12px"></div></div></section>
-<section id="inventario" class="view"><div class="card"><h3>Gestión · Inventario · Productos</h3><p>Stock ERP editable + publicaciones TN/ML vinculadas por SKU. El guardado de stock usa Productos SaaS v2 y genera sync_jobs.</p>
+<section id="inventario" class="view"><div class="card"><h3>Gestión · Inventario · Productos</h3><p>Stock editable + publicaciones TN/ML vinculadas por SKU. El guardado usa Productos SaaS v2 y genera sync_jobs.</p>
 <div class="grid inventoryFilters">
   <div class="col-search"><label>Buscar SKU / producto</label><input id="invSearch" oninput="debouncedSearch('inv')" placeholder="Ej: LCBOLABCA60, virola, suela..."></div>
   <div class="col-small"><label>Canal</label><select id="invMarket" onchange="searchInventory(0,true)"><option value="">Todos</option><option>TN</option><option>ML</option></select></div>
@@ -649,7 +681,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
     <div id="comboResults" class="tableWrap inventoryWrap comboSaasTable" style="margin-top:12px"></div>
   </div>
 </section>
-<section id="full-inbound" class="view"><div class="card"><h3>Gestión · Inventario · Envío a Full</h3><p>Detecta el PDF de preparación de Mercado Libre Full y descuenta del stock ERP las unidades que salen hacia bodega.</p><div class="grid"><div class="col-6"><label>PDF instrucciones ML Full</label><input id="fullInboundPdf" type="file" accept="application/pdf"></div><div class="col-6"><label>&nbsp;</label><div class="btnrow"><button onclick="previewFullInboundPdf()">Detectar PDF</button><button class="primary" onclick="applyFullInboundPdf(false)">Descontar stock</button><button class="secondary" onclick="applyFullInboundPdf(true)">Simular</button></div></div></div><div id="fullInboundStatus" class="status"></div><div id="fullInboundResult" class="tableWrap" style="margin-top:12px"></div><pre id="fullInboundOut" class="hidden"></pre></div></section>
+<section id="full-inbound" class="view"><div class="card"><h3>Gestión · Inventario · Envío a Full</h3><p>Detecta el PDF de preparación de Mercado Libre Full y descuenta del stock las unidades que salen hacia bodega.</p><div class="grid"><div class="col-6"><label>PDF instrucciones ML Full</label><input id="fullInboundPdf" type="file" accept="application/pdf"></div><div class="col-6"><label>&nbsp;</label><div class="btnrow"><button onclick="previewFullInboundPdf()">Detectar PDF</button><button class="primary" onclick="applyFullInboundPdf(false)">Descontar stock</button><button class="secondary" onclick="applyFullInboundPdf(true)">Simular</button></div></div></div><div id="fullInboundStatus" class="status"></div><div id="fullInboundResult" class="tableWrap" style="margin-top:12px"></div><pre id="fullInboundOut" class="hidden"></pre></div></section>
 <section id="arca-reportes" class="view"><div class="card"><h3>ARCA · Reporte de facturación</h3><p>Comprobantes del ERP. Por defecto muestra el mes calendario anterior completo.</p><div class="grid"><div class="col-4"><label>Buscar</label><input id="arcaSearch" placeholder="SKU, factura, cliente, documento, canal..." oninput="renderArcaInvoices()"></div><div class="col-2"><label>Desde</label><input id="arcaDesde" type="date"></div><div class="col-2"><label>Hasta</label><input id="arcaHasta" type="date"></div><div class="col-2"><label>Tipo de comprobante</label><select id="arcaTipo"><option>Todos</option><option>A</option><option>B</option></select></div><div class="col-2"><label>Canal de venta</label><select id="arcaCanal"><option>Todos</option><option>TN</option><option>ML</option><option>MANUAL</option></select></div><div class="col-2"><label>Concepto</label><select id="arcaConcepto"><option>Todos</option><option>Productos</option><option>Servicios</option><option>Productos y Servicios</option></select></div><div class="col-2"><label>Límite visible</label><select id="arcaLimit"><option>20</option><option selected>100</option><option>200</option></select></div></div><div class="btnrow" style="margin-top:12px"><button onclick="loadArcaInvoices()">Buscar comprobantes</button><button class="secondary" onclick="downloadArcaExcel()">Descargar Excel completo</button></div><div id="arcaStatus" class="status"></div><div id="arcaTable" class="tableWrap" style="margin-top:12px"></div><pre id="arcaOut" class="hidden"></pre></div></section>
 <section id="arca-manual" class="view"><div class="card"><h3>ARCA · Emitir comprobante manual</h3><p>Flujo controlado: primero vista previa, después emisión real con CAE. Remitos y recibos quedan fuera de este módulo.</p><div class="grid"><div class="col-2"><label>Comprobante</label><select id="amTipo"><option value="6" selected>Factura B</option><option value="1">Factura A</option><option value="8">Nota de Crédito B</option><option value="3">Nota de Crédito A</option><option value="7">Nota de Débito B</option><option value="2">Nota de Débito A</option></select></div><div class="col-2"><label>Concepto</label><select id="amConcepto"><option selected>Productos</option><option>Servicios</option><option>Productos y Servicios</option></select></div><div class="col-2"><label>Fecha</label><input id="amFecha" type="date"></div><div class="col-3"><label>Canal / referencia</label><input id="amSourceChannel" value="ARCA_MANUAL"></div><div class="col-3"><label>Operación opcional</label><input id="amSourceOrder" placeholder="Venta / referencia"></div><input id="amAssocInvoiceId" type="hidden"><input id="amAssocCbteTipo" type="hidden"><input id="amAssocPtoVta" type="hidden"><input id="amAssocCbteNro" type="hidden"><input id="amAssocInvoiceDate" type="hidden"><input id="amAssocCae" type="hidden"><div class="col-4"><label>Nombre / Razón social receptor *</label><input id="amCustomerName" placeholder="Consumidor Final / nombre real"></div><div class="col-2"><label>Doc. tipo</label><select id="amDocType"><option value="CF" selected>CF</option><option value="DNI">DNI</option><option value="CUIT">CUIT</option></select></div><div class="col-3"><label>Documento</label><div style="display:flex;gap:6px"><input id="amDocNumber" placeholder="DNI / CUIT" onblur="arcaLookupCustomerA5(false)" onkeydown="if(event.key==='Enter'){event.preventDefault();arcaLookupCustomerA5(true)}"><button type="button" class="secondary" style="padding:10px 11px" onclick="arcaLookupCustomerA5(true)">ARCA</button></div></div><div class="col-3"><label>Condición IVA</label><select id="amIvaCond"><option selected>Consumidor Final</option><option>Responsable Inscripto</option><option>Monotributo</option><option>Exento</option></select></div><div class="col-6"><label>Domicilio receptor</label><input id="amAddress" placeholder="Opcional / si viene del comprador"></div><div class="col-6"><label>Localidad receptor *</label><input id="amLocalidad" placeholder="Consumidor Final manual: Ciudad Autónoma de Buenos Aires"></div></div><div class="dividerLine"></div><h3>Conceptos</h3><div id="arcaManualLines"></div><div class="btnrow" style="margin-top:10px"><button class="secondary" onclick="arcaManualAddLine()">Agregar línea</button><button class="secondary" onclick="arcaManualClear()">Limpiar</button></div><div class="dividerLine"></div><div class="grid"><div class="col-12"><label>Notas internas/observaciones</label><textarea id="amNotes" rows="2">Emisión manual controlada desde ERP</textarea></div></div><div style="height:18px"></div><div class="btnrow" style="justify-content:flex-end;align-items:center"><label style="display:flex;align-items:center;gap:10px;margin:0 16px 0 0;text-transform:none;letter-spacing:0;font-size:15px;font-weight:900;color:#111;background:#fff7ed;border:1px solid #f7c56b;border-radius:14px;padding:12px 14px"><input id="amModificaStock" type="checkbox" style="width:18px;height:18px;margin:0"> Modifica stock</label><select id="amStockReason" title="Motivo stock" style="width:170px"><option value="comprobante" selected>Comprobante</option><option value="devolucion">Devolución</option><option value="ajuste">Ajuste</option><option value="no aplica">No aplica</option></select><button class="secondary" onclick="arcaManualPreview()">Vista previa</button><button class="danger" onclick="arcaManualEmit()">Emitir comprobante real</button></div><div id="arcaManualStatus" class="status"></div><pre id="arcaManualOut" class="hidden"></pre></div></section>
 
@@ -741,8 +773,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.42';
-const FRONTEND_BUILD='admin-erp-v242-products-compact-edit-v20';
+const FRONTEND_VERSION='2.43';
+const FRONTEND_BUILD='admin-erp-v243-products-second-row-saveall-v21';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
 const INVENTORY_IMPORT_RUNNING_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
@@ -1746,16 +1778,17 @@ function pubPagerHtml(market,d){let limit=Number(d.limit||pubLimit(market)||20),
 function listingMenuHtml(l){return ''}
 function pubVarBlock(pid,vid){return `<div class="mono id pubvar"><span>Pub: ${esc(pid)}</span><span class="idSep">Var: ${esc(vid)}</span></div>`}
 function renderReadonlyListingsForItem(item,market){let arr=(Array.isArray(item.listings)?item.listings:[]).filter(l=>listingMarket(l)===market);if(!arr.length)return '<span class="muted">Sin publicaciones vinculadas.</span>';arr.sort((a,b)=>(listingProductId(a)+listingVariantId(a)).localeCompare(listingProductId(b)+listingVariantId(b)));return arr.map(l=>{let st=listingStatus(l);return `<div class="marketBox"><div><span class="pill ${market==='ML'?'info':'ok'}">${esc(market)}</span></div>${pubVarBlock(listingProductId(l),listingVariantId(l))}<div><strong>${money(listingPrice(l))}</strong></div><div><strong>${esc(listingStock(l))}</strong></div><div><span class="pill marketStatus ${listingStatusClass(st)}">${esc(listingStatusLabel(st))}</span></div></div>`}).join('')}
-function renderPublicationsReadonly(market,items){let body='';if(!items.length){body='<tr><td colspan="4" class="muted" style="text-align:center;padding:24px">Sin publicaciones para este filtro.</td></tr>'}else{body=items.map(i=>`<tr><td><strong class="mono">${esc(i.sku)}</strong><br><span class="small">${esc(i.item_type||'')}</span></td><td>${esc(i.name||'')}<br><span class="small">${esc(i.category||'')}</span></td><td><strong>${esc(i.stock??0)}</strong><br><span class="small">stock ERP</span></td><td>${renderReadonlyListingsForItem(i,market)}</td></tr>`).join('')}qs(pubResultsId(market)).innerHTML=`<table class="inventoryTable"><thead><tr><th>SKU</th><th>Producto</th><th>Stock ERP</th><th>Publicaciones ${market} / variante / precio / stock</th></tr></thead><tbody>${body}</tbody></table>`}
+function renderPublicationsReadonly(market,items){let body='';if(!items.length){body='<tr><td colspan="4" class="muted" style="text-align:center;padding:24px">Sin publicaciones para este filtro.</td></tr>'}else{body=items.map(i=>`<tr><td><strong class="mono">${esc(i.sku)}</strong><br><span class="small">${esc(i.item_type||'')}</span></td><td>${esc(i.name||'')}<br><span class="small">${esc(i.category||'')}</span></td><td><strong>${esc(i.stock??0)}</strong><br><span class="small">stock</span></td><td>${renderReadonlyListingsForItem(i,market)}</td></tr>`).join('')}qs(pubResultsId(market)).innerHTML=`<table class="inventoryTable"><thead><tr><th>SKU</th><th>Producto</th><th>Stock</th><th>Publicaciones ${market} / variante / precio / stock</th></tr></thead><tbody>${body}</tbody></table>`}
 async function loadPublications(market,offset=0,savePref=false){let key=market==='ML'?'ml':'tn';let q=pubSearchEl(market)?.value.trim()||'';let lim=pubLimit(market);if(savePref)saveViewPref(market==='ML'?'publicaciones_ml':'publicaciones_tn','limit',lim);state.publications[market].offset=offset;setStatus(pubStatusId(market),`Consultando publicaciones ${market}...`);try{let d=await fetchJson(`/admin/v2/inventory/products?q=${encodeURIComponent(q)}&limit=${encodeURIComponent(lim)}&offset=${encodeURIComponent(offset)}&marketplace=${encodeURIComponent(market)}&include_listings=true`);let items=d.items||[];state.publications[market].total=Number(d.total||0);renderPublicationsReadonly(market,items);if(qs(pubPagerId(market)))qs(pubPagerId(market)).innerHTML=pubPagerHtml(market,d);let linked=Number(d.publications_visible??items.reduce((a,i)=>a+(Array.isArray(i.listings)?i.listings.filter(l=>listingMarket(l)===market).length:0),0));setStatus(pubStatusId(market),`Publicaciones ${market}: ${linked} visibles sobre ${items.length} de ${state.publications[market].total} ítems`,true)}catch(e){console.error('Error publicaciones '+market,e);setStatus(pubStatusId(market),'Error publicaciones: '+(e?.message||JSON.stringify(e)),false)}}
 
 function listingStatusLabelForMarket(market,st){
   let m=String(market||'').toUpperCase();
-  let s=String(st||'').toLowerCase();
+  let s=String(st||'').toLowerCase().trim();
   if(m==='TN'){
-    if(s.includes('unpublish')||s.includes('hidden')||s.includes('ocult')||s.includes('inactive')||s.includes('deleted')||s.includes('closed'))return 'Oculto';
-    if(s.includes('publish')||s.includes('visible')||s.includes('active'))return 'Visible';
-    return st||'-';
+    if(!s)return 'Oculto';
+    if(s.includes('unpublish')||s.includes('hidden')||s.includes('ocult')||s.includes('inactive')||s.includes('deleted')||s.includes('closed')||s==='0'||s==='false')return 'Oculto';
+    if(s.includes('publish')||s.includes('visible')||s.includes('active')||s==='1'||s==='true')return 'Visible';
+    return 'Oculto';
   }
   if(s.includes('paused')||s.includes('pause'))return 'Pausada';
   if(s.includes('hidden')||s.includes('ocult')||s.includes('inactive')||s.includes('deleted')||s.includes('closed'))return 'Oculta';
@@ -1847,7 +1880,7 @@ function renderListingsForItem(item){
   }).join('')}</div>`;
 }
 function inventoryIsBundle(i){return ['bundle','combo','kit'].includes(String(i.item_type||'').toLowerCase())}
-function inventoryTypePill(i){let b=inventoryIsBundle(i);return `<span class="pill ${b?'dark':'ok'}">${b?'combo':'simple'}</span>`}
+function inventoryTypePill(i){let b=inventoryIsBundle(i);return `<span class="productTypeText ${b?'bundle':'simple'}">${b?'combo':'simple'}</span>`}
 function inventoryListingSummary(item){
   let arr=Array.isArray(item.listings)?item.listings:[];
   let ml=arr.filter(l=>listingMarket(l)==='ML').length;
@@ -1866,8 +1899,8 @@ function inventoryBestPrice(item){
 }
 function inventoryStockMatrixCell(i,idx){
   let isBundle=inventoryIsBundle(i);
-  let label=isBundle?'calculado':'ERP';
-  return `<div class="productStockRead ${isBundle?'bundle':''}"><strong>${esc(i.stock??0)}</strong><br><span class="small">${label}</span></div><div id="rowStatus_${idx}" class="small"></div>`;
+  let label=isBundle?'calculado':'';
+  return `<div class="productStockRead ${isBundle?'bundle':''}"><strong>${esc(i.stock??0)}</strong>${label?`<br><span class="small">${label}</span>`:''}</div><div id="rowStatus_${idx}" class="small"></div>`;
 }
 function openFloatingActionMenu(ev,items){
   try{ev.preventDefault();ev.stopPropagation()}catch(_e){}
@@ -1885,10 +1918,22 @@ document.addEventListener('click',e=>{if(!e.target.closest('.floatingKebabPanel'
 window.addEventListener('scroll',()=>document.querySelectorAll('.floatingKebabPanel').forEach(x=>x.remove()),true);
 function openProductActionMenu(ev,idx){openFloatingActionMenu(ev,[{label:'Modificar',onclick:`renderEditProductTool(${idx})`},{label:'Eliminar',cls:'danger',onclick:`deleteInventoryItem(${idx})`}])}
 function inventoryActionsCell(i,idx){return `<button type="button" class="productKebabButton" title="Más acciones" onclick="openProductActionMenu(event,${idx})">⋮</button>`}
+function renderProductPublicationsDetail(i){
+  let arr=Array.isArray(i.listings)?i.listings:[];
+  let market=qs('invMarket')?.value||'';
+  if(market)arr=arr.filter(l=>listingMarket(l)===market);
+  if(!arr.length)return '';
+  return `<tr class="productPublicationDetailRow"><td></td><td colspan="4" class="productPublicationDetailWrap">${renderListingsForItem(i)}</td><td></td></tr>`;
+}
 function renderProductComponentsDetail(i){
   if(!inventoryIsBundle(i))return '';
   let html=comboComponentsPreviewTable(i);
-  return `<tr class="productDetailRow"><td></td><td colspan="4" class="comboComponentWrap">${html}</td><td></td></tr>`;
+  return `<tr class="productDetailRow"><td></td><td colspan="5" class="comboComponentWrap">${html}</td></tr>`;
+}
+function productCategoryLine(i){
+  if(inventoryIsBundle(i))return '';
+  let c=String(i.category||'').trim();
+  return c?`<span class="small productCategoryLine">${esc(c)}</span>`:'';
 }
 function renderInventory(){
   let items=state.inventoryItems||[];
@@ -1899,13 +1944,13 @@ function renderInventory(){
     tbody=items.map((i,idx)=>{
       let isBundle=inventoryIsBundle(i);
       return `<tr class="comboMatrixMain productMatrixMain ${isBundle?'bundle':'simple'}">
-        <td><div class="comboMatrixSku comboSaasMono">${esc(i.sku)}</div><div class="small">${inventoryTypePill(i)}</div></td>
-        <td><div class="comboMatrixName">${esc(i.name||'')}</div><span class="small">${esc(i.category||'')}</span></td>
-        <td class="comboMatrixPubs">${renderListingsForItem(i)}</td>
+        <td><div class="comboMatrixSku comboSaasMono">${esc(i.sku)}</div>${inventoryTypePill(i)}</td>
+        <td><div class="comboMatrixName">${esc(i.name||'')}${productCategoryLine(i)}</div></td>
+        <td class="comboMatrixPubs"><span class="small">${esc(inventoryListingSummary(i))}</span></td>
         <td class="comboMatrixPrice">${inventoryBestPrice(i)}</td>
         <td class="comboMatrixStock">${inventoryStockMatrixCell(i,idx)}</td>
         <td class="actionCell">${inventoryActionsCell(i,idx)}</td>
-      </tr>${renderProductComponentsDetail(i)}`;
+      </tr>${renderProductPublicationsDetail(i)}${renderProductComponentsDetail(i)}`;
     }).join('');
   }
   qs('invResults').innerHTML=`<table class="comboMatrixTable productMatrixTable"><thead><tr><th>SKU</th><th>Producto</th><th>Publicaciones</th><th>Precio</th><th>Stock</th><th></th></tr></thead><tbody>${tbody}</tbody></table>`;
@@ -2585,14 +2630,14 @@ function positionOpenKebabMenus(){document.querySelectorAll('details.kebabMenu[o
 document.addEventListener('toggle',e=>{let d=e.target;if(!(d instanceof HTMLDetailsElement)||!d.classList.contains('kebabMenu'))return;if(d.open){document.querySelectorAll('details.kebabMenu[open]').forEach(x=>{if(x!==d)x.removeAttribute('open')});setTimeout(positionOpenKebabMenus,0)}},true);
 window.addEventListener('scroll',positionOpenKebabMenus,true);window.addEventListener('resize',positionOpenKebabMenus);
 function scrollToInventoryTool(){let box=inventoryToolBox();if(!box)return;setTimeout(()=>box.scrollIntoView({behavior:'smooth',block:'start'}),60)}
-function toggleInventoryTool(kind){let box=inventoryToolBox();if(!box)return;closeOpenKebabMenus();box.classList.remove('hidden');if(kind==='product')renderCreateProductTool();if(kind==='bundle')showView('combos');if(kind==='link')renderLinkPublicationsTool();scrollToInventoryTool()}function invToolStatus(msg,ok=true){let el=qs('inventoryToolStatus');if(!el)return;el.textContent=msg;el.style.color=ok?'var(--ok)':'var(--bad)'}function renderCreateProductTool(){inventoryToolBox().innerHTML=`<div class="card" style="background:#fffaf0;border-color:#eee2c8"><h3>Agregar producto simple</h3><p>Alta en inventory_items. Después podés vincular publicaciones ML/TN sin asociar.</p><div class="grid"><div class="col-3"><label>SKU *</label><input id="newSku" placeholder="Ej: PC..." oninput="qs('linkSku').value=this.value"></div><div class="col-5"><label>Producto *</label><input id="newName" placeholder="Nombre comercial"></div><div class="col-2"><label>Stock inicial</label><input id="newStock" type="number" step="1" value="0"></div><div class="col-2"><label>Costo</label><input id="newCost" type="number" step="0.01" placeholder="Opcional"></div><div class="col-3"><label>Variante</label><input id="newVariant" placeholder="Opcional"></div><div class="col-4"><label>Categoría</label><input id="newCategory" placeholder="Opcional"></div><div class="col-5"><label>Descripción</label><input id="newDesc" placeholder="Opcional"></div></div><div class="btnrow" style="margin-top:12px"><button class="ok" onclick="createInventoryProduct()">Crear producto</button><button class="secondary" onclick="renderLinkPublicationsTool(qs('newSku')?.value||'')">Vincular publicaciones</button><button class="secondary" onclick="inventoryToolBox().classList.add('hidden')">Cerrar</button></div><div id="inventoryToolStatus" class="status"></div></div>`}
-async function createInventoryProduct(){let sku=(qs('newSku').value||'').trim();let name=(qs('newName').value||'').trim();if(!sku||!name){invToolStatus('SKU y producto son obligatorios.',false);return}let body={sku,name,variant_name:qs('newVariant').value||null,category:qs('newCategory').value||null,description:qs('newDesc').value||null,cost:qs('newCost').value?Number(qs('newCost').value):null,stock:Number(qs('newStock').value||0),active:true};invToolStatus('Creando producto...');try{let d=await fetchJson('/admin/v2/inventory/product',{method:'POST',body:JSON.stringify(body)});invToolStatus(`Producto creado: ${d.item?.sku||sku}`,true);qs('invSearch').value=sku;await searchInventory(0,true)}catch(e){invToolStatus('Error creando producto: '+(e?.detail?JSON.stringify(e.detail):JSON.stringify(e)),false)}}
+function toggleInventoryTool(kind){let box=inventoryToolBox();if(!box)return;closeOpenKebabMenus();box.classList.remove('hidden');if(kind==='product')renderCreateProductTool();if(kind==='bundle')showView('combos');if(kind==='link')renderLinkPublicationsTool();scrollToInventoryTool()}function invToolStatus(msg,ok=true){let el=qs('inventoryToolStatus');if(!el)return;el.textContent=msg;el.style.color=ok?'var(--ok)':'var(--bad)'}function renderCreateProductTool(){inventoryToolBox().innerHTML=`<div class="card" style="background:#fffaf0;border-color:#eee2c8"><h3>Agregar producto simple</h3><p>Alta de SKU simple. Después podés vincular publicaciones ML/TN sin asociar.</p><div class="grid"><div class="col-3"><label>SKU *</label><input id="newSku" placeholder="Ej: PC..." oninput="if(qs('linkSku'))qs('linkSku').value=this.value"></div><div class="col-5"><label>Producto *</label><input id="newName" placeholder="Nombre comercial"></div><div class="col-2"><label>Stock inicial</label><input id="newStock" type="number" step="1" value="0"></div><div class="col-2"><label>Costo</label><input id="newCost" type="number" step="0.01" placeholder="Opcional"></div></div><div class="btnrow" style="margin-top:12px"><button class="ok" onclick="createInventoryProduct()">Crear producto</button><button class="secondary" onclick="renderLinkPublicationsTool(qs('newSku')?.value||'')">Vincular publicaciones</button><button class="secondary" onclick="inventoryToolBox().classList.add('hidden')">Cerrar</button></div><div id="inventoryToolStatus" class="status"></div></div>`}
+async function createInventoryProduct(){let sku=(qs('newSku').value||'').trim();let name=(qs('newName').value||'').trim();if(!sku||!name){invToolStatus('SKU y producto son obligatorios.',false);return}let body={sku,name,cost:qs('newCost').value?Number(qs('newCost').value):null,stock:Number(qs('newStock').value||0),active:true};invToolStatus('Creando producto...');try{let d=await fetchJson('/admin/v2/inventory/product',{method:'POST',body:JSON.stringify(body)});invToolStatus(`Producto creado: ${d.item?.sku||sku}`,true);qs('invSearch').value=sku;await searchInventory(0,true)}catch(e){invToolStatus('Error creando producto: '+(e?.detail?JSON.stringify(e.detail):JSON.stringify(e)),false)}}
 
 /* COMBOS_LEGACY_MONOUSER_JS_REMOVED: la UI nueva debe vivir integrada en la vista combos SaaS. */
 
-function renderLinkPublicationsTool(prefillSku=''){inventoryToolBox().innerHTML=`<div class="card" style="background:#fffaf0;border-color:#eee2c8"><h3>Vincular publicaciones sin asociar</h3><p>Trae publicaciones/variantes huérfanas desde ML o TN y las asocia al SKU ERP elegido. El usuario no carga IDs a mano.</p><div class="grid"><div class="col-3"><label>SKU ERP destino *</label><input id="linkSku" value="${esc(prefillSku||qs('invSearch')?.value||'')}" placeholder="SKU simple o combo"></div><div class="col-2"><label>Canal</label><select id="linkMarket"><option>ML</option><option>TN</option></select></div><div class="col-5"><label>Buscar dentro de huérfanas</label><input id="linkQuery" placeholder="Título, SKU, publicación"></div><div class="col-2"><label>Límite</label><select id="linkLimit"><option>50</option><option selected>100</option><option>200</option></select></div></div><div class="btnrow" style="margin-top:12px"><button class="primary" onclick="loadUnlinkedPublications()">Buscar publicaciones sin vincular</button><button class="secondary" onclick="inventoryToolBox().classList.add('hidden')">Cerrar</button></div><div id="inventoryToolStatus" class="status"></div><div id="unlinkedResults" class="tableWrap" style="margin-top:12px"></div></div>`;scrollToInventoryTool()}async function loadUnlinkedPublications(){let market=qs('linkMarket').value;let lim=qs('linkLimit').value;let qRaw=(qs('linkQuery').value||'').trim();if(qRaw&&qRaw.length<3){state.linkCandidates=[];renderUnlinkedPublications();invToolStatus('Ingresá al menos 3 caracteres para buscar huérfanas.',false);return}let q=encodeURIComponent(qRaw);invToolStatus(`Buscando huérfanas ${market}...`);try{let d=await fetchJson(`/admin/v2/marketplace/unlinked?marketplace=${encodeURIComponent(market)}&limit=${encodeURIComponent(lim)}&q=${q}`);state.linkCandidates=d.items||[];renderUnlinkedPublications();invToolStatus(`${market}: ${state.linkCandidates.length} publicaciones/variantes sin vincular`,true)}catch(e){invToolStatus('Error buscando huérfanas: '+(e?.detail?JSON.stringify(e.detail):JSON.stringify(e)),false)}}function renderUnlinkedPublications(){let items=state.linkCandidates||[];if(!items.length){qs('unlinkedResults').innerHTML='<div class="muted" style="padding:18px">Sin publicaciones huérfanas para ese filtro.</div>';return}let rows=items.map((x,idx)=>`<tr><td><strong>${esc(x.marketplace)}</strong><br><span class="small">Pub: ${esc(x.external_product_id)}<br>Var: ${esc(x.external_variant_id||'0')}</span></td><td>${esc(x.title||'')}<br><span class="small">SKU canal: <strong class="mono">${esc(x.seller_sku||'sin SKU')}</strong> · ${esc(x.sku_source||'')}</span></td><td>$ ${esc(x.price??'')}<br><span class="small">stock canal: ${esc(x.stock??'')}</span></td><td>${statusPill(x.status||'')}</td><td><button class="ok" onclick="linkPublication(${idx})">Vincular al SKU</button>${x.url?`<br><a href="${esc(x.url)}" target="_blank" class="small">abrir</a>`:''}</td></tr>`).join('');qs('unlinkedResults').innerHTML=`<table><thead><tr><th>Canal / IDs</th><th>Publicación</th><th>Precio / stock</th><th>Estado</th><th>Acción</th></tr></thead><tbody>${rows}</tbody></table>`}async function linkPublication(idx){
+function renderLinkPublicationsTool(prefillSku=''){inventoryToolBox().innerHTML=`<div class="card" style="background:#fffaf0;border-color:#eee2c8"><h3>Vincular publicaciones sin asociar</h3><p>Trae publicaciones/variantes huérfanas desde ML o TN y las asocia al SKU elegido. El usuario no carga IDs a mano.</p><div class="grid"><div class="col-3"><label>SKU destino *</label><input id="linkSku" value="${esc(prefillSku||qs('invSearch')?.value||'')}" placeholder="SKU simple o combo"></div><div class="col-2"><label>Canal</label><select id="linkMarket"><option>ML</option><option>TN</option></select></div><div class="col-5"><label>Buscar dentro de huérfanas</label><input id="linkQuery" placeholder="Título, SKU, publicación"></div><div class="col-2"><label>Límite</label><select id="linkLimit"><option>50</option><option selected>100</option><option>200</option></select></div></div><div class="btnrow" style="margin-top:12px"><button class="primary" onclick="loadUnlinkedPublications()">Buscar publicaciones sin vincular</button><button class="secondary" onclick="inventoryToolBox().classList.add('hidden')">Cerrar</button></div><div id="inventoryToolStatus" class="status"></div><div id="unlinkedResults" class="tableWrap" style="margin-top:12px"></div></div>`;scrollToInventoryTool()}async function loadUnlinkedPublications(){let market=qs('linkMarket').value;let lim=qs('linkLimit').value;let qRaw=(qs('linkQuery').value||'').trim();if(qRaw&&qRaw.length<3){state.linkCandidates=[];renderUnlinkedPublications();invToolStatus('Ingresá al menos 3 caracteres para buscar huérfanas.',false);return}let q=encodeURIComponent(qRaw);invToolStatus(`Buscando huérfanas ${market}...`);try{let d=await fetchJson(`/admin/v2/marketplace/unlinked?marketplace=${encodeURIComponent(market)}&limit=${encodeURIComponent(lim)}&q=${q}`);state.linkCandidates=d.items||[];renderUnlinkedPublications();invToolStatus(`${market}: ${state.linkCandidates.length} publicaciones/variantes sin vincular`,true)}catch(e){invToolStatus('Error buscando huérfanas: '+(e?.detail?JSON.stringify(e.detail):JSON.stringify(e)),false)}}function renderUnlinkedPublications(){let items=state.linkCandidates||[];if(!items.length){qs('unlinkedResults').innerHTML='<div class="muted" style="padding:18px">Sin publicaciones huérfanas para ese filtro.</div>';return}let rows=items.map((x,idx)=>`<tr><td><strong>${esc(x.marketplace)}</strong><br><span class="small">Pub: ${esc(x.external_product_id)}<br>Var: ${esc(x.external_variant_id||'0')}</span></td><td>${esc(x.title||'')}<br><span class="small">SKU canal: <strong class="mono">${esc(x.seller_sku||'sin SKU')}</strong> · ${esc(x.sku_source||'')}</span></td><td>$ ${esc(x.price??'')}<br><span class="small">stock canal: ${esc(x.stock??'')}</span></td><td>${statusPill(x.status||'')}</td><td><button class="ok" onclick="linkPublication(${idx})">Vincular al SKU</button>${x.url?`<br><a href="${esc(x.url)}" target="_blank" class="small">abrir</a>`:''}</td></tr>`).join('');qs('unlinkedResults').innerHTML=`<table><thead><tr><th>Canal / IDs</th><th>Publicación</th><th>Precio / stock</th><th>Estado</th><th>Acción</th></tr></thead><tbody>${rows}</tbody></table>`}async function linkPublication(idx){
   let sku=(qs('linkSku').value||'').trim();
-  if(!sku){invToolStatus('Primero indicá el SKU ERP destino.',false);return}
+  if(!sku){invToolStatus('Primero indicá el SKU destino.',false);return}
   let x=state.linkCandidates[idx];if(!x)return;
   let listing={
     marketplace:x.marketplace,
@@ -2638,22 +2683,16 @@ function renderEditProductTool(idx){
   inventoryToolBox().classList.remove('hidden');
   inventoryToolBox().innerHTML=`<div class="card productEditCard" style="background:#fffaf0;border-color:#eee2c8">
     <h3>Modificar SKU</h3>
-    <p>${isBundle?'Combo listado como SKU: stock calculado y componentes se administran en Combos/Kits. Acá se editan datos y publicaciones.':'Producto simple: datos operativos, stock ERP y publicaciones asociadas.'}</p>
-    <div class="grid">
+    <p>${isBundle?'Combo listado como SKU: stock calculado. Los componentes se administran en Combos/Kits.':'Producto simple: datos operativos, stock y publicaciones asociadas.'}</p>
+    <div class="grid compactEditGrid">
       <div class="col-3"><label>SKU</label><input id="editSku" value="${esc(item.sku||'')}" disabled></div>
       <div class="col-5"><label>Producto *</label><input id="editName" value="${esc(item.name||'')}"></div>
-      <div class="col-2"><label>Tipo</label><input value="${isBundle?'combo':'simple'}" disabled></div>
-      <div class="col-2"><label>Estado</label><select id="editActive"><option value="true" ${item.active!==false?'selected':''}>Activo</option><option value="false" ${item.active===false?'selected':''}>Inactivo</option></select></div>
-      <div class="col-2"><label>Stock ERP</label><input id="editStock" type="number" step="1" value="${esc(item.stock??0)}" ${isBundle?'disabled title="Stock calculado desde componentes"':''}></div>
+      <div class="col-2"><label>Stock</label><input id="editStock" type="number" step="1" value="${esc(item.stock??0)}" ${isBundle?'disabled title="Stock calculado desde componentes"':''}></div>
       <div class="col-2"><label>Costo</label><input id="editCost" type="number" step="0.01" value="${esc(item.cost??'')}"></div>
-      <div class="col-3"><label>Variante</label><input id="editVariant" value="${esc(item.variant_name||'')}"></div>
-      <div class="col-5"><label>Categoría</label><input id="editCategory" value="${esc(item.category||'')}"></div>
-      <div class="col-12"><label>Descripción</label><input id="editDesc" value="${esc(item.description||'')}"></div>
-      <div class="col-12"><label>Precios / stock de publicaciones asociadas</label><div class="productEditListings">${renderEditableListingsForItem(item,idx)}</div><div class="small">El stock ERP del producto se edita arriba. Estos campos actualizan el registro local de cada publicación vinculada.</div></div>
+      <div class="col-12"><label>Precios / stock de publicaciones asociadas</label><div class="productEditListings">${renderEditableListingsForItem(item,idx)}</div><div class="small">Estos campos actualizan el registro local de cada publicación vinculada. No pausan ni publican en ML/TN.</div></div>
     </div>
     <div class="btnrow" style="margin-top:12px">
-      <button class="ok" onclick="saveInventoryProduct(${idx})">Guardar datos / stock ERP</button>
-      <button class="secondary" onclick="saveInventoryListingPrices(${idx})">Guardar precios publicaciones</button>
+      <button class="ok" onclick="saveInventoryProductAll(${idx})">Guardar cambios</button>
       <button class="secondary" onclick="renderLinkPublicationsTool('${jsq(item.sku||'')}')">Buscar / asociar publicaciones</button>
       <button class="secondary" onclick="inventoryToolBox().classList.add('hidden')">Cerrar</button>
     </div>
@@ -2662,11 +2701,9 @@ function renderEditProductTool(idx){
   scrollToInventoryTool();
 }
 
-async function saveInventoryListingPrices(idx){
-  let item=state.inventoryItems[idx];if(!item)return;
+function inventoryListingPayloadsFromEdit(idx,item){
   let arr=item._editListings||item.listings||[];
-  if(!arr.length){invToolStatus('No hay publicaciones para guardar.',false);return}
-  let listings=arr.map((l,j)=>({
+  return arr.map((l,j)=>({
     marketplace:listingMarket(l),
     external_product_id:String(listingProductId(l)||''),
     external_variant_id:String(listingVariantId(l)||'0'),
@@ -2679,10 +2716,16 @@ async function saveInventoryListingPrices(idx){
     listing_type:l.listing_type||null,
     raw_data:l.raw_data||{}
   })).filter(x=>x.marketplace&&x.external_product_id);
-  invToolStatus('Guardando precios de publicaciones...');
+}
+
+async function saveInventoryListingPrices(idx){
+  let item=state.inventoryItems[idx];if(!item)return;
+  let listings=inventoryListingPayloadsFromEdit(idx,item);
+  if(!listings.length){invToolStatus('No hay publicaciones para guardar.',false);return}
+  invToolStatus('Guardando publicaciones...');
   try{
     await fetchJson('/admin/v2/inventory/product/'+encodeURIComponent(item.sku)+'/link-listings',{method:'POST',body:JSON.stringify({listings})});
-    invToolStatus('Precios de publicaciones actualizados OK',true);
+    invToolStatus('Publicaciones actualizadas OK',true);
     await searchInventory(state.inventory.offset||0,true);
   }catch(e){invToolStatus('Error guardando publicaciones: '+friendlyInventoryError(e),false)}
 }
@@ -2691,27 +2734,29 @@ async function saveInventoryProduct(idx){
   let item=state.inventoryItems[idx];if(!item)return;
   let isBundle=inventoryIsBundle(item);
   let costTxt=(qs('editCost').value||'').trim();
-  let body={
-    name:qs('editName').value||'',
-    variant_name:qs('editVariant').value||'',
-    category:qs('editCategory').value||'',
-    description:qs('editDesc').value||'',
-    active:qs('editActive').value==='true'
-  };
+  let body={name:qs('editName').value||''};
   if(costTxt!=='')body.cost=Number(costTxt);
   if(!isBundle&&qs('editStock')){
     let newStock=Number(qs('editStock').value);
-    if(!Number.isFinite(newStock)){invToolStatus('Stock inválido.',false);return}
+    if(!Number.isFinite(newStock)){invToolStatus('Stock inválido.',false);return null}
     body.stock=Math.trunc(newStock);
   }
-  invToolStatus('Guardando SKU...');
+  return fetchJson('/admin/v2/inventory/product/'+encodeURIComponent(item.sku),{method:'PUT',body:JSON.stringify(body)});
+}
+
+async function saveInventoryProductAll(idx){
+  let item=state.inventoryItems[idx];if(!item)return;
+  invToolStatus('Guardando cambios...');
   try{
-    await fetchJson('/admin/v2/inventory/product/'+encodeURIComponent(item.sku),{method:'PUT',body:JSON.stringify(body)});
-    invToolStatus('SKU actualizado OK',true);
-    qs('invSearch').value=item.sku;
+    await saveInventoryProduct(idx);
+    let listings=inventoryListingPayloadsFromEdit(idx,item);
+    if(listings.length){
+      await fetchJson('/admin/v2/inventory/product/'+encodeURIComponent(item.sku)+'/link-listings',{method:'POST',body:JSON.stringify({listings})});
+    }
+    invToolStatus('Cambios guardados OK',true);
     await searchInventory(state.inventory.offset||0,true);
   }catch(e){
-    invToolStatus('Error modificando SKU: '+(e?.detail?JSON.stringify(e.detail):(e?.message||JSON.stringify(e))),false);
+    invToolStatus('Error guardando cambios: '+friendlyInventoryError(e),false);
   }
 }
 
@@ -2772,7 +2817,7 @@ function renderFullInboundPreview(p){
   let warn=(p.errors||[]).length?`<div class="status badtxt">${esc((p.errors||[]).join(' · '))}</div>`:'';
   let head=`<div class="card" style="box-shadow:none;margin:0 0 10px;background:#fffaf0"><strong>Envío #${esc(p.shipment_id||'')}</strong> · Productos detectados: ${esc(p.detected_products??items.length)} / ${esc(p.expected_products??'s/d')} · Unidades: ${esc(p.detected_units??'')} / ${esc(p.expected_units??'s/d')}</div>`;
   let rows=items.map(r=>`<tr><td class="mono">${esc(r.sku)}</td><td>${esc(r.name||'')}</td><td>${esc(r.quantity??'')}</td><td>${esc(r.old_stock??'')}</td><td class="${r.insufficient_stock?'movementSale':''}">${esc(r.new_stock??'')}</td><td>${r.exists?statusPill('OK'):statusPill('No existe')}</td></tr>`).join('');
-  qs('fullInboundResult').innerHTML=head+warn+`<table><thead><tr><th>SKU</th><th>Producto</th><th>Unid. a Full</th><th>Stock ERP</th><th>Queda</th><th>Estado</th></tr></thead><tbody>${rows||'<tr><td colspan="6" class="muted">Sin productos detectados.</td></tr>'}</tbody></table>`;
+  qs('fullInboundResult').innerHTML=head+warn+`<table><thead><tr><th>SKU</th><th>Producto</th><th>Unid. a Full</th><th>Stock</th><th>Queda</th><th>Estado</th></tr></thead><tbody>${rows||'<tr><td colspan="6" class="muted">Sin productos detectados.</td></tr>'}</tbody></table>`;
 }
 async function previewFullInboundPdf(){
   let f=fullInboundSelectedFile();if(!f){setStatus('fullInboundStatus','Elegí un PDF.',false);return}
@@ -2781,9 +2826,9 @@ async function previewFullInboundPdf(){
 }
 async function applyFullInboundPdf(dryRun=true){
   let f=fullInboundSelectedFile();if(!f){setStatus('fullInboundStatus','Elegí un PDF.',false);return}
-  if(!dryRun&&!confirm('Esto va a descontar stock ERP y crear sync jobs hacia marketplaces propios. ¿Confirmás?'))return;
+  if(!dryRun&&!confirm('Esto va a descontar stock y crear sync jobs hacia marketplaces propios. ¿Confirmás?'))return;
   let fd=new FormData();fd.append('file',f);
-  try{setBusy(true,dryRun?'Simulando envío a Full':'Descontando envío a Full','Procesando PDF y stock ERP...');let r=await fetch(url('/admin/ml/full-inbound/pdf/apply')+'&dry_run='+encodeURIComponent(dryRun?'true':'false'),{method:'POST',body:fd});let txt=await r.text();let d;try{d=JSON.parse(txt)}catch{d={ok:r.ok,text:txt}}if(!r.ok)throw d;if(d.preview){renderFullInboundPreview(d.preview)}if(d.duplicate||d.already_applied){setStatus('fullInboundStatus',d.message||`Este envío Full #${d.shipment_id||''} ya fue aplicado. No se volvió a descontar stock.`,'warn')}else{setStatus('fullInboundStatus',dryRun?`Simulación OK · ${d.units_applied||0} unidades`:`Descuento OK · ${d.units_applied||0} unidades · envío #${d.shipment_id||''}`,!!d.ok)}showPre('fullInboundOut',JSON.stringify(d,null,2));if(!dryRun&&!d.duplicate&&!d.already_applied){loadDashboard();}}catch(e){setStatus('fullInboundStatus','Error aplicando PDF Full: '+(e.message||e.detail||JSON.stringify(e)),false);showPre('fullInboundOut',JSON.stringify(e,null,2));}finally{setBusy(false)}
+  try{setBusy(true,dryRun?'Simulando envío a Full':'Descontando envío a Full','Procesando PDF y stock...');let r=await fetch(url('/admin/ml/full-inbound/pdf/apply')+'&dry_run='+encodeURIComponent(dryRun?'true':'false'),{method:'POST',body:fd});let txt=await r.text();let d;try{d=JSON.parse(txt)}catch{d={ok:r.ok,text:txt}}if(!r.ok)throw d;if(d.preview){renderFullInboundPreview(d.preview)}if(d.duplicate||d.already_applied){setStatus('fullInboundStatus',d.message||`Este envío Full #${d.shipment_id||''} ya fue aplicado. No se volvió a descontar stock.`,'warn')}else{setStatus('fullInboundStatus',dryRun?`Simulación OK · ${d.units_applied||0} unidades`:`Descuento OK · ${d.units_applied||0} unidades · envío #${d.shipment_id||''}`,!!d.ok)}showPre('fullInboundOut',JSON.stringify(d,null,2));if(!dryRun&&!d.duplicate&&!d.already_applied){loadDashboard();}}catch(e){setStatus('fullInboundStatus','Error aplicando PDF Full: '+(e.message||e.detail||JSON.stringify(e)),false);showPre('fullInboundOut',JSON.stringify(e,null,2));}finally{setBusy(false)}
 }
 
 async function uploadCsv(){let f=qs('csvFile').files[0];if(!f){showPre('uploadOut','Elegí un CSV.');return}let fd=new FormData();fd.append('file',f);try{let r=await fetch(url('/erp/import_inventory'),{method:'POST',body:fd});let txt=await r.text();showPre('uploadOut',txt)}catch(e){showPre('uploadOut','Error: '+e)}}async function postText(path,out){try{let txt=await fetchText(path,{method:'POST'});showPre(out,txt)}catch(e){showPre(out,'Error: '+e)}}function statusPill(s){let cls=s==='done'||s==='issued'?'ok':(s==='manual_review'||s==='failed_retry'||s==='error'||s==='rejected'?'bad':(s==='pending'?'warn':'info'));return `<span class="pill ${cls}">${s||''}</span>`}
