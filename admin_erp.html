@@ -474,7 +474,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 .productMatrixMain td{padding:7px 9px!important}.productMatrixMain.bundle td{background:#f8f8f8!important}.productMatrixMain.simple td{background:#f7fff9!important}
 .productPubList{display:block!important;margin-left:0!important;padding:0!important;line-height:1.28!important;max-width:none!important}
 .productPubLine{display:grid!important;grid-template-columns:34px minmax(0,1fr) 78px 46px 58px!important;gap:6px!important;align-items:baseline!important;background:transparent!important;border:0!important;border-radius:0!important;padding:1px 0!important;font-size:11.5px!important;min-height:0!important}
-.productPubLine+.productPubLine{margin-top:2px!important}.productPubMarket{font-weight:900!important;color:#111!important}.productPubTitle{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;min-width:0!important}.productPubMeta{color:var(--muted)!important;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace!important;font-size:11px!important;white-space:nowrap!important}.productPubPrice,.productPubStock{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace!important;text-align:right!important;white-space:nowrap!important}.productPubStock{text-align:center!important}.productStatusText{font-weight:400!important;white-space:nowrap!important}.productStatusText.active{color:var(--ok)!important}.productStatusText.paused,.productStatusText.hidden{color:var(--bad)!important}.productStatusText.neutral{color:var(--muted)!important}
+.productPubLine+.productPubLine{margin-top:2px!important}.productPubMarket{font-weight:900!important;color:#111!important}.productPubTitle{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;min-width:0!important}.productPubMeta{color:var(--muted)!important;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace!important;font-size:11px!important;white-space:nowrap!important}.productPubPrice,.productPubStock{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace!important;text-align:right!important;white-space:nowrap!important}.productPubStock{text-align:center!important}.productStatusText{font-weight:400!important;white-space:nowrap!important}.productStatusText.active{color:var(--ok)!important}.productStatusText.paused,.productStatusText.oculto{color:var(--bad)!important}.productStatusText.neutral{color:var(--muted)!important}
 .productDetailRow td{background:#fffdf8!important;padding:0 9px 8px!important;border-bottom:1px solid #eadfc9!important}.productDetailRow .comboComponentWrap{background:#fffdf8!important;border-bottom:0!important;padding-top:0!important}.productDetailRow .comboComponentInner{margin-left:14%!important;width:66%!important;max-width:none!important}.productDetailRow .comboComponentTable{font-size:11.5px!important;box-shadow:none!important}.productDetailRow .comboComponentTable th{font-size:10.5px!important;padding:4px 6px!important}.productDetailRow .comboComponentTable td{padding:4px 6px!important}
 .productKebabButton,.comboKebabButton,.comboLineKebabButton{border:1px solid var(--line)!important;background:#fff!important;color:#111!important;font-size:18px!important;line-height:1!important;min-width:34px!important;min-height:30px!important;padding:5px 10px!important;border-radius:10px!important;box-shadow:none!important}.productKebabButton:hover,.comboKebabButton:hover,.comboLineKebabButton:hover{background:#fffaf0!important}
 .floatingKebabPanel{position:fixed;z-index:2147483000;min-width:170px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 45px rgba(17,17,17,.22);padding:8px;display:grid;gap:6px}.floatingKebabPanel button{width:100%;justify-content:flex-start;background:#fff!important;color:#111!important;border:1px solid #eee2c8!important;font-size:13px!important;min-height:34px!important;padding:8px 10px!important;box-shadow:none!important}.floatingKebabPanel button:hover{background:#fffaf0!important}.floatingKebabPanel button.danger{color:#991b1b!important;border-color:#fecaca!important}
@@ -537,7 +537,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 .productPubId a{font-family:inherit!important;font-size:inherit!important}
 .productPubVar{text-align:center!important}
 .productPublicationDetailWrap{padding-right:0!important}
-.productStatusText.hidden{color:var(--bad)!important}
+.productStatusText.oculto{color:var(--bad)!important}
 .productStatusText.active{color:var(--ok)!important}
 @media(max-width:1050px){
   .productPublicationDetailRow .productPubLine{grid-template-columns:34px minmax(300px,1fr) 108px 54px 88px 44px 66px!important}
@@ -709,12 +709,64 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 }
 .productPublicationDetailRow .productStatusText{text-align:left!important;white-space:nowrap!important;font-weight:400!important}
 .productStatusText.active{color:var(--ok)!important}
-.productStatusText.paused,.productStatusText.hidden{color:var(--bad)!important}
+.productStatusText.paused,.productStatusText.oculto{color:var(--bad)!important}
 .productStatusText.neutral{color:var(--muted)!important}
 @media(max-width:1050px){
   #inventario table.productMatrixTable{min-width:1040px!important}
   .productPublicationDetailRow .productPubList{margin-left:13%!important;width:79%!important}
   .productPublicationDetailRow .productPubAlignedLine{grid-template-columns:minmax(320px,1fr) minmax(140px,190px) 14% 12% 8%!important}
+}
+
+
+/* PRODUCTS_V251_ALIGNMENT_FINETUNE */
+/* Ajuste fino: bloque de publicaciones alineado con columnas reales de la grilla. */
+.productPublicationDetailRow .productPubList{
+  margin-left:13%!important;
+  width:87%!important;
+  padding-left:8px!important;
+  padding-right:10px!important;
+}
+.productPublicationDetailRow .productPubAlignedLine{
+  grid-template-columns:34fr 19fr 14fr 12fr 8fr!important;
+  gap:10px!important;
+  align-items:baseline!important;
+}
+.productPublicationDetailRow .productPubName{
+  grid-template-columns:36px minmax(0,1fr)!important;
+  gap:10px!important;
+}
+.productPublicationDetailRow .productPubRef{
+  grid-template-columns:minmax(92px,1fr) minmax(74px,92px)!important;
+  gap:10px!important;
+  padding-right:8px!important;
+}
+.productPublicationDetailRow .productPubId,
+.productPublicationDetailRow .productPubVar{
+  max-width:none!important;
+}
+.productPublicationDetailRow .productPubPrice{
+  text-align:right!important;
+  padding-right:20px!important;
+}
+.productPublicationDetailRow .productPubStock{
+  text-align:center!important;
+  padding-right:10px!important;
+}
+.productPublicationDetailRow .productStatusText{
+  display:inline-block!important;
+  min-width:62px!important;
+}
+@media(max-width:1050px){
+  .productPublicationDetailRow .productPubList{
+    margin-left:13%!important;
+    width:87%!important;
+  }
+  .productPublicationDetailRow .productPubAlignedLine{
+    grid-template-columns:32fr 21fr 14fr 12fr 8fr!important;
+  }
+  .productPublicationDetailRow .productPubRef{
+    grid-template-columns:minmax(88px,1fr) minmax(70px,88px)!important;
+  }
 }
 
 </style>
@@ -977,8 +1029,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.49';
-const FRONTEND_BUILD='admin-erp-v249-products-css-safe-status-v27';
+const FRONTEND_VERSION='2.51';
+const FRONTEND_BUILD='admin-erp-v251-products-alignment-finetune-v29';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
 const INVENTORY_IMPORT_RUNNING_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
@@ -2008,7 +2060,7 @@ function listingStatusClassForMarket(market,st){
 }
 function listingStatusLabel(st){return listingStatusLabelForMarket('',st)}
 function listingStatusClass(st){let c=listingStatusClassForMarket('',st);return c==='active'?'ok':(c==='paused'?'warn':(c==='hidden'?'inactive':'info'))}
-function listingStatusTextSpan(l){let m=listingMarket(l);let st=String(listingStatus(l)||'').trim().toLowerCase();if(m==='TN'){if(st==='published'||st==='visible'||st==='active')return '<span class="productStatusText active">Visible</span>';return '<span class="productStatusText hidden">Oculto</span>'}if(st==='active'||st==='activa')return '<span class="productStatusText active">Activa</span>';if(st==='paused'||st==='pausada')return '<span class="productStatusText paused">Pausada</span>';if(st==='closed'||st==='inactive'||st==='hidden'||st==='oculta')return '<span class="productStatusText hidden">Oculta</span>';return st?`<span class="productStatusText neutral">${esc(st)}</span>`:'<span class="productStatusText hidden">Oculta</span>'}
+function listingStatusTextSpan(l){let m=listingMarket(l);let st=String(listingStatus(l)||'').trim().toLowerCase();if(m==='TN'){if(st==='published'||st==='visible'||st==='active')return '<span class="productStatusText active">Visible</span>';return '<span class="productStatusText oculto">Oculto</span>'}if(st==='active'||st==='activa')return '<span class="productStatusText active">Activa</span>';if(st==='paused'||st==='pausada')return '<span class="productStatusText paused">Pausada</span>';if(st==='closed'||st==='inactive'||st==='hidden'||st==='oculta')return '<span class="productStatusText oculto">Oculta</span>';return st?`<span class="productStatusText neutral">${esc(st)}</span>`:'<span class="productStatusText oculto">Oculta</span>'}
 function friendlyInventoryError(e){
   let raw='';try{raw=JSON.stringify(e)}catch(_){raw=String(e||'')}
   if(raw.includes('Resource temporarily unavailable')||raw.includes('[Errno 11]'))return 'La base respondió ocupada unos segundos. Mantengo la grilla anterior; reintentá Filtrar.';
