@@ -544,22 +544,23 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 }
 
 
-/* PRODUCTS_V245_LIST_PRICE_AND_COLUMNS */
+/* PRODUCTS_V246_LEFT_COMPACT_ROWS */
 .productMatrixTable th:nth-child(1){width:13%!important}
-.productMatrixTable th:nth-child(2){width:32%!important}
-.productMatrixTable th:nth-child(3){width:14%!important}
-.productMatrixTable th:nth-child(4){width:12%!important}
-.productMatrixTable th:nth-child(5){width:10%!important}
-.productMatrixTable th:nth-child(6){width:7%!important}
-.productMatrixTable th:nth-child(7){width:5%!important}
+.productMatrixTable th:nth-child(2){width:37%!important}
+.productMatrixTable th:nth-child(3){width:16%!important}
+.productMatrixTable th:nth-child(4){width:14%!important}
+.productMatrixTable th:nth-child(5){width:12%!important}
+.productMatrixTable th:nth-child(6){width:8%!important}
+.productPublicationDetailWrap.productDetailFullWidth{padding:0 12px 4px 12px!important}
+.productPublicationDetailRow .productPubList{padding-left:0!important;margin-left:0!important}
 .productPublicationDetailRow .productPubLine{
-  grid-template-columns:34px minmax(380px,1fr) 104px 54px 86px 44px 70px!important;
+  grid-template-columns:32px minmax(300px,1fr) 102px 72px 92px 44px 72px!important;
   gap:10px!important;
 }
 .productPubId,.productPubVar{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;color:var(--muted)!important}
 .productListPrice{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace!important;text-align:right!important;white-space:nowrap!important}
 .productEditPubLine{grid-template-columns:46px minmax(260px,1fr) 120px 92px 74px!important}
-@media(max-width:1050px){#inventario table.productMatrixTable{min-width:1080px!important}.productPublicationDetailRow .productPubLine{grid-template-columns:34px minmax(320px,1fr) 104px 54px 86px 44px 70px!important}}
+@media(max-width:1050px){#inventario table.productMatrixTable{min-width:1040px!important}.productPublicationDetailRow .productPubLine{grid-template-columns:32px minmax(260px,1fr) 98px 68px 88px 42px 70px!important}}
 
 </style>
 <!-- UI_ALERTS_INVENTORY_FILTERS_FRONTEND_1_39 -->
@@ -821,8 +822,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.44';
-const FRONTEND_BUILD='admin-erp-v245-list-price-csv-v23';
+const FRONTEND_VERSION='2.46';
+const FRONTEND_BUILD='admin-erp-v246-products-left-compact-v24';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
 const INVENTORY_IMPORT_RUNNING_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
@@ -1976,12 +1977,12 @@ function renderProductPublicationsDetail(i){
   let market=qs('invMarket')?.value||'';
   if(market)arr=arr.filter(l=>listingMarket(l)===market);
   if(!arr.length)return '';
-  return `<tr class="productPublicationDetailRow"><td></td><td colspan="6" class="productPublicationDetailWrap">${renderListingsForItem(i)}</td></tr>`;
+  return `<tr class="productPublicationDetailRow"><td colspan="6" class="productPublicationDetailWrap productDetailFullWidth">${renderListingsForItem(i)}</td></tr>`;
 }
 function renderProductComponentsDetail(i){
   if(!inventoryIsBundle(i))return '';
   let html=comboComponentsPreviewTable(i);
-  return `<tr class="productDetailRow"><td></td><td colspan="6" class="comboComponentWrap">${html}</td></tr>`;
+  return `<tr class="productDetailRow"><td colspan="6" class="comboComponentWrap productDetailFullWidth">${html}</td></tr>`;
 }
 function productCategoryLine(i){
   if(inventoryIsBundle(i))return '';
@@ -1992,7 +1993,7 @@ function renderInventory(){
   let items=state.inventoryItems||[];
   let tbody='';
   if(!items.length){
-    tbody='<tr><td colspan="7"><div class="comboSaasEmpty">Sin productos para este filtro.</div></td></tr>';
+    tbody='<tr><td colspan="6"><div class="comboSaasEmpty">Sin productos para este filtro.</div></td></tr>';
   }else{
     tbody=items.map((i,idx)=>{
       let isBundle=inventoryIsBundle(i);
@@ -2001,13 +2002,12 @@ function renderInventory(){
         <td><div class="comboMatrixName">${esc(i.name||'')}${productCategoryLine(i)}</div></td>
         <td class="comboMatrixPubs"><span class="small">${esc(inventoryListingSummary(i))}</span></td>
         <td class="productListPrice">${inventoryListPriceText(i)}</td>
-        <td class="comboMatrixPrice">${inventoryBestPrice(i)}</td>
         <td class="comboMatrixStock">${inventoryStockMatrixCell(i,idx)}</td>
         <td class="actionCell">${inventoryActionsCell(i,idx)}</td>
       </tr>${renderProductPublicationsDetail(i)}${renderProductComponentsDetail(i)}`;
     }).join('');
   }
-  qs('invResults').innerHTML=`<table class="comboMatrixTable productMatrixTable"><thead><tr><th>SKU</th><th>Producto</th><th>Publicaciones</th><th>Precio lista</th><th>Precio pub.</th><th>Stock</th><th></th></tr></thead><tbody>${tbody}</tbody></table>`;
+  qs('invResults').innerHTML=`<table class="comboMatrixTable productMatrixTable"><thead><tr><th>SKU</th><th>Producto</th><th>Publicaciones</th><th>Precio lista</th><th>Stock</th><th></th></tr></thead><tbody>${tbody}</tbody></table>`;
 }
 
 function comboLimit(){return Number(qs('comboLimit')?.value||100)}
