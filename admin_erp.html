@@ -1162,8 +1162,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.55';
-const FRONTEND_BUILD='admin-erp-v255-inventory-download-session-v33';
+const FRONTEND_VERSION='2.55b';
+const FRONTEND_BUILD='admin-erp-v255b-inventory-download-session-safe-v33b';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
 const INVENTORY_IMPORT_RUNNING_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
@@ -1327,30 +1327,46 @@ function renderArcaManualPreview(d){
   let st=qs('arcaManualStatus'); if(st)st.insertAdjacentElement('afterend',box); else host.appendChild(box);
 }
 function setBusy(on,title='Procesando...',msg='No cierres esta pantalla.'){let ov=qs('erpBusyOverlay');if(!ov)return;document.body.classList.toggle('erpBusy',!!on);ov.classList.toggle('active',!!on);if(qs('erpBusyTitle'))qs('erpBusyTitle').textContent=title;if(qs('erpBusyMsg'))qs('erpBusyMsg').textContent=msg}function setArcaAndSalesStatus(ch,msg,ok=null){setStatus('arcaStatus',msg,ok);setStatus(String(ch||'').toLowerCase()+'VentasStatus',msg,ok)}
-function syncConnectionFields(){['apiUrl','cfgApiUrl'].forEach(id=>{let el=qs(id);if(el)el.value=state.api});['token','cfgToken'].forEach(id=>{let el=qs(id);if(el)el.value=state.token})}function saveSettings(){state.api=apiBase();state.token=token().trim();localStorage.setItem('pc_erp_api',state.api);localStorage.setItem('pc_erp_token',state.token);localStorage.setItem('xeleria_admin_token',state.token);syncConnectionFields();setStatus('homeStatus','Guardado.',true);setStatus('connStatus',state.token?'Guardado.':'Guardado, pero ADMIN_TOKEN quedó vacío.',!!state.token);syncLinks()}function saveSettingsFromConfig(){saveSettings()}function loadSettings(){state.api=localStorage.getItem('pc_erp_api')||localStorage.getItem('xeleria_api_url')||state.api;state.token=localStorage.getItem('pc_erp_token')||localStorage.getItem('xeleria_admin_token')||'';syncConnectionFields();loadViewPrefs();loadConfig();syncLinks()}function syncLinks(){let d=qs('downloadCsv');if(d){d.href='#';d.onclick=(ev)=>{ev.preventDefault();downloadInventoryCsv();return false}}}
+function syncConnectionFields(){['apiUrl','cfgApiUrl'].forEach(id=>{let el=qs(id);if(el)el.value=state.api});['token','cfgToken'].forEach(id=>{let el=qs(id);if(el)el.value=state.token})}function saveSettings(){state.api=apiBase();state.token=token().trim();localStorage.setItem('pc_erp_api',state.api);localStorage.setItem('pc_erp_token',state.token);localStorage.setItem('xeleria_admin_token',state.token);syncConnectionFields();setStatus('homeStatus','Guardado.',true);setStatus('connStatus',state.token?'Guardado.':'Guardado, pero ADMIN_TOKEN quedó vacío.',!!state.token);syncLinks()}function saveSettingsFromConfig(){saveSettings()}function loadSettings(){state.api=localStorage.getItem('pc_erp_api')||localStorage.getItem('xeleria_api_url')||state.api;state.token=localStorage.getItem('pc_erp_token')||localStorage.getItem('xeleria_admin_token')||'';syncConnectionFields();loadViewPrefs();loadConfig();syncLinks()}function syncLinks(){
+  var d=qs('downloadCsv');
+  if(d){
+    d.href='#';
+    d.onclick=function(ev){
+      if(ev&&ev.preventDefault)ev.preventDefault();
+      downloadInventoryCsv();
+      return false;
+    };
+  }
+}
+function filenameFromContentDisposition(cd){
+  cd=String(cd||'');
+  var p=cd.toLowerCase().indexOf('filename=');
+  if(p<0)return 'inventario_xeleria.csv';
+  var name=cd.slice(p+9).split(';')[0].trim();
+  if(name.charAt(0)==='"'&&name.charAt(name.length-1)==='"')name=name.slice(1,-1);
+  return name||'inventario_xeleria.csv';
+}
 async function downloadInventoryCsv(){
   setStatus('invStatus','Preparando planilla...');
   try{
-    let h=xeleriaHeaders();
+    var h=xeleriaHeaders();
     delete h['Content-Type'];
-    let r=await fetch(url('/admin/v2/inventory/products/export'),{method:'GET',headers:h});
-    let txt='';
+    var r=await fetch(url('/admin/v2/inventory/products/export'),{method:'GET',headers:h});
+    var txt='';
     if(!r.ok){
       try{txt=await r.text()}catch(_e){}
       throw {http_status:r.status,http_status_text:r.statusText,raw_text:txt,detail:txt};
     }
-    let blob=await r.blob();
-    let cd=r.headers.get('content-disposition')||'';
-    let m=cd.match(/filename="?([^";]+)"?/i);
-    let filename=(m&&m[1])?m[1]:'inventario_xeleria.csv';
-    let a=document.createElement('a');
-    let obj=URL.createObjectURL(blob);
+    var blob=await r.blob();
+    var filename=filenameFromContentDisposition(r.headers.get('content-disposition'));
+    var a=document.createElement('a');
+    var obj=URL.createObjectURL(blob);
     a.href=obj;
     a.download=filename;
     document.body.appendChild(a);
     a.click();
     a.remove();
-    setTimeout(()=>URL.revokeObjectURL(obj),1500);
+    setTimeout(function(){URL.revokeObjectURL(obj)},1500);
     setStatus('invStatus','Planilla descargada.',true);
   }catch(e){
     setStatus('invStatus','Error bajando planilla: '+friendlyInventoryError(e),false);
