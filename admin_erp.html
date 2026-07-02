@@ -637,6 +637,77 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
   .productPubRef{grid-template-columns:minmax(0,1fr) 68px!important}
 }
 
+
+/* PRODUCTS_V248_TRUE_TABLE_PUBLICATION_ROWS */
+.productPublicationTableRow td{
+  background:#fffdf8!important;
+  border-bottom:0!important;
+  padding-top:2px!important;
+  padding-bottom:2px!important;
+  vertical-align:baseline!important;
+  font-size:12px!important;
+}
+.productPublicationTableRow .productPubSkuSpacer{
+  width:13%!important;
+}
+.productPublicationTableRow .productPubNameCell{
+  display:grid!important;
+  grid-template-columns:36px minmax(0,1fr)!important;
+  gap:10px!important;
+  align-items:baseline!important;
+  padding-left:8px!important;
+}
+.productPublicationTableRow .productPubMarket{
+  font-weight:900!important;
+  color:#111!important;
+}
+.productPublicationTableRow .productPubTitle{
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  min-width:0!important;
+}
+.productPublicationTableRow .productPubRefCell{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) 78px!important;
+  gap:8px!important;
+  align-items:baseline!important;
+}
+.productPublicationTableRow .productPubId,
+.productPublicationTableRow .productPubVar{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace!important;
+  font-size:11px!important;
+  color:var(--muted)!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.productPublicationTableRow .productPubId a{
+  font-family:inherit!important;
+  font-size:inherit!important;
+}
+.productPublicationTableRow .productPubPriceCell{
+  text-align:right!important;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace!important;
+  white-space:nowrap!important;
+}
+.productPublicationTableRow .productPubStockCell{
+  text-align:center!important;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace!important;
+  white-space:nowrap!important;
+}
+.productPublicationTableRow .productPubStatusCell{
+  text-align:left!important;
+  white-space:nowrap!important;
+}
+.productPublicationTableRow:last-of-type td{
+  padding-bottom:8px!important;
+  border-bottom:1px solid #eadfc9!important;
+}
+.productStatusText.active{color:var(--ok)!important;font-weight:400!important}
+.productStatusText.paused,.productStatusText.hidden{color:var(--bad)!important;font-weight:400!important}
+.productStatusText.neutral{color:var(--muted)!important;font-weight:400!important}
+
 </style>
 <!-- UI_ALERTS_INVENTORY_FILTERS_FRONTEND_1_39 -->
 </head>
@@ -897,8 +968,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.47';
-const FRONTEND_BUILD='admin-erp-v247-products-publications-aligned-v25';
+const FRONTEND_VERSION='2.48';
+const FRONTEND_BUILD='admin-erp-v248-products-publication-rows-status-v26';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
 const INVENTORY_IMPORT_RUNNING_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
@@ -1928,7 +1999,7 @@ function listingStatusClassForMarket(market,st){
 }
 function listingStatusLabel(st){return listingStatusLabelForMarket('',st)}
 function listingStatusClass(st){let c=listingStatusClassForMarket('',st);return c==='active'?'ok':(c==='paused'?'warn':(c==='hidden'?'inactive':'info'))}
-function listingStatusTextSpan(l){let m=listingMarket(l),st=listingStatus(l);return `<span class="productStatusText ${listingStatusClassForMarket(m,st)}">${esc(listingStatusLabelForMarket(m,st))}</span>`}
+function listingStatusTextSpan(l){let m=listingMarket(l);let st=String(listingStatus(l)||'').trim().toLowerCase();if(m==='TN'){if(st==='published'||st==='visible'||st==='active')return '<span class="productStatusText active">Visible</span>';return '<span class="productStatusText hidden">Oculto</span>'}if(st==='active'||st==='activa')return '<span class="productStatusText active">Activa</span>';if(st==='paused'||st==='pausada')return '<span class="productStatusText paused">Pausada</span>';if(st==='closed'||st==='inactive'||st==='hidden'||st==='oculta')return '<span class="productStatusText hidden">Oculta</span>';return st?`<span class="productStatusText neutral">${esc(st)}</span>`:'<span class="productStatusText hidden">Oculta</span>'}">${esc(listingStatusLabelForMarket(m,st))}</span>`}
 function friendlyInventoryError(e){
   let raw='';try{raw=JSON.stringify(e)}catch(_){raw=String(e||'')}
   if(raw.includes('Resource temporarily unavailable')||raw.includes('[Errno 11]'))return 'La base respondió ocupada unos segundos. Mantengo la grilla anterior; reintentá Filtrar.';
@@ -1986,7 +2057,7 @@ async function searchInventory(offset=0,savePref=false){
   }
 }
 function rawIncludesResourceUnavailable(e){let raw='';try{raw=JSON.stringify(e)}catch(_){raw=String(e||'')}return raw.includes('Resource temporarily unavailable')||raw.includes('[Errno 11]')}
-function listingMarket(l){return String(l.marketplace||l.channel||'').toUpperCase()}function listingProductId(l){return l.external_product_id??l.listing_id??l.item_id??l.product_id??l.external_full_id??''}function listingVariantId(l){return l.external_variant_id??l.variant_id??l.variation_id??''}function listingPrice(l){return l.price??l.marketplace_price??l.target_price??''}function listingStock(l){return l.stock??l.available_quantity??l.marketplace_stock??''}function listingStatus(l){let st=l.status??l.state??'';let raw=(l&&typeof l.raw_data==='object')?(l.raw_data||{}):{};let imp=(raw&&typeof raw.last_import_raw==='object')?(raw.last_import_raw||{}):{};let pub=(l.published??raw.published??imp.published);if(listingMarket(l)==='TN'){let s=String(st??'').trim().toLowerCase();if(s==='unpublished'||s==='not_published'||s==='hidden'||s==='oculto')return 'unpublished';if(s==='published'||s==='visible'||s==='active')return 'published';if(pub===false||String(pub).toLowerCase()==='false')return 'unpublished';if(pub===true||String(pub).toLowerCase()==='true')return 'published';if(s)return s;return 'unpublished'}if(st!==null&&st!==undefined&&String(st).trim()!=='')return st;return st}function listingUrl(l){return l.url??l.permalink??''}
+function listingMarket(l){return String(l.marketplace||l.channel||'').toUpperCase()}function listingProductId(l){return l.external_product_id??l.listing_id??l.item_id??l.product_id??l.external_full_id??''}function listingVariantId(l){return l.external_variant_id??l.variant_id??l.variation_id??''}function listingPrice(l){return l.price??l.marketplace_price??l.target_price??''}function listingStock(l){return l.stock??l.available_quantity??l.marketplace_stock??''}function listingStatus(l){let st=l.status??l.state??'';let raw=(l&&typeof l.raw_data==='object')?(l.raw_data||{}):{};let imp=(raw&&typeof raw.last_import_raw==='object')?(raw.last_import_raw||{}):{};let pub=(l.published??raw.published??imp.published);if(listingMarket(l)==='TN'){let s=String(st??'').trim().toLowerCase();if(s==='unpublished'||s==='not_published'||s==='hidden'||s==='oculto'||s==='unpublish')return 'unpublished';if(s==='published'||s==='visible'||s==='active')return 'published';if(pub===false||String(pub).toLowerCase()==='false')return 'unpublished';if(pub===true||String(pub).toLowerCase()==='true')return 'published';return 'unpublished'}if(st!==null&&st!==undefined&&String(st).trim()!=='')return st;return st}function listingUrl(l){return l.url??l.permalink??''}
 function renderListingsForItem(item){
   let market=qs('invMarket')?.value||'';
   let arr=(Array.isArray(item.listings)?item.listings:[]).filter(l=>!market||listingMarket(l)===market);
@@ -2057,7 +2128,19 @@ function renderProductPublicationsDetail(i){
   let market=qs('invMarket')?.value||'';
   if(market)arr=arr.filter(l=>listingMarket(l)===market);
   if(!arr.length)return '';
-  return `<tr class="productPublicationDetailRow"><td colspan="6" class="productPublicationDetailWrap productDetailFullWidth">${renderListingsForItem(i)}</td></tr>`;
+  arr.sort((a,b)=>(listingMarket(a)+listingProductId(a)+listingVariantId(a)).localeCompare(listingMarket(b)+listingProductId(b)+listingVariantId(b)));
+  return arr.map(l=>{
+    let m=listingMarket(l),pid=String(listingProductId(l)||''),vid=String(listingVariantId(l)||'0'),price=listingPrice(l),stock=listingStock(l),url=listingUrl(l);
+    let pubHtml=url?`<a href="${esc(url)}" target="_blank" rel="noopener">${esc(pid||'abrir')}</a>`:esc(pid||'—');
+    return `<tr class="productPublicationTableRow">
+      <td class="productPubSkuSpacer"></td>
+      <td class="productPubNameCell"><b class="productPubMarket">${esc(m||'?')}</b><span class="productPubTitle" title="${esc(l.title||l.name||'Publicación')}">${esc(l.title||l.name||'Publicación')}</span></td>
+      <td class="productPubRefCell"><span class="productPubId">${pubHtml}</span><span class="productPubVar">${esc(vid||'0')}</span></td>
+      <td class="productPubPriceCell">${money(price)||'—'}</td>
+      <td class="productPubStockCell">${esc(stock??'—')}</td>
+      <td class="productPubStatusCell">${listingStatusTextSpan(l)}</td>
+    </tr>`;
+  }).join('');
 }
 function renderProductComponentsDetail(i){
   if(!inventoryIsBundle(i))return '';
