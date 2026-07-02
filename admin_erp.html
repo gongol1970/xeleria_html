@@ -769,6 +769,108 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
   }
 }
 
+
+/* PRODUCTS_V252_INVISIBLE_GRID */
+/*
+  Grilla invisible:
+  mismas 6 columnas que la fila principal:
+  SKU | Producto | Publicaciones | Precio lista | Stock | Acciones/Estado.
+  No toca combos ni reestructura JS.
+*/
+.productPublicationDetailWrap.productDetailFullWidth{
+  padding:0!important;
+}
+.productPublicationDetailRow .productPubList{
+  margin-left:0!important;
+  width:100%!important;
+  padding:0!important;
+}
+.productPublicationDetailRow .productPubAlignedLine{
+  display:grid!important;
+  grid-template-columns:13fr 37fr 16fr 14fr 12fr 8fr!important;
+  gap:0!important;
+  align-items:baseline!important;
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  padding:2px 0!important;
+  font-size:12px!important;
+}
+.productPublicationDetailRow .productPubSpacer{
+  display:block!important;
+}
+.productPublicationDetailRow .productPubName{
+  grid-column:auto!important;
+  min-width:0!important;
+  display:grid!important;
+  grid-template-columns:36px minmax(0,1fr)!important;
+  gap:10px!important;
+  align-items:baseline!important;
+  padding-left:8px!important;
+  padding-right:10px!important;
+}
+.productPublicationDetailRow .productPubMarket{
+  font-weight:900!important;
+  color:#111!important;
+}
+.productPublicationDetailRow .productPubTitle{
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  min-width:0!important;
+}
+.productPublicationDetailRow .productPubRef{
+  min-width:0!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(72px,92px)!important;
+  gap:10px!important;
+  align-items:baseline!important;
+  padding-left:8px!important;
+  padding-right:10px!important;
+}
+.productPublicationDetailRow .productPubId,
+.productPublicationDetailRow .productPubVar{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace!important;
+  font-size:11px!important;
+  color:var(--muted)!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  max-width:none!important;
+}
+.productPublicationDetailRow .productPubId a{
+  font-family:inherit!important;
+  font-size:inherit!important;
+}
+.productPublicationDetailRow .productPubPrice{
+  text-align:right!important;
+  padding-right:18px!important;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace!important;
+  white-space:nowrap!important;
+}
+.productPublicationDetailRow .productPubStock{
+  text-align:center!important;
+  padding-right:0!important;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace!important;
+  white-space:nowrap!important;
+}
+.productPublicationDetailRow .productStatusText{
+  display:inline-block!important;
+  min-width:62px!important;
+  text-align:left!important;
+  white-space:nowrap!important;
+  font-weight:400!important;
+}
+@media(max-width:1050px){
+  #inventario table.productMatrixTable{min-width:1040px!important}
+  .productPublicationDetailRow .productPubAlignedLine{
+    grid-template-columns:13fr 37fr 16fr 14fr 12fr 8fr!important;
+  }
+  .productPublicationDetailRow .productPubRef{
+    grid-template-columns:minmax(0,1fr) minmax(66px,84px)!important;
+  }
+}
+
 </style>
 <!-- UI_ALERTS_INVENTORY_FILTERS_FRONTEND_1_39 -->
 </head>
@@ -1029,8 +1131,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.51';
-const FRONTEND_BUILD='admin-erp-v251-products-alignment-finetune-v29';
+const FRONTEND_VERSION='2.52';
+const FRONTEND_BUILD='admin-erp-v252-products-invisible-grid-v30';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
 const INVENTORY_IMPORT_RUNNING_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
