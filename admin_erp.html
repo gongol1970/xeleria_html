@@ -513,6 +513,36 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 .productEditPubStatus .productStatusText{font-weight:400!important}
 @media(max-width:1050px){#inventario table.productMatrixTable{min-width:980px!important}.productPublicationDetailRow .productPubLine{grid-template-columns:36px minmax(320px,1fr) 86px 46px 66px!important}.productDetailRow .comboComponentInner{max-width:none!important}}
 
+
+
+/* PRODUCTS_MATRIX_V2_244_PUBLICATION_COLUMNS_AND_TN_HIDDEN */
+.productPublicationDetailRow .productPubLine{
+  grid-template-columns:34px minmax(360px,1.7fr) 112px 54px 90px 46px 66px!important;
+  gap:10px!important;
+  align-items:baseline!important;
+}
+.productPublicationDetailRow .productPubTitle{
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.productPubId,.productPubVar{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace!important;
+  color:var(--muted)!important;
+  font-size:11px!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.productPubId a{font-family:inherit!important;font-size:inherit!important}
+.productPubVar{text-align:center!important}
+.productPublicationDetailWrap{padding-right:0!important}
+.productStatusText.hidden{color:var(--bad)!important}
+.productStatusText.active{color:var(--ok)!important}
+@media(max-width:1050px){
+  .productPublicationDetailRow .productPubLine{grid-template-columns:34px minmax(300px,1fr) 108px 54px 88px 44px 66px!important}
+}
+
 </style>
 <!-- UI_ALERTS_INVENTORY_FILTERS_FRONTEND_1_39 -->
 </head>
@@ -773,8 +803,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.43';
-const FRONTEND_BUILD='admin-erp-v243-products-second-row-saveall-v21';
+const FRONTEND_VERSION='2.44';
+const FRONTEND_BUILD='admin-erp-v244-products-columns-tn-hidden-v22';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
 const INVENTORY_IMPORT_RUNNING_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
@@ -1862,17 +1892,20 @@ async function searchInventory(offset=0,savePref=false){
   }
 }
 function rawIncludesResourceUnavailable(e){let raw='';try{raw=JSON.stringify(e)}catch(_){raw=String(e||'')}return raw.includes('Resource temporarily unavailable')||raw.includes('[Errno 11]')}
-function listingMarket(l){return String(l.marketplace||l.channel||'').toUpperCase()}function listingProductId(l){return l.external_product_id??l.listing_id??l.item_id??l.product_id??l.external_full_id??''}function listingVariantId(l){return l.external_variant_id??l.variant_id??l.variation_id??''}function listingPrice(l){return l.price??l.marketplace_price??l.target_price??''}function listingStock(l){return l.stock??l.available_quantity??l.marketplace_stock??''}function listingStatus(l){return l.status??l.state??''}function listingUrl(l){return l.url??l.permalink??''}
+function listingMarket(l){return String(l.marketplace||l.channel||'').toUpperCase()}function listingProductId(l){return l.external_product_id??l.listing_id??l.item_id??l.product_id??l.external_full_id??''}function listingVariantId(l){return l.external_variant_id??l.variant_id??l.variation_id??''}function listingPrice(l){return l.price??l.marketplace_price??l.target_price??''}function listingStock(l){return l.stock??l.available_quantity??l.marketplace_stock??''}function listingStatus(l){let st=l.status??l.state??'';if(st!==null&&st!==undefined&&String(st).trim()!=='')return st;let raw=(l&&typeof l.raw_data==='object')?(l.raw_data||{}):{};let imp=(raw&&typeof raw.last_import_raw==='object')?(raw.last_import_raw||{}):{};let pub=(l.published??raw.published??imp.published);if(listingMarket(l)==='TN'&&pub===false)return 'unpublished';if(listingMarket(l)==='TN'&&pub===true)return 'published';return st}function listingUrl(l){return l.url??l.permalink??''}
 function renderListingsForItem(item){
   let market=qs('invMarket')?.value||'';
   let arr=(Array.isArray(item.listings)?item.listings:[]).filter(l=>!market||listingMarket(l)===market);
   if(!arr.length)return '<span class="muted">Sin publicaciones vinculadas.</span>';
   arr.sort((a,b)=>(listingMarket(a)+listingProductId(a)+listingVariantId(a)).localeCompare(listingMarket(b)+listingProductId(b)+listingVariantId(b)));
   return `<div class="productPubList">${arr.map(l=>{
-    let m=listingMarket(l),pid=listingProductId(l),vid=listingVariantId(l),price=listingPrice(l),stock=listingStock(l),url=listingUrl(l);
+    let m=listingMarket(l),pid=String(listingProductId(l)||''),vid=String(listingVariantId(l)||'0'),price=listingPrice(l),stock=listingStock(l),url=listingUrl(l);
+    let pubHtml=url?`<a href="${esc(url)}" target="_blank" rel="noopener">${esc(pid||'abrir')}</a>`:esc(pid||'—');
     return `<div class="productPubLine">
       <span class="productPubMarket">${esc(m||'?')}</span>
-      <span class="productPubTitle" title="${esc(l.title||l.name||'Publicación')}">${esc(l.title||l.name||'Publicación')} <span class="productPubMeta">· ${esc(pid)} · Var: ${esc(vid||'0')} ${url?`· <a href="${esc(url)}" target="_blank" rel="noopener">abrir</a>`:''}</span></span>
+      <span class="productPubTitle" title="${esc(l.title||l.name||'Publicación')}">${esc(l.title||l.name||'Publicación')}</span>
+      <span class="productPubId" title="Publicación">${pubHtml}</span>
+      <span class="productPubVar" title="Variante">${esc(vid||'0')}</span>
       <span class="productPubPrice">${money(price)||'—'}</span>
       <span class="productPubStock">${esc(stock??'—')}</span>
       ${listingStatusTextSpan(l)}
@@ -1923,7 +1956,7 @@ function renderProductPublicationsDetail(i){
   let market=qs('invMarket')?.value||'';
   if(market)arr=arr.filter(l=>listingMarket(l)===market);
   if(!arr.length)return '';
-  return `<tr class="productPublicationDetailRow"><td></td><td colspan="4" class="productPublicationDetailWrap">${renderListingsForItem(i)}</td><td></td></tr>`;
+  return `<tr class="productPublicationDetailRow"><td></td><td colspan="5" class="productPublicationDetailWrap">${renderListingsForItem(i)}</td></tr>`;
 }
 function renderProductComponentsDetail(i){
   if(!inventoryIsBundle(i))return '';
