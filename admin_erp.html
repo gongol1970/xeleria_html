@@ -1346,7 +1346,56 @@ function filenameFromContentDisposition(cd){
   if(name.charAt(0)==='"'&&name.charAt(name.length-1)==='"')name=name.slice(1,-1);
   return name||'inventario_xeleria.csv';
 }
+var inventoryCsvPreparedBlob=null;
+var inventoryCsvPreparedFilename='inventario_xeleria.csv';
+
+async function savePreparedInventoryCsv(){
+  if(!inventoryCsvPreparedBlob){
+    setStatus('invStatus','Primero prepará la planilla.',false);
+    return;
+  }
+  try{
+    if(window.showSaveFilePicker){
+      var handle=await window.showSaveFilePicker({
+        suggestedName:inventoryCsvPreparedFilename||'inventario_xeleria.csv',
+        types:[{description:'CSV',accept:{'text/csv':['.csv']}}]
+      });
+      var writable=await handle.createWritable();
+      await writable.write(inventoryCsvPreparedBlob);
+      await writable.close();
+      setStatus('invStatus','Planilla guardada.',true);
+      return;
+    }
+
+    // Fallback para navegadores sin showSaveFilePicker.
+    // Es manual y queda visible; no se dispara a.click() automáticamente.
+    var obj=URL.createObjectURL(inventoryCsvPreparedBlob);
+    var host=qs('invStatus');
+    if(host){
+      host.className='status oktxt';
+      host.textContent='Tu navegador no permite guardar directo. ';
+      var a=document.createElement('a');
+      a.href=obj;
+      a.download=inventoryCsvPreparedFilename||'inventario_xeleria.csv';
+      a.textContent='Descargar ahora';
+      host.appendChild(a);
+      setTimeout(function(){URL.revokeObjectURL(obj)},300000);
+    }else{
+      window.open(obj,'_blank');
+      setTimeout(function(){URL.revokeObjectURL(obj)},60000);
+    }
+  }catch(e){
+    if(e&&e.name==='AbortError'){
+      setStatus('invStatus','Guardado cancelado.',false);
+      return;
+    }
+    setStatus('invStatus','Error guardando planilla: '+friendlyInventoryError(e),false);
+  }
+}
+
 async function downloadInventoryCsv(){
+  inventoryCsvPreparedBlob=null;
+  inventoryCsvPreparedFilename='inventario_xeleria.csv';
   setStatus('invStatus','Preparando planilla...');
   try{
     var h=xeleriaHeaders();
@@ -1357,38 +1406,23 @@ async function downloadInventoryCsv(){
       try{txt=await r.text()}catch(_e){}
       throw {http_status:r.status,http_status_text:r.statusText,raw_text:txt,detail:txt};
     }
-    var blob=await r.blob();
-    var filename=filenameFromContentDisposition(r.headers.get('content-disposition'))||'inventario_xeleria.csv';
-    var obj=URL.createObjectURL(blob);
+    inventoryCsvPreparedBlob=await r.blob();
+    inventoryCsvPreparedFilename=filenameFromContentDisposition(r.headers.get('content-disposition'))||'inventario_xeleria.csv';
 
-    // No disparamos descargas automáticas ni abrimos selector de guardado.
-    // Chrome lo puede bloquear o el usuario puede cancelarlo sin darse cuenta.
-    // Dejamos un link visible: el click del vendedor es manual y explícito.
     var host=qs('invStatus');
     if(host){
       host.className='status oktxt';
       host.textContent='Planilla lista. ';
-      var a=document.createElement('a');
-      a.href=obj;
-      a.download=filename;
-      a.textContent='Descargar ahora';
-      a.style.fontWeight='900';
-      a.style.marginLeft='6px';
-      a.style.textDecoration='underline';
-      host.appendChild(a);
-
-      var hint=document.createElement('span');
-      hint.textContent=' Si Chrome pregunta, permitir una sola descarga.';
-      hint.style.marginLeft='8px';
-      hint.style.fontWeight='700';
-      host.appendChild(hint);
-
-      setTimeout(function(){URL.revokeObjectURL(obj)},300000);
+      var b=document.createElement('button');
+      b.type='button';
+      b.textContent='Guardar archivo';
+      b.onclick=savePreparedInventoryCsv;
+      host.appendChild(b);
     }else{
-      setStatus('invStatus','Planilla lista para descargar.',true);
+      setStatus('invStatus','Planilla lista.',true);
     }
   }catch(e){
-    setStatus('invStatus','Error bajando planilla: '+friendlyInventoryError(e),false);
+    setStatus('invStatus','Error preparando planilla: '+friendlyInventoryError(e),false);
   }
 }
 function prefKey(section,key){return `pc_erp_pref_${section}_${key}`}function saveViewPref(section,key,value){localStorage.setItem(prefKey(section,key),String(value??''))}function loadViewPrefs(){let jl=localStorage.getItem(prefKey('jobs','limit'));if(jl&&qs('jobsLimit'))qs('jobsLimit').value=jl;let ml=localStorage.getItem(prefKey('ventas_ml','limit'));if(ml&&qs('mlVentasLimit'))qs('mlVentasLimit').value=ml;let tl=localStorage.getItem(prefKey('ventas_tn','limit'));if(tl&&qs('tnVentasLimit'))qs('tnVentasLimit').value=tl;let il=localStorage.getItem(prefKey('inventario','limit'));if(il&&qs('invLimit'))qs('invLimit').value=il;let mpl=localStorage.getItem(prefKey('publicaciones_ml','limit'));if(mpl&&qs('mlPubLimit'))qs('mlPubLimit').value=mpl;let tpl=localStorage.getItem(prefKey('publicaciones_tn','limit'));if(tpl&&qs('tnPubLimit'))qs('tnPubLimit').value=tpl}
