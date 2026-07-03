@@ -1031,8 +1031,8 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
   <div class="col-small"><label>&nbsp;</label><button onclick="searchInventory(0,true)">Filtrar</button></div>
   <div class="col-12"><div class="btnrow" style="margin-top:4px">
     <button class="primary" onclick="toggleInventoryTool('product')">Agregar producto</button>
-    <a class="btn secondary" id="downloadCsv" href="#">Bajar planilla inventario</a>
-    <input type="file" id="csvFile" accept=".csv" style="max-width:340px">
+    <a class="btn secondary" id="downloadCsv" href="#">Bajar planilla inventario XLSX</a>
+    <input type="file" id="csvFile" accept=".xlsx,.csv" style="max-width:340px">
     <button class="secondary" onclick="uploadCsv()">Subir planilla inventario</button>
   </div></div>
 </div>
@@ -1162,8 +1162,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.55g';
-const FRONTEND_BUILD='admin-erp-v255g-inventory-upload-clear-file-v38';
+const FRONTEND_VERSION='2.55h';
+const FRONTEND_BUILD='admin-erp-v255h-inventory-xlsx-operativo-v39';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
 const INVENTORY_IMPORT_RUNNING_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
@@ -3310,7 +3310,7 @@ async function uploadCsv(){
   let input=qs('csvFile');
   let f=input&&input.files?input.files[0]:null;
   if(!f){
-    setStatus('invStatus','Elegí una planilla CSV.',false);
+    setStatus('invStatus','Elegí una planilla XLSX.',false);
     return;
   }
   let fd=new FormData();
