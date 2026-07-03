@@ -1162,8 +1162,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.55d';
-const FRONTEND_BUILD='admin-erp-v255d-inventory-download-status-clean-v35';
+const FRONTEND_VERSION='2.55e';
+const FRONTEND_BUILD='admin-erp-v255e-inventory-upload-visible-status-v36';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
 const INVENTORY_IMPORT_RUNNING_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
@@ -3281,7 +3281,70 @@ async function applyFullInboundPdf(dryRun=true){
   try{setBusy(true,dryRun?'Simulando envío a Full':'Descontando envío a Full','Procesando PDF y stock...');let r=await fetch(url('/admin/ml/full-inbound/pdf/apply')+'&dry_run='+encodeURIComponent(dryRun?'true':'false'),{method:'POST',body:fd});let txt=await r.text();let d;try{d=JSON.parse(txt)}catch{d={ok:r.ok,text:txt}}if(!r.ok)throw d;if(d.preview){renderFullInboundPreview(d.preview)}if(d.duplicate||d.already_applied){setStatus('fullInboundStatus',d.message||`Este envío Full #${d.shipment_id||''} ya fue aplicado. No se volvió a descontar stock.`,'warn')}else{setStatus('fullInboundStatus',dryRun?`Simulación OK · ${d.units_applied||0} unidades`:`Descuento OK · ${d.units_applied||0} unidades · envío #${d.shipment_id||''}`,!!d.ok)}showPre('fullInboundOut',JSON.stringify(d,null,2));if(!dryRun&&!d.duplicate&&!d.already_applied){loadDashboard();}}catch(e){setStatus('fullInboundStatus','Error aplicando PDF Full: '+(e.message||e.detail||JSON.stringify(e)),false);showPre('fullInboundOut',JSON.stringify(e,null,2));}finally{setBusy(false)}
 }
 
-async function uploadCsv(){let f=qs('csvFile').files[0];if(!f){showPre('uploadOut','Elegí una planilla CSV.');return}let fd=new FormData();fd.append('file',f);try{let r=await fetch(url('/admin/v2/inventory/products/import'),{method:'POST',headers:authHeaders(false),body:fd});let txt=await r.text();showPre('uploadOut',txt);try{let j=JSON.parse(txt);if(j.ok)await searchInventory(0,true)}catch(_){}}catch(e){showPre('uploadOut','Error: '+e)}}async function postText(path,out){try{let txt=await fetchText(path,{method:'POST'});showPre(out,txt)}catch(e){showPre(out,'Error: '+e)}}function statusPill(s){let cls=s==='done'||s==='issued'?'ok':(s==='manual_review'||s==='failed_retry'||s==='error'||s==='rejected'?'bad':(s==='pending'?'warn':'info'));return `<span class="pill ${cls}">${s||''}</span>`}
+function summarizeInventoryUploadResult(j){
+  if(!j||typeof j!=='object')return 'Importación finalizada.';
+  let parts=[];
+  if(j.rows!==undefined)parts.push('filas '+j.rows);
+  if(j.inserted)parts.push('nuevos '+j.inserted);
+  if(j.updated)parts.push('actualizados '+j.updated);
+  let listings=Number(j.marketplace_listings_updated||0);
+  if(listings)parts.push('publicaciones '+listings);
+  let jobs=Number(j.sync_jobs_created||0)+Number(j.sync_jobs_updated||0);
+  if(jobs)parts.push('jobs '+jobs);
+  return parts.length?'Importación OK: '+parts.join(' · '):'Importación OK.';
+}
+function firstInventoryUploadError(j){
+  if(!j||typeof j!=='object')return '';
+  let errs=Array.isArray(j.errors)?j.errors:[];
+  if(errs.length){
+    let e=errs[0]||{};
+    let msg=e.error||e.detail||JSON.stringify(e);
+    let row=e.row?('Fila '+e.row+': '):'';
+    return row+msg;
+  }
+  return j.note||j.error||j.detail||'Importación rechazada.';
+}
+async function uploadCsv(){
+  let out=qs('uploadOut');
+  if(out){out.classList.add('hidden');out.textContent=''}
+  let input=qs('csvFile');
+  let f=input&&input.files?input.files[0]:null;
+  if(!f){
+    setStatus('invStatus','Elegí una planilla CSV.',false);
+    return;
+  }
+  let fd=new FormData();
+  fd.append('file',f);
+  setStatus('invStatus','Subiendo planilla...');
+  try{
+    let r=await fetch(url('/admin/v2/inventory/products/import'),{method:'POST',headers:authHeaders(false),body:fd,cache:'no-store'});
+    let txt=await r.text();
+    let j=null;
+    try{j=JSON.parse(txt)}catch(_){}
+    if(!r.ok){
+      setStatus('invStatus','Error subiendo planilla: '+(j?friendlyInventoryError(j):txt),false);
+      if(out){out.classList.remove('hidden');out.textContent=txt}
+      return;
+    }
+    if(j&&j.ok===false){
+      setStatus('invStatus',firstInventoryUploadError(j),false);
+      if(out){out.classList.remove('hidden');out.textContent=JSON.stringify(j,null,2)}
+      return;
+    }
+    if(j&&j.ok){
+      setStatus('invStatus',summarizeInventoryUploadResult(j),true);
+      setTimeout(function(){
+        try{searchInventory(0,true)}
+        catch(_e){}
+      },1200);
+      return;
+    }
+    setStatus('invStatus','Respuesta inesperada al subir planilla.',false);
+    if(out){out.classList.remove('hidden');out.textContent=txt}
+  }catch(e){
+    setStatus('invStatus','Error subiendo planilla: '+e,false);
+  }
+}async function postText(path,out){try{let txt=await fetchText(path,{method:'POST'});showPre(out,txt)}catch(e){showPre(out,'Error: '+e)}}function statusPill(s){let cls=s==='done'||s==='issued'?'ok':(s==='manual_review'||s==='failed_retry'||s==='error'||s==='rejected'?'bad':(s==='pending'?'warn':'info'));return `<span class="pill ${cls}">${s||''}</span>`}
 function jobsLimit(){return Number(qs('jobsLimit')?.value||100)}
 function jobsPagerHtml(d){let limit=Number(d.limit||jobsLimit()||100),offset=Number(d.offset||0),total=Number(d.total||0);let from=total?offset+1:0;let to=Math.min(offset+(d.items||[]).length,total||offset+(d.items||[]).length);let prev=Math.max(0,offset-limit);let next=offset+limit;let prevDisabled=offset<=0?'disabled':'';let nextDisabled=!d.has_more?'disabled':'';return `<button class="secondary" ${prevDisabled} onclick="loadSyncJobs(${prev})">Atrás</button><span class="pill">Mostrando ${from}–${to}${total?` de ${total}`:''}</span><button class="secondary" ${nextDisabled} onclick="loadSyncJobs(${next})">Siguiente</button>`}
 async function loadSyncJobs(offset=0,manual=false){let lim=jobsLimit();saveViewPref('jobs','limit',lim);state.jobs.offset=offset;setStatus('jobsStatus','Consultando jobs...');try{let d=await fetchJson(`/erp/sync_jobs?limit=${encodeURIComponent(lim)}&offset=${encodeURIComponent(offset)}`);let rows=d.items||[];qs('jobsTable').innerHTML=`<table><thead><tr><th>Fecha</th><th>Market</th><th>SKU</th><th>Stock</th><th>Precio</th><th>Status</th><th>Attempts</th><th>Error</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${dateAR(r.created_at)}</td><td>${esc(r.marketplace||'')}</td><td><strong class="mono">${esc(r.sku||'')}</strong></td><td>${esc(r.target_stock??'')}</td><td>${esc(r.target_price??'')}</td><td>${statusPill(r.status)}</td><td>${esc(r.attempts??'')}</td><td>${esc(r.last_error||'')}</td></tr>`).join('')||'<tr><td colspan="8" class="muted" style="text-align:center">Sin jobs.</td></tr>'}</tbody></table>`;if(qs('jobsPager'))qs('jobsPager').innerHTML=jobsPagerHtml(d);setStatus('jobsStatus',`OK: ${d.total||0} jobs. Autosync operativo. TN products_store_id: ${d.tn_products_store_id_used||''}`,true)}catch(e){setStatus('jobsStatus','Error: '+JSON.stringify(e),false)}}async function debugEnvBeforeJobs(){setStatus('jobsStatus','Leyendo environment real de Render...');qs('confirmProcessJobsBtn').classList.add('hidden');try{let d=await fetchJson('/admin/debug/env');showPre('jobsOut',d);setStatus('jobsStatus','Environment mostrado. No se ejecutó ningún job.',true);return d}catch(e){showPre('jobsOut','Error debug env: '+JSON.stringify(e,null,2));setStatus('jobsStatus','Error leyendo environment',false);throw e}}async function processJobs(limit){state.pendingJobLimit=limit;await debugEnvBeforeJobs();qs('confirmProcessJobsBtn').classList.remove('hidden');setStatus('jobsStatus',`Environment mostrado. Para procesar ${limit} job(s), tocá Confirmar ejecución.`,null)}async function confirmProcessJobs(){let limit=state.pendingJobLimit||1;qs('confirmProcessJobsBtn').classList.add('hidden');setStatus('jobsStatus','Procesando jobs...');try{let txt=await fetchText(`/erp/process_sync_jobs?limit=${limit}`,{method:'POST'});showPre('jobsOut',txt);setStatus('jobsStatus','Proceso terminado. Actualizando lista...',true);state.pendingJobLimit=null;await loadSyncJobs()}catch(e){showPre('jobsOut','Error: '+e);setStatus('jobsStatus','Error procesando jobs',false)}}
