@@ -1349,29 +1349,69 @@ function filenameFromContentDisposition(cd){
 async function downloadInventoryCsv(){
   setStatus('invStatus','Preparando planilla...');
   try{
+    var saveHandle=null;
+
+    // Evita el bloqueo de Chrome por "descargas automáticas":
+    // no usamos más a.click() sobre un link invisible.
+    // En Chrome moderno abrimos el selector de guardado como acción directa del usuario.
+    if(window.showSaveFilePicker){
+      try{
+        saveHandle=await window.showSaveFilePicker({
+          suggestedName:'inventario_xeleria.csv',
+          types:[{description:'CSV',accept:{'text/csv':['.csv']}}]
+        });
+      }catch(pickErr){
+        if(pickErr&&pickErr.name==='AbortError'){
+          setStatus('invStatus','Descarga cancelada.',false);
+          return;
+        }
+        throw pickErr;
+      }
+    }
+
     var h=xeleriaHeaders();
     delete h['Content-Type'];
-    var r=await fetch(url('/admin/v2/inventory/products/export'),{method:'GET',headers:h});
+    var r=await fetch(url('/admin/v2/inventory/products/export'),{method:'GET',headers:h,cache:'no-store'});
     var txt='';
     if(!r.ok){
       try{txt=await r.text()}catch(_e){}
       throw {http_status:r.status,http_status_text:r.statusText,raw_text:txt,detail:txt};
     }
     var blob=await r.blob();
-    var filename=filenameFromContentDisposition(r.headers.get('content-disposition'));
-    var a=document.createElement('a');
+    var filename=filenameFromContentDisposition(r.headers.get('content-disposition'))||'inventario_xeleria.csv';
+
+    if(saveHandle){
+      var writable=await saveHandle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      setStatus('invStatus','Planilla guardada.',true);
+      return;
+    }
+
+    // Fallback para navegadores sin showSaveFilePicker:
+    // dejamos un link visible para que el usuario lo toque manualmente.
+    // Ese segundo click ya no cuenta como descarga automática.
     var obj=URL.createObjectURL(blob);
-    a.href=obj;
-    a.download=filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(function(){URL.revokeObjectURL(obj)},1500);
-    setStatus('invStatus','Planilla descargada.',true);
+    var host=qs('invStatus');
+    if(host){
+      host.className='status oktxt';
+      host.textContent='Planilla lista. ';
+      var a=document.createElement('a');
+      a.href=obj;
+      a.download=filename;
+      a.textContent='Descargar ahora';
+      a.style.fontWeight='900';
+      a.style.marginLeft='6px';
+      host.appendChild(a);
+      setTimeout(function(){URL.revokeObjectURL(obj)},300000);
+    }else{
+      setStatus('invStatus','Planilla lista para descargar.',true);
+    }
   }catch(e){
     setStatus('invStatus','Error bajando planilla: '+friendlyInventoryError(e),false);
   }
-}function prefKey(section,key){return `pc_erp_pref_${section}_${key}`}function saveViewPref(section,key,value){localStorage.setItem(prefKey(section,key),String(value??''))}function loadViewPrefs(){let jl=localStorage.getItem(prefKey('jobs','limit'));if(jl&&qs('jobsLimit'))qs('jobsLimit').value=jl;let ml=localStorage.getItem(prefKey('ventas_ml','limit'));if(ml&&qs('mlVentasLimit'))qs('mlVentasLimit').value=ml;let tl=localStorage.getItem(prefKey('ventas_tn','limit'));if(tl&&qs('tnVentasLimit'))qs('tnVentasLimit').value=tl;let il=localStorage.getItem(prefKey('inventario','limit'));if(il&&qs('invLimit'))qs('invLimit').value=il;let mpl=localStorage.getItem(prefKey('publicaciones_ml','limit'));if(mpl&&qs('mlPubLimit'))qs('mlPubLimit').value=mpl;let tpl=localStorage.getItem(prefKey('publicaciones_tn','limit'));if(tpl&&qs('tnPubLimit'))qs('tnPubLimit').value=tpl}
+}
+function prefKey(section,key){return `pc_erp_pref_${section}_${key}`}function saveViewPref(section,key,value){localStorage.setItem(prefKey(section,key),String(value??''))}function loadViewPrefs(){let jl=localStorage.getItem(prefKey('jobs','limit'));if(jl&&qs('jobsLimit'))qs('jobsLimit').value=jl;let ml=localStorage.getItem(prefKey('ventas_ml','limit'));if(ml&&qs('mlVentasLimit'))qs('mlVentasLimit').value=ml;let tl=localStorage.getItem(prefKey('ventas_tn','limit'));if(tl&&qs('tnVentasLimit'))qs('tnVentasLimit').value=tl;let il=localStorage.getItem(prefKey('inventario','limit'));if(il&&qs('invLimit'))qs('invLimit').value=il;let mpl=localStorage.getItem(prefKey('publicaciones_ml','limit'));if(mpl&&qs('mlPubLimit'))qs('mlPubLimit').value=mpl;let tpl=localStorage.getItem(prefKey('publicaciones_tn','limit'));if(tpl&&qs('tnPubLimit'))qs('tnPubLimit').value=tpl}
 
 function versionCell(v){
   let s=String(v===undefined||v===null?'?':v);
