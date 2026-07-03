@@ -17,7 +17,7 @@ main{margin-left:282px;width:calc(100% - 282px);padding:22px 26px 88px}.topbar{d
 .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.col-2{grid-column:span 2}.col-3{grid-column:span 3}.col-4{grid-column:span 4}.col-5{grid-column:span 5}.col-6{grid-column:span 6}.col-8{grid-column:span 8}.col-10{grid-column:span 10}.col-12{grid-column:span 12}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;margin-bottom:14px}.card h3{margin:0 0 12px;font-size:18px}.card p{margin:6px 0;color:var(--muted)}label{display:block;font-size:12px;font-weight:800;color:#504b43;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
 input,select,textarea{width:100%;border:1px solid #cfc4ad;border-radius:12px;background:#fff;padding:10px 11px;font-size:14px;color:var(--ink);outline:none}
-button,.btn{border:1px solid #b79543;border-radius:12px;background:#d2b66f;color:#111;padding:10px 13px;font-weight:900;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;font-family:Inter,Arial,sans-serif;transition:background .12s ease,transform .08s ease,filter .12s ease}
+button,.btn{border:1px solid #b79543;border-radius:12px;background:#d2b66f;color:#111;padding:10px 13px;font-size:14px;line-height:1.2;font-weight:900;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;font-family:Inter,Arial,sans-serif;transition:background .12s ease,transform .08s ease,filter .12s ease}
 button:hover,.btn:hover{background:#c3a354;color:#111;filter:saturate(1.08)}
 button:active,.btn:active{background:#a9822d;color:#111;transform:translateY(1px) scale(.99);filter:saturate(1.18)}
 .primary,.secondary,.danger,.ok,.warn{background:#d2b66f;color:#111;border:1px solid #b79543}
@@ -1162,8 +1162,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.55c';
-const FRONTEND_BUILD='admin-erp-v255c-inventory-export-ticket-url-v34';
+const FRONTEND_VERSION='2.55d';
+const FRONTEND_BUILD='admin-erp-v255d-inventory-download-status-clean-v35';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
 const INVENTORY_IMPORT_RUNNING_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
@@ -1362,7 +1362,13 @@ async function downloadInventoryCsv(){
     if(!downloadUrl){
       throw {detail:'El backend no devolvió URL de descarga'};
     }
-    setStatus('invStatus','Descargando planilla...',true);
+
+    // No dejamos mensajes viejos pegados: el download se dispara y la grilla vuelve al estado-resumen.
+    setStatus('invStatus','',null);
+    setTimeout(function(){
+      try{searchInventory(state.inventory.offset||0,true)}
+      catch(_e){setStatus('invStatus','',null)}
+    },1200);
     window.location.assign(downloadUrl);
   }catch(e){
     setStatus('invStatus','Error preparando descarga: '+friendlyInventoryError(e),false);
