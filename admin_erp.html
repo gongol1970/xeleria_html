@@ -1349,26 +1349,6 @@ function filenameFromContentDisposition(cd){
 async function downloadInventoryCsv(){
   setStatus('invStatus','Preparando planilla...');
   try{
-    var saveHandle=null;
-
-    // Evita el bloqueo de Chrome por "descargas automáticas":
-    // no usamos más a.click() sobre un link invisible.
-    // En Chrome moderno abrimos el selector de guardado como acción directa del usuario.
-    if(window.showSaveFilePicker){
-      try{
-        saveHandle=await window.showSaveFilePicker({
-          suggestedName:'inventario_xeleria.csv',
-          types:[{description:'CSV',accept:{'text/csv':['.csv']}}]
-        });
-      }catch(pickErr){
-        if(pickErr&&pickErr.name==='AbortError'){
-          setStatus('invStatus','Descarga cancelada.',false);
-          return;
-        }
-        throw pickErr;
-      }
-    }
-
     var h=xeleriaHeaders();
     delete h['Content-Type'];
     var r=await fetch(url('/admin/v2/inventory/products/export'),{method:'GET',headers:h,cache:'no-store'});
@@ -1379,19 +1359,11 @@ async function downloadInventoryCsv(){
     }
     var blob=await r.blob();
     var filename=filenameFromContentDisposition(r.headers.get('content-disposition'))||'inventario_xeleria.csv';
-
-    if(saveHandle){
-      var writable=await saveHandle.createWritable();
-      await writable.write(blob);
-      await writable.close();
-      setStatus('invStatus','Planilla guardada.',true);
-      return;
-    }
-
-    // Fallback para navegadores sin showSaveFilePicker:
-    // dejamos un link visible para que el usuario lo toque manualmente.
-    // Ese segundo click ya no cuenta como descarga automática.
     var obj=URL.createObjectURL(blob);
+
+    // No disparamos descargas automáticas ni abrimos selector de guardado.
+    // Chrome lo puede bloquear o el usuario puede cancelarlo sin darse cuenta.
+    // Dejamos un link visible: el click del vendedor es manual y explícito.
     var host=qs('invStatus');
     if(host){
       host.className='status oktxt';
@@ -1402,7 +1374,15 @@ async function downloadInventoryCsv(){
       a.textContent='Descargar ahora';
       a.style.fontWeight='900';
       a.style.marginLeft='6px';
+      a.style.textDecoration='underline';
       host.appendChild(a);
+
+      var hint=document.createElement('span');
+      hint.textContent=' Si Chrome pregunta, permitir una sola descarga.';
+      hint.style.marginLeft='8px';
+      hint.style.fontWeight='700';
+      host.appendChild(hint);
+
       setTimeout(function(){URL.revokeObjectURL(obj)},300000);
     }else{
       setStatus('invStatus','Planilla lista para descargar.',true);
