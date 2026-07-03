@@ -1162,8 +1162,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.55f';
-const FRONTEND_BUILD='admin-erp-v255f-inventory-upload-authheaders-fix-v37';
+const FRONTEND_VERSION='2.55g';
+const FRONTEND_BUILD='admin-erp-v255g-inventory-upload-clear-file-v38';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
 const INVENTORY_IMPORT_RUNNING_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
@@ -3314,7 +3314,10 @@ async function uploadCsv(){
     return;
   }
   let fd=new FormData();
-  fd.append('file',f);
+  fd.append('file',f,f.name);
+  // Limpiamos el input apenas capturamos el archivo.
+  // Si el import rechaza o falla, obliga a elegir de nuevo y evita nombres fantasma.
+  try{input.value=''}catch(_e){}
   setStatus('invStatus','Subiendo planilla...');
   try{
     var h=xeleriaHeaders();
