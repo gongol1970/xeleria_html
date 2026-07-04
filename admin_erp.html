@@ -1163,7 +1163,7 @@ function comboNormalizeQtyInput(el){
 }
 
 const FRONTEND_VERSION='2.55l';
-const FRONTEND_BUILD='admin-erp-v255l-notification-read-button-v43';
+const FRONTEND_BUILD='admin-erp-v256-versions-complete-notifications-clear-v44';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
 const INVENTORY_IMPORT_RUNNING_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
@@ -1411,8 +1411,9 @@ function normalizeModuleVersionValue(v){
 }
 function renderVersionsPage(){
   let d=state.debugVersions||{};
-  let versions=d.versions||{};
+  let versions={...(d.versions||{}),...((d.health&&d.health.module_versions)||{})};
   let modules=d.modules||{};
+  let inv=d.inventory_products_version||null;
   let frontend={
     'admin_erp.html':FRONTEND_VERSION,
     'FRONTEND_BUILD':FRONTEND_BUILD,
@@ -1420,24 +1421,36 @@ function renderVersionsPage(){
     'tenant':tenantId()||'?'
   };
   let backend={
-    'xeleria_app.py':versionFromDebug('xeleria_app'),
-    'app_v2.py':versionFromDebug('app_v2'),
-    'xeleria_import_jobs.py':versionFromDebug('xeleria_import_jobs'),
-    'xeleria_combo_admin_core.py':versionFromDebug('xeleria_combo_admin_core'),
-    'xeleria_tenant_db.py':versionFromDebug('xeleria_tenant_db'),
-    'sessions':versionFromDebug('sessions'),
-    'oauth_ml':versionFromDebug('oauth_ml'),
-    'debug_versions':versionFromDebug('debug_versions')
+    'xeleria_app.py':versions.xeleria_app||versionFromDebug('xeleria_app'),
+    'app_v2.py':versions.app_v2||versionFromDebug('app_v2'),
+    'xeleria_import_jobs.py':versions.xeleria_import_jobs||versionFromDebug('xeleria_import_jobs'),
+    'xeleria_inventory_admin_core.py':(inv&&inv.version)||versions.xeleria_inventory_admin_core||versionFromDebug('xeleria_inventory_admin_core'),
+    'xeleria_combo_admin_core.py':versions.xeleria_combo_admin_core||versionFromDebug('xeleria_combo_admin_core'),
+    'xeleria_multitenant_dispatcher.py':versions.multitenant_dispatcher||versions.xeleria_multitenant_dispatcher||versionFromDebug('multitenant_dispatcher'),
+    'xeleria_tenant_db.py':versions.xeleria_tenant_db||versionFromDebug('xeleria_tenant_db'),
+    'xeleria_tenant_context.py':versions.xeleria_tenant_context||versionFromDebug('xeleria_tenant_context'),
+    'xeleria_personalization.py':versions.xeleria_personalization||versionFromDebug('xeleria_personalization'),
+    'sessions':versions.sessions||versionFromDebug('sessions'),
+    'oauth_ml':versions.oauth_ml||versionFromDebug('oauth_ml'),
+    'oauth_tn':versions.oauth_tn||versionFromDebug('oauth_tn'),
+    'inventory_import_grid':versions.inventory_import_grid||versionFromDebug('inventory_import_grid'),
+    'connection_status':versions.connection_status||versionFromDebug('connection_status'),
+    'import_connected_channels':versions.import_connected_channels||versionFromDebug('import_connected_channels'),
+    'debug_versions':versions.debug_versions||versionFromDebug('debug_versions'),
+    'arca':versions.arca||versionFromDebug('arca')
   };
   Object.keys(versions||{}).forEach(k=>{ if(backend[k]===undefined) backend[k]=versions[k]; });
+  if(inv&&inv.version&&backend['xeleria_inventory_admin_core.py']==='?')backend['xeleria_inventory_admin_core.py']=inv.version;
   if(qs('versionsFrontendBody'))qs('versionsFrontendBody').innerHTML=versionRows(frontend);
   if(qs('versionsBackendBody'))qs('versionsBackendBody').innerHTML=versionRows(backend);
 
   let modMap={};
+  Object.keys(versions||{}).forEach(k=>{modMap[k]=versions[k];});
   Object.keys(modules||{}).forEach(k=>{modMap[k]=normalizeModuleVersionValue(modules[k]);});
+  if(inv&&inv.version)modMap['xeleria_inventory_admin_core']=inv.version;
   let table=`<table class="versionTable"><thead><tr><th>Módulo</th><th>Versión / estado</th></tr></thead><tbody>${versionRows(modMap)}</tbody></table>`;
   if(qs('versionsModulesBody'))qs('versionsModulesBody').innerHTML=table;
-  if(qs('versionsRaw'))qs('versionsRaw').value=JSON.stringify({frontend,backend,debug:d},null,2);
+  if(qs('versionsRaw'))qs('versionsRaw').value=JSON.stringify({frontend,backend,modules:modMap,debug:d},null,2);
   if(qs('versionsStatus'))setStatus('versionsStatus',state.debugVersionError?('Error consultando backend: '+state.debugVersionError):'Versiones actualizadas.',!state.debugVersionError);
 }
 async function loadVersionsPage(manual=false){
@@ -1606,9 +1619,10 @@ function renderNotifications(){
   let groups=notificationGroups();
   let rows=NOTIFICATION_GROUPS.map(g=>{
     let items=groups[g.key]||[];
-    let unread=items.filter(notificationIsUnread).length;
-    let latest=items[0]||null;
-    let stateTxt=g.key==='inventory_import'?notificationImportState(items):(latest?(latest.title||'Novedad'):'Sin novedades');
+    let unreadItems=items.filter(notificationIsUnread);
+    let unread=unreadItems.length;
+    let latest=unreadItems[0]||null;
+    let stateTxt=latest?(g.key==='inventory_import'?notificationImportState(unreadItems):(latest.title||'Novedad')):'Sin novedades';
     let meta=latest?`<div class="notificationMeta">${dateAR(latest.created_at)}${latest.body?' · '+esc(latest.body):''}</div>`:'';
     return `<div class="notificationRow ${unread?'':'zero'}">
       <div class="notificationSource">${esc(g.source)}</div>
@@ -1706,7 +1720,24 @@ function debugModuleVersion(name){
 async function loadDebugVersions(){
   try{
     let d=await fetchJson('/admin/debug/versions');
-    state.debugVersions=d||{};
+    d=d||{};
+    try{
+      d.health=await fetchJson('/admin/health');
+      if(d.health&&d.health.module_versions){
+        d.versions={...(d.versions||{}),...d.health.module_versions};
+      }
+    }catch(eh){
+      d.health_error=errText(eh);
+    }
+    try{
+      d.inventory_products_version=await fetchJson('/admin/v2/inventory/products/version');
+      if(d.inventory_products_version&&d.inventory_products_version.version){
+        d.versions={...(d.versions||{}),xeleria_inventory_admin_core:d.inventory_products_version.version};
+      }
+    }catch(ei){
+      d.inventory_products_version_error=errText(ei);
+    }
+    state.debugVersions=d;
     state.debugVersionError=null;
     if(d&&d.versions){
       state.backendVersion=d.versions.xeleria_app||state.backendVersion;
