@@ -1162,8 +1162,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.55h';
-const FRONTEND_BUILD='admin-erp-v255h-inventory-xlsx-operativo-v39';
+const FRONTEND_VERSION='2.55i';
+const FRONTEND_BUILD='admin-erp-v255i-xlsx-manual-download-link-v40';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
 const INVENTORY_IMPORT_RUNNING_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
@@ -1347,7 +1347,7 @@ function filenameFromContentDisposition(cd){
   return name||'inventario_xeleria.csv';
 }
 async function downloadInventoryCsv(){
-  setStatus('invStatus','Preparando descarga...');
+  setStatus('invStatus','Preparando planilla...');
   try{
     var h=xeleriaHeaders();
     var r=await fetch(url('/admin/v2/inventory/products/export-ticket'),{method:'POST',headers:h,cache:'no-store'});
@@ -1363,13 +1363,27 @@ async function downloadInventoryCsv(){
       throw {detail:'El backend no devolvió URL de descarga'};
     }
 
-    // No dejamos mensajes viejos pegados: el download se dispara y la grilla vuelve al estado-resumen.
-    setStatus('invStatus','',null);
-    setTimeout(function(){
-      try{searchInventory(state.inventory.offset||0,true)}
-      catch(_e){setStatus('invStatus','',null)}
-    },1200);
-    window.location.assign(downloadUrl);
+    // Chrome bloquea descargas disparadas automáticamente por JS.
+    // Dejamos un link real para que el segundo clic del usuario haga la descarga.
+    var host=qs('invStatus');
+    if(host){
+      host.className='status oktxt';
+      host.textContent='Planilla lista. ';
+      var a=document.createElement('a');
+      a.href=downloadUrl;
+      a.textContent='Descargar XLSX ahora';
+      a.style.fontWeight='900';
+      a.style.textDecoration='underline';
+      a.onclick=function(){
+        setTimeout(function(){
+          try{searchInventory(state.inventory.offset||0,true)}
+          catch(_e){}
+        },1800);
+      };
+      host.appendChild(a);
+    }else{
+      setStatus('invStatus','Planilla lista.',true);
+    }
   }catch(e){
     setStatus('invStatus','Error preparando descarga: '+friendlyInventoryError(e),false);
   }
