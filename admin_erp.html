@@ -133,7 +133,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 
 /* NOTIFICATIONS_DB_V2_12 */
 .notificationSummary{display:grid;gap:10px}
-.notificationRow{display:grid;grid-template-columns:190px 1fr 86px 92px;gap:10px;align-items:center;border:1px solid #eee2c8;border-radius:14px;background:#fff;padding:10px}
+.notificationRow{display:grid;grid-template-columns:190px 1fr 86px auto auto;gap:10px;align-items:center;border:1px solid #eee2c8;border-radius:14px;background:#fff;padding:10px}
 .notificationRow.zero{opacity:.72}.notificationSource{font-weight:950}.notificationSlot{font-weight:850}.notificationState{font-size:12px;color:var(--muted);line-height:1.35}
 .notificationCount{justify-content:center;font-size:14px;min-width:38px}.notificationMeta{font-size:12px;color:var(--muted);margin-top:2px}
 .notificationList{margin-top:14px}.notificationItem{border:1px solid #eee2c8;border-radius:14px;background:#fffaf0;padding:10px;margin-top:8px}
@@ -1162,8 +1162,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.55k';
-const FRONTEND_BUILD='admin-erp-v255k-no-backend-notes-v42';
+const FRONTEND_VERSION='2.55l';
+const FRONTEND_BUILD='admin-erp-v255l-notification-read-button-v43';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
 const INVENTORY_IMPORT_RUNNING_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
@@ -1554,7 +1554,7 @@ const NOTIFICATION_GROUPS=[
   {key:'ml_questions',source:'Mercado Libre',slot:'Preguntas',view:'ml-preguntas'},
   {key:'ml_sales',source:'Mercado Libre',slot:'Ventas',view:'ml-ventas'},
   {key:'tn_sales',source:'Tienda Nube',slot:'Ventas',view:'tn-ventas'},
-  {key:'inventory_import',source:'Carga general de inventario',slot:'Importación',view:'configuracion',scroll:'inventoryImportCard'}
+  {key:'inventory_import',source:'Carga general de inventario',slot:'Importación',view:'productos'}
 ];
 
 function notificationIsUnread(n){return !n.read_at}
@@ -1615,6 +1615,7 @@ function renderNotifications(){
       <div><div class="notificationSlot">${esc(g.slot)}</div><div class="notificationState">${esc(stateTxt)}</div>${meta}</div>
       <div><span class="pill ${unread?'bad':'ok'} notificationCount">${unread}</span></div>
       <button class="secondary" onclick="viewNotificationGroup('${g.key}')">Ver</button>
+      <button class="secondary" ${unread?'':'disabled'} onclick="markNotificationGroupRead('${g.key}')">Leído</button>
     </div>`;
   }).join('');
   let host=qs('notificationsSummary');if(host)host.innerHTML=rows;
@@ -1663,6 +1664,20 @@ async function loadNotifications(manual=false){
     return null;
   }
 }
+async function markNotificationGroupRead(key){
+  let items=(notificationGroups()[key]||[]).filter(notificationIsUnread);
+  if(!items.length)return;
+  try{
+    for(const n of items){
+      if(n&&n.id)await fetchJson('/admin/notifications/'+encodeURIComponent(n.id)+'/read',{method:'POST'});
+    }
+    await loadNotifications(false);
+    setStatus('notificationsStatus','Marcado como leído.',true);
+  }catch(e){
+    setStatus('notificationsStatus','No pude marcar leído: '+errText(e),false);
+  }
+}
+
 async function viewNotificationGroup(key){
   let cfg=NOTIFICATION_GROUPS.find(x=>x.key===key)||{view:'notificaciones'};
   let items=(notificationGroups()[key]||[]).filter(notificationIsUnread);
