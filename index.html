@@ -2,8 +2,15 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="refresh" content="0; url=./inicio.html">
   <title>XelerIA</title>
+  <script>
+    (function(){
+      var target = './inicio.html' + (location.search || '') + (location.hash || '');
+      location.replace(target);
+    })();
+  </script>
 </head>
 <body>
   <p>Redirigiendo a <a href="./inicio.html">XelerIA</a>...</p>
