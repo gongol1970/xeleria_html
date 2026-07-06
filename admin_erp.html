@@ -1008,7 +1008,6 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
     <div class="dashStatusLine">
       <div>
         <h3>Notificaciones</h3>
-        <p>Eventos reales del tenant activo. El contador sale de la base; la pantalla sólo lo muestra.</p>
       </div>
       <button class="secondary dashRefresh" onclick="loadNotifications(true)">Actualizar</button>
     </div>
@@ -1162,8 +1161,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.55n';
-const FRONTEND_BUILD='admin-erp-v258-single-inventory-refresh-after-upload-v46';
+const FRONTEND_VERSION='2.55o';
+const FRONTEND_BUILD='admin-erp-v259-commercial-notifications-sales-action-v1';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
 const INVENTORY_IMPORT_RUNNING_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
@@ -1615,6 +1614,34 @@ function renderNotificationsBadge(){
     if(s)s.textContent=String(total);
   }
 }
+function notificationIsSale(n){
+  let k=notificationGroupKey(n);
+  return k==='ml_sales'||k==='tn_sales';
+}
+function notificationCommercialLine(n){
+  n=n||{};
+  let p=n.payload||{};
+  if(p.commercial_line)return String(p.commercial_line);
+  if(p.sale_at_ar&&p.sku_label&&p.product_label){
+    return [p.sale_at_ar,p.sku_label,p.product_label,p.quantity_label||'',p.type_label||'',p.shipping_label||''].filter(Boolean).join(' / ');
+  }
+  let title=String(n.title||'').trim();
+  let body=String(n.body||'').trim();
+  if(title.includes(' / ')&&(title.includes(' hs')||title.includes('hs')))return title;
+  if(body.includes(' / ')&&(body.includes(' hs')||body.includes('hs')))return body;
+  return title||body||n.type||'Notificación';
+}
+function notificationDisplayTitle(n){
+  if(notificationIsSale(n))return notificationCommercialLine(n);
+  return n.title||n.type||'Notificación';
+}
+function notificationDisplayMeta(n){
+  if(notificationIsSale(n))return '';
+  let parts=[];
+  if(n.created_at)parts.push(dateAR(n.created_at));
+  if(n.body)parts.push(esc(n.body));
+  return parts.join(' · ');
+}
 function renderNotifications(){
   let groups=notificationGroups();
   let rows=NOTIFICATION_GROUPS.map(g=>{
@@ -1622,8 +1649,9 @@ function renderNotifications(){
     let unreadItems=items.filter(notificationIsUnread);
     let unread=unreadItems.length;
     let latest=unreadItems[0]||null;
-    let stateTxt=latest?(g.key==='inventory_import'?notificationImportState(unreadItems):(latest.title||'Novedad')):'Sin novedades';
-    let meta=latest?`<div class="notificationMeta">${dateAR(latest.created_at)}${latest.body?' · '+esc(latest.body):''}</div>`:'';
+    let stateTxt=latest?(g.key==='inventory_import'?notificationImportState(unreadItems):notificationDisplayTitle(latest)):'Sin novedades';
+    let metaTxt=latest?notificationDisplayMeta(latest):'';
+    let meta=metaTxt?`<div class="notificationMeta">${metaTxt}</div>`:'';
     return `<div class="notificationRow ${unread?'':'zero'}">
       <div class="notificationSource">${esc(g.source)}</div>
       <div><div class="notificationSlot">${esc(g.slot)}</div><div class="notificationState">${esc(stateTxt)}</div>${meta}</div>
@@ -1636,7 +1664,7 @@ function renderNotifications(){
   let unreadItems=(state.notifications.items||[]).filter(notificationIsUnread);
   let list=qs('notificationsList');
   if(list){
-    list.innerHTML=unreadItems.length?`<div class="card" style="box-shadow:none;margin-top:14px;background:#fffdf8"><h3>Últimas no leídas</h3>${unreadItems.slice(0,8).map(n=>`<div class="notificationItem"><h4>${esc(n.title||n.type||'Notificación')}</h4><p>${esc(n.body||'')}<br>${dateAR(n.created_at)}</p></div>`).join('')}</div>`:'<div class="dashEmpty" style="margin-top:14px">No hay notificaciones pendientes.</div>';
+    list.innerHTML=unreadItems.length?`<div class="card" style="box-shadow:none;margin-top:14px;background:#fffdf8"><h3>Últimas no leídas</h3>${unreadItems.slice(0,8).map(n=>{let meta=notificationDisplayMeta(n);return `<div class="notificationItem"><h4>${esc(notificationDisplayTitle(n))}</h4>${meta?`<p>${meta}</p>`:''}</div>`}).join('')}</div>`:'<div class="dashEmpty" style="margin-top:14px">No hay notificaciones pendientes.</div>';
   }
   renderNotificationsBadge();
 }
@@ -1669,7 +1697,7 @@ async function loadNotifications(manual=false){
     renderNotifications();
     maybePlayNotificationSound(prev,state.notifications.unread_count);
     inventoryImportHandleNotificationCompletion();
-    if(manual)setStatus('notificationsStatus',`Pendientes: ${state.notifications.unread_count} · Total listado: ${state.notifications.total}`,true);
+    if(manual)setStatus('notificationsStatus',`Pendientes: ${state.notifications.unread_count}`,true);
     return d;
   }catch(e){
     renderNotificationsBadge();
@@ -2031,16 +2059,17 @@ function logisticLabel(o,ch){
     let st=o.tn_shipping_status||'';
     if(opt)return opt;
     if(st)return st;
-    return 'Sin envío';
+    return 'A coordinar';
   }
   let method=String(o.ml_shipping_logistic_type||o.logistic_type||'').toLowerCase();
   let mode=String(o.ml_shipping_mode||o.shipping_mode||'').toLowerCase();
   let tags=String((o.ml_shipping_tags||[]).join ? (o.ml_shipping_tags||[]).join(' ') : (o.ml_shipping_tags||'')).toLowerCase();
-  let blob=[method,mode,tags,String(o.ml_shipping_status||'').toLowerCase()].join(' ');
-  if(blob.includes('fulfillment')||blob.includes('fulfill')||blob.includes('meli_facility'))return 'FULL';
-  if(blob.includes('self_service')||blob.includes('flex'))return 'FLEX';
+  let status=String(o.ml_shipping_status||'').toLowerCase();
+  if(method==='fulfillment'||method==='fulfillment_lite'||method==='full'||tags.includes('meli_facility'))return 'FULL';
+  if(method==='self_service'||method==='flex'||tags.includes('self_service')||tags.includes('flex'))return 'FLEX';
   if(method==='cross_docking'||method==='xd_drop_off'||method==='drop_off'||mode==='me2'||o.ml_shipping_id)return 'Mercado Envíos';
-  return 'Sin envío';
+  if(status.includes('to_be_agreed')||status.includes('not_specified'))return 'A coordinar';
+  return 'A coordinar';
 }
 function statusLabel(v){let t=String(v||'').trim();let n=t.toLowerCase();if(n==='paid')return 'PAGADO';if(n==='confirmed')return 'CONFIRMADO';if(n==='cancelled'||n==='canceled')return 'CANCELADO';if(n==='open')return 'ABIERTO';return t?t.toUpperCase():''}
 function orderStatusLabel(o,ch){return ch==='ML'?statusLabel(o.ml_status||o.status):statusLabel(o.tn_payment_status||o.tn_status||o.status)}
@@ -2242,12 +2271,10 @@ function orderCard(o,ch){
   let manualDeliveredHtml=tnDeliveredButton(o,ch);
   let actionHtml=act?`<span class="logisticsAction">${esc(act)}</span>`:'';
   let totalSub=o.total_products&&Number(o.total_products)!==Number(o.total)?`<br><span class="small">Productos: ${money(o.total_products)}</span>`:'';
-  let logisticClass=logistic==='FULL'?'dark':logistic==='FLEX'?'ok':logistic==='Sin envío'?'dark':'info';
-  let stateLower=String(logState||'').toLowerCase();
-  let mlLogisticNeedsSeller = ch==='ML' && logistic!=='FULL' && logistic!=='Sin envío';
-  let mlPendingNeedsSeller = mlLogisticNeedsSeller && (stateLower.includes('pendiente')||stateLower.includes('listo')||stateLower.includes('sin despachar'));
-  let needsVisualAction=!!act || mlPendingNeedsSeller;
-  return `<div class="orderCard ${needsVisualAction?'actionSale':''}"><div class="orderHead"><div><strong>${esc(orderNumber(o,ch))}</strong>${sub?`<br><span class="small">${sub}</span>`:''}<br><span class="small">${dateAR(o.display_created_at||o.created_at||o.ml_date_created)}</span></div><div>${channelCustomerHtml(o,ch)}</div><div class="orderLogisticsBlock"><span class="pill ${logisticClass} shippingPill">${esc(logistic)}</span><br><span class="orderPayStatus">${esc(orderStatusLabel(o,ch))}</span>${stateHtml}${manualDeliveredHtml}${actionHtml}</div><div><strong>${money(o.total)}</strong>${totalSub}<br><span class="small">${countLabel(lines.length)}</span></div><div>${invoiceButton(o,ch)}</div></div><div class="orderLines">${display}</div></div>`
+  let logisticClass=logistic==='FULL'?'dark':logistic==='FLEX'?'ok':(logistic==='A coordinar'||logistic==='Sin envío')?'warn':'info';
+  let needsVisualAction=saleNeedsVisualAction(o,ch);
+  let saleDate=o.display_created_at||o.sale_at||o.ml_date_closed||o.ml_date_created||o.tn_paid_at||o.tn_created_at||o.created_at;
+  return `<div class="orderCard ${needsVisualAction?'actionSale':''}"><div class="orderHead"><div><strong>${esc(orderNumber(o,ch))}</strong>${sub?`<br><span class="small">${sub}</span>`:''}<br><span class="small">${dateAR(saleDate)}</span></div><div>${channelCustomerHtml(o,ch)}</div><div class="orderLogisticsBlock"><span class="pill ${logisticClass} shippingPill">${esc(logistic)}</span><br><span class="orderPayStatus">${esc(orderStatusLabel(o,ch))}</span>${stateHtml}${manualDeliveredHtml}${actionHtml}</div><div><strong>${money(o.total)}</strong>${totalSub}<br><span class="small">${countLabel(lines.length)}</span></div><div>${invoiceButton(o,ch)}</div></div><div class="orderLines">${display}</div></div>`
 }
 
 
@@ -2309,23 +2336,28 @@ function friendlyInventoryError(e){
   if(raw.includes('Sesión XelerIA requerida'))return 'La sesión venció. Volvé a ingresar y repetí la operación.';
   return raw.length>260?raw.slice(0,260)+'…':raw;
 }
-function saleNeedsAction(o,ch){
+function saleNeedsVisualAction(o,ch){
   let logistic=logisticLabel(o,ch);
-  let state=shippingStateLabel(o,ch).toLowerCase();
+  let state=String(shippingStateLabel(o,ch)||'').toLowerCase();
   let raw=shippingStatusText(o);
   let sub=shippingSubstatusText(o);
+  let pay=String(orderStatusLabel(o,ch)||o.status||'').toLowerCase();
 
-  if(state.includes('entregado')||state.includes('en camino')||state.includes('procesando')||state.includes('cancelado'))return '';
-  if(logistic==='FULL')return '';
-
-  // No inventar acción para Mercado Envíos si ML ya tiene el paquete o si el estado está en tránsito.
-  // Full/Flex se dejan igual que estaban.
-  if(ch==='ML'&&logistic==='Mercado Envíos'&&(sub.includes('picked_up')||state.includes('en camino')))return '';
-
-  if(logistic==='Sin envío'||raw.includes('to_be_agreed')||raw.includes('not_specified'))return 'A coordinar con comprador';
-  if(logistic==='FLEX'&&!state.includes('entregado'))return '';
-  if(ch==='TN'&&String(logistic).toLowerCase().includes('retiro')&&!state.includes('entregado'))return 'Coordinar retiro';
-  return '';
+  if(logistic==='FULL')return false;
+  if(pay.includes('cancel'))return false;
+  if(state.includes('entregado')||state.includes('delivered')||state.includes('en camino')||state.includes('cancelado')||state.includes('cancelled'))return false;
+  if(sub.includes('picked_up')||raw.includes('picked_up')||raw.includes('shipped')||raw.includes('in_transit')||raw.includes('on_the_way'))return false;
+  return true;
+}
+function saleNeedsAction(o,ch){
+  if(!saleNeedsVisualAction(o,ch))return '';
+  let logistic=logisticLabel(o,ch);
+  let raw=shippingStatusText(o);
+  if(logistic==='A coordinar'||logistic==='Sin envío'||raw.includes('to_be_agreed')||raw.includes('not_specified'))return 'A coordinar con comprador';
+  if(logistic==='FLEX')return 'Gestionar logística FLEX';
+  if(ch==='TN'&&String(logistic).toLowerCase().includes('retiro'))return 'Coordinar retiro';
+  if(logistic==='Mercado Envíos')return 'Despachar por Mercado Envíos';
+  return 'Requiere acción';
 }
 async function searchInventory(offset=0,savePref=false){
   let q=qs('invSearch').value.trim();
