@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>XelerIA · Backoffice</title>
 <!-- XELERIA_COMBOS_SAAS_UI_V1_INTEGRATED -->
+<!-- XELERIA_COMBOS_SAVE_BUTTON_REMOVED_REFRESH_BG_V1 -->
 <link rel="icon" href="./favicon_xeleria.png?v=20260620" />
 <style>
 :root{--bg:#f2f0eb;--surface:#fffdf8;--surface2:#f8f4ea;--ink:#171717;--muted:#6b665c;--line:#ded4be;--brand:#dcc58f;--brand2:#cdb272;--dark:#101010;--ok:#067647;--bad:#b42318;--warn:#b54708;--shadow:0 10px 30px rgba(17,17,17,.08);--radius:18px;--import-green-bg:#dff3e4;--import-red-bg:#f6d2d2;--import-yellow-bg:#f7f8bd;--import-soft-border:#777;--import-soft-text:#111}
@@ -2570,7 +2571,29 @@ async function comboOpenEdit(sku){comboEnsureState();state.comboExpanded=state.c
 async function comboLoadEditPanel(sku){let panel=qs('comboEditPanel_'+comboSafeKey(sku));if(!panel)return;try{let d=await fetchJson('/admin/v2/bundles/'+encodeURIComponent(sku));let key=comboFormKeyForSku(sku);let f=comboEmptyForm();f.sku=d.bundle?.sku||sku;f.name=d.bundle?.name||'';f.components=(d.components||[]).map(x=>({sku:x.component_sku||'',name:x.component_name||'',stock:x.component_stock,price:x.component_price??x.price??x.cost??x.component?.price??x.component?.cost??'',quantity:comboQtyInt(x.quantity)}));f.existingListings=(d.listings||[]).map(x=>({marketplace:String(x.marketplace||'').toUpperCase(),external_product_id:String(x.external_product_id||''),external_variant_id:String(x.external_variant_id||'0'),title:x.title||'',status:x.status||'',price:x.price}));f.listings=[...f.existingListings];state.comboForms[key]=f;panel.innerHTML=comboFormInner(key,{mode:'edit',sku});comboRenderComponents(key);comboRenderSelectedListings(key);comboLoadOrphans(key,'ML');comboLoadOrphans(key,'TN')}catch(e){panel.innerHTML='<div class="status badtxt">Error abriendo combo: '+esc(errText(e))+'</div>'}}
 function comboFormInner(key,opt){let f=comboForm(key);let edit=opt.mode==='edit';return `<div class="comboEditTop"><div>${edit?`<b class="comboSaasMono">${esc(f.sku)}</b>`:`<input value="${esc(f.sku)}" oninput="comboForm('${key}').sku=this.value" placeholder="SKU nuevo">`}</div><div><input value="${esc(f.name)}" oninput="comboForm('${key}').name=this.value" placeholder="Nombre del combo"></div><div style="text-align:right"><button class="secondary" onclick="${edit?`comboOpenEdit('${jsq(opt.sku)}')`:'comboCloseNew()'}">Cerrar</button></div><div class="comboPubEditor"><label>Publicaciones asociadas</label><div id="comboSelectedListings_${key}">${comboSelectedListingsMini(key)}</div><label class="comboLiveSearchLine"><input id="comboLiveSearch_${key}" type="checkbox" onchange="['ML','TN'].forEach(m=>comboLoadOrphans('${key}',m))"> Buscar en vivo en ML/TN</label><div class="comboLiveSearchHint">Apagado: busca en base local. Encendido: consulta el canal en vivo. Mínimo 3 caracteres.</div><div class="comboPubSearchGrid"><div><label>Buscar ML huérfana</label><input id="comboOrphan_${key}_ML_q" oninput="comboDebouncedOrphans('${key}','ML')" placeholder="Título, SKU o ID"><div id="comboOrphan_${key}_ML" class="comboPubMiniList"></div></div><div><label>Buscar TN huérfana</label><input id="comboOrphan_${key}_TN_q" oninput="comboDebouncedOrphans('${key}','TN')" placeholder="Título, SKU o ID"><div id="comboOrphan_${key}_TN" class="comboPubMiniList"></div></div></div></div></div><div class="comboSectionTitle comboComponentsSectionTitle">COMPONENTES</div><div style="margin-top:10px" id="comboComponents_${key}"></div><div class="btnrow" style="justify-content:center;margin-top:8px"><button class="comboAddComponentBtn" onclick="comboAddBlankComponent('${key}')">Agregar</button></div><div class="comboEditBottomActions"><button class="ok" onclick="comboSaveForm('${key}','${opt.mode}')">Guardar combo</button><span id="comboFormStatus_${key}" class="status comboEditStatus"></span></div>`}
 function comboSelectedListingsMini(key){let f=comboForm(key);let rows=f.listings||[];if(!rows.length)return '<span class="muted">Sin publicaciones asociadas.</span>';return `<div class="comboPubSelected">${rows.map((l,i)=>`<div class="comboPubSelectedLine"><span class="pill ${String(l.marketplace||'').toUpperCase()==='TN'?'ok':'info'}">${esc(l.marketplace)}</span><span><b>${esc(l.title||l.external_product_id||'Publicación')}</b><br><span class="muted comboSaasMono">${esc(l.external_product_id)} · Var: ${esc(l.external_variant_id||'0')} · ${esc(l.status||'')}</span></span></div>`).join('')}</div>`}
-function comboRenderComponents(key){let f=comboForm(key);let el=qs('comboComponents_'+key);if(!el)return;let rows=(f.components||[]).map((c,i)=>`<tr><td><div class="comboCompField"><input id="comboCompSku_${key}_${i}" value="${esc(c.sku)}" oninput="comboComponentInput('${key}',${i},this.value,this)" onfocus="comboComponentInput('${key}',${i},this.value,this,true)" placeholder="SKU o nombre"><div id="comboCompSuggest_${key}_${i}" class="comboCompSuggestInline hidden"></div></div></td><td>${esc(c.name||'')}</td><td><input class="comboQtyInput" type="number" min="1" step="1" value="${esc(c.quantity||1)}" oninput="comboForm('${key}').components[${i}].quantity=comboNormalizeQtyInput(this)"></td><td class="comboReadOnlyCell">${esc(comboPriceValue(c.price))}</td><td class="comboReadOnlyStock">${esc(c.stock??'—')}</td><td><button class="comboLineSave" onclick="comboSaveForm('${key}','${key==='new'?'create':'edit'}')">Guardar</button></td><td><div class="comboLineActions">${comboComponentMenu(key,i)}</div></td></tr>`).join('');if(!rows)rows='<tr><td colspan="7" class="muted" style="text-align:center">Sin componentes. Presioná Agregar para cargar la primera línea.</td></tr>';el.innerHTML=`<table class="comboComponentTable"><thead><tr><th>SKU</th><th>Nombre</th><th>CANT</th><th>PRECIO</th><th>STOCK</th><th></th><th></th></tr></thead><tbody>${rows}</tbody></table>`}
+function comboRenderComponents(key){
+  let f=comboForm(key);
+  let el=qs('comboComponents_'+key);
+  if(!el)return;
+
+  let rows=(f.components||[]).map((c,i)=>`<tr>
+    <td>
+      <div class="comboCompField">
+        <input id="comboCompSku_${key}_${i}" value="${esc(c.sku)}" oninput="comboComponentInput('${key}',${i},this.value,this)" onfocus="comboComponentInput('${key}',${i},this.value,this,true)" placeholder="SKU o nombre">
+        <div id="comboCompSuggest_${key}_${i}" class="comboCompSuggestInline hidden"></div>
+      </div>
+    </td>
+    <td>${esc(c.name||'')}</td>
+    <td><input class="comboQtyInput" type="number" min="1" step="1" value="${esc(c.quantity||1)}" oninput="comboForm('${key}').components[${i}].quantity=comboNormalizeQtyInput(this)"></td>
+    <td class="comboReadOnlyCell">${esc(comboPriceValue(c.price))}</td>
+    <td class="comboReadOnlyStock">${esc(c.stock??'—')}</td>
+    <td><div class="comboLineActions">${comboComponentMenu(key,i)}</div></td>
+  </tr>`).join('');
+
+  if(!rows)rows='<tr><td colspan="6" class="muted" style="text-align:center">Sin componentes. Presioná Agregar para cargar la primera línea.</td></tr>';
+
+  el.innerHTML=`<table class="comboComponentTable"><thead><tr><th>SKU</th><th>Nombre</th><th>CANT</th><th>PRECIO</th><th>STOCK</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+}
 function comboAddBlankComponent(key){let f=comboForm(key);f.components.push({sku:'',name:'',quantity:1,price:'',stock:''});comboRenderComponents(key);let idx=f.components.length-1;setTimeout(()=>qs(`comboCompSku_${key}_${idx}`)?.focus(),30)}
 function comboFriendlyComboError(e){
   let raw=errText(e);
@@ -2669,7 +2692,10 @@ async function comboSaveForm(key,mode){
       state.comboExpanded='';
       delete state.comboForms[key];
     }
-    await loadCombos();
+    setStatus('comboStatus','Combo guardado OK. Refrescando vista en segundo plano...',true);
+    loadCombos().catch(e=>{
+      setStatus('comboStatus','Combo guardado OK, pero el refresco quedó lento. Podés actualizar manualmente.', 'warn');
+    });
   }catch(e){
     if(st){st.className='status badtxt';st.innerHTML='<span class="comboFriendlyError">'+esc(comboFriendlyComboError(e))+'</span>'}
   }
