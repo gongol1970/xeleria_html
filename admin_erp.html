@@ -1163,8 +1163,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.58-ml-picked-up-label';
-const FRONTEND_BUILD='admin-erp-v264-ml-picked-up-label';
+const FRONTEND_VERSION='2.59-ml-fulfilled-delivered';
+const FRONTEND_BUILD='admin-erp-v265-ml-fulfilled-delivered';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const XELERIA_MIN_SEARCH_CHARS=4;function isShortSearch(q){q=String(q||'').trim();return q.length>0&&q.length<XELERIA_MIN_SEARCH_CHARS}function minSearchMessage(){return 'Ingresá al menos '+XELERIA_MIN_SEARCH_CHARS+' caracteres para buscar.'}
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
@@ -2181,6 +2181,20 @@ function shippingSubstatusText(o){
     deepVal(r,'order.shipping.substatus'),deepVal(r,'logistic.substatus')
   ]).toLowerCase();
 }
+function boolishTrue(v){
+  if(v===true)return true;
+  let s=String(v??'').trim().toLowerCase();
+  return ['1','true','yes','si','sí','on'].includes(s);
+}
+function mlOrderFulfilled(o){
+  let r=rawObj(o);
+  return boolishTrue(o.ml_fulfilled)||boolishTrue(o.fulfilled)||
+    boolishTrue(deepVal(r,'ml_fulfilled'))||
+    boolishTrue(deepVal(r,'fulfilled'))||
+    boolishTrue(deepVal(r,'ml_raw.fulfilled'))||
+    boolishTrue(deepVal(r,'order.fulfilled'))||
+    boolishTrue(deepVal(r,'ml_shipping_last_snapshot.fulfilled'));
+}
 function shippingStateLabel(o,ch){
   // Para TN moto/manual, el estado operativo del ERP gana sobre lo que devuelve TN.
   if(ch==='TN'&&(o.tn_manual_delivered||String(o.delivery_status||o.tn_delivery_status||'').toLowerCase().includes('delivered'))){
@@ -2199,6 +2213,9 @@ function shippingStateLabel(o,ch){
   let snapLog=String(deepVal(r,'ml_shipping_last_snapshot.logistic_type')||'').toLowerCase();
   let opt=String(o.shipping_option||o.tn_shipping_option||'');
   let blob=(raw+' '+sub+' '+snapStatus+' '+snapSub+' '+snapLog+' '+opt.toLowerCase()).trim();
+
+  // ML sin Mercado Envíos: cuando /orders/{id}.fulfilled=true, es Entregado aunque el tipo sea A coordinar.
+  if(ch==='ML'&&mlOrderFulfilled(o))return 'Entregado';
 
   if(blob.includes('cancel')||explicitLow.includes('cancel'))return 'Cancelado';
   if(blob.includes('delivered')||explicitLow.includes('entregado'))return 'Entregado';
@@ -2378,6 +2395,7 @@ function saleNeedsVisualAction(o,ch){
   let pay=String(orderStatusLabel(o,ch)||o.status||'').toLowerCase();
 
   if(logistic==='FULL')return false;
+  if(ch==='ML'&&mlOrderFulfilled(o))return false;
   if(pay.includes('cancel'))return false;
   if(state.includes('entregado')||state.includes('delivered')||state.includes('en camino')||state.includes('cancelado')||state.includes('cancelled'))return false;
   if(sub.includes('picked_up')||raw.includes('picked_up')||raw.includes('shipped')||raw.includes('in_transit')||raw.includes('on_the_way'))return false;
