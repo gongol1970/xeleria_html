@@ -8,6 +8,7 @@
 <!-- XELERIA_COMBOS_SAAS_UI_V1_INTEGRATED -->
 <!-- XELERIA_COMBOS_SAVE_BUTTON_REMOVED_REFRESH_BG_V1 -->
 <!-- XELERIA_VENTAS_SHIPPING_UI_V264_PICKED_UP_LABEL -->
+<!-- XELERIA_ARCA_ONBOARDING_CONFIG_V266 -->
 <link rel="icon" href="./favicon_xeleria.png?v=20260620" />
 <style>
 :root{--bg:#f2f0eb;--surface:#fffdf8;--surface2:#f8f4ea;--ink:#171717;--muted:#6b665c;--line:#ded4be;--brand:#dcc58f;--brand2:#cdb272;--dark:#101010;--ok:#067647;--bad:#b42318;--warn:#b54708;--shadow:0 10px 30px rgba(17,17,17,.08);--radius:18px;--import-green-bg:#dff3e4;--import-red-bg:#f6d2d2;--import-yellow-bg:#f7f8bd;--import-soft-border:#777;--import-soft-text:#111}
@@ -1109,7 +1110,95 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 
 <section id="fallas" class="view"><div class="card"><h3>Gestión · Monitor de sync_jobs</h3><p>Solo monitoreo. La ejecución de jobs queda a cargo del autosync del ERP.</p><div class="grid"><div class="col-2"><label>Cantidad visible</label><select id="jobsLimit" class="limitSelect" onchange="loadSyncJobs(0,true)"><option>20</option><option>50</option><option selected>100</option><option>200</option></select></div><div class="col-2"><label>&nbsp;</label><button onclick="loadSyncJobs(0,true)">Actualizar</button></div></div><div id="jobsStatus" class="status"></div><div id="jobsTable" class="tableWrap" style="margin-top:12px"></div><div id="jobsPager" class="btnrow jobsPager"></div><pre id="jobsOut" class="hidden"></pre></div></section>
 
-<section id="configuracion" class="view"><div class="card connectionSettings"><h3>Conexión XelerIA</h3><p>Conexión técnica del backoffice. El token no se muestra ni viaja en la URL.</p><div class="connGrid"><div><label>API</label><input id="cfgApiUrl" value="https://api.xeleria.com.ar"></div><div><label>ADMIN_TOKEN</label><input id="cfgToken" type="password" placeholder="Token" autocomplete="off"></div><button class="primary" onclick="saveSettingsFromConfig()">Guardar</button><button class="secondary" onclick="health()">Probar</button><button class="secondary" onclick="showLastJson()">Ver último JSON</button></div><div id="connStatus" class="status"></div></div><div class="card"><h3>Personalización</h3><p>Datos de empresa, fiscal y logo del tenant. Se guardan en la base de XelerIA.</p><div class="grid"><div class="col-6"><label>Nombre fantasía</label><input id="cfgNombreFantasia" placeholder="Nombre comercial"></div><div class="col-6"><label>Razón social</label><input id="cfgRazonSocial" placeholder="Razón social"></div><div class="col-3"><label>CUIT</label><input id="cfgCuit" placeholder="CUIT"></div><div class="col-3"><label>Condición IVA</label><input id="cfgCondIva" placeholder="Responsable Inscripto"></div><div class="col-3"><label>Punto venta ARCA</label><input id="cfgPtoVta" placeholder="0001"></div><div class="col-3"><label>Ambiente ARCA</label><select id="cfgArcaEnv"><option value="homologacion">Homologación</option><option value="produccion">Producción</option></select></div><div class="col-12"><label>Domicilio comercial</label><input id="cfgDomicilio" placeholder="Domicilio fiscal/comercial"></div></div><div class="dividerLine"></div><div class="grid"><div class="col-6"><h3>Logo / marca</h3><label>URL pública del logo</label><input id="cfgLogoUrl" placeholder="https://.../logo.png" oninput="previewConfigLogo()"><div class="btnrow" style="margin-top:10px"><label class="btn secondary" style="margin:0;text-transform:none;letter-spacing:0;color:#111">Cargar archivo<input id="cfgLogoFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" style="display:none" onchange="loadLogoFile(event)"></label><button class="secondary" onclick="clearLogoConfig()">Quitar logo</button></div></div><div class="col-6"><label>Vista previa</label><div id="cfgLogoPreview" class="configLogoPreview"><div class="logoPlaceholder">LOGO</div></div></div></div><div class="dividerLine"></div><div class="grid"><div class="col-4"><label>Facturación automática</label><select id="cfgAutoInvoice"><option value="false">OFF</option><option value="true">ON</option></select></div><div class="col-4"><label>Concepto default</label><select id="cfgConcepto"><option>Productos</option><option>Servicios</option><option>Productos y Servicios</option></select></div><div class="col-4"><label>Sonido notificaciones</label><select id="cfgNotificationSound" onchange="primeNotificationSoundFromSelect()"><option value="off">OFF</option><option value="single_bell_soft">Campana simple sutil</option><option value="single_bell_dry">Campana simple sonido seco</option><option value="double_bell">Campana doble</option><option value="double_bell_low">Campana doble grave</option><option value="double_bell_dry">Campana doble sonido seco</option><option value="triple_bell">Campana triple</option><option value="minimalist">Minimalista</option></select><div class="btnrow" style="margin-top:8px"><button type="button" class="secondary" onclick="testNotificationSound()">Probar sonido</button></div></div></div><div class="dividerLine"></div><div class="btnrow" style="justify-content:flex-end"><button class="primary" onclick="saveConfig()">Guardar personalización</button></div><div id="cfgStatus" class="status"></div></div>
+<section id="configuracion" class="view">
+  <div class="card connectionSettings">
+    <h3>Conexión XelerIA</h3>
+    <p>Conexión técnica del backoffice. El token no se muestra ni viaja en la URL.</p>
+    <div class="connGrid">
+      <div><label>API</label><input id="cfgApiUrl" value="https://api.xeleria.com.ar"></div>
+      <div><label>ADMIN_TOKEN</label><input id="cfgToken" type="password" placeholder="Token" autocomplete="off"></div>
+      <button class="primary" onclick="saveSettingsFromConfig()">Guardar</button>
+      <button class="secondary" onclick="health()">Probar</button>
+      <button class="secondary" onclick="showLastJson()">Ver último JSON</button>
+    </div>
+    <div id="connStatus" class="status"></div>
+  </div>
+
+  <div class="card">
+    <h3>Personalización</h3>
+    <p>Marca, logo y preferencias generales del tenant. Se guardan en la base de XelerIA.</p>
+    <div class="grid">
+      <div class="col-6"><label>Nombre fantasía</label><input id="cfgNombreFantasia" placeholder="Nombre comercial"></div>
+      <div class="col-6"><label>Concepto default</label><select id="cfgConcepto"><option>Productos</option><option>Servicios</option><option>Productos y Servicios</option></select></div>
+    </div>
+    <div class="dividerLine"></div>
+    <div class="grid">
+      <div class="col-6">
+        <h3>Logo / marca</h3>
+        <label>URL pública del logo</label>
+        <input id="cfgLogoUrl" placeholder="https://.../logo.png" oninput="previewConfigLogo()">
+        <div class="btnrow" style="margin-top:10px">
+          <label class="btn secondary" style="margin:0;text-transform:none;letter-spacing:0;color:#111">Cargar archivo<input id="cfgLogoFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" style="display:none" onchange="loadLogoFile(event)"></label>
+          <button class="secondary" onclick="clearLogoConfig()">Quitar logo</button>
+        </div>
+      </div>
+      <div class="col-6">
+        <label>Vista previa</label>
+        <div id="cfgLogoPreview" class="configLogoPreview"><div class="logoPlaceholder">LOGO</div></div>
+      </div>
+    </div>
+    <div class="dividerLine"></div>
+    <div class="grid">
+      <div class="col-4">
+        <label>Sonido notificaciones</label>
+        <select id="cfgNotificationSound" onchange="primeNotificationSoundFromSelect()"><option value="off">OFF</option><option value="single_bell_soft">Campana simple sutil</option><option value="single_bell_dry">Campana simple sonido seco</option><option value="double_bell">Campana doble</option><option value="double_bell_low">Campana doble grave</option><option value="double_bell_dry">Campana doble sonido seco</option><option value="triple_bell">Campana triple</option><option value="minimalist">Minimalista</option></select>
+        <div class="btnrow" style="margin-top:8px"><button type="button" class="secondary" onclick="testNotificationSound()">Probar sonido</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="arcaOnboardingCard">
+    <h3>Facturación ARCA</h3>
+    <p>Primero definí si este comercio va a facturar usando XelerIA. El CUIT sólo inicia el onboarding; no habilita facturación automática por sí solo.</p>
+    <div class="grid">
+      <div class="col-4">
+        <label>¿Vas a facturar con XelerIA?</label>
+        <select id="cfgArcaUseXeleria" onchange="renderArcaOnboardingUi()">
+          <option value="false">No</option>
+          <option value="true">Sí</option>
+        </select>
+      </div>
+      <div class="col-4" id="arcaCuitBox">
+        <label>CUIT</label>
+        <input id="cfgCuit" placeholder="CUIT sin guiones">
+      </div>
+      <div class="col-4" id="arcaEnvBox">
+        <label>Ambiente ARCA</label>
+        <select id="cfgArcaEnv"><option value="homologacion">Homologación</option><option value="produccion">Producción</option></select>
+      </div>
+    </div>
+    <div id="arcaOnboardingSteps" class="status" style="margin-top:12px"></div>
+    <div id="arcaAutoInvoiceBox" class="grid" style="margin-top:12px">
+      <div class="col-4">
+        <label>Facturación automática ML/TN</label>
+        <select id="cfgAutoInvoice"><option value="false">OFF</option><option value="true">ON</option></select>
+        <p class="small">Se habilita recién cuando ARCA figure conectado.</p>
+      </div>
+    </div>
+    <div class="btnrow" style="margin-top:12px;justify-content:flex-end">
+      <button class="secondary" type="button" onclick="refreshArcaOnboardingStatus()">Actualizar estado ARCA</button>
+      <button class="primary" type="button" id="arcaStartButton" onclick="startArcaOnboarding()">Iniciar conexión ARCA</button>
+    </div>
+    <div id="arcaOnboardingStatus" class="status"></div>
+  </div>
+
+  <div class="card">
+    <div class="btnrow" style="justify-content:flex-end">
+      <button class="primary" onclick="saveConfig()">Guardar configuración</button>
+    </div>
+    <div id="cfgStatus" class="status"></div>
+  </div>
+
 <div id="inventoryImportCard" class="card"><div class="btnrow"><div><h3>Carga general de inventario</h3></div></div><div class="importConnectorGrid"><div id="inventoryImportMLCard" class="importConnectorCard"><h4>Mercado Libre</h4><div class="importConnectorMeta">Estado: <span id="inventoryImportMLStatus" class="pill">revisando</span><span id="inventoryImportMLDot" class="dot">·</span><span id="inventoryImportMLAccount" class="importConnectorAccount">—</span></div><div class="importConnectorActions"><button id="inventoryImportMLButton" class="secondary" onclick="connectInventoryChannel('ML')">Conectar ML</button></div></div><div id="inventoryImportTNCard" class="importConnectorCard"><h4>Tienda Nube</h4><div class="importConnectorMeta">Estado: <span id="inventoryImportTNStatus" class="pill">revisando</span><span id="inventoryImportTNDot" class="dot">·</span><span id="inventoryImportTNAccount" class="importConnectorAccount">—</span></div><div class="importConnectorActions"><button id="inventoryImportTNButton" class="secondary" onclick="connectInventoryChannel('TN')">Conectar TN</button></div></div></div><div class="btnrow importImportActions"><button id="inventoryImportRunButton" class="primary" onclick="runInventoryImportRefresh(0)">Importar canales conectados</button></div><div id="inventoryImportStatus" class="status"></div><div id="inventoryImportSummary" class="status"></div><div id="inventoryImportErrors" class="status hidden"></div><div class="importReviewLegend importReviewLegendInline hidden"><span class="pill ok">Verde: SKU o publicación nueva / S-C cambiado</span><span class="pill bad">Rojo: falta en refresh confirmado</span><span class="pill warn">Amarillo: SKU faltante</span></div><div class="importReviewGrid hidden"><table><colgroup><col class="sku"><col class="tn"><col class="kind"><col class="ml"></colgroup><thead><tr><th>SKU</th><th>Tienda Nube</th><th title="Simple / Combo">S/C</th><th>Mercado Libre</th></tr></thead><tbody id="inventoryImportGridBody"></tbody></table></div><div id="inventoryImportPager" class="btnrow" style="margin-top:12px"></div></div>
 </section>
 <section id="bitacora" class="view"><div class="card"><div class="dashStatusLine"><div><h3>Bitácora operativa</h3><p>Errores y advertencias accionables. Sin columnas: cada evento trae contexto, acción sugerida y detalle técnico plegable.</p></div><button class="secondary dashRefresh" onclick="loadOpsLog(true)">Actualizar</button></div><div id="opsLogStatus" class="status"></div><div id="opsLogList" class="opsLogList"></div></div></section>
@@ -1163,8 +1252,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.59-ml-fulfilled-delivered';
-const FRONTEND_BUILD='admin-erp-v265-ml-fulfilled-delivered';
+const FRONTEND_VERSION='2.60-arca-onboarding-start';
+const FRONTEND_BUILD='admin-erp-v266-arca-onboarding-start';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const XELERIA_MIN_SEARCH_CHARS=4;function isShortSearch(q){q=String(q||'').trim();return q.length>0&&q.length<XELERIA_MIN_SEARCH_CHARS}function minSearchMessage(){return 'Ingresá al menos '+XELERIA_MIN_SEARCH_CHARS+' caracteres para buscar.'}
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
@@ -3537,36 +3626,81 @@ function cfgGet(id){return qs(id)?.value||''}
 function configLogoValue(){return localStorage.getItem('xeleria_company_logo_data')||cfgGet('cfgLogoUrl')||''}
 function applyConfigLogo(src){let brand=qs('brandTenantLogo');let prev=qs('cfgLogoPreview');let logo=String(src||'').trim();if(brand){if(logo){brand.classList.add('hasLogo');brand.innerHTML=`<img src="${esc(logo)}" alt="Logo empresa">`}else{brand.classList.remove('hasLogo');brand.textContent='LOGO'}}if(prev){if(logo){prev.classList.add('hasLogo');prev.innerHTML=`<img src="${esc(logo)}" alt="Logo empresa">`}else{prev.classList.remove('hasLogo');prev.innerHTML='<div class="logoPlaceholder">LOGO</div>'}}}
 function previewConfigLogo(){let val=cfgGet('cfgLogoUrl').trim();if(val){localStorage.removeItem('xeleria_company_logo_data');applyConfigLogo(val)}else{applyConfigLogo(configLogoValue())}}
-function loadLogoFile(ev){let f=ev.target.files&&ev.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{localStorage.setItem('xeleria_company_logo_data',String(r.result||''));cfgSet('cfgLogoUrl','');applyConfigLogo(String(r.result||''));setStatus('cfgStatus','Logo cargado. Tocá Guardar personalización para persistirlo en la base.',true)};r.onerror=()=>setStatus('cfgStatus','No pude leer el archivo del logo.',false);r.readAsDataURL(f)}
-function clearLogoConfig(){localStorage.removeItem('xeleria_company_logo_data');cfgSet('cfgLogoUrl','');applyConfigLogo('');setStatus('cfgStatus','Logo quitado. Tocá Guardar personalización para persistir el cambio.',true)}
+function loadLogoFile(ev){let f=ev.target.files&&ev.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{localStorage.setItem('xeleria_company_logo_data',String(r.result||''));cfgSet('cfgLogoUrl','');applyConfigLogo(String(r.result||''));setStatus('cfgStatus','Logo cargado. Tocá Guardar configuración para persistirlo en la base.',true)};r.onerror=()=>setStatus('cfgStatus','No pude leer el archivo del logo.',false);r.readAsDataURL(f)}
+function clearLogoConfig(){localStorage.removeItem('xeleria_company_logo_data');cfgSet('cfgLogoUrl','');applyConfigLogo('');setStatus('cfgStatus','Logo quitado. Tocá Guardar configuración para persistir el cambio.',true)}
+function cleanCuitDigits(v){return String(v||'').replace(/\D+/g,'').slice(0,11)}
+function settingsWantsArca(s={}){
+  if(Object.prototype.hasOwnProperty.call(s,'arca_use_xeleria'))return boolishTrue(s.arca_use_xeleria);
+  return boolishTrue(s.arca_connect_requested)||boolishTrue(s.conectar_arca);
+}
+function arcaConnectedFromSettings(s={}){
+  return boolishTrue(s.arca_connected)||String(s.arca_connection_status||'').toLowerCase()==='connected';
+}
+function renderArcaStepLine(ok,label,detail=''){
+  return `<div style="padding:8px 10px;border:1px solid #eee2c8;border-radius:12px;background:#fff;margin:6px 0"><strong>${ok?'✅':'⏳'} ${esc(label)}</strong>${detail?`<div class="small">${esc(detail)}</div>`:''}</div>`;
+}
+function renderArcaOnboardingUi(settingsArg=null){
+  let s=settingsArg||state.tenantSettings||{};
+  let sel=qs('cfgArcaUseXeleria');
+  let wants=sel?sel.value==='true':settingsWantsArca(s);
+  let cuitBox=qs('arcaCuitBox'),envBox=qs('arcaEnvBox'),steps=qs('arcaOnboardingSteps'),autoBox=qs('arcaAutoInvoiceBox'),autoSel=qs('cfgAutoInvoice'),startBtn=qs('arcaStartButton');
+  if(cuitBox)cuitBox.classList.toggle('hidden',!wants);
+  if(envBox)envBox.classList.toggle('hidden',!wants);
+  if(autoBox)autoBox.classList.toggle('hidden',!wants);
+  if(startBtn)startBtn.classList.toggle('hidden',!wants);
+  if(autoSel){
+    let connected=arcaConnectedFromSettings(s);
+    autoSel.disabled=!(wants&&connected);
+    if(!(wants&&connected))autoSel.value='false';
+  }
+  if(!steps)return;
+  if(!wants){
+    steps.innerHTML='<span class="pill">Facturación por XelerIA desactivada</span><div class="small" style="margin-top:8px">No se pide CUIT, no se conecta ARCA y no se habilita facturación automática.</div>';
+    return;
+  }
+  let cuit=cleanCuitDigits(cfgGet('cfgCuit')||s.fiscal_cuit||'');
+  let connected=arcaConnectedFromSettings(s);
+  let status=String(s.arca_connection_status||'pending_cuit');
+  let lines=[];
+  lines.push(renderArcaStepLine(!!cuit,'CUIT guardado',cuit?`CUIT ${cuit}`:'Falta cargar CUIT.'));
+  lines.push(renderArcaStepLine(connected,'Autorización / certificado / servicio ARCA',connected?'ARCA conectado.':'Pendiente: el cliente debe asociar autorización/certificado/servicio desde ARCA.'));
+  lines.push(renderArcaStepLine(connected,'Probar conexión',connected?'Conexión validada.':'Disponible cuando estén cargadas las credenciales reales.'));
+  lines.push(renderArcaStepLine(connected,'Facturación automática ML/TN',connected?'Podés habilitarla.':'Bloqueada hasta validar ARCA.'));
+  steps.innerHTML=`<div><span class="pill ${connected?'ok':'warn'}">${esc(status||'pendiente')}</span></div>`+lines.join('');
+}
 function personalizationPayload(){
   let logoData=localStorage.getItem('xeleria_company_logo_data')||'';
   let logoUrl=cfgGet('cfgLogoUrl').trim();
-  let auto=cfgGet('cfgAutoInvoice')==='true';
   let sound=normalizeNotificationSound(cfgGet('cfgNotificationSound')||'off');
-  return {
+  let wantsArca=cfgGet('cfgArcaUseXeleria')==='true';
+  let connected=arcaConnectedFromSettings(state.tenantSettings||{});
+  let auto=wantsArca&&connected&&cfgGet('cfgAutoInvoice')==='true';
+  let payload={
     display_name:cfgGet('cfgNombreFantasia'),
-    fiscal_razon_social:cfgGet('cfgRazonSocial'),
-    fiscal_cuit:cfgGet('cfgCuit'),
-    fiscal_iva_condition:cfgGet('cfgCondIva'),
-    fiscal_pos_arca:cfgGet('cfgPtoVta'),
-    fiscal_address:cfgGet('cfgDomicilio'),
     logo_url:logoUrl,
     logo_png_500_base64:logoData,
+    arca_use_xeleria:wantsArca,
+    arca_connect_requested:wantsArca,
+    conectar_arca:wantsArca,
     auto_invoice_ml:auto,
     auto_invoice_tn:auto,
-    arca_env:cfgGet('cfgArcaEnv'),
-    default_invoice_concept:cfgGet('cfgConcepto'),
+    arca_env:cfgGet('cfgArcaEnv')||'homologacion',
+    default_invoice_concept:cfgGet('cfgConcepto')||'Productos',
+    notification_sound:sound,
     settings:{notification_sound:sound}
-  }
+  };
+  if(wantsArca)payload.fiscal_cuit=cleanCuitDigits(cfgGet('cfgCuit'));
+  return payload;
 }
 async function saveConfig(){
-  setStatus('cfgStatus','Guardando personalización en base...');
+  setStatus('cfgStatus','Guardando configuración en base...');
   try{
     let d=await fetchJson('/admin/tenant/settings',{method:'PUT',body:JSON.stringify(personalizationPayload())});
+    state.tenantSettings=d.settings||{};
     state.notificationSound=normalizeNotificationSound(cfgGet('cfgNotificationSound')||'off');
     preloadNotificationSound(state.notificationSound);
-    setStatus('cfgStatus','Personalización guardada en base.',true);
+    renderArcaOnboardingUi(state.tenantSettings);
+    setStatus('cfgStatus',d.warning?('Configuración guardada. '+d.warning):'Configuración guardada en base.',d.warning?'warn':true);
     clearStatusLater('cfgStatus');
     saveLastJson(d);
     loadNotifications(false);
@@ -3575,16 +3709,54 @@ async function saveConfig(){
     showPre('uploadOut',e);
   }
 }
+async function startArcaOnboarding(){
+  let cuit=cleanCuitDigits(cfgGet('cfgCuit'));
+  if(qs('cfgArcaUseXeleria'))qs('cfgArcaUseXeleria').value='true';
+  if(cuit.length!==11){
+    setStatus('arcaOnboardingStatus','CUIT inválido: debe tener 11 dígitos.',false);
+    return;
+  }
+  setStatus('arcaOnboardingStatus','Guardando CUIT e iniciando conexión ARCA...');
+  try{
+    let d=await fetchJson('/admin/arca/onboarding/start',{method:'POST',body:JSON.stringify({fiscal_cuit:cuit,arca_env:cfgGet('cfgArcaEnv')||'homologacion'})});
+    state.tenantSettings=d.settings||{};
+    cfgSet('cfgCuit',state.tenantSettings.fiscal_cuit||cuit);
+    cfgSet('cfgArcaUseXeleria','true');
+    cfgSet('cfgAutoInvoice','false');
+    renderArcaOnboardingUi(state.tenantSettings);
+    let msg=(Array.isArray(d.messages)&&d.messages.length)?d.messages.join(' · '):'Conexión ARCA iniciada. Falta autorización/certificado/servicio.';
+    setStatus('arcaOnboardingStatus',msg,true);
+    saveLastJson(d);
+  }catch(e){
+    setStatus('arcaOnboardingStatus','No pude iniciar ARCA: '+errText(e),false);
+    showPre('uploadOut',e);
+  }
+}
+async function refreshArcaOnboardingStatus(){
+  setStatus('arcaOnboardingStatus','Consultando estado ARCA...');
+  try{
+    let d=await fetchJson('/admin/arca/onboarding/status');
+    state.tenantSettings=d.settings||{};
+    let s=state.tenantSettings;
+    cfgSet('cfgArcaUseXeleria',settingsWantsArca(s)?'true':'false');
+    cfgSet('cfgCuit',s.fiscal_cuit||cfgGet('cfgCuit')||'');
+    cfgSet('cfgArcaEnv',s.arca_env||'homologacion');
+    cfgSet('cfgAutoInvoice',(s.auto_invoice_ml||s.auto_invoice_tn)?'true':'false');
+    renderArcaOnboardingUi(s);
+    setStatus('arcaOnboardingStatus',(Array.isArray(d.messages)&&d.messages.length)?d.messages.join(' · '):'Estado ARCA actualizado.',true);
+    saveLastJson(d);
+  }catch(e){
+    setStatus('arcaOnboardingStatus','No pude consultar ARCA: '+errText(e),false);
+  }
+}
 async function loadConfig(){
   try{
     let d=await fetchJson('/admin/tenant/settings');
     let s=d.settings||{};
+    state.tenantSettings=s;
     cfgSet('cfgNombreFantasia',s.display_name||'');
-    cfgSet('cfgRazonSocial',s.fiscal_razon_social||'');
     cfgSet('cfgCuit',s.fiscal_cuit||'');
-    cfgSet('cfgCondIva',s.fiscal_iva_condition||'');
-    cfgSet('cfgPtoVta',s.fiscal_pos_arca||'');
-    cfgSet('cfgDomicilio',s.fiscal_address||'');
+    cfgSet('cfgArcaUseXeleria',settingsWantsArca(s)?'true':'false');
     cfgSet('cfgLogoUrl',s.logo_url||'');
     cfgSet('cfgAutoInvoice',(s.auto_invoice_ml||s.auto_invoice_tn)?'true':'false');
     cfgSet('cfgArcaEnv',s.arca_env||'homologacion');
@@ -3595,9 +3767,11 @@ async function loadConfig(){
     preloadNotificationSound(sound);
     if(s.logo_png_500_base64){localStorage.setItem('xeleria_company_logo_data',s.logo_png_500_base64)}else{localStorage.removeItem('xeleria_company_logo_data')}
     applyConfigLogo(configLogoValue());
+    renderArcaOnboardingUi(s);
     renderNotificationsBadge();
   }catch(e){
     applyConfigLogo(configLogoValue());
+    renderArcaOnboardingUi(state.tenantSettings||{});
     setStatus('cfgStatus','Personalización todavía no cargó desde base: '+errText(e),false);
   }
 }
