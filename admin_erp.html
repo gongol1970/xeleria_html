@@ -7,7 +7,7 @@
 <title>XelerIA · Backoffice</title>
 <!-- XELERIA_COMBOS_SAAS_UI_V1_INTEGRATED -->
 <!-- XELERIA_COMBOS_SAVE_BUTTON_REMOVED_REFRESH_BG_V1 -->
-<!-- XELERIA_VENTAS_SHIPPING_UI_V263 -->
+<!-- XELERIA_VENTAS_SHIPPING_UI_V264_PICKED_UP_LABEL -->
 <link rel="icon" href="./favicon_xeleria.png?v=20260620" />
 <style>
 :root{--bg:#f2f0eb;--surface:#fffdf8;--surface2:#f8f4ea;--ink:#171717;--muted:#6b665c;--line:#ded4be;--brand:#dcc58f;--brand2:#cdb272;--dark:#101010;--ok:#067647;--bad:#b42318;--warn:#b54708;--shadow:0 10px 30px rgba(17,17,17,.08);--radius:18px;--import-green-bg:#dff3e4;--import-red-bg:#f6d2d2;--import-yellow-bg:#f7f8bd;--import-soft-border:#777;--import-soft-text:#111}
@@ -1163,8 +1163,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.57-ml-refresh';
-const FRONTEND_BUILD='admin-erp-v263-ventas-ml-auto-refresh';
+const FRONTEND_VERSION='2.58-ml-picked-up-label';
+const FRONTEND_BUILD='admin-erp-v264-ml-picked-up-label';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const XELERIA_MIN_SEARCH_CHARS=4;function isShortSearch(q){q=String(q||'').trim();return q.length>0&&q.length<XELERIA_MIN_SEARCH_CHARS}function minSearchMessage(){return 'Ingresá al menos '+XELERIA_MIN_SEARCH_CHARS+' caracteres para buscar.'}
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
@@ -2182,19 +2182,17 @@ function shippingSubstatusText(o){
   ]).toLowerCase();
 }
 function shippingStateLabel(o,ch){
-  // Backend 0.1.96+ can send an explicit UI label after merging ML shipment status/substatus.
-  // If it exists, it wins over local guesses.
   // Para TN moto/manual, el estado operativo del ERP gana sobre lo que devuelve TN.
   if(ch==='TN'&&(o.tn_manual_delivered||String(o.delivery_status||o.tn_delivery_status||'').toLowerCase().includes('delivered'))){
     return 'Entregado';
   }
-  let explicit=String(o.tn_shipping_ui_status||o.ml_shipping_ui_status||o.shipping_ui_status||'').trim();
-  if(explicit)return explicit;
 
   let logistic=logisticLabel(o,ch);
   let raw=shippingStatusText(o);
   let sub=shippingSubstatusText(o);
   let r=rawObj(o);
+  let explicit=String(o.tn_shipping_ui_status||o.ml_shipping_ui_status||o.shipping_ui_status||'').trim();
+  let explicitLow=explicit.toLowerCase();
   let refreshed=!!(o.ml_shipping_refreshed_at||deepVal(r,'ml_shipping_refreshed_at')||deepVal(r,'ml_shipping_last_snapshot.date_updated'));
   let snapSub=String(deepVal(r,'ml_shipping_last_snapshot.substatus')||deepVal(r,'ml_shipping_last_snapshot.sub_status')||'').toLowerCase();
   let snapStatus=String(deepVal(r,'ml_shipping_last_snapshot.status')||'').toLowerCase();
@@ -2202,12 +2200,15 @@ function shippingStateLabel(o,ch){
   let opt=String(o.shipping_option||o.tn_shipping_option||'');
   let blob=(raw+' '+sub+' '+snapStatus+' '+snapSub+' '+snapLog+' '+opt.toLowerCase()).trim();
 
-  if(blob.includes('cancel'))return 'Cancelado';
-  if(blob.includes('delivered'))return 'Entregado';
+  if(blob.includes('cancel')||explicitLow.includes('cancel'))return 'Cancelado';
+  if(blob.includes('delivered')||explicitLow.includes('entregado'))return 'Entregado';
 
-  // Mercado Libre puede mantener status=ready_to_ship aunque el paquete ya fue retirado.
-  // picked_up manda siempre como En camino.
+  // ML puede enviar una etiqueta explícita vieja mientras el raw ya dice picked_up.
+  // Si picked_up aparece en status/substatus, manda la realidad operativa: En camino.
   if(blob.includes('picked_up')||blob.includes('shipped')||blob.includes('in_transit')||blob.includes('in_route')||blob.includes('on_the_way'))return 'En camino';
+
+  // Backend 0.1.96+ puede mandar una etiqueta explícita; la usamos sólo si no contradice el raw operativo.
+  if(explicit)return explicit;
 
   // No tocar comportamiento FULL/FLEX: Full queda como bodega; Flex conserva su lógica propia.
   if(logistic==='FULL'&&(blob.includes('ready_to_ship')||blob.includes('pending')||blob.includes('handling')||blob.includes('packed')))return 'Procesando en bodega';
