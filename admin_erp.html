@@ -8,7 +8,7 @@
 <!-- XELERIA_COMBOS_SAAS_UI_V1_INTEGRATED -->
 <!-- XELERIA_COMBOS_SAVE_BUTTON_REMOVED_REFRESH_BG_V1 -->
 <!-- XELERIA_VENTAS_SHIPPING_UI_V264_PICKED_UP_LABEL -->
-<!-- XELERIA_ARCA_ONBOARDING_CONFIG_V267_ES_SHIPPING_FIX -->
+<!-- XELERIA_ARCA_ONBOARDING_CONFIG_V268_ES_SHIPPING_FIX_SAFE -->
 <link rel="icon" href="./favicon_xeleria.png?v=20260620" />
 <style>
 :root{--bg:#f2f0eb;--surface:#fffdf8;--surface2:#f8f4ea;--ink:#171717;--muted:#6b665c;--line:#ded4be;--brand:#dcc58f;--brand2:#cdb272;--dark:#101010;--ok:#067647;--bad:#b42318;--warn:#b54708;--shadow:0 10px 30px rgba(17,17,17,.08);--radius:18px;--import-green-bg:#dff3e4;--import-red-bg:#f6d2d2;--import-yellow-bg:#f7f8bd;--import-soft-border:#777;--import-soft-text:#111}
@@ -1252,8 +1252,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.61-ml-shipping-arca-es';
-const FRONTEND_BUILD='admin-erp-v267-ml-shipping-arca-es';
+const FRONTEND_VERSION='2.62-ml-shipping-arca-es-safe';
+const FRONTEND_BUILD='admin-erp-v268-ml-shipping-arca-es-safe';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const XELERIA_MIN_SEARCH_CHARS=4;function isShortSearch(q){q=String(q||'').trim();return q.length>0&&q.length<XELERIA_MIN_SEARCH_CHARS}function minSearchMessage(){return 'Ingresá al menos '+XELERIA_MIN_SEARCH_CHARS+' caracteres para buscar.'}
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
@@ -2301,9 +2301,9 @@ function shippingStateLabel(o,ch){
   let snapStatus=String(deepVal(snapObj,'status')||deepVal(r,'ml_shipping_last_snapshot.status')||'').toLowerCase();
   let snapLog=String(deepVal(snapObj,'logistic_type')||deepVal(r,'ml_shipping_last_snapshot.logistic_type')||'').toLowerCase();
   let opt=String(o.shipping_option||o.tn_shipping_option||'');
-  let rawStatusBlob='';
-  try{rawStatusBlob=JSON.stringify(snapObj||{}).toLowerCase()}catch{}
-  let blob=(raw+' '+sub+' '+snapStatus+' '+snapSub+' '+snapLog+' '+opt.toLowerCase()+' '+rawStatusBlob).trim();
+  // No usamos JSON.stringify del snapshot: ML trae claves tipo date_cancelled aunque el envío NO esté cancelado.
+  // Sólo miramos campos operativos concretos para evitar falsos "Cancelado".
+  let blob=(raw+' '+sub+' '+snapStatus+' '+snapSub+' '+snapLog+' '+opt.toLowerCase()).trim();
   let refreshed=!!(o.ml_shipping_refreshed_at||deepVal(r,'ml_shipping_refreshed_at')||deepVal(r,'ml_shipping_last_snapshot.date_updated')||deepVal(snapObj,'date_updated'));
 
   // ML sin Mercado Envíos: cuando /orders/{id}.fulfilled=true, es Entregado aunque el tipo sea A coordinar.
