@@ -1252,8 +1252,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.63-ml-shipping-restore-arca-es';
-const FRONTEND_BUILD='admin-erp-v269-ml-shipping-restore-arca-es';
+const FRONTEND_VERSION='2.64-connections-status-safe';
+const FRONTEND_BUILD='admin-erp-v270-connections-status-safe';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const XELERIA_MIN_SEARCH_CHARS=4;function isShortSearch(q){q=String(q||'').trim();return q.length>0&&q.length<XELERIA_MIN_SEARCH_CHARS}function minSearchMessage(){return 'Ingresá al menos '+XELERIA_MIN_SEARCH_CHARS+' caracteres para buscar.'}
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
@@ -1938,6 +1938,7 @@ function cleanOauthParamsFromUrl(){
     history.replaceState({},'',u.toString());
   }catch(e){}
 }
+// ====== MODULO CONEXIONES ML/TN ======
 function redirectToInicio(reason='no_channel_connected'){
   try{
     let next=(location.pathname.split('/').pop()||'admin_erp.html')+location.search;
@@ -1969,6 +1970,42 @@ function gateIfNoConnectedChannels(ml,tn,source='connections'){
   setTimeout(()=>redirectToInicio('no_channel_connected_'+source),350);
   return true;
 }
+function tenantConnectionFallbackFromSettings(s={},reasonText=''){
+  let mlConnected=boolishTrue(s.ml_connected)||boolishTrue(s.mercadolibre_connected)||boolishTrue(s.ml_ok);
+  let tnConnected=boolishTrue(s.tn_connected)||boolishTrue(s.tiendanube_connected)||boolishTrue(s.tn_ok);
+  let mlLabel=s.ml_account_label||s.ml_account||s.ml_user||s.ml_nickname||'';
+  let tnLabel=s.tn_account_label||s.tn_account||s.tn_store||s.tn_email||'';
+  return {
+    ok:true,
+    fallback:true,
+    fallback_reason:reasonText||'connections_status_failed',
+    connections:{
+      ml:{connected:mlConnected,label:mlLabel||'Mercado Libre',source:'tenant_settings fallback'},
+      tn:{connected:tnConnected,label:tnLabel||'Tienda Nube',source:'tenant_settings fallback'}
+    }
+  };
+}
+async function loadTenantConnectionFallback(e){
+  let reason=errText(e);
+  let s=state.tenantSettings||{};
+  if(!Object.keys(s||{}).length){
+    try{
+      let d=await fetchJson('/admin/tenant/settings',{skipLastJson:true});
+      s=d.settings||{};
+      state.tenantSettings=s;
+    }catch(_e){}
+  }
+  let d=tenantConnectionFallbackFromSettings(s,reason);
+  let ml=d.connections.ml||{},tn=d.connections.tn||{};
+  if(ml.connected||tn.connected){
+    state.connections=d.connections||{};
+    renderInventoryImportConnections(d);
+    setStatus('inventoryImportStatus','Conexiones: usando último estado guardado. El chequeo en vivo falló: '+reason,'warn');
+    updateVersionBar('conn snapshot fallback');
+    return d;
+  }
+  return null;
+}
 async function loadTenantConnectionStatus(force=true){
   let mlPrev=state.connections&&state.connections.ml;let tnPrev=state.connections&&state.connections.tn;
   if(!mlPrev)setImportChannelCard('ML',false,'',{checking:true});
@@ -1983,18 +2020,23 @@ async function loadTenantConnectionStatus(force=true){
     gateIfNoConnectedChannels(ml,tn,'status');
     return d;
   }catch(e){
-    setImportChannelCard('ML',false,'',{});
-    setImportChannelCard('TN',false,'',{});
     if(authExpiredError(e)){
+      setImportChannelCard('ML',false,'',{});
+      setImportChannelCard('TN',false,'',{});
       setStatus('inventoryImportStatus','Sesión inválida o expirada. Volviendo al inicio...',false);
       setTimeout(()=>redirectToInicio('session_invalid'),350);
       return null;
     }
+    let fb=await loadTenantConnectionFallback(e);
+    if(fb)return fb;
+    setImportChannelCard('ML',false,'',{});
+    setImportChannelCard('TN',false,'',{});
     if(qs('inventoryImportStatus'))setStatus('inventoryImportStatus','No pude revisar conexiones: '+errText(e),false);
     updateVersionBar('conn error '+errText(e));
     return null;
   }
 }
+// ====== FIN MODULO CONEXIONES ML/TN ======
 function handleOauthReturn(){
   let p=oauthReturnParams();
   if(!p.oauth&&!p.status&&!p.error)return;
