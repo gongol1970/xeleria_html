@@ -2990,7 +2990,7 @@ async function comboSaveForm(key,mode){
 async function comboDelete(sku){if(!confirm('¿Desactivar combo '+sku+'?\n\nNo borra publicaciones del canal.'))return;try{setStatus('comboStatus','Desactivando combo...');await fetchJson('/admin/v2/bundles/'+encodeURIComponent(sku),{method:'DELETE'});setStatus('comboStatus','Combo desactivado.',true);await loadCombos()}catch(e){setStatus('comboStatus','Error desactivando: '+errText(e),false)}}
 
 
-async function saveInventoryStock(idx){let item=state.inventoryItems[idx];let el=qs('rowStatus_'+idx);if(String(item.item_type||'').toLowerCase()==='bundle'){if(el){el.textContent='Combo: el stock se calcula desde componentes.';el.style.color='var(--muted)'}return}let sku=item.sku;let stockEl=qs('stock_'+idx);let newStock=Number(stockEl&&stockEl.value);if(!Number.isFinite(newStock)){if(el)el.textContent='Stock inválido';return}if(el)el.textContent='Guardando...';try{await fetchJson('/admin/v2/inventory/product/'+encodeURIComponent(sku),{method:'PUT',body:JSON.stringify({stock:Math.trunc(newStock)})});item.stock=Math.trunc(newStock);if(el){el.textContent='OK: stock guardado. Refrescando vista...';el.style.color='var(--ok)'}await searchInventory(state.inventory.offset||0,false);setStatus('invStatus',`Stock guardado para ${sku}. Vista refrescada con el mismo filtro.`,true)}catch(e){if(el){el.textContent='Error: '+JSON.stringify(e);el.style.color='var(--bad)'}}}
+async function saveInventoryStock(idx){let item=state.inventoryItems[idx];let el=qs('rowStatus_'+idx);if(String(item.item_type||'').toLowerCase()==='bundle'){if(el){el.textContent='Combo: el stock se calcula desde componentes.';el.style.color='var(--muted)'}return}let sku=item.sku;let stockEl=qs('stock_'+idx);let newStock=Number(stockEl&&stockEl.value);if(!Number.isFinite(newStock)){if(el)el.textContent='Stock inválido';return}let safeStock=Math.max(0,Math.trunc(newStock));if(el)el.textContent='Guardando y generando sync...';try{let d=await fetchJson('/admin/v2/inventory/product-sync/'+encodeURIComponent(sku),{method:'PUT',body:JSON.stringify({name:item.name||'',stock:safeStock,listings:item.listings||[]})});item.stock=safeStock;if(el){el.textContent=`OK: stock ${safeStock}. Jobs: ${(d.sync_jobs||[]).length}. Refrescando...`;el.style.color='var(--ok)'}await searchInventory(state.inventory.offset||0,false);setStatus('invStatus',`Stock guardado para ${sku}. Sync ML/TN generado y vista refrescada.`,true)}catch(e){if(el){el.textContent='Error: '+friendlyInventoryError(e);el.style.color='var(--bad)'}}}
 function movementKind(m){let t=String(m.movement_type||'').toLowerCase();let ch=String(m.channel||'').toUpperCase();if(t.includes('sale'))return`<span class="movementSale">Venta ${esc(ch)}</span>`;if(ch==='ADMIN'||t.includes('adjust')||t.includes('manual'))return`<span class="movementManual">Ajuste manual</span>`;return`<span class="movementUpdate">${esc(m.movement_type||ch||'Movimiento')}</span>`}async function loadMovements(){let sku=qs('movSku')?.value.trim()||'';let lim=Number(qs('movLimit')?.value||100);setStatus('movStatus','Cargando bitácora...');try{let d=await fetchJson(`/admin/stock/movements?limit=${encodeURIComponent(lim)}${sku?'&sku='+encodeURIComponent(sku):''}`);let rows=d.items||[];qs('movTable').innerHTML=`<table><thead><tr><th>Fecha</th><th title="Simple / Combo">S/C</th><th>SKU</th><th>Cantidad</th><th>Stock</th><th>Referencia</th><th>Notas</th></tr></thead><tbody>${rows.map(m=>`<tr><td>${dateAR(m.created_at)}</td><td>${movementKind(m)}<br><span class="small">${esc(m.channel||'')}</span></td><td><strong class="mono">${esc(m.sku)}</strong></td><td><strong>${esc(m.quantity)}</strong></td><td>${esc(m.previous_stock)} → <strong>${esc(m.new_stock)}</strong></td><td><span class="mono">${esc(m.reference_type||'')}</span><br><span class="small">${esc(m.reference_id||'')}</span></td><td>${esc(m.notes||'')}</td></tr>`).join('')||'<tr><td colspan="7" class="muted" style="text-align:center">Sin movimientos.</td></tr>'}</tbody></table>`;setStatus('movStatus',`OK: ${rows.length} movimientos`,true)}catch(e){setStatus('movStatus','Error movimientos: '+JSON.stringify(e),false)}}function clearMovSku(){qs('movSku').value='';loadMovements()}
 function prevMonthRange(){let d=new Date();let firstPrev=new Date(d.getFullYear(),d.getMonth()-1,1);let fmt=x=>x.toISOString().slice(0,10);return{from:fmt(firstPrev),to:fmt(d)}}function initArcaDates(){let r=prevMonthRange();if(qs('arcaDesde')&&!qs('arcaDesde').value)qs('arcaDesde').value=r.from;if(qs('arcaHasta')&&!qs('arcaHasta').value)qs('arcaHasta').value=r.to}
 function arcaTypeLabel(r){let n=Number(r.cbte_tipo||0);return r.cbte_tipo_label||({1:'Factura A',2:'Nota de Débito A',3:'Nota de Crédito A',6:'Factura B',7:'Nota de Débito B',8:'Nota de Crédito B'}[n]||'Comprobante')}
@@ -3559,7 +3559,7 @@ function renderEditProductTool(idx){
       <div class="col-2"><label>Stock</label><input id="editStock" type="number" step="1" value="${esc(item.stock??0)}" ${isBundle?'disabled title="Stock calculado desde componentes"':''}></div>
       <div class="col-2"><label>Precio lista</label><input id="editListPrice" type="number" step="0.01" value="${esc(inventoryListPrice(item)??'')}"></div>
       <div class="col-2"><label>Costo</label><input id="editCost" type="number" step="0.01" value="${esc(item.cost??'')}"></div>
-      <div class="col-12"><label>Precios / stock de publicaciones asociadas</label><div class="productEditListings">${renderEditableListingsForItem(item,idx)}</div><div class="small">Estos campos actualizan el registro local de cada publicación vinculada. No pausan ni publican en ML/TN.</div></div>
+      <div class="col-12"><label>Precios / stock de publicaciones asociadas</label><div class="productEditListings">${renderEditableListingsForItem(item,idx)}</div><div class="small">Al guardar, el stock del SKU se replica como objetivo ML/TN mediante sync_jobs. Stock marketplace nunca baja de 0.</div></div>
     </div>
     <div class="btnrow" style="margin-top:12px">
       <button class="ok" onclick="saveInventoryProductAll(${idx})">Guardar cambios</button>
@@ -3618,14 +3618,22 @@ async function saveInventoryProduct(idx){
 
 async function saveInventoryProductAll(idx){
   let item=state.inventoryItems[idx];if(!item)return;
-  invToolStatus('Guardando cambios...');
+  invToolStatus('Guardando cambios y generando sync ML/TN...');
   try{
-    await saveInventoryProduct(idx);
-    let listings=inventoryListingPayloadsFromEdit(idx,item);
-    if(listings.length){
-      await fetchJson('/admin/v2/inventory/product/'+encodeURIComponent(item.sku)+'/link-listings',{method:'POST',body:JSON.stringify({listings})});
+    let isBundle=inventoryIsBundle(item);
+    let costTxt=(qs('editCost').value||'').trim();
+    let listTxt=(qs('editListPrice')?.value||'').trim();
+    let body={name:qs('editName').value||'',list_price:listTxt!==''?Number(listTxt):null,listings:inventoryListingPayloadsFromEdit(idx,item)};
+    if(costTxt!=='')body.cost=Number(costTxt);
+    if(!isBundle&&qs('editStock')){
+      let newStock=Number(qs('editStock').value);
+      if(!Number.isFinite(newStock)){invToolStatus('Stock inválido.',false);return}
+      body.stock=Math.max(0,Math.trunc(newStock));
+      body.listings=(body.listings||[]).map(l=>({...l,stock:body.stock}));
     }
-    invToolStatus('Cambios guardados OK',true);
+    let d=await fetchJson('/admin/v2/inventory/product-sync/'+encodeURIComponent(item.sku),{method:'PUT',body:JSON.stringify(body)});
+    let jobCount=(d.sync_jobs||[]).filter(j=>j&&j.ok!==false).length;
+    invToolStatus(`Cambios guardados OK · stock ${d.new_stock??''} · jobs ML/TN ${jobCount}`,true);
     await searchInventory(state.inventory.offset||0,true);
   }catch(e){
     invToolStatus('Error guardando cambios: '+friendlyInventoryError(e),false);
