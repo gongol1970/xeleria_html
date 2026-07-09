@@ -3616,6 +3616,23 @@ async function saveInventoryProduct(idx){
   return fetchJson('/admin/v2/inventory/product/'+encodeURIComponent(item.sku),{method:'PUT',body:JSON.stringify(body)});
 }
 
+function applyInventoryProductSaveResultToOpenEditor(idx,item,d){
+  let savedStock=Math.max(0,Math.trunc(Number(d&&d.new_stock!=null?d.new_stock:item.stock||0)));
+  item.stock=savedStock;
+  if(qs('editStock'))qs('editStock').value=savedStock;
+  let localListings=(item._editListings||item.listings||[]);
+  localListings.forEach((l,j)=>{
+    l.stock=savedStock;
+    l.available_quantity=savedStock;
+    l.quantity=savedStock;
+    let st=qs(`editListingStock_${idx}_${j}`);
+    if(st)st.value=savedStock;
+  });
+  item._editListings=localListings;
+  item.listings=localListings;
+}
+
+/* INVENTORY_EDIT_SAVE_V276_CLOSE_EDITOR_AFTER_SYNC */
 async function saveInventoryProductAll(idx){
   let item=state.inventoryItems[idx];if(!item)return;
   invToolStatus('Guardando cambios y generando sync ML/TN...');
@@ -3633,8 +3650,12 @@ async function saveInventoryProductAll(idx){
     }
     let d=await fetchJson('/admin/v2/inventory/product-sync/'+encodeURIComponent(item.sku),{method:'PUT',body:JSON.stringify(body)});
     let jobCount=(d.sync_jobs||[]).filter(j=>j&&j.ok!==false).length;
-    invToolStatus(`Cambios guardados OK · stock ${d.new_stock??''} · jobs ML/TN ${jobCount}`,true);
+    applyInventoryProductSaveResultToOpenEditor(idx,item,d);
+    invToolStatus(`Cambios guardados OK · stock ${d.new_stock??''} · jobs ML/TN ${jobCount}. Cerrando editor...`,true);
     await searchInventory(state.inventory.offset||0,true);
+    let box=inventoryToolBox();
+    if(box){box.classList.add('hidden');box.innerHTML='';}
+    setStatus('invStatus',`Cambios guardados OK para ${item.sku} · stock ${d.new_stock??''} · jobs ML/TN ${jobCount}`,true);
   }catch(e){
     invToolStatus('Error guardando cambios: '+friendlyInventoryError(e),false);
   }
