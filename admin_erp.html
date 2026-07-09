@@ -9,7 +9,7 @@
 <!-- XELERIA_COMBOS_SAVE_BUTTON_REMOVED_REFRESH_BG_V1 -->
 <!-- XELERIA_VENTAS_SHIPPING_UI_V264_PICKED_UP_LABEL -->
 <!-- XELERIA_ARCA_ONBOARDING_CONFIG_V269_ES_SHIPPING_RESTORE -->
-<!-- XELERIA_LAST_JSON_DIAGNOSTICS_V271 -->
+<!-- XELERIA_LAST_JSON_DIAGNOSTICS_V272_TENANT_REMEMBER -->
 <link rel="icon" href="./favicon_xeleria.png?v=20260620" />
 <style>
 :root{--bg:#f2f0eb;--surface:#fffdf8;--surface2:#f8f4ea;--ink:#171717;--muted:#6b665c;--line:#ded4be;--brand:#dcc58f;--brand2:#cdb272;--dark:#101010;--ok:#067647;--bad:#b42318;--warn:#b54708;--shadow:0 10px 30px rgba(17,17,17,.08);--radius:18px;--import-green-bg:#dff3e4;--import-red-bg:#f6d2d2;--import-yellow-bg:#f7f8bd;--import-soft-border:#777;--import-soft-text:#111}
@@ -1417,7 +1417,7 @@ function startAlertPolling(){
   timers.alertPolling=setInterval(()=>loadNotifications(false),60000);
 }
 
-function qs(id){return document.getElementById(id)}function fieldVal(id){let el=qs(id);return el?el.value:''}function apiBase(){return(fieldVal('cfgApiUrl')||fieldVal('apiUrl')||state.api).replace(/\/$/,'').replace(/\/api$/,'')}function token(){return (fieldVal('cfgToken')||fieldVal('token')||state.token||localStorage.getItem('pc_erp_token')||localStorage.getItem('xeleria_admin_token')||'').trim()}function sessionToken(){return (localStorage.getItem('xeleria_session_token')||sessionStorage.getItem('xeleria_session_token')||'').trim()}function tenantId(){let qp=new URLSearchParams(location.search);let fromUrl=qp.get('tenant_id')||qp.get('tenant')||'';if(fromUrl){localStorage.setItem('xeleria_tenant_id',fromUrl)}return fromUrl||localStorage.getItem('xeleria_tenant_id')||'00000000-0000-0000-0000-000000000001'}function url(path){let sep=path.includes('?')?'&':'?';return `${apiBase()}${path}${sep}tenant_id=${encodeURIComponent(tenantId())}`}function xeleriaHeaders(extra={}){let h={'Content-Type':'application/json','x-xeleria-tenant':tenantId(),...(extra||{})};let st=sessionToken();let t=token();if(st){h['x-session-token']=st;h['Authorization']='Bearer '+st}if(t){h['x-admin-token']=t;if(!st)h['Authorization']='Bearer '+t}return h}function cleanTokenFromUrl(){try{let u=new URL(location.href);let t=u.searchParams.get('token')||u.searchParams.get('admin_token')||u.searchParams.get('ADMIN_TOKEN');if(t){localStorage.setItem('pc_erp_token',t);localStorage.setItem('xeleria_admin_token',t);u.searchParams.delete('token');u.searchParams.delete('admin_token');u.searchParams.delete('ADMIN_TOKEN');history.replaceState({},'',u.toString())}}catch(e){}}
+function qs(id){return document.getElementById(id)}function fieldVal(id){let el=qs(id);return el?el.value:''}function apiBase(){return(fieldVal('cfgApiUrl')||fieldVal('apiUrl')||state.api).replace(/\/$/,'').replace(/\/api$/,'')}function token(){return (fieldVal('cfgToken')||fieldVal('token')||state.token||localStorage.getItem('pc_erp_token')||localStorage.getItem('xeleria_admin_token')||'').trim()}function sessionToken(){return (localStorage.getItem('xeleria_session_token')||sessionStorage.getItem('xeleria_session_token')||'').trim()}function tenantId(){let qp=new URLSearchParams(location.search);let fromUrl=qp.get('tenant_id')||qp.get('tenant')||'';if(fromUrl){localStorage.setItem('xeleria_tenant_id',fromUrl)}let saved=localStorage.getItem('xeleria_tenant_id')||'';if(saved&&saved!=='00000000-0000-0000-0000-000000000001')return saved;try{let last=JSON.parse(localStorage.getItem('xeleria_last_json')||'{}');let ids=[last.tenant_id,last.response&&last.response.tenant_id];let res=(last.response&&last.response.results)||[];for(let r of res){ids.push(r&&r.tenant_id);ids.push(r&&r.json&&r.json.tenant_id)}let good=ids.find(x=>String(x||'').match(/^[0-9a-f-]{36}$/i)&&String(x)!=='00000000-0000-0000-0000-000000000001');if(good){localStorage.setItem('xeleria_tenant_id',String(good));return String(good)}}catch(e){}return fromUrl||saved||'00000000-0000-0000-0000-000000000001'}function url(path){let sep=path.includes('?')?'&':'?';return `${apiBase()}${path}${sep}tenant_id=${encodeURIComponent(tenantId())}`}function xeleriaHeaders(extra={}){let h={'Content-Type':'application/json','x-xeleria-tenant':tenantId(),...(extra||{})};let st=sessionToken();let t=token();if(st){h['x-session-token']=st;h['Authorization']='Bearer '+st}if(t){h['x-admin-token']=t;if(!st)h['Authorization']='Bearer '+t}return h}function cleanTokenFromUrl(){try{let u=new URL(location.href);let t=u.searchParams.get('token')||u.searchParams.get('admin_token')||u.searchParams.get('ADMIN_TOKEN');if(t){localStorage.setItem('pc_erp_token',t);localStorage.setItem('xeleria_admin_token',t);u.searchParams.delete('token');u.searchParams.delete('admin_token');u.searchParams.delete('ADMIN_TOKEN');history.replaceState({},'',u.toString())}}catch(e){}}
 function openInvoiceHtml(id){if(!id){alert('No encontré ID de factura.');return}window.open(url('/admin/arca/facturas/'+encodeURIComponent(id)+'/pdf'),'_blank')}function openInvoicePdf(id){if(!id){alert('No encontré ID de factura.');return}window.open(url('/admin/arca/facturas/'+encodeURIComponent(id)+'/pdf'),'_blank')}function hideArcaMonitor(){let el=qs('arcaOut');if(el){el.classList.add('hidden');el.textContent=''}}
 function normalizar(s){return String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim()}function esc(s){return String(s??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}function dateAR(x){if(!x)return'';try{return new Date(x).toLocaleString('es-AR',{dateStyle:'short',timeStyle:'short',hour12:false})}catch{return x}}function money(n){let x=Number(n||0);return x?('$'+Math.round(x).toLocaleString('es-AR')):''}function shortVer(v){let m=String(v||'').match(/\d+(?:\.\d+){1,3}/);return m?m[0]:String(v||'?')}function jsq(s){return String(s??'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,' ')}
 function setStatus(id,msg,ok=null){let el=qs(id);if(!el)return;el.className='status '+(ok===true?'oktxt':ok===false?'badtxt':ok==='warn'?'warntxt':'');el.textContent=msg||''}function setStatusHtml(id,html,ok=null){let el=qs(id);if(!el)return;el.className='status '+(ok===true?'oktxt':ok===false?'badtxt':ok==='warn'?'warntxt':'');el.innerHTML=html||''}
@@ -1668,6 +1668,7 @@ async function runDiagnostics(){
     if(!payload.script){setStatus('lastJsonStatus','Pegá al menos un comando para ejecutar.',false);return}
     setStatus('lastJsonStatus','Ejecutando diagnóstico...','warn');
     let d=await fetchJson('/admin/diagnostics/run',{method:'POST',body:JSON.stringify(payload)});
+    rememberTenantIdFromPayload(d);
     renderLastJsonPanel();
     setStatus('lastJsonStatus',d&&d.ok?'Diagnóstico ejecutado. JSON actualizado.':'Diagnóstico ejecutado con errores. Revisá JSON.',!!(d&&d.ok));
   }catch(e){
@@ -1680,10 +1681,22 @@ async function loadDiagExamples(){
   try{
     setStatus('lastJsonStatus','Cargando ejemplos...','warn');
     let d=await fetchJson('/admin/diagnostics/examples',{skipLastJson:true});
+    rememberTenantIdFromPayload(d);
     let ex=(d&&d.examples)||[];
     let el=qs('diagScript');if(el)el.value=ex.join('\n');
     setStatus('lastJsonStatus','Ejemplos cargados. Podés ejecutar o editar.',true);
   }catch(e){setStatus('lastJsonStatus','No pude cargar ejemplos: '+friendlyInventoryError(e),false)}
+}
+function rememberTenantIdFromPayload(data){
+  try{
+    let ids=[];
+    if(data&&data.tenant_id)ids.push(data.tenant_id);
+    if(data&&data.response&&data.response.tenant_id)ids.push(data.response.tenant_id);
+    let res=(data&&data.results)||(data&&data.response&&data.response.results)||[];
+    if(Array.isArray(res)){for(let r of res){ids.push(r&&r.tenant_id);ids.push(r&&r.json&&r.json.tenant_id);ids.push(r&&r.response&&r.response.tenant_id)}}
+    let good=ids.find(x=>String(x||'').match(/^[0-9a-f-]{36}$/i)&&String(x)!=='00000000-0000-0000-0000-000000000001');
+    if(good)localStorage.setItem('xeleria_tenant_id',String(good));
+  }catch(e){}
 }
 // ====== FIN MODULO SISTEMA / DIAGNOSTICO API ======
 async function fetchJson(path,opt={}){
@@ -1692,6 +1705,7 @@ async function fetchJson(path,opt={}){
     r=await fetch(url(path),{...opt,headers:xeleriaHeaders(opt.headers||{})});
     txt=await r.text();
     try{data=JSON.parse(txt)}catch{data={ok:r.ok,text:txt}}
+    rememberTenantIdFromPayload(data);
     if(!opt.skipLastJson)saveLastJson({ok:r.ok,http_status:r.status,path,method:opt.method||'GET',response:data});
   }catch(networkError){
     let out={ok:false,network:true,message:networkError?.message||String(networkError),path,method:opt.method||'GET'};
