@@ -1286,8 +1286,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.66-last-json-powershell';
-const FRONTEND_BUILD='admin-erp-v273-last-json-powershell';
+const FRONTEND_VERSION='2.77-combo-price-status';
+const FRONTEND_BUILD='admin-erp-v277-combo-price-status';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const XELERIA_MIN_SEARCH_CHARS=4;function isShortSearch(q){q=String(q||'').trim();return q.length>0&&q.length<XELERIA_MIN_SEARCH_CHARS}function minSearchMessage(){return 'Ingresá al menos '+XELERIA_MIN_SEARCH_CHARS+' caracteres para buscar.'}
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
@@ -2618,8 +2618,16 @@ function listingStatusLabelForMarket(market,st){
     if(s.includes('publish')||s.includes('visible')||s.includes('active')||s==='1'||s==='true')return 'Visible';
     return 'Oculto';
   }
+  // ML no tiene estado "Oculta" en la UI. Para ML mostramos estados propios o "A revisar".
+  if(m==='ML'){
+    if(!s)return 'A revisar';
+    if(s.includes('paused')||s.includes('pause'))return 'Pausada';
+    if(s.includes('closed')||s.includes('inactive')||s.includes('deleted')||s.includes('under_review'))return 'Inactiva';
+    if(s.includes('active'))return 'Activa';
+    return st||'A revisar';
+  }
   if(s.includes('paused')||s.includes('pause'))return 'Pausada';
-  if(s.includes('hidden')||s.includes('ocult')||s.includes('inactive')||s.includes('deleted')||s.includes('closed'))return 'Oculta';
+  if(s.includes('closed')||s.includes('inactive')||s.includes('deleted'))return 'Inactiva';
   if(s.includes('active'))return 'Activa';
   return st||'-';
 }
@@ -2627,12 +2635,18 @@ function listingStatusClassForMarket(market,st){
   let label=listingStatusLabelForMarket(market,st).toLowerCase();
   if(label==='activa'||label==='visible')return 'active';
   if(label==='pausada')return 'paused';
-  if(label==='oculta'||label==='oculto')return 'hidden';
+  if(label==='inactiva'||label==='oculta'||label==='oculto')return 'hidden';
   return 'neutral';
 }
 function listingStatusLabel(st){return listingStatusLabelForMarket('',st)}
 function listingStatusClass(st){let c=listingStatusClassForMarket('',st);return c==='active'?'ok':(c==='paused'?'warn':(c==='hidden'?'inactive':'info'))}
-function listingStatusTextSpan(l){let m=listingMarket(l);let st=String(listingStatus(l)||'').trim().toLowerCase();if(m==='TN'){if(st==='published'||st==='visible'||st==='active')return '<span class="productStatusText active">Visible</span>';return '<span class="productStatusText oculto">Oculto</span>'}if(st==='active'||st==='activa')return '<span class="productStatusText active">Activa</span>';if(st==='paused'||st==='pausada')return '<span class="productStatusText paused">Pausada</span>';if(st==='closed'||st==='inactive'||st==='hidden'||st==='oculta')return '<span class="productStatusText oculto">Oculta</span>';return st?`<span class="productStatusText neutral">${esc(st)}</span>`:'<span class="productStatusText oculto">Oculta</span>'}
+function listingStatusTextSpan(l){
+  let m=listingMarket(l);
+  let label=listingStatusLabelForMarket(m,listingStatus(l));
+  let cls=listingStatusClassForMarket(m,listingStatus(l));
+  if(cls==='hidden'&&m==='ML')cls='inactive';
+  return `<span class="productStatusText ${esc(cls)}">${esc(label)}</span>`;
+}
 function friendlyInventoryError(e){
   let raw='';try{raw=JSON.stringify(e)}catch(_){raw=String(e||'')}
   if(raw.includes('Resource temporarily unavailable')||raw.includes('[Errno 11]'))return 'La base respondió ocupada unos segundos. Mantengo la grilla anterior; reintentá Filtrar.';
@@ -2696,7 +2710,43 @@ async function searchInventory(offset=0,savePref=false){
   }
 }
 function rawIncludesResourceUnavailable(e){let raw='';try{raw=JSON.stringify(e)}catch(_){raw=String(e||'')}return raw.includes('Resource temporarily unavailable')||raw.includes('[Errno 11]')}
-function listingMarket(l){return String(l.marketplace||l.channel||'').toUpperCase()}function listingProductId(l){return l.external_product_id??l.listing_id??l.item_id??l.product_id??l.external_full_id??''}function listingVariantId(l){return l.external_variant_id??l.variant_id??l.variation_id??''}function listingPrice(l){return l.price??l.marketplace_price??l.target_price??''}function listingStock(l){return l.stock??l.available_quantity??l.marketplace_stock??''}function listingStatus(l){let st=l.status??l.state??'';let raw=(l&&typeof l.raw_data==='object')?(l.raw_data||{}):{};let imp=(raw&&typeof raw.last_import_raw==='object')?(raw.last_import_raw||{}):{};let pub=(l.published??raw.published??imp.published);if(listingMarket(l)==='TN'){let s=String(st??'').trim().toLowerCase();if(s==='unpublished'||s==='not_published'||s==='hidden'||s==='oculto')return 'unpublished';if(s==='published'||s==='visible'||s==='active')return 'published';if(pub===false||String(pub).toLowerCase()==='false')return 'unpublished';if(pub===true||String(pub).toLowerCase()==='true')return 'published';if(s)return s;return 'unpublished'}if(st!==null&&st!==undefined&&String(st).trim()!=='')return st;return st}function listingUrl(l){return l.url??l.permalink??''}
+function listingMarket(l){return String(l.marketplace||l.channel||'').toUpperCase()}
+function listingRawImport(l){let raw=(l&&typeof l.raw_data==='object')?(l.raw_data||{}):{};return (raw&&typeof raw.last_import_raw==='object')?(raw.last_import_raw||{}):{}}
+function listingProductId(l){return l.external_product_id??l.listing_id??l.item_id??l.product_id??l.external_full_id??''}
+function listingVariantId(l){return l.external_variant_id??l.variant_id??l.variation_id??''}
+function listingPrice(l){
+  let raw=(l&&typeof l.raw_data==='object')?(l.raw_data||{}):{};
+  let imp=listingRawImport(l);
+  let item=(raw.item&&typeof raw.item==='object')?raw.item:{};
+  let variation=(raw.variation&&typeof raw.variation==='object')?raw.variation:{};
+  return l.price??l.marketplace_price??l.target_price??imp.price??item.price??variation.price??'';
+}
+function listingStock(l){
+  let raw=(l&&typeof l.raw_data==='object')?(l.raw_data||{}):{};
+  let imp=listingRawImport(l);
+  let item=(raw.item&&typeof raw.item==='object')?raw.item:{};
+  let variation=(raw.variation&&typeof raw.variation==='object')?raw.variation:{};
+  return l.stock??l.available_quantity??l.marketplace_stock??imp.stock??imp.available_quantity??variation.available_quantity??item.available_quantity??'';
+}
+function listingStatus(l){
+  let raw=(l&&typeof l.raw_data==='object')?(l.raw_data||{}):{};
+  let imp=listingRawImport(l);
+  let item=(raw.item&&typeof raw.item==='object')?raw.item:{};
+  let st=l.status??l.state??imp.status??item.status??'';
+  let pub=(l.published??raw.published??imp.published);
+  if(listingMarket(l)==='TN'){
+    let s=String(st??'').trim().toLowerCase();
+    if(s==='unpublished'||s==='not_published'||s==='hidden'||s==='oculto')return 'unpublished';
+    if(s==='published'||s==='visible'||s==='active')return 'published';
+    if(pub===false||String(pub).toLowerCase()==='false')return 'unpublished';
+    if(pub===true||String(pub).toLowerCase()==='true')return 'published';
+    if(s)return s;
+    return 'unpublished';
+  }
+  if(st!==null&&st!==undefined&&String(st).trim()!=='')return st;
+  return st;
+}
+function listingUrl(l){let imp=listingRawImport(l);return l.url??l.permalink??imp.permalink??imp.canonical_url??''}
 function renderListingsForItem(item){
   let market=qs('invMarket')?.value||'';
   let arr=(Array.isArray(item.listings)?item.listings:[]).filter(l=>!market||listingMarket(l)===market);
@@ -2811,9 +2861,10 @@ function comboForm(id){comboEnsureState();state.comboForms[id]=state.comboForms[
 function comboRowState(c){if(c._draft)return 'plain';if(c.requires_action)return 'need';if(Number(c.components_count||0)>0)return 'done';return 'plain'}
 function comboListingKey(l){return `${String(l.marketplace||'').toUpperCase()}|${String(l.external_product_id||'')}|${String(l.external_variant_id||'0')}`}
 function comboPriceValue(v){if(v===null||v===undefined||v==='')return '—';let n=Number(v);return Number.isFinite(n)?n.toLocaleString('es-AR'):String(v)}
-function comboBestPrice(c){let arr=c.listings||[];let ml=arr.find(l=>String(l.marketplace||'').toUpperCase()==='ML'&&Number(l.price||0)>0);let tn=arr.find(l=>String(l.marketplace||'').toUpperCase()==='TN'&&Number(l.price||0)>0);let any=ml||tn||arr.find(l=>Number(l.price||0)>0);return any?comboPriceValue(any.price):'—'}
+function comboBestPrice(c){let arr=c.listings||[];let ml=arr.find(l=>String(l.marketplace||'').toUpperCase()==='ML'&&Number(listingPrice(l)||0)>0);let tn=arr.find(l=>String(l.marketplace||'').toUpperCase()==='TN'&&Number(listingPrice(l)||0)>0);let any=ml||tn||arr.find(l=>Number(listingPrice(l)||0)>0);if(any)return comboPriceValue(listingPrice(any));let lp=inventoryListPrice(c);return Number(lp||0)>0?money(lp):'—'}
 function comboListingsMatrixText(c){let arr=c.listings||[];if(!arr.length)return '<span class="muted">Sin publicaciones</span>';return arr.map(l=>{let m=String(l.marketplace||'').toUpperCase();let id=esc(l.external_product_id||l.external_full_id||'');let vid=esc(l.external_variant_id||'0');return `<div><b>${esc(m||'?')}:</b> ${id} <span class="muted">Var: ${vid}</span></div>`}).join('')}
-function comboComponentsPreviewRows(c){let arr=c.components_preview||[];if(!arr.length)return `<tr><td colspan="5" class="muted" style="text-align:center">Sin componentes definidos</td></tr>`;return arr.map(x=>`<tr><td><b class="comboSaasMono">${esc(x.component_sku||'')}</b></td><td>${esc(x.component_name||'')}</td><td style="text-align:center">${esc(x.quantity||'')}</td><td class="comboReadOnlyCell">${esc(comboPriceValue(x.component_price??x.price??x.cost??x.component?.price??x.component?.cost??''))}</td><td class="comboReadOnlyStock">${esc(x.component_stock??'—')}</td></tr>`).join('')}
+function comboComponentPrice(x){return x.component_price??x.price??x.list_price??x.cost??x.component?.list_price??x.component?.price??x.component?.raw_data?.last_import_raw?.price??x.component?.cost??''}
+function comboComponentsPreviewRows(c){let arr=c.components_preview||[];if(!arr.length)return `<tr><td colspan="5" class="muted" style="text-align:center">Sin componentes definidos</td></tr>`;return arr.map(x=>`<tr><td><b class="comboSaasMono">${esc(x.component_sku||'')}</b></td><td>${esc(x.component_name||'')}</td><td style="text-align:center">${esc(x.quantity||'')}</td><td class="comboReadOnlyCell">${esc(comboPriceValue(comboComponentPrice(x)))}</td><td class="comboReadOnlyStock">${esc(x.component_stock??'—')}</td></tr>`).join('')}
 function comboComponentsPreviewTable(c){return `<div class="comboComponentInner"><table class="comboComponentTable"><thead><tr><th>SKU</th><th>Nombre</th><th>CANT</th><th>PRECIO</th><th>STOCK</th></tr></thead><tbody>${comboComponentsPreviewRows(c)}</tbody></table></div>`}
 
 function comboCleanupDraftRows(){
@@ -2967,7 +3018,7 @@ async function comboSaveForm(key,mode){
       sku:String(f.sku||'').trim(),
       name:String(f.name||'').trim(),
       components:rawComponents.map(c=>({component_sku:String(c.sku||'').trim(),quantity:comboQtyInt(c.quantity)})),
-      listings:(f.listings||[]).map(l=>({marketplace:String(l.marketplace||'').toUpperCase(),external_product_id:String(l.external_product_id||''),external_variant_id:String(l.external_variant_id||'0'),external_full_id:l.external_full_id||l.external_product_id}))
+      listings:(f.listings||[]).map(l=>({marketplace:String(l.marketplace||'').toUpperCase(),external_product_id:String(l.external_product_id||''),external_variant_id:String(l.external_variant_id||'0'),external_full_id:l.external_full_id||l.external_product_id,title:l.title||'',status:l.status||'',price:l.price??'',stock:l.stock??'',url:l.url||l.permalink||''}))
     };
     if(!payload.components.length)throw {message:'El combo debe tener al menos un componente'};
     let path=mode==='create'?'/admin/v2/inventory/create-bundle':'/admin/v2/inventory/update-bundle';
