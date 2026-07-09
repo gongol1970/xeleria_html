@@ -130,15 +130,17 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 .lastJsonBox pre{white-space:pre-wrap;user-select:text;max-height:620px}
 .lastJsonBox textarea{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;min-height:420px;white-space:pre;overflow:auto}
 
-/* ====== MODULO SISTEMA / DIAGNOSTICO API ====== */
+/* ====== MODULO SISTEMA / POWERSHELL INTERNO ====== */
 .lastJsonDiagBox{margin-top:14px;border:1px solid #eee2c8;border-left:6px solid var(--brand2);border-radius:16px;background:#fffaf0;padding:14px}
 .lastJsonDiagBox h3{margin:0 0 6px;font-size:18px}.lastJsonDiagBox p{margin:0 0 10px;color:var(--muted)}
 .lastJsonDiagGrid{margin-top:10px}.lastJsonDiagGrid textarea{min-height:118px!important;background:#fff}.lastJsonDiagGrid select{background:#fff}
+.lastJsonDiagGrid textarea#diagScript{min-height:150px!important}.lastJsonDiagGrid textarea#diagBody{min-height:74px!important}
 .lastJsonDiagQuick{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.lastJsonDiagQuick button{font-size:12px;padding:7px 9px;min-height:34px;background:#fff;border-color:#eee2c8}.lastJsonDiagQuick button:hover{background:#fff7ed}
 .lastJsonDiagHint{font-size:12px;color:var(--muted);line-height:1.45;margin-top:8px}
+.lastJsonVarsBox{margin-top:10px;background:#111;color:#d7ffe8;border-radius:14px;padding:10px;font:12px/1.45 Consolas,'Courier New',monospace;white-space:pre-wrap;overflow:auto;border:1px solid #222}
 #lastJsonText{min-height:360px}
 @media(max-width:820px){.lastJsonDiagQuick{display:grid;grid-template-columns:1fr}.lastJsonDiagQuick button{width:100%}}
-/* ====== FIN MODULO SISTEMA / DIAGNOSTICO API ====== */
+/* ====== FIN MODULO SISTEMA / POWERSHELL INTERNO ====== */
 
 .xeleriaVersionBar{position:fixed;left:282px;right:0;bottom:0;z-index:99998;min-height:42px;background:#050505;color:#b8f7d4;font:11px/18px Consolas,'Courier New',monospace;padding:3px 10px;white-space:normal;overflow:hidden;border-top:1px solid #222}
 .xeleriaVersionBar .xeleriaVersionLine{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1214,25 +1216,26 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 </section>
 <section id="bitacora" class="view"><div class="card"><div class="dashStatusLine"><div><h3>Bitácora operativa</h3><p>Errores y advertencias accionables. Sin columnas: cada evento trae contexto, acción sugerida y detalle técnico plegable.</p></div><button class="secondary dashRefresh" onclick="loadOpsLog(true)">Actualizar</button></div><div id="opsLogStatus" class="status"></div><div id="opsLogList" class="opsLogList"></div></div></section>
 <section id="ultimo-json" class="view"><div class="card lastJsonBox"><h3>Sistema · Último JSON</h3><p>Última respuesta técnica guardada por el backoffice. Copiable, sin popup.</p><div class="btnrow"><button class="secondary" onclick="renderLastJsonPanel()">Actualizar</button><button class="secondary" onclick="copyLastJson()">Copiar JSON</button><button class="secondary" onclick="clearLastJson()">Limpiar</button></div>
-<!-- ====== MODULO SISTEMA / DIAGNOSTICO API ====== -->
+<!-- ====== MODULO SISTEMA / POWERSHELL INTERNO ====== -->
 <div class="lastJsonDiagBox">
   <div class="dashStatusLine">
     <div>
-      <h3>Diagnóstico API interno</h3>
-      <p>Tipo Graph API Explorer: escribís comandos, XelerIA usa API, tenant, sesión y tokens guardados.</p>
+      <h3>PowerShell interno</h3>
+      <p>Pegás el mismo Invoke-RestMethod que usaríamos afuera. XelerIA completa API, tenant, sesión y headers reales.</p>
     </div>
   </div>
+  <div id="diagVars" class="lastJsonVarsBox">Variables pendientes. Ejecutá Tenant settings o Actualizar variables.</div>
   <div class="grid lastJsonDiagGrid">
-    <div class="col-2"><label>Destino</label><select id="diagTarget"><option value="XELERIA" selected>XELERIA</option><option value="ML">ML</option><option value="TN">TN</option></select></div>
-    <div class="col-2"><label>Método</label><select id="diagMethod"><option value="GET" selected>GET</option><option value="POST">POST</option></select></div>
-    <div class="col-8"><label>Comando / scripts</label><textarea id="diagScript" rows="7" spellcheck="false" placeholder="GET /admin/tenant/settings&#10;GET /admin/stock/movements?from=2026-07-05&amp;limit=300&#10;GET /erp/sync_jobs?from=2026-07-05&amp;limit=300&#10;ML GET /items/MLA1607155102&#10;ML GET /items/MLA1607155102/variations/181158032101"></textarea></div>
-    <div class="col-12"><label>Body JSON opcional para POST</label><textarea id="diagBody" rows="4" spellcheck="false" placeholder='{ "campo": "valor" }'></textarea></div>
+    <div class="col-2"><label>Destino por defecto</label><select id="diagTarget"><option value="XELERIA" selected>XELERIA</option><option value="ML">ML</option><option value="TN">TN</option></select></div>
+    <div class="col-2"><label>Método por defecto</label><select id="diagMethod"><option value="GET" selected>GET</option><option value="POST">POST</option></select></div>
+    <div class="col-8"><label>PowerShell / Invoke-RestMethod</label><textarea id="diagScript" rows="9" spellcheck="false" placeholder='Invoke-RestMethod `&#10;  -Method GET `&#10;  -Uri "$API/admin/tenant/settings" `&#10;  -Headers $H |&#10;  ConvertTo-Json -Depth 20'></textarea></div>
+    <div class="col-12"><label>Body JSON opcional para POST</label><textarea id="diagBody" rows="3" spellcheck="false" placeholder='{ "campo": "valor" }'></textarea></div>
   </div>
-  <div class="btnrow" style="margin-top:10px"><button class="primary" onclick="runDiagnostics()">Ejecutar diagnóstico</button><button class="secondary" onclick="loadDiagExamples()">Ejemplos</button><button class="secondary" onclick="clearDiagScript()">Limpiar script</button></div>
-  <div class="lastJsonDiagQuick"><button onclick="runDiagQuick('GET /admin/tenant/settings')">Tenant settings</button><button onclick="runDiagQuick('GET /admin/stock/movements?from=2026-07-05&amp;limit=300')">Movimientos desde inicio</button><button onclick="runDiagQuick('GET /erp/sync_jobs?from=2026-07-05&amp;limit=300')">Sync jobs desde inicio</button><button onclick="setDiagCommand('ML GET /items/MLA1607155102')">ML raw item</button><button onclick="setDiagCommand('ML GET /items/MLA1607155102/variations/181158032101')">ML raw variation</button></div>
-  <div class="lastJsonDiagHint">Un comando por línea. En comandos ML/TN no pegues tokens: XelerIA usa los guardados del tenant.</div>
+  <div class="btnrow" style="margin-top:10px"><button class="primary" onclick="runDiagnostics()">Ejecutar PowerShell interno</button><button class="secondary" onclick="renderDiagVars()">Actualizar variables</button><button class="secondary" onclick="loadDiagExamples()">Ejemplos PS</button><button class="secondary" onclick="clearDiagScript()">Limpiar script</button></div>
+  <div class="lastJsonDiagQuick"><button onclick='runDiagQuick("$API = \"https://api.xeleria.com.ar\"\n$TENANT = \"AUTO\"\n$H = @{\n  \"x-session-token\"  = $TOKEN\n  \"x-xeleria-tenant\" = $TENANT\n}\n\nInvoke-RestMethod `\n  -Method GET `\n  -Uri \"$API/admin/tenant/settings\" `\n  -Headers $H |\n  ConvertTo-Json -Depth 20")'>Tenant settings</button><button onclick='runDiagQuick("$API = \"https://api.xeleria.com.ar\"\n$TENANT = \"AUTO\"\n$H = @{\n  \"x-session-token\"  = $TOKEN\n  \"x-xeleria-tenant\" = $TENANT\n}\n\nInvoke-RestMethod `\n  -Method GET `\n  -Uri \"$API/admin/stock/movements?from=2026-07-05&limit=300\" `\n  -Headers $H |\n  ConvertTo-Json -Depth 20")'>Movimientos desde inicio</button><button onclick='runDiagQuick("$API = \"https://api.xeleria.com.ar\"\n$TENANT = \"AUTO\"\n$H = @{\n  \"x-session-token\"  = $TOKEN\n  \"x-xeleria-tenant\" = $TENANT\n}\n\nInvoke-RestMethod `\n  -Method GET `\n  -Uri \"$API/erp/sync_jobs?from=2026-07-05&limit=300\" `\n  -Headers $H |\n  ConvertTo-Json -Depth 20")'>Sync jobs desde inicio</button><button onclick='setDiagCommand("Invoke-RestMethod `\n  -Method GET `\n  -Uri \"https://api.mercadolibre.com/items/MLA1607155102\" `\n  -Headers $MLH |\n  ConvertTo-Json -Depth 20")'>ML raw item</button><button onclick='setDiagCommand("Invoke-RestMethod `\n  -Method GET `\n  -Uri \"https://api.mercadolibre.com/items/MLA1607155102/variations/181158032101\" `\n  -Headers $MLH |\n  ConvertTo-Json -Depth 20")'>ML raw variation</button></div>
+  <div class="lastJsonDiagHint">Podés pegar PowerShell real con $API, $TENANT, $TOKEN, $H, $MLH o $TNH. XelerIA no muestra secretos completos: muestra presencia/fingerprint y ejecuta con los valores reales guardados.</div>
 </div>
-<!-- ====== FIN MODULO SISTEMA / DIAGNOSTICO API ====== -->
+<!-- ====== FIN MODULO SISTEMA / POWERSHELL INTERNO ====== -->
 <div id="lastJsonStatus" class="status"></div><textarea id="lastJsonText" readonly spellcheck="false" style="margin-top:12px"></textarea></div></section>
 
 <section id="versiones" class="view">
@@ -1283,8 +1286,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.65-last-json-diagnostics';
-const FRONTEND_BUILD='admin-erp-v271-last-json-diagnostics';
+const FRONTEND_VERSION='2.66-last-json-powershell';
+const FRONTEND_BUILD='admin-erp-v273-last-json-powershell';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const XELERIA_MIN_SEARCH_CHARS=4;function isShortSearch(q){q=String(q||'').trim();return q.length>0&&q.length<XELERIA_MIN_SEARCH_CHARS}function minSearchMessage(){return 'Ingresá al menos '+XELERIA_MIN_SEARCH_CHARS+' caracteres para buscar.'}
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
@@ -1647,58 +1650,95 @@ function redactSensitivePath(path){try{let raw=String(path||'');let base='https:
 function scrubSensitiveJson(value){try{if(Array.isArray(value))return value.map(scrubSensitiveJson);if(value&&typeof value==='object'){let out={};Object.keys(value).forEach(k=>{let v=value[k];if(['token','admin_token','ADMIN_TOKEN','session_token','authorization'].includes(String(k)))out[k]='***';else if(k==='path')out[k]=redactSensitivePath(v);else out[k]=scrubSensitiveJson(v)});return out}if(typeof value==='string'&&/[?&](token|admin_token|ADMIN_TOKEN|session_token)=/.test(value))return redactSensitivePath(value);return value}catch(e){return value}}
 function saveLastJson(payload){try{let clean=scrubSensitiveJson({...payload,at:new Date().toISOString()});localStorage.setItem('xeleria_last_json',JSON.stringify(clean,null,2))}catch(e){}}
 function renderLastJsonPanel(){let raw=localStorage.getItem('xeleria_last_json')||'';let out=qs('lastJsonText');if(out)out.value=raw||'Todavía no hay JSON guardado.';setStatus('lastJsonStatus',raw?'JSON cargado.':'Todavía no hay JSON guardado.',!!raw)}
-function showLastJson(){showView('ultimo-json');renderLastJsonPanel()}
+function showLastJson(){showView('ultimo-json');renderLastJsonPanel();try{renderDiagVars()}catch(e){}}
 async function copyLastJson(){let txt=localStorage.getItem('xeleria_last_json')||'';if(!txt){setStatus('lastJsonStatus','No hay JSON para copiar.',false);return}try{await navigator.clipboard.writeText(txt);setStatus('lastJsonStatus','JSON copiado al portapapeles.',true)}catch(e){let el=qs('lastJsonText');if(el){el.focus();el.select()}setStatus('lastJsonStatus','Seleccionado. Copialo con Ctrl+C.','warn')}}
 function clearLastJson(){localStorage.removeItem('xeleria_last_json');renderLastJsonPanel()}
 
-// ====== MODULO SISTEMA / DIAGNOSTICO API ======
-function setDiagCommand(cmd){let el=qs('diagScript');if(el){el.value=cmd||'';el.focus()}}
-function appendDiagCommand(cmd){let el=qs('diagScript');if(!el)return;let cur=String(el.value||'').trim();el.value=cur?(cur+'\n'+cmd):cmd;el.focus()}
-function clearDiagScript(){let s=qs('diagScript');let b=qs('diagBody');if(s)s.value='';if(b)b.value='';setStatus('lastJsonStatus','Script limpio.','warn')}
+// ====== MODULO SISTEMA / POWERSHELL INTERNO ======
+function setDiagCommand(cmd){let el=qs('diagScript');if(el){el.value=cmd||'';el.focus()}renderDiagVars()}
+function appendDiagCommand(cmd){let el=qs('diagScript');if(!el)return;let cur=String(el.value||'').trim();el.value=cur?(cur+'\n'+cmd):cmd;el.focus();renderDiagVars()}
+function clearDiagScript(){let s=qs('diagScript');let b=qs('diagBody');if(s)s.value='';if(b)b.value='';renderDiagVars();setStatus('lastJsonStatus','Script limpio.','warn')}
+function maskDiagValue(v){let s=String(v||'');if(!s)return 'vacío';if(s.length<=10)return 'presente · '+s.length+' chars';return 'presente · '+s.length+' chars · '+s.slice(0,4)+'…'+s.slice(-4)}
+function diagVariablesText(){
+  let api=apiBase();let ten=tenantId();let st=sessionToken();let adm=token();
+  let lines=[];
+  lines.push('$API    = "'+api+'"');
+  lines.push('$TENANT = "'+ten+'"');
+  lines.push('$TOKEN  = '+maskDiagValue(st));
+  lines.push('$ADMIN  = '+maskDiagValue(adm));
+  lines.push('$H      = @{ "x-session-token" = $TOKEN; "x-xeleria-tenant" = $TENANT }');
+  lines.push('$MLH    = headers ML guardados por XelerIA para este tenant');
+  lines.push('$TNH    = headers TN guardados por XelerIA para este tenant');
+  return lines.join('\n');
+}
+function renderDiagVars(){let el=qs('diagVars');if(el)el.textContent=diagVariablesText()}
+function normalizePsUri(raw){let s=String(raw||'').trim();let api=apiBase().replace(/\/$/,'');s=s.replace(/\$API\b/g,api);s=s.replace(/\$TENANT\b/g,tenantId());return s}
+function psUriToInternalCommand(method,uri,defaultTarget){
+  let u=normalizePsUri(uri);let target=defaultTarget||'XELERIA';let path=u;
+  try{
+    let parsed=new URL(u,apiBase());let host=parsed.hostname.toLowerCase();path=parsed.pathname+(parsed.search||'');
+    if(host.includes('mercadolibre.com'))target='ML';
+    else if(host.includes('tiendanube.com')||host.includes('nuvemshop.com'))target='TN';
+    else target='XELERIA';
+  }catch(e){
+    if(u.startsWith('/')){target=defaultTarget||'XELERIA';path=u}
+  }
+  return `${target} ${String(method||'GET').toUpperCase()} ${path}`;
+}
+function parseInternalPowerShell(script,defaultTarget,defaultMethod){
+  let txt=String(script||'').trim();if(!txt)return '';
+  if(!/Invoke-RestMethod/i.test(txt))return txt;
+  let blocks=txt.split(/(?=Invoke-RestMethod\b)/i).map(x=>x.trim()).filter(Boolean);
+  let out=[];
+  for(let block of blocks){
+    let method=(block.match(/-Method\s+([A-Za-z]+)/i)||[])[1]||defaultMethod||'GET';
+    let uri=(block.match(/-Uri\s+"([^"]+)"/i)||block.match(/-Uri\s+'([^']+)'/i)||block.match(/-Uri\s+([^\s`|]+)/i)||[])[1];
+    if(uri)out.push(psUriToInternalCommand(method,uri,defaultTarget));
+  }
+  return out.length?out.join('\n'):txt;
+}
 function diagPayloadFromUi(){
-  let script=String(fieldVal('diagScript')||'').trim();
+  let rawScript=String(fieldVal('diagScript')||'').trim();
   let bodyTxt=String(fieldVal('diagBody')||'').trim();
   let body=null;
   if(bodyTxt){try{body=JSON.parse(bodyTxt)}catch(e){throw {detail:'Body JSON inválido: '+(e.message||e)}}}
-  return {target:fieldVal('diagTarget')||'XELERIA',method:fieldVal('diagMethod')||'GET',script,body};
+  let target=fieldVal('diagTarget')||'XELERIA';let method=fieldVal('diagMethod')||'GET';
+  let script=parseInternalPowerShell(rawScript,target,method);
+  return {target,method,script,body,raw_powershell:rawScript};
 }
 async function runDiagnostics(){
   try{
+    renderDiagVars();
     let payload=diagPayloadFromUi();
-    if(!payload.script){setStatus('lastJsonStatus','Pegá al menos un comando para ejecutar.',false);return}
-    setStatus('lastJsonStatus','Ejecutando diagnóstico...','warn');
+    if(!payload.script){setStatus('lastJsonStatus','Pegá al menos un Invoke-RestMethod o comando para ejecutar.',false);return}
+    setStatus('lastJsonStatus','Ejecutando PowerShell interno...','warn');
     let d=await fetchJson('/admin/diagnostics/run',{method:'POST',body:JSON.stringify(payload)});
-    rememberTenantIdFromPayload(d);
-    renderLastJsonPanel();
-    setStatus('lastJsonStatus',d&&d.ok?'Diagnóstico ejecutado. JSON actualizado.':'Diagnóstico ejecutado con errores. Revisá JSON.',!!(d&&d.ok));
-  }catch(e){
-    renderLastJsonPanel();
-    setStatus('lastJsonStatus','Error diagnóstico: '+friendlyInventoryError(e),false);
-  }
+    rememberTenantIdFromPayload(d);renderDiagVars();renderLastJsonPanel();
+    setStatus('lastJsonStatus',d&&d.ok?'PowerShell interno ejecutado. JSON actualizado.':'PowerShell interno ejecutado con errores. Revisá JSON.',!!(d&&d.ok));
+  }catch(e){renderDiagVars();renderLastJsonPanel();setStatus('lastJsonStatus','Error diagnóstico: '+friendlyInventoryError(e),false)}
 }
 function runDiagQuick(cmd){setDiagCommand(cmd);runDiagnostics()}
 async function loadDiagExamples(){
   try{
-    setStatus('lastJsonStatus','Cargando ejemplos...','warn');
-    let d=await fetchJson('/admin/diagnostics/examples',{skipLastJson:true});
-    rememberTenantIdFromPayload(d);
-    let ex=(d&&d.examples)||[];
-    let el=qs('diagScript');if(el)el.value=ex.join('\n');
-    setStatus('lastJsonStatus','Ejemplos cargados. Podés ejecutar o editar.',true);
-  }catch(e){setStatus('lastJsonStatus','No pude cargar ejemplos: '+friendlyInventoryError(e),false)}
+    renderDiagVars();
+    let sample=`$API = "${apiBase()}"\n$TENANT = "${tenantId()}"\n$H = @{\n  "x-session-token"  = $TOKEN\n  "x-xeleria-tenant" = $TENANT\n}\n\nInvoke-RestMethod \`\n  -Method GET \`\n  -Uri "$API/admin/tenant/settings" \`\n  -Headers $H |\n  ConvertTo-Json -Depth 20`;
+    let el=qs('diagScript');if(el)el.value=sample;
+    setStatus('lastJsonStatus','Ejemplo PowerShell cargado. Podés ejecutar o editar.',true);
+  }catch(e){setStatus('lastJsonStatus','No pude cargar ejemplo: '+friendlyInventoryError(e),false)}
 }
 function rememberTenantIdFromPayload(data){
   try{
     let ids=[];
     if(data&&data.tenant_id)ids.push(data.tenant_id);
     if(data&&data.response&&data.response.tenant_id)ids.push(data.response.tenant_id);
+    if(data&&data.json&&data.json.tenant_id)ids.push(data.json.tenant_id);
     let res=(data&&data.results)||(data&&data.response&&data.response.results)||[];
     if(Array.isArray(res)){for(let r of res){ids.push(r&&r.tenant_id);ids.push(r&&r.json&&r.json.tenant_id);ids.push(r&&r.response&&r.response.tenant_id)}}
     let good=ids.find(x=>String(x||'').match(/^[0-9a-f-]{36}$/i)&&String(x)!=='00000000-0000-0000-0000-000000000001');
     if(good)localStorage.setItem('xeleria_tenant_id',String(good));
-  }catch(e){}
+  }catch(e){}renderDiagVars();
 }
-// ====== FIN MODULO SISTEMA / DIAGNOSTICO API ======
+// ====== FIN MODULO SISTEMA / POWERSHELL INTERNO ======
 async function fetchJson(path,opt={}){
   let r,txt='',data=null;
   try{
