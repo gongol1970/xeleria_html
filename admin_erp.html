@@ -8,7 +8,7 @@
 <!-- XELERIA_COMBOS_SAAS_UI_V1_INTEGRATED -->
 <!-- XELERIA_COMBOS_SAVE_BUTTON_REMOVED_REFRESH_BG_V1 -->
 <!-- XELERIA_VENTAS_SHIPPING_UI_V264_PICKED_UP_LABEL -->
-<!-- XELERIA_ARCA_ONBOARDING_CONFIG_V268_ES_SHIPPING_FIX_SAFE -->
+<!-- XELERIA_ARCA_ONBOARDING_CONFIG_V269_ES_SHIPPING_RESTORE -->
 <link rel="icon" href="./favicon_xeleria.png?v=20260620" />
 <style>
 :root{--bg:#f2f0eb;--surface:#fffdf8;--surface2:#f8f4ea;--ink:#171717;--muted:#6b665c;--line:#ded4be;--brand:#dcc58f;--brand2:#cdb272;--dark:#101010;--ok:#067647;--bad:#b42318;--warn:#b54708;--shadow:0 10px 30px rgba(17,17,17,.08);--radius:18px;--import-green-bg:#dff3e4;--import-red-bg:#f6d2d2;--import-yellow-bg:#f7f8bd;--import-soft-border:#777;--import-soft-text:#111}
@@ -1252,8 +1252,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.62-ml-shipping-arca-es-safe';
-const FRONTEND_BUILD='admin-erp-v268-ml-shipping-arca-es-safe';
+const FRONTEND_VERSION='2.63-ml-shipping-restore-arca-es';
+const FRONTEND_BUILD='admin-erp-v269-ml-shipping-restore-arca-es';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const XELERIA_MIN_SEARCH_CHARS=4;function isShortSearch(q){q=String(q||'').trim();return q.length>0&&q.length<XELERIA_MIN_SEARCH_CHARS}function minSearchMessage(){return 'Ingresá al menos '+XELERIA_MIN_SEARCH_CHARS+' caracteres para buscar.'}
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
@@ -2296,15 +2296,12 @@ function shippingStateLabel(o,ch){
   let r=rawObj(o);
   let explicit=String(o.tn_shipping_ui_status||o.ml_shipping_ui_status||o.shipping_ui_status||'').trim();
   let explicitLow=explicit.toLowerCase();
-  let snapObj=o.ml_shipping_last_snapshot||o.shipping_snapshot||o.shipment||deepVal(r,'ml_shipping_last_snapshot')||deepVal(r,'shipment')||deepVal(r,'shipping')||{};
-  let snapSub=String(deepVal(snapObj,'substatus')||deepVal(snapObj,'sub_status')||deepVal(r,'ml_shipping_last_snapshot.substatus')||deepVal(r,'ml_shipping_last_snapshot.sub_status')||'').toLowerCase();
-  let snapStatus=String(deepVal(snapObj,'status')||deepVal(r,'ml_shipping_last_snapshot.status')||'').toLowerCase();
-  let snapLog=String(deepVal(snapObj,'logistic_type')||deepVal(r,'ml_shipping_last_snapshot.logistic_type')||'').toLowerCase();
+  let refreshed=!!(o.ml_shipping_refreshed_at||deepVal(r,'ml_shipping_refreshed_at')||deepVal(r,'ml_shipping_last_snapshot.date_updated'));
+  let snapSub=String(deepVal(r,'ml_shipping_last_snapshot.substatus')||deepVal(r,'ml_shipping_last_snapshot.sub_status')||'').toLowerCase();
+  let snapStatus=String(deepVal(r,'ml_shipping_last_snapshot.status')||'').toLowerCase();
+  let snapLog=String(deepVal(r,'ml_shipping_last_snapshot.logistic_type')||'').toLowerCase();
   let opt=String(o.shipping_option||o.tn_shipping_option||'');
-  // No usamos JSON.stringify del snapshot: ML trae claves tipo date_cancelled aunque el envío NO esté cancelado.
-  // Sólo miramos campos operativos concretos para evitar falsos "Cancelado".
   let blob=(raw+' '+sub+' '+snapStatus+' '+snapSub+' '+snapLog+' '+opt.toLowerCase()).trim();
-  let refreshed=!!(o.ml_shipping_refreshed_at||deepVal(r,'ml_shipping_refreshed_at')||deepVal(r,'ml_shipping_last_snapshot.date_updated')||deepVal(snapObj,'date_updated'));
 
   // ML sin Mercado Envíos: cuando /orders/{id}.fulfilled=true, es Entregado aunque el tipo sea A coordinar.
   if(ch==='ML'&&mlOrderFulfilled(o))return 'Entregado';
@@ -2312,10 +2309,11 @@ function shippingStateLabel(o,ch){
   if(blob.includes('cancel')||explicitLow.includes('cancel'))return 'Cancelado';
   if(blob.includes('delivered')||explicitLow.includes('entregado'))return 'Entregado';
 
-  // ML puede traer una etiqueta explícita vieja; si el snapshot/raw informa movimiento real, gana En camino.
-  if(blob.includes('picked_up')||blob.includes('shipped')||blob.includes('in_transit')||blob.includes('in_route')||blob.includes('on_the_way')||blob.includes('dropped_off'))return 'En camino';
+  // ML puede enviar una etiqueta explícita vieja mientras el raw ya dice picked_up.
+  // Si picked_up aparece en status/substatus, manda la realidad operativa: En camino.
+  if(blob.includes('picked_up')||blob.includes('shipped')||blob.includes('in_transit')||blob.includes('in_route')||blob.includes('on_the_way'))return 'En camino';
 
-  // Backend puede mandar una etiqueta explícita; la usamos sólo si no contradice el raw operativo.
+  // Backend 0.1.96+ puede mandar una etiqueta explícita; la usamos sólo si no contradice el raw operativo.
   if(explicit)return explicit;
 
   // No tocar comportamiento FULL/FLEX: Full queda como bodega; Flex conserva su lógica propia.
@@ -2323,7 +2321,7 @@ function shippingStateLabel(o,ch){
 
   // Si fue refrescado desde ML y es Mercado Envíos común, evitamos falso rojo por status base ready_to_ship.
   // ML suele conservar ready_to_ship mientras el subestado/seguimiento real avanza.
-  if(ch==='ML'&&logistic==='Mercado Envíos'&&refreshed&&blob.includes('ready_to_ship')&&!blob.includes('ready_to_print'))return 'En camino';
+  if(ch==='ML'&&logistic==='Mercado Envíos'&&refreshed&&blob.includes('ready_to_ship'))return 'En camino';
 
   if(blob.includes('ready_to_ship'))return 'Listo para despachar';
   if(blob.includes('not_shipped')||blob.includes('unpacked')||blob.includes('unfulfilled'))return 'Sin despachar';
