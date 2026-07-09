@@ -9,6 +9,7 @@
 <!-- XELERIA_COMBOS_SAVE_BUTTON_REMOVED_REFRESH_BG_V1 -->
 <!-- XELERIA_VENTAS_SHIPPING_UI_V264_PICKED_UP_LABEL -->
 <!-- XELERIA_ARCA_ONBOARDING_CONFIG_V269_ES_SHIPPING_RESTORE -->
+<!-- XELERIA_LAST_JSON_DIAGNOSTICS_V271 -->
 <link rel="icon" href="./favicon_xeleria.png?v=20260620" />
 <style>
 :root{--bg:#f2f0eb;--surface:#fffdf8;--surface2:#f8f4ea;--ink:#171717;--muted:#6b665c;--line:#ded4be;--brand:#dcc58f;--brand2:#cdb272;--dark:#101010;--ok:#067647;--bad:#b42318;--warn:#b54708;--shadow:0 10px 30px rgba(17,17,17,.08);--radius:18px;--import-green-bg:#dff3e4;--import-red-bg:#f6d2d2;--import-yellow-bg:#f7f8bd;--import-soft-border:#777;--import-soft-text:#111}
@@ -128,6 +129,16 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 /* LAST_JSON_PANEL_V1 */
 .lastJsonBox pre{white-space:pre-wrap;user-select:text;max-height:620px}
 .lastJsonBox textarea{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;min-height:420px;white-space:pre;overflow:auto}
+
+/* ====== MODULO SISTEMA / DIAGNOSTICO API ====== */
+.lastJsonDiagBox{margin-top:14px;border:1px solid #eee2c8;border-left:6px solid var(--brand2);border-radius:16px;background:#fffaf0;padding:14px}
+.lastJsonDiagBox h3{margin:0 0 6px;font-size:18px}.lastJsonDiagBox p{margin:0 0 10px;color:var(--muted)}
+.lastJsonDiagGrid{margin-top:10px}.lastJsonDiagGrid textarea{min-height:118px!important;background:#fff}.lastJsonDiagGrid select{background:#fff}
+.lastJsonDiagQuick{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.lastJsonDiagQuick button{font-size:12px;padding:7px 9px;min-height:34px;background:#fff;border-color:#eee2c8}.lastJsonDiagQuick button:hover{background:#fff7ed}
+.lastJsonDiagHint{font-size:12px;color:var(--muted);line-height:1.45;margin-top:8px}
+#lastJsonText{min-height:360px}
+@media(max-width:820px){.lastJsonDiagQuick{display:grid;grid-template-columns:1fr}.lastJsonDiagQuick button{width:100%}}
+/* ====== FIN MODULO SISTEMA / DIAGNOSTICO API ====== */
 
 .xeleriaVersionBar{position:fixed;left:282px;right:0;bottom:0;z-index:99998;min-height:42px;background:#050505;color:#b8f7d4;font:11px/18px Consolas,'Courier New',monospace;padding:3px 10px;white-space:normal;overflow:hidden;border-top:1px solid #222}
 .xeleriaVersionBar .xeleriaVersionLine{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1202,7 +1213,27 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 <div id="inventoryImportCard" class="card"><div class="btnrow"><div><h3>Carga general de inventario</h3></div></div><div class="importConnectorGrid"><div id="inventoryImportMLCard" class="importConnectorCard"><h4>Mercado Libre</h4><div class="importConnectorMeta">Estado: <span id="inventoryImportMLStatus" class="pill">revisando</span><span id="inventoryImportMLDot" class="dot">·</span><span id="inventoryImportMLAccount" class="importConnectorAccount">—</span></div><div class="importConnectorActions"><button id="inventoryImportMLButton" class="secondary" onclick="connectInventoryChannel('ML')">Conectar ML</button></div></div><div id="inventoryImportTNCard" class="importConnectorCard"><h4>Tienda Nube</h4><div class="importConnectorMeta">Estado: <span id="inventoryImportTNStatus" class="pill">revisando</span><span id="inventoryImportTNDot" class="dot">·</span><span id="inventoryImportTNAccount" class="importConnectorAccount">—</span></div><div class="importConnectorActions"><button id="inventoryImportTNButton" class="secondary" onclick="connectInventoryChannel('TN')">Conectar TN</button></div></div></div><div class="btnrow importImportActions"><button id="inventoryImportRunButton" class="primary" onclick="runInventoryImportRefresh(0)">Importar canales conectados</button></div><div id="inventoryImportStatus" class="status"></div><div id="inventoryImportSummary" class="status"></div><div id="inventoryImportErrors" class="status hidden"></div><div class="importReviewLegend importReviewLegendInline hidden"><span class="pill ok">Verde: SKU o publicación nueva / S-C cambiado</span><span class="pill bad">Rojo: falta en refresh confirmado</span><span class="pill warn">Amarillo: SKU faltante</span></div><div class="importReviewGrid hidden"><table><colgroup><col class="sku"><col class="tn"><col class="kind"><col class="ml"></colgroup><thead><tr><th>SKU</th><th>Tienda Nube</th><th title="Simple / Combo">S/C</th><th>Mercado Libre</th></tr></thead><tbody id="inventoryImportGridBody"></tbody></table></div><div id="inventoryImportPager" class="btnrow" style="margin-top:12px"></div></div>
 </section>
 <section id="bitacora" class="view"><div class="card"><div class="dashStatusLine"><div><h3>Bitácora operativa</h3><p>Errores y advertencias accionables. Sin columnas: cada evento trae contexto, acción sugerida y detalle técnico plegable.</p></div><button class="secondary dashRefresh" onclick="loadOpsLog(true)">Actualizar</button></div><div id="opsLogStatus" class="status"></div><div id="opsLogList" class="opsLogList"></div></div></section>
-<section id="ultimo-json" class="view"><div class="card lastJsonBox"><h3>Sistema · Último JSON</h3><p>Última respuesta técnica guardada por el backoffice. Copiable, sin popup.</p><div class="btnrow"><button class="secondary" onclick="renderLastJsonPanel()">Actualizar</button><button class="secondary" onclick="copyLastJson()">Copiar JSON</button><button class="secondary" onclick="clearLastJson()">Limpiar</button></div><div id="lastJsonStatus" class="status"></div><textarea id="lastJsonText" readonly spellcheck="false" style="margin-top:12px"></textarea></div></section>
+<section id="ultimo-json" class="view"><div class="card lastJsonBox"><h3>Sistema · Último JSON</h3><p>Última respuesta técnica guardada por el backoffice. Copiable, sin popup.</p><div class="btnrow"><button class="secondary" onclick="renderLastJsonPanel()">Actualizar</button><button class="secondary" onclick="copyLastJson()">Copiar JSON</button><button class="secondary" onclick="clearLastJson()">Limpiar</button></div>
+<!-- ====== MODULO SISTEMA / DIAGNOSTICO API ====== -->
+<div class="lastJsonDiagBox">
+  <div class="dashStatusLine">
+    <div>
+      <h3>Diagnóstico API interno</h3>
+      <p>Tipo Graph API Explorer: escribís comandos, XelerIA usa API, tenant, sesión y tokens guardados.</p>
+    </div>
+  </div>
+  <div class="grid lastJsonDiagGrid">
+    <div class="col-2"><label>Destino</label><select id="diagTarget"><option value="XELERIA" selected>XELERIA</option><option value="ML">ML</option><option value="TN">TN</option></select></div>
+    <div class="col-2"><label>Método</label><select id="diagMethod"><option value="GET" selected>GET</option><option value="POST">POST</option></select></div>
+    <div class="col-8"><label>Comando / scripts</label><textarea id="diagScript" rows="7" spellcheck="false" placeholder="GET /admin/tenant/settings&#10;GET /admin/stock/movements?from=2026-07-05&amp;limit=300&#10;GET /erp/sync_jobs?from=2026-07-05&amp;limit=300&#10;ML GET /items/MLA1607155102&#10;ML GET /items/MLA1607155102/variations/181158032101"></textarea></div>
+    <div class="col-12"><label>Body JSON opcional para POST</label><textarea id="diagBody" rows="4" spellcheck="false" placeholder='{ "campo": "valor" }'></textarea></div>
+  </div>
+  <div class="btnrow" style="margin-top:10px"><button class="primary" onclick="runDiagnostics()">Ejecutar diagnóstico</button><button class="secondary" onclick="loadDiagExamples()">Ejemplos</button><button class="secondary" onclick="clearDiagScript()">Limpiar script</button></div>
+  <div class="lastJsonDiagQuick"><button onclick="runDiagQuick('GET /admin/tenant/settings')">Tenant settings</button><button onclick="runDiagQuick('GET /admin/stock/movements?from=2026-07-05&amp;limit=300')">Movimientos desde inicio</button><button onclick="runDiagQuick('GET /erp/sync_jobs?from=2026-07-05&amp;limit=300')">Sync jobs desde inicio</button><button onclick="setDiagCommand('ML GET /items/MLA1607155102')">ML raw item</button><button onclick="setDiagCommand('ML GET /items/MLA1607155102/variations/181158032101')">ML raw variation</button></div>
+  <div class="lastJsonDiagHint">Un comando por línea. En comandos ML/TN no pegues tokens: XelerIA usa los guardados del tenant.</div>
+</div>
+<!-- ====== FIN MODULO SISTEMA / DIAGNOSTICO API ====== -->
+<div id="lastJsonStatus" class="status"></div><textarea id="lastJsonText" readonly spellcheck="false" style="margin-top:12px"></textarea></div></section>
 
 <section id="versiones" class="view">
   <div class="card">
@@ -1252,8 +1283,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.64-connections-status-safe';
-const FRONTEND_BUILD='admin-erp-v270-connections-status-safe';
+const FRONTEND_VERSION='2.65-last-json-diagnostics';
+const FRONTEND_BUILD='admin-erp-v271-last-json-diagnostics';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const XELERIA_MIN_SEARCH_CHARS=4;function isShortSearch(q){q=String(q||'').trim();return q.length>0&&q.length<XELERIA_MIN_SEARCH_CHARS}function minSearchMessage(){return 'Ingresá al menos '+XELERIA_MIN_SEARCH_CHARS+' caracteres para buscar.'}
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
@@ -1574,6 +1605,7 @@ function showView(id){
   if(id==='dashboard')loadDashboard();
   if(id==='movimientos')loadMovements();
   if(id==='fallas')loadSyncJobs(state.jobs.offset||0);
+  if(id==='ultimo-json')renderLastJsonPanel();
   if(id==='ml-ventas')loadRecent('ML',state.sales.ML.offset||0,{refreshShipping:true});
   if(id==='tn-ventas')loadRecent('TN',state.sales.TN.offset||0);
   if(id==='ml-publicaciones')loadPublications('ML',state.publications.ML.offset||0);
@@ -1618,6 +1650,42 @@ function renderLastJsonPanel(){let raw=localStorage.getItem('xeleria_last_json')
 function showLastJson(){showView('ultimo-json');renderLastJsonPanel()}
 async function copyLastJson(){let txt=localStorage.getItem('xeleria_last_json')||'';if(!txt){setStatus('lastJsonStatus','No hay JSON para copiar.',false);return}try{await navigator.clipboard.writeText(txt);setStatus('lastJsonStatus','JSON copiado al portapapeles.',true)}catch(e){let el=qs('lastJsonText');if(el){el.focus();el.select()}setStatus('lastJsonStatus','Seleccionado. Copialo con Ctrl+C.','warn')}}
 function clearLastJson(){localStorage.removeItem('xeleria_last_json');renderLastJsonPanel()}
+
+// ====== MODULO SISTEMA / DIAGNOSTICO API ======
+function setDiagCommand(cmd){let el=qs('diagScript');if(el){el.value=cmd||'';el.focus()}}
+function appendDiagCommand(cmd){let el=qs('diagScript');if(!el)return;let cur=String(el.value||'').trim();el.value=cur?(cur+'\n'+cmd):cmd;el.focus()}
+function clearDiagScript(){let s=qs('diagScript');let b=qs('diagBody');if(s)s.value='';if(b)b.value='';setStatus('lastJsonStatus','Script limpio.','warn')}
+function diagPayloadFromUi(){
+  let script=String(fieldVal('diagScript')||'').trim();
+  let bodyTxt=String(fieldVal('diagBody')||'').trim();
+  let body=null;
+  if(bodyTxt){try{body=JSON.parse(bodyTxt)}catch(e){throw {detail:'Body JSON inválido: '+(e.message||e)}}}
+  return {target:fieldVal('diagTarget')||'XELERIA',method:fieldVal('diagMethod')||'GET',script,body};
+}
+async function runDiagnostics(){
+  try{
+    let payload=diagPayloadFromUi();
+    if(!payload.script){setStatus('lastJsonStatus','Pegá al menos un comando para ejecutar.',false);return}
+    setStatus('lastJsonStatus','Ejecutando diagnóstico...','warn');
+    let d=await fetchJson('/admin/diagnostics/run',{method:'POST',body:JSON.stringify(payload)});
+    renderLastJsonPanel();
+    setStatus('lastJsonStatus',d&&d.ok?'Diagnóstico ejecutado. JSON actualizado.':'Diagnóstico ejecutado con errores. Revisá JSON.',!!(d&&d.ok));
+  }catch(e){
+    renderLastJsonPanel();
+    setStatus('lastJsonStatus','Error diagnóstico: '+friendlyInventoryError(e),false);
+  }
+}
+function runDiagQuick(cmd){setDiagCommand(cmd);runDiagnostics()}
+async function loadDiagExamples(){
+  try{
+    setStatus('lastJsonStatus','Cargando ejemplos...','warn');
+    let d=await fetchJson('/admin/diagnostics/examples',{skipLastJson:true});
+    let ex=(d&&d.examples)||[];
+    let el=qs('diagScript');if(el)el.value=ex.join('\n');
+    setStatus('lastJsonStatus','Ejemplos cargados. Podés ejecutar o editar.',true);
+  }catch(e){setStatus('lastJsonStatus','No pude cargar ejemplos: '+friendlyInventoryError(e),false)}
+}
+// ====== FIN MODULO SISTEMA / DIAGNOSTICO API ======
 async function fetchJson(path,opt={}){
   let r,txt='',data=null;
   try{
