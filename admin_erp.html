@@ -8,7 +8,7 @@
 <!-- XELERIA_COMBOS_SAAS_UI_V1_INTEGRATED -->
 <!-- XELERIA_COMBOS_SAVE_BUTTON_REMOVED_REFRESH_BG_V1 -->
 <!-- XELERIA_VENTAS_SHIPPING_UI_V264_PICKED_UP_LABEL -->
-<!-- XELERIA_ARCA_ONBOARDING_CONFIG_V266 -->
+<!-- XELERIA_ARCA_ONBOARDING_CONFIG_V267_ES_SHIPPING_FIX -->
 <link rel="icon" href="./favicon_xeleria.png?v=20260620" />
 <style>
 :root{--bg:#f2f0eb;--surface:#fffdf8;--surface2:#f8f4ea;--ink:#171717;--muted:#6b665c;--line:#ded4be;--brand:#dcc58f;--brand2:#cdb272;--dark:#101010;--ok:#067647;--bad:#b42318;--warn:#b54708;--shadow:0 10px 30px rgba(17,17,17,.08);--radius:18px;--import-green-bg:#dff3e4;--import-red-bg:#f6d2d2;--import-yellow-bg:#f7f8bd;--import-soft-border:#777;--import-soft-text:#111}
@@ -1151,7 +1151,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
     <div class="grid">
       <div class="col-4">
         <label>Sonido notificaciones</label>
-        <select id="cfgNotificationSound" onchange="primeNotificationSoundFromSelect()"><option value="off">OFF</option><option value="single_bell_soft">Campana simple sutil</option><option value="single_bell_dry">Campana simple sonido seco</option><option value="double_bell">Campana doble</option><option value="double_bell_low">Campana doble grave</option><option value="double_bell_dry">Campana doble sonido seco</option><option value="triple_bell">Campana triple</option><option value="minimalist">Minimalista</option></select>
+        <select id="cfgNotificationSound" onchange="primeNotificationSoundFromSelect()"><option value="off">Desactivado</option><option value="single_bell_soft">Campana simple sutil</option><option value="single_bell_dry">Campana simple sonido seco</option><option value="double_bell">Campana doble</option><option value="double_bell_low">Campana doble grave</option><option value="double_bell_dry">Campana doble sonido seco</option><option value="triple_bell">Campana triple</option><option value="minimalist">Minimalista</option></select>
         <div class="btnrow" style="margin-top:8px"><button type="button" class="secondary" onclick="testNotificationSound()">Probar sonido</button></div>
       </div>
     </div>
@@ -1181,7 +1181,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
     <div id="arcaAutoInvoiceBox" class="grid" style="margin-top:12px">
       <div class="col-4">
         <label>Facturación automática ML/TN</label>
-        <select id="cfgAutoInvoice"><option value="false">OFF</option><option value="true">ON</option></select>
+        <select id="cfgAutoInvoice"><option value="false">Desactivada</option><option value="true">Activada</option></select>
         <p class="small">Se habilita recién cuando ARCA figure conectado.</p>
       </div>
     </div>
@@ -1252,8 +1252,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.60-arca-onboarding-start';
-const FRONTEND_BUILD='admin-erp-v266-arca-onboarding-start';
+const FRONTEND_VERSION='2.61-ml-shipping-arca-es';
+const FRONTEND_BUILD='admin-erp-v267-ml-shipping-arca-es';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0},TN:{offset:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const XELERIA_MIN_SEARCH_CHARS=4;function isShortSearch(q){q=String(q||'').trim();return q.length>0&&q.length<XELERIA_MIN_SEARCH_CHARS}function minSearchMessage(){return 'Ingresá al menos '+XELERIA_MIN_SEARCH_CHARS+' caracteres para buscar.'}
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
@@ -1303,7 +1303,7 @@ const NOTIFICATION_SOUND_FILES={
   minimalist:'Minimalista.mp3'
 };
 const NOTIFICATION_SOUND_LABELS={
-  off:'OFF',
+  off:'Desactivado',
   single_bell_soft:'Campana simple sutil',
   single_bell_dry:'Campana simple sonido seco',
   double_bell:'Campana doble',
@@ -1371,7 +1371,7 @@ function testNotificationSound(){
 }
 function notificationSoundLabel(v){
   v=normalizeNotificationSound(v);
-  return NOTIFICATION_SOUND_LABELS[v]||'OFF';
+  return NOTIFICATION_SOUND_LABELS[v]||'Desactivado';
 }
 async function pollAlerts(){
   // ALERTS_POLLING_DISABLED_2_08
@@ -2296,12 +2296,15 @@ function shippingStateLabel(o,ch){
   let r=rawObj(o);
   let explicit=String(o.tn_shipping_ui_status||o.ml_shipping_ui_status||o.shipping_ui_status||'').trim();
   let explicitLow=explicit.toLowerCase();
-  let refreshed=!!(o.ml_shipping_refreshed_at||deepVal(r,'ml_shipping_refreshed_at')||deepVal(r,'ml_shipping_last_snapshot.date_updated'));
-  let snapSub=String(deepVal(r,'ml_shipping_last_snapshot.substatus')||deepVal(r,'ml_shipping_last_snapshot.sub_status')||'').toLowerCase();
-  let snapStatus=String(deepVal(r,'ml_shipping_last_snapshot.status')||'').toLowerCase();
-  let snapLog=String(deepVal(r,'ml_shipping_last_snapshot.logistic_type')||'').toLowerCase();
+  let snapObj=o.ml_shipping_last_snapshot||o.shipping_snapshot||o.shipment||deepVal(r,'ml_shipping_last_snapshot')||deepVal(r,'shipment')||deepVal(r,'shipping')||{};
+  let snapSub=String(deepVal(snapObj,'substatus')||deepVal(snapObj,'sub_status')||deepVal(r,'ml_shipping_last_snapshot.substatus')||deepVal(r,'ml_shipping_last_snapshot.sub_status')||'').toLowerCase();
+  let snapStatus=String(deepVal(snapObj,'status')||deepVal(r,'ml_shipping_last_snapshot.status')||'').toLowerCase();
+  let snapLog=String(deepVal(snapObj,'logistic_type')||deepVal(r,'ml_shipping_last_snapshot.logistic_type')||'').toLowerCase();
   let opt=String(o.shipping_option||o.tn_shipping_option||'');
-  let blob=(raw+' '+sub+' '+snapStatus+' '+snapSub+' '+snapLog+' '+opt.toLowerCase()).trim();
+  let rawStatusBlob='';
+  try{rawStatusBlob=JSON.stringify(snapObj||{}).toLowerCase()}catch{}
+  let blob=(raw+' '+sub+' '+snapStatus+' '+snapSub+' '+snapLog+' '+opt.toLowerCase()+' '+rawStatusBlob).trim();
+  let refreshed=!!(o.ml_shipping_refreshed_at||deepVal(r,'ml_shipping_refreshed_at')||deepVal(r,'ml_shipping_last_snapshot.date_updated')||deepVal(snapObj,'date_updated'));
 
   // ML sin Mercado Envíos: cuando /orders/{id}.fulfilled=true, es Entregado aunque el tipo sea A coordinar.
   if(ch==='ML'&&mlOrderFulfilled(o))return 'Entregado';
@@ -2309,11 +2312,10 @@ function shippingStateLabel(o,ch){
   if(blob.includes('cancel')||explicitLow.includes('cancel'))return 'Cancelado';
   if(blob.includes('delivered')||explicitLow.includes('entregado'))return 'Entregado';
 
-  // ML puede enviar una etiqueta explícita vieja mientras el raw ya dice picked_up.
-  // Si picked_up aparece en status/substatus, manda la realidad operativa: En camino.
-  if(blob.includes('picked_up')||blob.includes('shipped')||blob.includes('in_transit')||blob.includes('in_route')||blob.includes('on_the_way'))return 'En camino';
+  // ML puede traer una etiqueta explícita vieja; si el snapshot/raw informa movimiento real, gana En camino.
+  if(blob.includes('picked_up')||blob.includes('shipped')||blob.includes('in_transit')||blob.includes('in_route')||blob.includes('on_the_way')||blob.includes('dropped_off'))return 'En camino';
 
-  // Backend 0.1.96+ puede mandar una etiqueta explícita; la usamos sólo si no contradice el raw operativo.
+  // Backend puede mandar una etiqueta explícita; la usamos sólo si no contradice el raw operativo.
   if(explicit)return explicit;
 
   // No tocar comportamiento FULL/FLEX: Full queda como bodega; Flex conserva su lógica propia.
@@ -2321,7 +2323,7 @@ function shippingStateLabel(o,ch){
 
   // Si fue refrescado desde ML y es Mercado Envíos común, evitamos falso rojo por status base ready_to_ship.
   // ML suele conservar ready_to_ship mientras el subestado/seguimiento real avanza.
-  if(ch==='ML'&&logistic==='Mercado Envíos'&&refreshed&&blob.includes('ready_to_ship'))return 'En camino';
+  if(ch==='ML'&&logistic==='Mercado Envíos'&&refreshed&&blob.includes('ready_to_ship')&&!blob.includes('ready_to_print'))return 'En camino';
 
   if(blob.includes('ready_to_ship'))return 'Listo para despachar';
   if(blob.includes('not_shipped')||blob.includes('unpacked')||blob.includes('unfulfilled'))return 'Sin despachar';
@@ -3639,6 +3641,20 @@ function arcaConnectedFromSettings(s={}){
 function renderArcaStepLine(ok,label,detail=''){
   return `<div style="padding:8px 10px;border:1px solid #eee2c8;border-radius:12px;background:#fff;margin:6px 0"><strong>${ok?'✅':'⏳'} ${esc(label)}</strong>${detail?`<div class="small">${esc(detail)}</div>`:''}</div>`;
 }
+function arcaOnboardingStatusLabel(raw,connected=false){
+  if(connected)return 'Conectado';
+  let s=String(raw||'').trim().toLowerCase();
+  if(!s)return 'Pendiente';
+  let map={
+    disabled:'Desactivado',
+    pending_cuit:'Falta cargar CUIT',
+    pending_arca_authorization:'Pendiente de autorización ARCA',
+    ready_to_validate:'Listo para probar conexión',
+    connected:'Conectado',
+    error:'Error de conexión ARCA'
+  };
+  return map[s]||s.replace(/_/g,' ');
+}
 function renderArcaOnboardingUi(settingsArg=null){
   let s=settingsArg||state.tenantSettings||{};
   let sel=qs('cfgArcaUseXeleria');
@@ -3666,7 +3682,7 @@ function renderArcaOnboardingUi(settingsArg=null){
   lines.push(renderArcaStepLine(connected,'Autorización / certificado / servicio ARCA',connected?'ARCA conectado.':'Pendiente: el cliente debe asociar autorización/certificado/servicio desde ARCA.'));
   lines.push(renderArcaStepLine(connected,'Probar conexión',connected?'Conexión validada.':'Disponible cuando estén cargadas las credenciales reales.'));
   lines.push(renderArcaStepLine(connected,'Facturación automática ML/TN',connected?'Podés habilitarla.':'Bloqueada hasta validar ARCA.'));
-  steps.innerHTML=`<div><span class="pill ${connected?'ok':'warn'}">${esc(status||'pendiente')}</span></div>`+lines.join('');
+  steps.innerHTML=`<div><span class="pill ${connected?'ok':'warn'}">${esc(arcaOnboardingStatusLabel(status,connected))}</span></div>`+lines.join('');
 }
 function personalizationPayload(){
   let logoData=localStorage.getItem('xeleria_company_logo_data')||'';
