@@ -13,6 +13,7 @@
 <!-- XELERIA_DELIVERED_INVOICE_ACTION_V284 -->
 <!-- XELERIA_INVOICE_WARNING_MENU_V285 -->
 <!-- XELERIA_INVOICE_ACTION_UX_V286 -->
+<!-- XELERIA_INVOICE_ERROR_FEEDBACK_V287 -->
 <!-- XELERIA_OXANIUM_BRAND_V283 -->
 <!-- XELERIA_LOGOS_ALIGNED_V282 -->
 <!-- XELERIA_LOGOUT_COMPACT_MOVEMENTS_CLEAN_V281 -->
@@ -3282,8 +3283,11 @@ async function issueInvoiceFromSale(ch,orderId,opts={}){
     await loadRecent(ch,state.sales[ch]?.offset||0);
     alert(`Factura emitida correctamente.\n\nComprobante: ${number}\nCAE: ${inv.cae||'-'}${channelUploadMsg?'\n\n'+channelUploadMsg:''}`);
   }catch(e){
-    setArcaAndSalesStatus(ch,'Error emitiendo: '+(e.message||JSON.stringify(e)),false);
+    let errorMsg=e?.message||e?.detail||JSON.stringify(e);
+    if(typeof errorMsg!=='string')errorMsg=JSON.stringify(errorMsg);
+    setArcaAndSalesStatus(ch,'Error emitiendo: '+errorMsg,false);
     console.error('issueInvoiceFromSale',e);
+    alert(`No se pudo emitir la factura.\n\n${errorMsg}`);
   }finally{
     setBusy(false);
   }
