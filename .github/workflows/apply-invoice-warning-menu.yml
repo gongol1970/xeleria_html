@@ -1,0 +1,45 @@
+name: Fix invoice warning menu
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch invoice warning menu
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('admin_erp.html')
+          t=p.read_text(encoding='utf-8')
+          marker='<!-- XELERIA_INVOICE_WARNING_MENU_V285 -->'
+          css="""
+          /* XELERIA_INVOICE_WARNING_MENU_V285 */
+          .invoiceKebab[open]{display:inline-grid!important;justify-items:end!important;gap:6px!important}
+          .invoiceKebab[open] .kebabPanel{position:static!important;right:auto!important;left:auto!important;top:auto!important;bottom:auto!important;z-index:auto!important;min-width:108px!important;padding:4px!important;box-shadow:none!important;border-radius:10px!important}
+          .invoiceKebab[open] .kebabPanel button{min-width:100px!important;width:100%!important;justify-content:center!important;padding:7px 10px!important}
+          """
+          if marker not in t:
+              anchor='<!-- XELERIA_DELIVERED_INVOICE_ACTION_V284 -->'
+              if anchor not in t:
+                  raise SystemExit('invoice action marker not found')
+              t=t.replace(anchor,anchor+'\n'+marker,1)
+          if '/* XELERIA_INVOICE_WARNING_MENU_V285 */' not in t:
+              t=t.replace('</style>',css+'\n</style>',1)
+          p.write_text(t,encoding='utf-8')
+          PY
+      - name: Validate anchors
+        run: |
+          grep -q 'XELERIA_INVOICE_WARNING_MENU_V285' admin_erp.html
+          grep -q '.invoiceKebab\[open\] .kebabPanel' admin_erp.html
+      - name: Commit fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add admin_erp.html
+          git commit -m "Fix invoice warning action menu" || exit 0
+          git push
