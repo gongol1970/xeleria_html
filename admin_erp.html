@@ -10,6 +10,7 @@
 <!-- XELERIA_VENTAS_SHIPPING_UI_V264_PICKED_UP_LABEL -->
 <!-- XELERIA_ARCA_ONBOARDING_CONFIG_V269_ES_SHIPPING_RESTORE -->
 <!-- XELERIA_LAST_JSON_DIAGNOSTICS_V272_TENANT_REMEMBER -->
+<!-- XELERIA_LOGOUT_COMPACT_MOVEMENTS_CLEAN_V281 -->
 <!-- XELERIA_LOGOUT_MOVEMENTS_SESSION_V280 -->
 <link rel="icon" href="./favicon_xeleria.png?v=20260620" />
 <style>
@@ -919,13 +920,27 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
   }
 }
 
+
+
+/* LOGOUT_COMPACT_CLIENT_LOGO_V2 */
+.brandTop{grid-template-columns:60px 1fr 60px auto!important}
+.brandTenantStack{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:60px;min-width:60px}
+.brandTenantLogo{width:60px!important;height:60px!important;min-width:60px!important;max-width:60px!important;border:0!important;border-radius:0!important;background:transparent!important;padding:0!important;box-shadow:none!important;color:#d8d0c0!important;font-size:9px!important}
+.brandTenantLogo.hasLogo{background:transparent!important}
+.brandTenantLogo img{max-width:60px!important;max-height:60px!important;object-fit:contain!important;display:block!important}
+.brandLogoutRow{display:none!important}
+.brandLogoutBtn{width:60px!important;min-width:60px!important;max-width:60px!important;height:20px!important;min-height:20px!important;padding:1px 4px!important;border-radius:7px!important;background:transparent!important;color:#d8d0c0!important;border:1px solid rgba(220,197,143,.32)!important;font-size:10px!important;font-weight:900!important;line-height:1!important;box-shadow:none!important}
+.brandLogoutBtn:hover{background:#c3a354!important;color:#111!important}
+.brandLogoutBtn:active{background:#a9822d!important;color:#111!important;transform:translateY(1px) scale(.99)!important}
+@media(max-width:820px){.brandTop{grid-template-columns:42px 1fr 48px auto!important}.brandTenantStack{width:48px!important;min-width:48px!important}.brandTenantLogo{width:42px!important;height:42px!important;min-width:42px!important;max-width:42px!important}.brandTenantLogo img{max-width:42px!important;max-height:42px!important}.brandLogoutBtn{width:48px!important;min-width:48px!important;max-width:48px!important;height:18px!important;min-height:18px!important;font-size:9px!important;padding:1px 3px!important}}
+
 </style>
 <!-- UI_ALERTS_INVENTORY_FILTERS_FRONTEND_1_39 -->
 </head>
 <body>
 <div class="app">
 <aside>
-<div class="brand"><div class="brandTop"><span class="appMark"><img src="./favicon_xeleria.png?v=20260620" alt="XelerIA"></span><div class="brandName">XelerIA</div><div class="brandTenantLogo" id="brandTenantLogo">LOGO</div><button class="mobileMenuToggle" type="button" onclick="toggleMobileMenu()">☰</button></div><p>Backoffice operativo</p><div class="brandLogoutRow"><button type="button" class="brandLogoutBtn" onclick="logoutXeleria()">Cerrar sesión</button></div></div>
+<div class="brand"><div class="brandTop"><span class="appMark"><img src="./favicon_xeleria.png?v=20260620" alt="XelerIA"></span><div class="brandName">XelerIA</div><div class="brandTenantStack"><div class="brandTenantLogo" id="brandTenantLogo">LOGO</div><button type="button" class="brandLogoutBtn" onclick="logoutXeleria()" title="Cerrar sesión">Salir</button></div><button class="mobileMenuToggle" type="button" onclick="toggleMobileMenu()">☰</button></div><p>Backoffice operativo</p></div>
 <nav>
 <button class="navBtn active" data-view="inicio">⌂ Inicio / Dashboard</button><button class="navBtn" data-view="notificaciones">🔔 Notificaciones<span class="navAlertBadge" id="navNotificationsBadge">0</span></button><button class="navBtn" data-view="metricas">◈ Métricas</button>
 <div class="navTitle">Mercado Libre</div><div class="sub"><button class="navBtn" data-view="ml-publicaciones">Publicaciones</button><button class="navBtn" data-view="ml-preguntas">Preguntas</button><button class="navBtn" data-view="ml-ventas">Ventas</button><button class="navBtn" data-view="ml-clientes">Clientes</button></div>
@@ -3060,11 +3075,11 @@ async function comboDelete(sku){if(!confirm('¿Desactivar combo '+sku+'?\n\nNo b
 
 async function saveInventoryStock(idx){let item=state.inventoryItems[idx];let el=qs('rowStatus_'+idx);if(String(item.item_type||'').toLowerCase()==='bundle'){if(el){el.textContent='Combo: el stock se calcula desde componentes.';el.style.color='var(--muted)'}return}let sku=item.sku;let stockEl=qs('stock_'+idx);let newStock=Number(stockEl&&stockEl.value);if(!Number.isFinite(newStock)){if(el)el.textContent='Stock inválido';return}let safeStock=Math.max(0,Math.trunc(newStock));if(el)el.textContent='Guardando y generando sync...';try{let d=await fetchJson('/admin/v2/inventory/product-sync/'+encodeURIComponent(sku),{method:'PUT',body:JSON.stringify({name:item.name||'',stock:safeStock,listings:item.listings||[]})});item.stock=safeStock;if(el){el.textContent=`OK: stock ${safeStock}. Jobs: ${(d.sync_jobs||[]).length}. Refrescando...`;el.style.color='var(--ok)'}await searchInventory(state.inventory.offset||0,false);setStatus('invStatus',`Stock guardado para ${sku}. Sync ML/TN generado y vista refrescada.`,true)}catch(e){if(el){el.textContent='Error: '+friendlyInventoryError(e);el.style.color='var(--bad)'}}}
 function movementKind(m){return esc(m.movimiento||m.movement_label||m.movement_type||'Movimiento de stock')}
-function movementOrigin(m){return esc(m.origen||m.channel_label||m.channel||'ERP')}
+function movementOrigin(m){let raw=String(m.channel||m.channel_raw||'').toUpperCase();let kind=String((m.movement_type||'')+' '+(m.reason||'')+' '+(m.reference_type||'')+' '+(m.movimiento||'')).toLowerCase();let label=m.origen||m.channel_label||m.channel||'';if(raw==='ML')label='Mercado Libre';else if(raw==='TN')label='Tienda Nube';else if(raw==='ARCA')label='Facturación ARCA';else if(raw==='ADMIN'||raw==='MANUAL')label='Manual';else if(raw==='ERP'){if(kind.includes('bundle_recalc')||kind.includes('recalcu')||kind.includes('import')||kind.includes('sync')||kind.includes('sincron'))label='Proceso interno';else if(kind.includes('manual')||kind.includes('ajuste')||kind.includes('comprobante')||kind.includes('factura')||kind.includes('credit')||kind.includes('nota'))label='Manual';else label='Manual / Proceso interno'}else if(String(label).trim()==='Manual / ERP')label='Manual / Proceso interno';return esc(label||'Proceso interno')}
 function movementQtyClass(m){let q=Number(m.cantidad??m.quantity??0);return q<0?'movementSale':(q>0?'movementUpdate':'movementManual')}
 function movementStockText(m){let prev=m.stock_anterior??m.previous_stock??'';let next=m.stock_nuevo??m.new_stock??'';if(prev===''&&next==='')return '';return `${esc(prev)} → <strong>${esc(next)}</strong>`}
 function movementRef(m){let ref=String(m.referencia||m.reference_id||'');if(!ref)return '';let short=ref.length>18?ref.slice(0,8)+'…'+ref.slice(-6):ref;return `<span class="mono" title="${esc(ref)}">${esc(short)}</span>`}
-function movementTechDetails(m){let tech=m.detalle_tecnico||{movement_type:m.movement_type,reason:m.reason,reference_type:m.reference_type,reference_id:m.reference_id,channel:m.channel};let has=Object.values(tech||{}).some(v=>v!==null&&v!==undefined&&String(v)!=='');if(!has)return '';return `<details><summary class="small">Ver técnico</summary><pre>${esc(JSON.stringify(tech,null,2))}</pre></details>`}
+function movementTechDetails(m){return ''}
 function renderMovementsTable(rows){return `<table><thead><tr><th>Fecha</th><th>Origen</th><th>SKU</th><th>Movimiento</th><th>Cantidad</th><th>Stock anterior</th><th>Stock nuevo</th><th>Referencia</th><th>Detalle</th></tr></thead><tbody>${rows.map(m=>`<tr><td>${esc(m.fecha||dateAR(m.created_at))}</td><td>${movementOrigin(m)}</td><td><strong class="mono">${esc(m.sku||'')}</strong></td><td><strong>${movementKind(m)}</strong></td><td><strong class="${movementQtyClass(m)}">${esc(m.cantidad_label??m.cantidad??m.quantity??'')}</strong></td><td>${esc(m.stock_anterior??m.previous_stock??'')}</td><td><strong>${esc(m.stock_nuevo??m.new_stock??'')}</strong></td><td>${movementRef(m)}</td><td>${esc(m.detalle||m.notes||'')}${movementTechDetails(m)}</td></tr>`).join('')||'<tr><td colspan="9" class="muted" style="text-align:center">Sin movimientos.</td></tr>'}</tbody></table>`}
 async function loadMovements(){let sku=qs('movSku')?.value.trim()||'';let lim=Number(qs('movLimit')?.value||100);setStatus('movStatus','Cargando movimientos de stock...');try{let d=await fetchJson(`/admin/stock/movements/session?limit=${encodeURIComponent(lim)}${sku?'&sku='+encodeURIComponent(sku):''}`);let rows=d.items||[];qs('movTable').innerHTML=renderMovementsTable(rows);let total=Number(d.total||rows.length||0);setStatus('movStatus',`OK: ${rows.length} movimiento(s) mostrado(s)${total!==rows.length?` de ${total}`:''}`,true)}catch(e){setStatus('movStatus','Error movimientos: '+errText(e),false);showPre('movTable',e)}}function clearMovSku(){qs('movSku').value='';loadMovements()}
 function prevMonthRange(){let d=new Date();let firstPrev=new Date(d.getFullYear(),d.getMonth()-1,1);let fmt=x=>x.toISOString().slice(0,10);return{from:fmt(firstPrev),to:fmt(d)}}function initArcaDates(){let r=prevMonthRange();if(qs('arcaDesde')&&!qs('arcaDesde').value)qs('arcaDesde').value=r.from;if(qs('arcaHasta')&&!qs('arcaHasta').value)qs('arcaHasta').value=r.to}
