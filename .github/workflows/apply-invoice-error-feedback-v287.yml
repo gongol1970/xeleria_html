@@ -1,0 +1,49 @@
+name: Add invoice error feedback
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch error feedback
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('admin_erp.html')
+          t=p.read_text(encoding='utf-8')
+          marker='<!-- XELERIA_INVOICE_ERROR_FEEDBACK_V287 -->'
+          anchor='<!-- XELERIA_INVOICE_ACTION_UX_V286 -->'
+          if marker not in t:
+              if anchor not in t: raise SystemExit('V286 marker not found')
+              t=t.replace(anchor,anchor+'\n'+marker,1)
+          old="""  }catch(e){
+              setArcaAndSalesStatus(ch,'Error emitiendo: '+(e.message||JSON.stringify(e)),false);
+              console.error('issueInvoiceFromSale',e);
+            }finally{"""
+          new=r"""  }catch(e){
+              let errorMsg=e?.message||e?.detail||JSON.stringify(e);
+              if(typeof errorMsg!=='string')errorMsg=JSON.stringify(errorMsg);
+              setArcaAndSalesStatus(ch,'Error emitiendo: '+errorMsg,false);
+              console.error('issueInvoiceFromSale',e);
+              alert(`No se pudo emitir la factura.\n\n${errorMsg}`);
+            }finally{"""
+          if old not in t: raise SystemExit('issue catch block not found')
+          t=t.replace(old,new,1)
+          p.write_text(t,encoding='utf-8')
+          PY
+      - name: Validate
+        run: |
+          grep -q 'XELERIA_INVOICE_ERROR_FEEDBACK_V287' admin_erp.html
+          grep -q 'No se pudo emitir la factura' admin_erp.html
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add admin_erp.html
+          git commit -m "Show clear invoice success and error feedback" || exit 0
+          git push
