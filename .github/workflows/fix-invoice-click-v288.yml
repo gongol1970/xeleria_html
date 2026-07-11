@@ -1,0 +1,91 @@
+name: Fix invoice click v288
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch invoice action click
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('admin_erp.html')
+          t=p.read_text(encoding='utf-8')
+          marker='<!-- XELERIA_INVOICE_CLICK_FIX_V288 -->'
+          anchor='<!-- XELERIA_INVOICE_ERROR_FEEDBACK_V287 -->'
+          if marker not in t:
+              if anchor not in t:
+                  raise SystemExit('V287 marker not found')
+              t=t.replace(anchor,anchor+'\n'+marker,1)
+
+          old_css=""".invoiceKebab{position:relative!important}
+          .invoiceKebab[open]{display:inline-block!important}
+          .invoiceKebab[open] .kebabPanel{position:fixed!important;right:auto!important;top:auto!important;bottom:auto!important;z-index:99999!important;min-width:116px!important;padding:5px!important;border-radius:10px!important}
+          .invoiceKebab[open] .kebabPanel button{min-width:104px!important;width:100%!important;justify-content:center!important;padding:7px 10px!important}"""
+          new_css=""".invoiceMiniWrap{position:relative!important}
+          .invoiceActionTrigger{border:1px solid var(--line)!important;background:#fff7ed!important;color:#b54708!important;padding:0!important;min-width:32px!important;min-height:32px!important;width:32px!important;height:32px!important;border-radius:10px!important;font-size:22px!important;line-height:1!important;box-shadow:none!important}
+          .invoiceActionPopover{position:fixed!important;display:none;z-index:99999;min-width:116px;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);padding:5px}
+          .invoiceActionPopover.open{display:block!important}
+          .invoiceActionPopover button{min-width:104px!important;width:100%!important;justify-content:center!important;padding:7px 10px!important}"""
+          if old_css not in t:
+              raise SystemExit('old invoice CSS not found')
+          t=t.replace(old_css,new_css,1)
+
+          old_button="""return `<div class="invoiceMiniWrap" data-invoice-channel="${esc(String(ch||'').toUpperCase())}" data-invoice-order="${esc(String(oid))}"><details class="kebabMenu invoiceKebab" ontoggle="positionInvoiceMenu(this)"><summary class="invoiceStatusIcon draft" title="Pendiente de facturación">📄⚠️</summary><div class="kebabPanel"><button onclick="this.closest('details').open=false;issueInvoiceFromSale('${jsq(ch)}','${jsq(oid)}')">Facturar</button></div></details></div>`;"""
+          new_button="""return `<div class="invoiceMiniWrap" data-invoice-channel="${esc(String(ch||'').toUpperCase())}" data-invoice-order="${esc(String(oid))}"><button type="button" class="invoiceActionTrigger" title="Pendiente de facturación" onclick="toggleInvoiceAction(this,event)">📄⚠️</button><div class="invoiceActionPopover"><button type="button" onclick="closeInvoiceAction(this);issueInvoiceFromSale('${jsq(ch)}','${jsq(oid)}')">Facturar</button></div></div>`;"""
+          if old_button not in t:
+              raise SystemExit('old invoice button template not found')
+          t=t.replace(old_button,new_button,1)
+
+          start=t.find('function positionInvoiceMenu(details){')
+          end=t.find('\nfunction removeInvoiceAction',start)
+          if start<0 or end<0:
+              raise SystemExit('positionInvoiceMenu block not found')
+          helper="""function closeAllInvoiceActions(except=null){
+            document.querySelectorAll('.invoiceActionPopover.open').forEach(panel=>{if(panel!==except)panel.classList.remove('open')});
+          }
+          function toggleInvoiceAction(btn,ev){
+            ev?.preventDefault();
+            ev?.stopPropagation();
+            let wrap=btn?.closest('.invoiceMiniWrap');
+            let panel=wrap?.querySelector('.invoiceActionPopover');
+            if(!panel)return;
+            let willOpen=!panel.classList.contains('open');
+            closeAllInvoiceActions(panel);
+            if(!willOpen){panel.classList.remove('open');return}
+            panel.classList.add('open');
+            let r=btn.getBoundingClientRect();
+            let w=panel.offsetWidth||116;
+            let h=panel.offsetHeight||44;
+            let left=Math.max(8,Math.min(window.innerWidth-w-8,r.right-w));
+            let top=r.bottom+6;
+            if(top+h>window.innerHeight-8)top=Math.max(8,r.top-h-6);
+            panel.style.left=left+'px';
+            panel.style.top=top+'px';
+          }
+          function closeInvoiceAction(el){
+            let panel=el?.closest('.invoiceActionPopover');
+            if(panel)panel.classList.remove('open');
+          }
+          document.addEventListener('click',()=>closeAllInvoiceActions());
+          """
+          t=t[:start]+helper+t[end:]
+          p.write_text(t,encoding='utf-8')
+          PY
+      - name: Validate
+        run: |
+          grep -q 'XELERIA_INVOICE_CLICK_FIX_V288' admin_erp.html
+          grep -q 'toggleInvoiceAction' admin_erp.html
+          grep -q 'invoiceActionPopover' admin_erp.html
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add admin_erp.html
+          git commit -m "Fix invoice action click handling" || exit 0
+          git push
