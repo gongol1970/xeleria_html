@@ -12,6 +12,7 @@
 <!-- XELERIA_LAST_JSON_DIAGNOSTICS_V272_TENANT_REMEMBER -->
 <!-- XELERIA_DELIVERED_INVOICE_ACTION_V284 -->
 <!-- XELERIA_INVOICE_WARNING_MENU_V285 -->
+<!-- XELERIA_INVOICE_ACTION_UX_V286 -->
 <!-- XELERIA_OXANIUM_BRAND_V283 -->
 <!-- XELERIA_LOGOS_ALIGNED_V282 -->
 <!-- XELERIA_LOGOUT_COMPACT_MOVEMENTS_CLEAN_V281 -->
@@ -942,9 +943,10 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 .brandName{font-family:'Oxanium',Inter,Arial,sans-serif!important;font-weight:600!important;letter-spacing:.01em!important}
 
 /* XELERIA_INVOICE_WARNING_MENU_V285 */
-.invoiceKebab[open]{display:inline-grid!important;justify-items:end!important;gap:6px!important}
-.invoiceKebab[open] .kebabPanel{position:static!important;right:auto!important;left:auto!important;top:auto!important;bottom:auto!important;z-index:auto!important;min-width:108px!important;padding:4px!important;box-shadow:none!important;border-radius:10px!important}
-.invoiceKebab[open] .kebabPanel button{min-width:100px!important;width:100%!important;justify-content:center!important;padding:7px 10px!important}
+.invoiceKebab{position:relative!important}
+.invoiceKebab[open]{display:inline-block!important}
+.invoiceKebab[open] .kebabPanel{position:fixed!important;right:auto!important;top:auto!important;bottom:auto!important;z-index:99999!important;min-width:116px!important;padding:5px!important;border-radius:10px!important}
+.invoiceKebab[open] .kebabPanel button{min-width:104px!important;width:100%!important;justify-content:center!important;padding:7px 10px!important}
 
 </style>
 <!-- UI_ALERTS_INVENTORY_FILTERS_FRONTEND_1_39 -->
@@ -2564,7 +2566,30 @@ function invoiceButton(o,ch){
   if(!delivered)return '';
   let oid=invoiceOrderId(o,ch);
   if(!oid)return '';
-  return `<div class="invoiceMiniWrap"><details class="kebabMenu invoiceKebab"><summary class="invoiceStatusIcon draft" title="Pendiente de facturación">📄⚠️</summary><div class="kebabPanel"><button onclick="issueInvoiceFromSale('${jsq(ch)}','${jsq(oid)}')">Facturar</button></div></details></div>`;
+  return `<div class="invoiceMiniWrap" data-invoice-channel="${esc(String(ch||'').toUpperCase())}" data-invoice-order="${esc(String(oid))}"><details class="kebabMenu invoiceKebab" ontoggle="positionInvoiceMenu(this)"><summary class="invoiceStatusIcon draft" title="Pendiente de facturación">📄⚠️</summary><div class="kebabPanel"><button onclick="this.closest('details').open=false;issueInvoiceFromSale('${jsq(ch)}','${jsq(oid)}')">Facturar</button></div></details></div>`;
+}
+function positionInvoiceMenu(details){
+  let panel=details?.querySelector('.kebabPanel');
+  let summary=details?.querySelector('summary');
+  if(!panel||!summary)return;
+  if(!details.open){panel.style.left='';panel.style.top='';return}
+  requestAnimationFrame(()=>{
+    let r=summary.getBoundingClientRect();
+    let w=panel.offsetWidth||116;
+    let h=panel.offsetHeight||44;
+    let left=Math.max(8,Math.min(window.innerWidth-w-8,r.right-w));
+    let top=r.bottom+6;
+    if(top+h>window.innerHeight-8)top=Math.max(8,r.top-h-6);
+    panel.style.left=left+'px';
+    panel.style.top=top+'px';
+  });
+}
+function removeInvoiceAction(ch,orderId){
+  let channel=String(ch||'').toUpperCase();
+  let oid=String(orderId||'');
+  document.querySelectorAll('.invoiceMiniWrap').forEach(el=>{
+    if(String(el.dataset.invoiceChannel||'').toUpperCase()===channel&&String(el.dataset.invoiceOrder||'')===oid)el.remove();
+  });
 }
 function isTnMotoShipping(o){
   let opt=String(o.shipping_option||o.tn_shipping_option||'').toLowerCase();
@@ -3233,7 +3258,7 @@ async function createInvoiceDraft(ch,orderId){
 async function issueInvoiceFromSale(ch,orderId,opts={}){
   hideArcaMonitor();
   if(!orderId){alert('No encontré ID de orden para emitir.');return}
-  let ok=confirm(`Emitir comprobante REAL en ARCA para ${ch} ${orderId}?\n\nRevisá que el preview/borrador tenga receptor fiscal e importe correctos antes de aceptar.`);
+  let ok=confirm(`¿Emitir factura REAL en ARCA para ${ch} ${orderId}?\n\nSe generará el CAE y, si es Mercado Libre, el PDF se adjuntará automáticamente a la venta. Si luego la operación se cancela, será necesario emitir una nota de crédito.`);
   if(!ok)return;
   setArcaAndSalesStatus(ch,'Emitiendo comprobante real en ARCA. Esperá a que termine, no vuelvas a hacer clic...',null);
   setBusy(true,'Facturando en ARCA','Emitiendo CAE, generando PDF y despachando según canal. Esto puede tardar unos segundos.');
@@ -3243,14 +3268,19 @@ async function issueInvoiceFromSale(ch,orderId,opts={}){
     let dispatch=d.post_issue_dispatch||{};
     let ml=dispatch.ml_upload||{};
     let extra='';
+    let channelUploadMsg='';
     if(String(ch).toUpperCase()==='ML'){
-      if(ml.ok&&ml.already_uploaded)extra=' · ML ya tenía factura';
-      else if(ml.ok)extra=' · PDF subido a ML';
-      else if(ml.skipped)extra=' · ML pendiente';
+      if(ml.ok&&ml.already_uploaded){extra=' · ML ya tenía factura';channelUploadMsg='El PDF ya estaba cargado en Mercado Libre.'}
+      else if(ml.ok){extra=' · PDF subido a ML';channelUploadMsg='El PDF fue subido correctamente a Mercado Libre.'}
+      else if(ml.skipped){extra=' · ML pendiente';channelUploadMsg='La factura fue emitida, pero el PDF quedó pendiente en Mercado Libre: '+String(ml.reason||'sin detalle')}
+      else{extra=' · revisar carga en ML';channelUploadMsg='La factura fue emitida, pero Mercado Libre no confirmó la carga del PDF: '+String(ml.error||ml.reason||ml.status_code||'sin detalle')}
     }
-    setArcaAndSalesStatus(ch,`Emitida OK: ${inv.cbte_letra||''} ${String(inv.pto_vta||'').padStart(4,'0')}-${String(inv.cbte_nro||'').padStart(8,'0')} · CAE ${inv.cae||''}${extra}`,true);
+    let number=`${inv.cbte_letra||''} ${String(inv.pto_vta||'').padStart(4,'0')}-${String(inv.cbte_nro||'').padStart(8,'0')}`.trim();
+    setArcaAndSalesStatus(ch,`Emitida OK: ${number} · CAE ${inv.cae||''}${extra}`,true);
+    if(inv.cae)removeInvoiceAction(ch,orderId);
     await loadArcaInvoices();
-    loadRecent(ch,state.sales[ch]?.offset||0);
+    await loadRecent(ch,state.sales[ch]?.offset||0);
+    alert(`Factura emitida correctamente.\n\nComprobante: ${number}\nCAE: ${inv.cae||'-'}${channelUploadMsg?'\n\n'+channelUploadMsg:''}`);
   }catch(e){
     setArcaAndSalesStatus(ch,'Error emitiendo: '+(e.message||JSON.stringify(e)),false);
     console.error('issueInvoiceFromSale',e);
