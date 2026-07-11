@@ -1,0 +1,60 @@
+name: Force delivered invoice UI
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch and report
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import traceback
+          path=Path('admin_erp.html')
+          report=[]
+          try:
+              text=path.read_text(encoding='utf-8')
+              marker='<!-- XELERIA_DELIVERED_INVOICE_ACTION_V284 -->'
+              if marker not in text:
+                  anchor='<!-- XELERIA_OXANIUM_BRAND_V283 -->'
+                  if anchor not in text: raise RuntimeError('header anchor missing')
+                  text=text.replace(anchor,marker+'\n'+anchor,1)
+              start=text.find('function invoiceButton(o,ch){')
+              end=text.find('\nfunction isTnMotoShipping(',start)
+              report += [f'start={start}',f'end={end}']
+              if start<0 or end<0: raise RuntimeError('boundaries not found')
+              replacement='''function invoiceButton(o,ch){
+  // Sólo ventas entregadas y todavía no facturadas muestran la acción.
+  // Sin icono significa: ya facturada o todavía no corresponde facturar.
+  let st=String(o.invoice_status||o.arca_status||'').toLowerCase();
+  let hasCae=!!(o.invoice_cae||o.cae||o.arca_cae);
+  if(hasCae||st==='issued')return '';
+  let delivered=String(shippingStateLabel(o,ch)||'').trim().toLowerCase()==='entregado';
+  if(!delivered)return '';
+  let oid=invoiceOrderId(o,ch);
+  if(!oid)return '';
+  return `<div class="invoiceMiniWrap"><details class="kebabMenu invoiceKebab"><summary class="invoiceStatusIcon draft" title="Pendiente de facturación">📄⚠️</summary><div class="kebabPanel"><button onclick="issueInvoiceFromSale('${jsq(ch)}','${jsq(oid)}')">Facturar</button></div></details></div>`;
+}
+'''
+              current=text[start:end]
+              if 'Sólo ventas entregadas' not in current:
+                  text=text[:start]+replacement+text[end+1:]
+                  report.append('patched')
+              else:
+                  report.append('already_applied')
+              path.write_text(text,encoding='utf-8')
+          except Exception:
+              report.append(traceback.format_exc())
+          Path('_tmp_force_invoice_ui_report.txt').write_text('\n'.join(report),encoding='utf-8')
+          PY
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add admin_erp.html _tmp_force_invoice_ui_report.txt
+          git commit -m "Apply delivered-only invoice action" || exit 0
+          git push
