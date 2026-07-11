@@ -24,22 +24,12 @@ jobs:
                   raise SystemExit('Header anchor not found')
               text = text.replace(anchor, marker + '\n' + anchor, 1)
 
-          old = '''function invoiceButton(o,ch){
-  // ARCA_FINAL_CLEANUP_V15
-  // Vista compacta: en Ventas alcanza con icono. El detalle queda para ARCA reportes.
-  let invId=o.invoice_id||o.arca_invoice_id||'';
-  let st=String(o.invoice_status||o.arca_status||'').toLowerCase();
-  let hasCae=!!(o.invoice_cae||o.cae||o.arca_cae);
-  if(hasCae||st==='issued'){
-    let icon='<span class="invoiceStatusIcon issued" title="Facturada">📄</span>';
-    return `<div class="invoiceMiniWrap">${invId?`<a target="_blank" href="${url('/admin/arca/facturas/'+encodeURIComponent(invId)+'/pdf')}">${icon}</a>`:icon}</div>`;
-  }
-  if(st==='draft'||st==='pending_to_invoice'||st==='pending'){
-    return `<div class="invoiceMiniWrap"><span class="invoiceStatusIcon draft" title="Pendiente para facturar">📄⚠️</span></div>`;
-  }
-  return `<div class="invoiceMiniWrap"><span class="invoiceStatusIcon none" title="Sin factura">📄⚠️</span></div>`;
-}'''
-          new = '''function invoiceButton(o,ch){
+          start = text.find('function invoiceButton(o,ch){')
+          end = text.find('\nfunction isTnMotoShipping(', start)
+          if start < 0 or end < 0:
+              raise SystemExit('invoiceButton boundaries not found')
+
+          replacement = '''function invoiceButton(o,ch){
   // Sólo ventas entregadas y todavía no facturadas muestran la acción.
   // Sin icono significa: ya facturada o todavía no corresponde facturar.
   let st=String(o.invoice_status||o.arca_status||'').toLowerCase();
@@ -53,11 +43,11 @@ jobs:
   if(!oid)return '';
 
   return `<div class="invoiceMiniWrap"><details class="kebabMenu invoiceKebab"><summary class="invoiceStatusIcon draft" title="Pendiente de facturación">📄⚠️</summary><div class="kebabPanel"><button onclick="issueInvoiceFromSale('${jsq(ch)}','${jsq(oid)}')">Facturar</button></div></details></div>`;
-}'''
-          if new not in text:
-              if old not in text:
-                  raise SystemExit('Exact invoiceButton target not found')
-              text = text.replace(old, new, 1)
+}
+'''
+          current = text[start:end]
+          if 'Sólo ventas entregadas' not in current:
+              text = text[:start] + replacement + text[end+1:]
           path.write_text(text, encoding='utf-8')
           PY
       - name: Commit change
