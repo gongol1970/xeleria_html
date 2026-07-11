@@ -13,43 +13,34 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
-          import traceback
-          path=Path('admin_erp.html')
-          report=[]
+          import base64, traceback
+          path = Path('admin_erp.html')
+          report = []
           try:
-              text=path.read_text(encoding='utf-8')
-              marker='<!-- XELERIA_DELIVERED_INVOICE_ACTION_V284 -->'
+              text = path.read_text(encoding='utf-8')
+              marker = '<!-- XELERIA_DELIVERED_INVOICE_ACTION_V284 -->'
               if marker not in text:
-                  anchor='<!-- XELERIA_OXANIUM_BRAND_V283 -->'
-                  if anchor not in text: raise RuntimeError('header anchor missing')
-                  text=text.replace(anchor,marker+'\n'+anchor,1)
-              start=text.find('function invoiceButton(o,ch){')
-              end=text.find('\nfunction isTnMotoShipping(',start)
-              report += [f'start={start}',f'end={end}']
-              if start<0 or end<0: raise RuntimeError('boundaries not found')
-              replacement='''function invoiceButton(o,ch){
-  // Sólo ventas entregadas y todavía no facturadas muestran la acción.
-  // Sin icono significa: ya facturada o todavía no corresponde facturar.
-  let st=String(o.invoice_status||o.arca_status||'').toLowerCase();
-  let hasCae=!!(o.invoice_cae||o.cae||o.arca_cae);
-  if(hasCae||st==='issued')return '';
-  let delivered=String(shippingStateLabel(o,ch)||'').trim().toLowerCase()==='entregado';
-  if(!delivered)return '';
-  let oid=invoiceOrderId(o,ch);
-  if(!oid)return '';
-  return `<div class="invoiceMiniWrap"><details class="kebabMenu invoiceKebab"><summary class="invoiceStatusIcon draft" title="Pendiente de facturación">📄⚠️</summary><div class="kebabPanel"><button onclick="issueInvoiceFromSale('${jsq(ch)}','${jsq(oid)}')">Facturar</button></div></details></div>`;
-}
-'''
-              current=text[start:end]
+                  anchor = '<!-- XELERIA_OXANIUM_BRAND_V283 -->'
+                  if anchor not in text:
+                      raise RuntimeError('header anchor missing')
+                  text = text.replace(anchor, marker + '\n' + anchor, 1)
+              start = text.find('function invoiceButton(o,ch){')
+              end = text.find('\nfunction isTnMotoShipping(', start)
+              report.extend([f'start={start}', f'end={end}'])
+              if start < 0 or end < 0:
+                  raise RuntimeError('boundaries not found')
+              encoded = 'ZnVuY3Rpb24gaW52b2ljZUJ1dHRvbihvLGNoKXsKICAvLyBTw7NsbyB2ZW50YXMgZW50cmVnYWRhcyB5IHRvZGF2w61hIG5vIGZhY3R1cmFkYXMgbXVlc3RyYW4gbGEgYWNjacOzbi4KICAvLyBTaW4gaWNvbm8gc2lnbmlmaWNhOiB5YSBmYWN0dXJhZGEgbyB0b2RhdsOtYSBubyBjb3JyZXNwb25kZSBmYWN0dXJhci4KICBsZXQgc3Q9U3RyaW5nKG8uaW52b2ljZV9zdGF0dXN8fG8uYXJjYV9zdGF0dXN8fCcnKS50b0xvd2VyQ2FzZSgpOwogIGxldCBoYXNDYWU9ISEoby5pbnZvaWNlX2NhZXx8by5jYWV8fG8uYXJjYV9jYWUpOwogIGlmKGhhc0NhZXx8c3Q9PT0naXNzdWVkJylyZXR1cm4gJyc7CiAgbGV0IGRlbGl2ZXJlZD1TdHJpbmcoc2hpcHBpbmdTdGF0ZUxhYmVsKG8sY2gpfHwnJykudHJpbSgpLnRvTG93ZXJDYXNlKCk9PT0nZW50cmVnYWRvJzsKICBpZighZGVsaXZlcmVkKXJldHVybiAnJzsKICBsZXQgb2lkPWludm9pY2VPcmRlcklkKG8sY2gpOwogIGlmKCFvaWQpcmV0dXJuICcnOwogIHJldHVybiBgPGRpdiBjbGFzcz0iaW52b2ljZU1pbmlXcmFwIj48ZGV0YWlscyBjbGFzcz0ia2ViYWJNZW51IGludm9pY2VLZWJhYiI+PHN1bW1hcnkgY2xhc3M9Imludm9pY2VTdGF0dXNJY29uIGRyYWZ0IiB0aXRsZT0iUGVuZGllbnRlIGRlIGZhY3R1cmFjacOzbiI+8J+ThOKaoO+4jzwvc3VtbWFyeT48ZGl2IGNsYXNzPSJrZWJhYlBhbmVsIj48YnV0dG9uIG9uY2xpY2s9Imlzc3VlSW52b2ljZUZyb21TYWxlKCcke2pzcShjaCl9JywnJHtqc3Eob2lkKX0nKSI+RmFjdHVyYXI8L2J1dHRvbj48L2Rpdj48L2RldGFpbHM+PC9kaXY+YDsKfQo='
+              replacement = base64.b64decode(encoded).decode('utf-8')
+              current = text[start:end]
               if 'Sólo ventas entregadas' not in current:
-                  text=text[:start]+replacement+text[end+1:]
+                  text = text[:start] + replacement + text[end+1:]
                   report.append('patched')
               else:
                   report.append('already_applied')
-              path.write_text(text,encoding='utf-8')
+              path.write_text(text, encoding='utf-8')
           except Exception:
               report.append(traceback.format_exc())
-          Path('_tmp_force_invoice_ui_report.txt').write_text('\n'.join(report),encoding='utf-8')
+          Path('_tmp_force_invoice_ui_report.txt').write_text('\n'.join(report), encoding='utf-8')
           PY
       - name: Commit
         run: |
