@@ -76,8 +76,8 @@ jobs:
               raise SystemExit('helper insertion anchor not found')
           t=t.replace(insert_anchor,helper,1)
 
-          old_confirm="""let ok=confirm(`Emitir comprobante REAL en ARCA para ${ch} ${orderId}?\n\nRevisá que el preview/borrador tenga receptor fiscal e importe correctos antes de aceptar.`);"""
-          new_confirm="""let ok=confirm(`¿Emitir factura REAL en ARCA para ${ch} ${orderId}?\n\nSe generará el CAE y, si es Mercado Libre, el PDF se adjuntará automáticamente a la venta. Si luego la operación se cancela, será necesario emitir una nota de crédito.`);"""
+          old_confirm=r"""let ok=confirm(`Emitir comprobante REAL en ARCA para ${ch} ${orderId}?\n\nRevisá que el preview/borrador tenga receptor fiscal e importe correctos antes de aceptar.`);"""
+          new_confirm=r"""let ok=confirm(`¿Emitir factura REAL en ARCA para ${ch} ${orderId}?\n\nSe generará el CAE y, si es Mercado Libre, el PDF se adjuntará automáticamente a la venta. Si luego la operación se cancela, será necesario emitir una nota de crédito.`);"""
           if old_confirm not in t:
               raise SystemExit('confirmation text not found')
           t=t.replace(old_confirm,new_confirm,1)
@@ -91,7 +91,7 @@ jobs:
               setArcaAndSalesStatus(ch,`Emitida OK: ${inv.cbte_letra||''} ${String(inv.pto_vta||'').padStart(4,'0')}-${String(inv.cbte_nro||'').padStart(8,'0')} · CAE ${inv.cae||''}${extra}`,true);
               await loadArcaInvoices();
               loadRecent(ch,state.sales[ch]?.offset||0);"""
-          new_success="""    let extra='';
+          new_success=r"""    let extra='';
               let channelUploadMsg='';
               if(String(ch).toUpperCase()==='ML'){
                 if(ml.ok&&ml.already_uploaded){extra=' · ML ya tenía factura';channelUploadMsg='El PDF ya estaba cargado en Mercado Libre.'}
