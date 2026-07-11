@@ -15,15 +15,15 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           t=Path('admin_erp.html').read_text(encoding='utf-8')
-          needles=['Pendiente de facturación','Pendiente de facturacion','Facturar','invoice_status','invoice_pending','⚠️','&#9888;','warning']
+          needles=['invoiceMiniWrap','invoiceKebab','kebabMenu','kebabPanel','async function issueInvoiceFromSale','function issueInvoiceFromSale','overflow:hidden','orderCard']
           out=[]
           for needle in needles:
               out.append(f'=== {needle} ===')
               start=0; hits=0
               while True:
                   pos=t.find(needle,start)
-                  if pos<0 or hits>=20: break
-                  out.append(t[max(0,pos-1800):min(len(t),pos+2800)])
+                  if pos<0 or hits>=30: break
+                  out.append(t[max(0,pos-2200):min(len(t),pos+3600)])
                   start=pos+len(needle); hits+=1
           Path('_tmp_invoice_warning_extract.txt').write_text('\n\n'.join(out),encoding='utf-8')
           PY
@@ -32,5 +32,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add _tmp_invoice_warning_extract.txt
-          git commit -m "Extract invoice warning UI" || exit 0
+          git commit -m "Extract expanded invoice warning UI" || exit 0
           git push
