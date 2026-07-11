@@ -1,0 +1,31 @@
+name: Cleanup invoice temp files
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Remove temporary files
+        run: |
+          git rm -f --ignore-unmatch \
+            .github/workflows/cleanup-invoice-temp.yml \
+            .github/workflows/.trigger-delivered-invoice \
+            _trigger_delivered_invoice.txt \
+            _trigger_invoice_debug.txt \
+            _tmp_invoice_frontend_debug.txt \
+            _trigger_invoice_ui_fixed.txt \
+            _trigger_invoice_ui_boundary.txt \
+            _trigger_force_invoice_ui.txt \
+            _final_trigger_invoice_ui.txt \
+            _trigger_valid_invoice_ui.txt \
+            _tmp_force_invoice_ui_report.txt
+      - name: Commit cleanup
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Clean temporary invoice UI files" || exit 0
+          git push
