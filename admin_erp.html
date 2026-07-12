@@ -16,6 +16,7 @@
 <!-- XELERIA_INVOICE_ERROR_FEEDBACK_V287 -->
 <!-- XELERIA_INVOICE_CLICK_FIX_V288 -->
 <!-- XELERIA_ARCA_PRODUCTION_ONLY_UI_V289 -->
+<!-- XELERIA_CONNECTIONS_LIVE_ARCA_TEST_CONFIG_SAVE_V290 -->
 <!-- XELERIA_OXANIUM_BRAND_V283 -->
 <!-- XELERIA_LOGOS_ALIGNED_V282 -->
 <!-- XELERIA_LOGOUT_COMPACT_MOVEMENTS_CLEAN_V281 -->
@@ -1230,14 +1231,13 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
     </div>
     <div class="btnrow" style="margin-top:12px;justify-content:flex-end">
       <button class="secondary" type="button" onclick="refreshArcaOnboardingStatus()">Actualizar estado ARCA</button>
+      <button class="secondary" type="button" id="arcaTestButton" onclick="testArcaConnection()">Probar conexión ARCA</button>
       <button class="primary" type="button" id="arcaStartButton" onclick="startArcaOnboarding()">Iniciar conexión ARCA</button>
     </div>
     <div id="arcaOnboardingStatus" class="status"></div>
-  </div>
-
-  <div class="card">
+    <div class="dividerLine"></div>
     <div class="btnrow" style="justify-content:flex-end">
-      <button class="primary" onclick="saveConfig()">Guardar configuración</button>
+      <button class="primary" onclick="saveConfig()">Guardar toda la configuración</button>
     </div>
     <div id="cfgStatus" class="status"></div>
   </div>
@@ -2168,7 +2168,7 @@ async function loadTenantConnectionFallback(e){
   if(ml.connected||tn.connected){
     state.connections=d.connections||{};
     renderInventoryImportConnections(d);
-    setStatus('inventoryImportStatus','Conexiones: usando último estado guardado. El chequeo en vivo falló: '+reason,'warn');
+    setStatus('inventoryImportStatus','Conexiones confirmadas con el último estado guardado. El chequeo en vivo está temporalmente no disponible.','warn');
     updateVersionBar('conn snapshot fallback');
     return d;
   }
@@ -2179,7 +2179,7 @@ async function loadTenantConnectionStatus(force=true){
   if(!mlPrev)setImportChannelCard('ML',false,'',{checking:true});
   if(!tnPrev)setImportChannelCard('TN',false,'',{checking:true});
   try{
-    let d=await fetchJson('/admin/connections/status');
+    let d=await fetchJson('/admin/connections/status-live');
     state.connections=d.connections||{};
     renderInventoryImportConnections(d);
     let ml=state.connections.ml||{},tn=state.connections.tn||{};
@@ -3994,10 +3994,11 @@ function renderArcaOnboardingUi(settingsArg=null){
   let s=settingsArg||state.tenantSettings||{};
   let sel=qs('cfgArcaUseXeleria');
   let wants=sel?sel.value==='true':settingsWantsArca(s);
-  let cuitBox=qs('arcaCuitBox'),steps=qs('arcaOnboardingSteps'),autoBox=qs('arcaAutoInvoiceBox'),autoSel=qs('cfgAutoInvoice'),startBtn=qs('arcaStartButton');
+  let cuitBox=qs('arcaCuitBox'),steps=qs('arcaOnboardingSteps'),autoBox=qs('arcaAutoInvoiceBox'),autoSel=qs('cfgAutoInvoice'),startBtn=qs('arcaStartButton'),testBtn=qs('arcaTestButton');
   if(cuitBox)cuitBox.classList.toggle('hidden',!wants);
   if(autoBox)autoBox.classList.toggle('hidden',!wants);
   if(startBtn)startBtn.classList.toggle('hidden',!wants);
+  if(testBtn)testBtn.classList.toggle('hidden',!wants);
   if(autoSel){
     let connected=arcaConnectedFromSettings(s);
     autoSel.disabled=!(wants&&connected);
@@ -4014,7 +4015,7 @@ function renderArcaOnboardingUi(settingsArg=null){
   let lines=[];
   lines.push(renderArcaStepLine(!!cuit,'CUIT guardado',cuit?`CUIT ${cuit}`:'Falta cargar CUIT.'));
   lines.push(renderArcaStepLine(connected,'Autorización / certificado / servicio ARCA',connected?'ARCA conectado.':'Pendiente: el cliente debe asociar autorización/certificado/servicio desde ARCA.'));
-  lines.push(renderArcaStepLine(connected,'Probar conexión',connected?'Conexión validada.':'Disponible cuando estén cargadas las credenciales reales.'));
+  lines.push(renderArcaStepLine(connected,'Conexión ARCA',connected?'Conexión validada.':'Usá “Probar conexión ARCA” cuando el certificado esté listo.'));
   lines.push(renderArcaStepLine(connected,'Facturación automática ML/TN',connected?'Podés habilitarla.':'Bloqueada hasta validar ARCA.'));
   steps.innerHTML=`<div><span class="pill ${connected?'ok':'warn'}">${esc(arcaOnboardingStatusLabel(status,connected))}</span></div>`+lines.join('');
 }
@@ -4081,6 +4082,28 @@ async function startArcaOnboarding(){
     showPre('uploadOut',e);
   }
 }
+async function testArcaConnection(){
+  setStatus('arcaOnboardingStatus','Probando conexión real con ARCA...');
+  try{
+    let d=await fetchJson('/admin/arca/check',{skipLastJson:true});
+    let st=await fetchJson('/admin/arca/onboarding/status',{skipLastJson:true});
+    state.tenantSettings=st.settings||state.tenantSettings||{};
+    cfgSet('cfgArcaUseXeleria',settingsWantsArca(state.tenantSettings)?'true':'false');
+    cfgSet('cfgCuit',state.tenantSettings.fiscal_cuit||cfgGet('cfgCuit')||'');
+    cfgSet('cfgAutoInvoice',(state.tenantSettings.auto_invoice_ml||state.tenantSettings.auto_invoice_tn)?'true':'false');
+    renderArcaOnboardingUi(state.tenantSettings);
+    let last=d.last_voucher||{};
+    let msg='Conexión ARCA validada';
+    if(d.pto_vta!=null)msg+=` · punto de venta ${d.pto_vta}`;
+    if(last.cbte_nro!=null)msg+=` · último comprobante autorizado ${last.cbte_nro}`;
+    setStatus('arcaOnboardingStatus',msg,true);
+    saveLastJson(d);
+  }catch(e){
+    setStatus('arcaOnboardingStatus','No pude validar la conexión ARCA: '+errText(e),false);
+    saveLastJson({ok:false,path:'/admin/arca/check',error:errText(e)});
+  }
+}
+
 async function refreshArcaOnboardingStatus(){
   setStatus('arcaOnboardingStatus','Consultando estado ARCA...');
   try{
