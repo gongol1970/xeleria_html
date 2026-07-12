@@ -15,6 +15,7 @@
 <!-- XELERIA_INVOICE_ACTION_UX_V286 -->
 <!-- XELERIA_INVOICE_ERROR_FEEDBACK_V287 -->
 <!-- XELERIA_INVOICE_CLICK_FIX_V288 -->
+<!-- XELERIA_ARCA_PRODUCTION_ONLY_UI_V289 -->
 <!-- XELERIA_OXANIUM_BRAND_V283 -->
 <!-- XELERIA_LOGOS_ALIGNED_V282 -->
 <!-- XELERIA_LOGOUT_COMPACT_MOVEMENTS_CLEAN_V281 -->
@@ -1207,20 +1208,16 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
     <h3>Facturación ARCA</h3>
     <p>Primero definí si este comercio va a facturar usando XelerIA. El CUIT sólo inicia el onboarding; no habilita facturación automática por sí solo.</p>
     <div class="grid">
-      <div class="col-4">
+      <div class="col-6">
         <label>¿Vas a facturar con XelerIA?</label>
         <select id="cfgArcaUseXeleria" onchange="renderArcaOnboardingUi()">
           <option value="false">No</option>
           <option value="true">Sí</option>
         </select>
       </div>
-      <div class="col-4" id="arcaCuitBox">
+      <div class="col-6" id="arcaCuitBox">
         <label>CUIT</label>
         <input id="cfgCuit" placeholder="CUIT sin guiones">
-      </div>
-      <div class="col-4" id="arcaEnvBox">
-        <label>Ambiente ARCA</label>
-        <select id="cfgArcaEnv"><option value="homologacion">Homologación</option><option value="produccion">Producción</option></select>
       </div>
     </div>
     <div id="arcaOnboardingSteps" class="status" style="margin-top:12px"></div>
@@ -3997,9 +3994,8 @@ function renderArcaOnboardingUi(settingsArg=null){
   let s=settingsArg||state.tenantSettings||{};
   let sel=qs('cfgArcaUseXeleria');
   let wants=sel?sel.value==='true':settingsWantsArca(s);
-  let cuitBox=qs('arcaCuitBox'),envBox=qs('arcaEnvBox'),steps=qs('arcaOnboardingSteps'),autoBox=qs('arcaAutoInvoiceBox'),autoSel=qs('cfgAutoInvoice'),startBtn=qs('arcaStartButton');
+  let cuitBox=qs('arcaCuitBox'),steps=qs('arcaOnboardingSteps'),autoBox=qs('arcaAutoInvoiceBox'),autoSel=qs('cfgAutoInvoice'),startBtn=qs('arcaStartButton');
   if(cuitBox)cuitBox.classList.toggle('hidden',!wants);
-  if(envBox)envBox.classList.toggle('hidden',!wants);
   if(autoBox)autoBox.classList.toggle('hidden',!wants);
   if(startBtn)startBtn.classList.toggle('hidden',!wants);
   if(autoSel){
@@ -4038,7 +4034,6 @@ function personalizationPayload(){
     conectar_arca:wantsArca,
     auto_invoice_ml:auto,
     auto_invoice_tn:auto,
-    arca_env:cfgGet('cfgArcaEnv')||'homologacion',
     default_invoice_concept:cfgGet('cfgConcepto')||'Productos',
     notification_sound:sound,
     settings:{notification_sound:sound}
@@ -4072,7 +4067,7 @@ async function startArcaOnboarding(){
   }
   setStatus('arcaOnboardingStatus','Guardando CUIT e iniciando conexión ARCA...');
   try{
-    let d=await fetchJson('/admin/arca/onboarding/start',{method:'POST',body:JSON.stringify({fiscal_cuit:cuit,arca_env:cfgGet('cfgArcaEnv')||'homologacion'})});
+    let d=await fetchJson('/admin/arca/onboarding/start',{method:'POST',body:JSON.stringify({fiscal_cuit:cuit})});
     state.tenantSettings=d.settings||{};
     cfgSet('cfgCuit',state.tenantSettings.fiscal_cuit||cuit);
     cfgSet('cfgArcaUseXeleria','true');
@@ -4094,7 +4089,6 @@ async function refreshArcaOnboardingStatus(){
     let s=state.tenantSettings;
     cfgSet('cfgArcaUseXeleria',settingsWantsArca(s)?'true':'false');
     cfgSet('cfgCuit',s.fiscal_cuit||cfgGet('cfgCuit')||'');
-    cfgSet('cfgArcaEnv',s.arca_env||'homologacion');
     cfgSet('cfgAutoInvoice',(s.auto_invoice_ml||s.auto_invoice_tn)?'true':'false');
     renderArcaOnboardingUi(s);
     setStatus('arcaOnboardingStatus',(Array.isArray(d.messages)&&d.messages.length)?d.messages.join(' · '):'Estado ARCA actualizado.',true);
@@ -4113,7 +4107,6 @@ async function loadConfig(){
     cfgSet('cfgArcaUseXeleria',settingsWantsArca(s)?'true':'false');
     cfgSet('cfgLogoUrl',s.logo_url||'');
     cfgSet('cfgAutoInvoice',(s.auto_invoice_ml||s.auto_invoice_tn)?'true':'false');
-    cfgSet('cfgArcaEnv',s.arca_env||'homologacion');
     cfgSet('cfgConcepto',s.default_invoice_concept||'Productos');
     let sound=normalizeNotificationSound(s.notification_sound||(s.raw_settings&&s.raw_settings.notification_sound)||'off');
     cfgSet('cfgNotificationSound',sound);
