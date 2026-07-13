@@ -951,6 +951,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 /* XELERIA_INVOICE_WARNING_MENU_V285 */
 .invoiceMiniWrap{position:relative!important}
 .invoiceActionTrigger{border:1px solid var(--line)!important;background:#fff7ed!important;color:#b54708!important;padding:0!important;min-width:32px!important;min-height:32px!important;width:32px!important;height:32px!important;border-radius:10px!important;font-size:22px!important;line-height:1!important;box-shadow:none!important}
+.invoiceActionTrigger.issued{background:#ecfdf5!important;color:#047857!important;border-color:#a7f3d0!important}
 .invoiceActionPopover{position:fixed!important;display:none;z-index:99999;min-width:116px;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);padding:5px}
 .invoiceActionPopover.open{display:block!important}
 .invoiceActionPopover button{min-width:104px!important;width:100%!important;justify-content:center!important;padding:7px 10px!important}
@@ -2558,9 +2559,39 @@ function invoiceOrderId(o,ch){
   }
   return o.external_order_id||o.id||'';
 }
+// XELERIA_VIEW_ISSUED_INVOICE_V293
+async function viewIssuedInvoice(invoiceId){
+  invoiceId=String(invoiceId||'').trim();
+  if(!invoiceId){alert('No encontré el identificador de la factura. Actualizá la lista y volvé a intentar.');return}
+  let popup=window.open('','_blank');
+  if(!popup){alert('El navegador bloqueó la nueva pestaña. Habilitá ventanas emergentes para XelerIA.');return}
+  try{
+    popup.document.open();
+    popup.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Cargando factura…</title></head><body style="font-family:Arial;padding:24px">Cargando factura emitida…</body></html>');
+    popup.document.close();
+    let r=await fetch(url(`/admin/arca/facturas/${encodeURIComponent(invoiceId)}/html`),{headers:xeleriaHeaders()});
+    let invoiceHtml=await r.text();
+    if(!r.ok){
+      let detail=invoiceHtml;
+      try{let parsed=JSON.parse(invoiceHtml);detail=parsed.detail||parsed.error||parsed.message||invoiceHtml}catch(_e){}
+      if(typeof detail!=='string')detail=JSON.stringify(detail);
+      throw new Error(detail||`HTTP ${r.status}`);
+    }
+    popup.document.open();
+    popup.document.write(invoiceHtml);
+    popup.document.close();
+    popup.focus();
+  }catch(e){
+    try{
+      popup.document.open();
+      popup.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>No se pudo abrir la factura</title></head><body style="font-family:Arial;padding:24px"><h2>No se pudo abrir la factura</h2><p>${esc(errText(e))}</p></body></html>`);
+      popup.document.close();
+    }catch(_e){}
+  }
+}
 function invoiceButton(o,ch){
   // Estados visuales de facturación:
-  // 📄 emitida · 📄⏳ esperando entrega · 📄⚠️ entregada y pendiente de facturar.
+  // 📄 emitida y consultable · 📄⏳ esperando entrega · 📄⚠️ entregada y pendiente.
   let st=String(o.invoice_status||o.arca_status||'').toLowerCase();
   let hasCae=!!(o.invoice_cae||o.cae||o.arca_cae);
   let oid=invoiceOrderId(o,ch);
@@ -2568,7 +2599,11 @@ function invoiceButton(o,ch){
   let safeOid=esc(String(oid||''));
   if(hasCae||st==='issued'){
     let label=String(o.invoice_number||o.invoice_label||'Factura emitida');
-    return `<div class="invoiceMiniWrap" data-invoice-channel="${channel}" data-invoice-order="${safeOid}"><span class="invoiceStatusIcon issued" title="${esc(label)}" aria-label="${esc(label)}">📄</span></div>`;
+    let invoiceId=String(o.invoice_id||o.arca_invoice_id||'').trim();
+    if(!invoiceId){
+      return `<div class="invoiceMiniWrap" data-invoice-channel="${channel}" data-invoice-order="${safeOid}"><span class="invoiceStatusIcon issued" title="${esc(label)}" aria-label="${esc(label)}">📄</span></div>`;
+    }
+    return `<div class="invoiceMiniWrap" data-invoice-channel="${channel}" data-invoice-order="${safeOid}" data-invoice-id="${esc(invoiceId)}"><button type="button" class="invoiceActionTrigger issued" title="${esc(label)}" aria-label="${esc(label)}" onclick="toggleInvoiceAction(this,event)">📄</button><div class="invoiceActionPopover"><button type="button" onclick="closeInvoiceAction(this);viewIssuedInvoice('${jsq(invoiceId)}')">Ver factura</button></div></div>`;
   }
   let shippingLabel=String(shippingStateLabel(o,ch)||'').trim();
   let shippingLow=shippingLabel.toLowerCase();
@@ -2607,12 +2642,18 @@ function closeInvoiceAction(el){
 }
 document.addEventListener('click',()=>closeAllInvoiceActions());
 
-function removeInvoiceAction(ch,orderId){
+function removeInvoiceAction(ch,orderId,invoiceId='',label='Factura emitida'){
   let channel=String(ch||'').toUpperCase();
   let oid=String(orderId||'');
+  let invId=String(invoiceId||'').trim();
   document.querySelectorAll('.invoiceMiniWrap').forEach(el=>{
     if(String(el.dataset.invoiceChannel||'').toUpperCase()===channel&&String(el.dataset.invoiceOrder||'')===oid){
-      el.innerHTML='<span class="invoiceStatusIcon issued" title="Factura emitida" aria-label="Factura emitida">📄</span>';
+      if(invId){
+        el.dataset.invoiceId=invId;
+        el.innerHTML=`<button type="button" class="invoiceActionTrigger issued" title="${esc(label)}" aria-label="${esc(label)}" onclick="toggleInvoiceAction(this,event)">📄</button><div class="invoiceActionPopover"><button type="button" onclick="closeInvoiceAction(this);viewIssuedInvoice('${jsq(invId)}')">Ver factura</button></div>`;
+      }else{
+        el.innerHTML='<span class="invoiceStatusIcon issued" title="Factura emitida" aria-label="Factura emitida">📄</span>';
+      }
     }
   });
 }
@@ -3303,7 +3344,7 @@ async function issueInvoiceFromSale(ch,orderId,opts={}){
     }
     let number=`${inv.cbte_letra||''} ${String(inv.pto_vta||'').padStart(4,'0')}-${String(inv.cbte_nro||'').padStart(8,'0')}`.trim();
     setArcaAndSalesStatus(ch,`Emitida OK: ${number} · CAE ${inv.cae||''}${extra}`,true);
-    if(inv.cae)removeInvoiceAction(ch,orderId);
+    if(inv.cae)removeInvoiceAction(ch,orderId,inv.id||d.invoice_id||'',number);
     await loadArcaInvoices();
     await loadRecent(ch,state.sales[ch]?.offset||0);
     alert(`Factura emitida correctamente.\n\nComprobante: ${number}\nCAE: ${inv.cae||'-'}${channelUploadMsg?'\n\n'+channelUploadMsg:''}`);
