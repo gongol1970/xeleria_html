@@ -16,6 +16,7 @@
 <!-- XELERIA_INVOICE_ERROR_FEEDBACK_V287 -->
 <!-- XELERIA_INVOICE_CLICK_FIX_V288 -->
 <!-- XELERIA_ARCA_PRODUCTION_ONLY_UI_V289 -->
+<!-- XELERIA_ARCA_CHECK_A_B_UI_V291 -->
 <!-- XELERIA_CONNECTIONS_LIVE_ARCA_TEST_CONFIG_SAVE_V290 -->
 <!-- XELERIA_OXANIUM_BRAND_V283 -->
 <!-- XELERIA_LOGOS_ALIGNED_V282 -->
@@ -1231,7 +1232,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
     </div>
     <div class="btnrow" style="margin-top:12px;justify-content:flex-end">
       <button class="secondary" type="button" onclick="refreshArcaOnboardingStatus()">Actualizar estado ARCA</button>
-      <button class="secondary" type="button" id="arcaTestButton" onclick="testArcaConnection()">Probar conexión ARCA</button>
+      <button class="secondary" type="button" id="arcaTestButton" onclick="testArcaConnection()">Probar conexión ARCA (A y B)</button>
       <button class="primary" type="button" id="arcaStartButton" onclick="startArcaOnboarding()">Iniciar conexión ARCA</button>
     </div>
     <div id="arcaOnboardingStatus" class="status"></div>
@@ -4083,24 +4084,29 @@ async function startArcaOnboarding(){
   }
 }
 async function testArcaConnection(){
-  setStatus('arcaOnboardingStatus','Probando conexión real con ARCA...');
+  setStatus('arcaOnboardingStatus','Probando conexión real con ARCA para Factura A y Factura B...');
   try{
-    let d=await fetchJson('/admin/arca/check',{skipLastJson:true});
+    // XELERIA_ARCA_CHECK_A_B_UI_V291: cada tipo de comprobante tiene numeración independiente.
+    let facturaA=await fetchJson('/admin/arca/check?cbte_tipo=1',{skipLastJson:true});
+    let facturaB=await fetchJson('/admin/arca/check?cbte_tipo=6',{skipLastJson:true});
     let st=await fetchJson('/admin/arca/onboarding/status',{skipLastJson:true});
     state.tenantSettings=st.settings||state.tenantSettings||{};
     cfgSet('cfgArcaUseXeleria',settingsWantsArca(state.tenantSettings)?'true':'false');
     cfgSet('cfgCuit',state.tenantSettings.fiscal_cuit||cfgGet('cfgCuit')||'');
     cfgSet('cfgAutoInvoice',(state.tenantSettings.auto_invoice_ml||state.tenantSettings.auto_invoice_tn)?'true':'false');
     renderArcaOnboardingUi(state.tenantSettings);
-    let last=d.last_voucher||{};
+    let lastA=facturaA.last_voucher||{};
+    let lastB=facturaB.last_voucher||{};
+    let pto=facturaA.pto_vta!=null?facturaA.pto_vta:facturaB.pto_vta;
     let msg='Conexión ARCA validada';
-    if(d.pto_vta!=null)msg+=` · punto de venta ${d.pto_vta}`;
-    if(last.cbte_nro!=null)msg+=` · último comprobante autorizado ${last.cbte_nro}`;
+    if(pto!=null)msg+=` · punto de venta ${pto}`;
+    msg+=` · último A ${lastA.cbte_nro!=null?lastA.cbte_nro:'sin dato'}`;
+    msg+=` · último B ${lastB.cbte_nro!=null?lastB.cbte_nro:'sin dato'}`;
     setStatus('arcaOnboardingStatus',msg,true);
-    saveLastJson(d);
+    saveLastJson({ok:true,pto_vta:pto,factura_a:facturaA,factura_b:facturaB});
   }catch(e){
     setStatus('arcaOnboardingStatus','No pude validar la conexión ARCA: '+errText(e),false);
-    saveLastJson({ok:false,path:'/admin/arca/check',error:errText(e)});
+    saveLastJson({ok:false,path:'/admin/arca/check?cbte_tipo=1 y 6',error:errText(e)});
   }
 }
 
