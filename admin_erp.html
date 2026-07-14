@@ -1319,8 +1319,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.78-visible-sales-refresh-aws';
-const FRONTEND_BUILD='admin-erp-v278-visible-sales-refresh-aws';
+const FRONTEND_VERSION='2.78.1-visible-sales-refresh-aws';
+const FRONTEND_BUILD='admin-erp-v2781-visible-sales-refresh-aws';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const XELERIA_MIN_SEARCH_CHARS=4;function isShortSearch(q){q=String(q||'').trim();return q.length>0&&q.length<XELERIA_MIN_SEARCH_CHARS}function minSearchMessage(){return 'Ingresá al menos '+XELERIA_MIN_SEARCH_CHARS+' caracteres para buscar.'}
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
@@ -2741,6 +2741,12 @@ function clearSalesSearch(ch){let el=qs(ch.toLowerCase()+'VentasSearch');if(el)e
 function salesVisibleOrderIds(ch,items){
   let ids=[];
   for(let item of (items||[])){
+    let shipping=String(shippingStateLabel(item,ch)||'').trim().toLowerCase();
+    let invoiceState=String(item.invoice_status||item.arca_status||'').trim().toLowerCase();
+    let invoiceIssued=invoiceState==='issued'||!!(item.invoice_cae||item.cae||item.arca_cae);
+    // Estados terminales no requieren API. Una entrega ya facturada tampoco
+    // necesita repetir los chequeos idempotentes de ARCA en cada entrada al menú.
+    if(shipping==='cancelado'||shipping==='devuelto'||shipping==='devuelto al remitente'||(shipping==='entregado'&&invoiceIssued))continue;
     let candidates=ch==='ML'?(Array.isArray(item.child_order_ids)?item.child_order_ids:[]):[];
     candidates=[...candidates,item.external_order_id].filter(Boolean);
     for(let value of candidates){let clean=String(value).trim();if(clean&&!ids.includes(clean))ids.push(clean);if(ids.length>=50)return ids}
@@ -2756,7 +2762,7 @@ async function refreshVisibleShipping(ch,items,opts={}){
   let salesState=state.sales[ch];
   let seq=++salesState.refreshSeq;
   let manual=!!opts.manual;
-  setStatus(sid,`Mostrando ventas guardadas · actualizando ${ids.length} visibles...`);
+  setStatus(sid,`Mostrando ventas guardadas · actualizando ${ids.length} pendientes visibles...`);
   try{
     let d=await fetchJson(`/admin/${lc}/orders/refresh-visible-shipping`,{
       method:'POST',
