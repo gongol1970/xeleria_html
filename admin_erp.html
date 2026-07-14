@@ -1319,7 +1319,7 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.78.1-visible-sales-refresh-aws';
+const FRONTEND_VERSION='2.79.0-arca-background-queue';
 const FRONTEND_BUILD='admin-erp-v2781-visible-sales-refresh-aws';
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const XELERIA_MIN_SEARCH_CHARS=4;function isShortSearch(q){q=String(q||'').trim();return q.length>0&&q.length<XELERIA_MIN_SEARCH_CHARS}function minSearchMessage(){return 'Ingresá al menos '+XELERIA_MIN_SEARCH_CHARS+' caracteres para buscar.'}
@@ -2769,8 +2769,8 @@ async function refreshVisibleShipping(ch,items,opts={}){
       body:JSON.stringify({order_ids:ids}),
       skipLastJson:!manual
     });
-    let errors=Number(d.errors_count||0),done=Number(d.refreshed_count||0),issued=Number(d.invoice_issued_count||0);
-    let summary=`Actualización ${ch}: ${done} estados${issued?`, ${issued} factura${issued===1?'':'s'} emitida${issued===1?'':'s'}`:''}${errors?`, ${errors} errores`:''}`;
+    let errors=Number(d.errors_count||0),done=Number(d.refreshed_count||0),issued=Number(d.invoice_issued_count||0),queued=Number(d.invoice_queued_count||0);
+    let summary=`Actualización ${ch}: ${done} estados${queued?`, ${queued} factura${queued===1?'':'s'} procesándose en segundo plano`:''}${issued?`, ${issued} factura${issued===1?'':'s'} emitida${issued===1?'':'s'}`:''}${errors?`, ${errors} errores`:''}`;
     if(opts.reload!==false&&seq===salesState.refreshSeq&&salesViewIsActive(ch)){
       await loadRecent(ch,salesState.offset||0,{refreshShipping:false,skipShippingRefresh:true});
     }
