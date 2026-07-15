@@ -1124,8 +1124,8 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
   </div>
 </section>
 <section id="full-inbound" class="view"><div class="card"><h3>Gestión · Inventario · Envío a Full</h3><p>Detecta el PDF de preparación de Mercado Libre Full y descuenta del stock las unidades que salen hacia bodega.</p><div class="grid"><div class="col-6"><label>PDF instrucciones ML Full</label><input id="fullInboundPdf" type="file" accept="application/pdf"></div><div class="col-6"><label>&nbsp;</label><div class="btnrow"><button onclick="previewFullInboundPdf()">Detectar PDF</button><button class="primary" onclick="applyFullInboundPdf(false)">Descontar stock</button><button class="secondary" onclick="applyFullInboundPdf(true)">Simular</button></div></div></div><div id="fullInboundStatus" class="status"></div><div id="fullInboundResult" class="tableWrap" style="margin-top:12px"></div><pre id="fullInboundOut" class="hidden"></pre></div></section>
-<section id="arca-reportes" class="view"><div class="card"><h3>ARCA · Reporte de facturación</h3><p>Comprobantes del ERP. Por defecto muestra el mes calendario anterior completo.</p><div class="grid"><div class="col-4"><label>Buscar</label><input id="arcaSearch" placeholder="SKU, factura, cliente, documento, canal..." oninput="renderArcaInvoices()"></div><div class="col-2"><label>Desde</label><input id="arcaDesde" type="date"></div><div class="col-2"><label>Hasta</label><input id="arcaHasta" type="date"></div><div class="col-2"><label>Tipo de comprobante</label><select id="arcaTipo"><option>Todos</option><option>A</option><option>B</option></select></div><div class="col-2"><label>Canal de venta</label><select id="arcaCanal"><option>Todos</option><option>TN</option><option>ML</option><option>MANUAL</option></select></div><div class="col-2"><label>Concepto</label><select id="arcaConcepto"><option>Todos</option><option>Productos</option><option>Servicios</option><option>Productos y Servicios</option></select></div><div class="col-2"><label>Límite visible</label><select id="arcaLimit"><option>20</option><option selected>100</option><option>200</option></select></div></div><div class="btnrow" style="margin-top:12px"><button onclick="loadArcaInvoices()">Buscar comprobantes</button><button class="secondary" onclick="downloadArcaExcel()">Descargar Excel completo</button></div><div id="arcaStatus" class="status"></div><div id="arcaTable" class="tableWrap" style="margin-top:12px"></div><pre id="arcaOut" class="hidden"></pre></div></section>
-<section id="arca-manual" class="view"><div class="card"><h3>ARCA · Emitir comprobante manual</h3><p>Flujo controlado: primero vista previa, después emisión real con CAE. Remitos y recibos quedan fuera de este módulo.</p><div class="grid"><div class="col-2"><label>Comprobante</label><select id="amTipo"><option value="6" selected>Factura B</option><option value="1">Factura A</option><option value="8">Nota de Crédito B</option><option value="3">Nota de Crédito A</option><option value="7">Nota de Débito B</option><option value="2">Nota de Débito A</option></select></div><div class="col-2"><label>Concepto</label><select id="amConcepto"><option selected>Productos</option><option>Servicios</option><option>Productos y Servicios</option></select></div><div class="col-2"><label>Fecha</label><input id="amFecha" type="date"></div><div class="col-3"><label>Canal / referencia</label><input id="amSourceChannel" value="ARCA_MANUAL"></div><div class="col-3"><label>Operación opcional</label><input id="amSourceOrder" placeholder="Venta / referencia"></div><input id="amAssocInvoiceId" type="hidden"><input id="amAssocCbteTipo" type="hidden"><input id="amAssocPtoVta" type="hidden"><input id="amAssocCbteNro" type="hidden"><input id="amAssocInvoiceDate" type="hidden"><input id="amAssocCae" type="hidden"><div class="col-4"><label>Nombre / Razón social receptor *</label><input id="amCustomerName" placeholder="Consumidor Final / nombre real"></div><div class="col-2"><label>Doc. tipo</label><select id="amDocType"><option value="CF" selected>CF</option><option value="DNI">DNI</option><option value="CUIT">CUIT</option></select></div><div class="col-3"><label>Documento</label><div style="display:flex;gap:6px"><input id="amDocNumber" placeholder="DNI / CUIT" onblur="arcaLookupCustomerA5(false)" onkeydown="if(event.key==='Enter'){event.preventDefault();arcaLookupCustomerA5(true)}"><button type="button" class="secondary" style="padding:10px 11px" onclick="arcaLookupCustomerA5(true)">ARCA</button></div></div><div class="col-3"><label>Condición IVA</label><select id="amIvaCond"><option selected>Consumidor Final</option><option>Responsable Inscripto</option><option>Monotributo</option><option>Exento</option></select></div><div class="col-6"><label>Domicilio receptor</label><input id="amAddress" placeholder="Opcional / si viene del comprador"></div><div class="col-6"><label>Localidad receptor *</label><input id="amLocalidad" placeholder="Consumidor Final manual: Ciudad Autónoma de Buenos Aires"></div></div><div class="dividerLine"></div><h3>Conceptos</h3><div id="arcaManualLines"></div><div class="btnrow" style="margin-top:10px"><button class="secondary" onclick="arcaManualAddLine()">Agregar línea</button><button class="secondary" onclick="arcaManualClear()">Limpiar</button></div><div class="dividerLine"></div><div class="grid"><div class="col-12"><label>Notas internas/observaciones</label><textarea id="amNotes" rows="2"></textarea></div></div><div style="height:18px"></div><div class="btnrow" style="justify-content:flex-end;align-items:center"><label style="display:flex;align-items:center;gap:10px;margin:0 16px 0 0;text-transform:none;letter-spacing:0;font-size:15px;font-weight:900;color:#111;background:#fff7ed;border:1px solid #f7c56b;border-radius:14px;padding:12px 14px"><input id="amModificaStock" type="checkbox" style="width:18px;height:18px;margin:0"> Modifica stock</label><select id="amStockReason" title="Motivo stock" style="width:170px"><option value="comprobante" selected>Comprobante</option><option value="devolucion">Devolución</option><option value="ajuste">Ajuste</option><option value="no aplica">No aplica</option></select><button class="secondary" onclick="arcaManualPreview()">Vista previa</button><button class="danger" onclick="arcaManualEmit()">Emitir comprobante real</button></div><div id="arcaManualStatus" class="status"></div><pre id="arcaManualOut" class="hidden"></pre></div></section>
+<section id="arca-reportes" class="view"><div class="card"><h3>ARCA · Reporte de facturación</h3><p>Comprobantes del ERP. Por defecto muestra el mes calendario anterior completo.</p><div class="grid"><div class="col-4"><label>Buscar</label><input id="arcaSearch" placeholder="SKU, factura, cliente, documento, canal..." oninput="renderArcaInvoices()"></div><div class="col-2"><label>Desde</label><input id="arcaDesde" type="date"></div><div class="col-2"><label>Hasta</label><input id="arcaHasta" type="date"></div><div class="col-2"><label>Tipo de comprobante</label><select id="arcaTipo"><option>Todos</option><option>A</option><option>B</option><option>C</option><option>E</option></select></div><div class="col-2"><label>Canal de venta</label><select id="arcaCanal"><option>Todos</option><option>TN</option><option>ML</option><option>MANUAL</option></select></div><div class="col-2"><label>Concepto</label><select id="arcaConcepto"><option>Todos</option><option>Productos</option><option>Servicios</option><option>Productos y Servicios</option></select></div><div class="col-2"><label>Límite visible</label><select id="arcaLimit"><option>20</option><option selected>100</option><option>200</option></select></div></div><div class="btnrow" style="margin-top:12px"><button onclick="loadArcaInvoices()">Buscar comprobantes</button><button class="secondary" onclick="downloadArcaExcel()">Descargar Excel completo</button></div><div id="arcaStatus" class="status"></div><div id="arcaTable" class="tableWrap" style="margin-top:12px"></div><pre id="arcaOut" class="hidden"></pre></div></section>
+<section id="arca-manual" class="view"><div class="card"><h3>ARCA · Emitir comprobante manual</h3><p>Flujo controlado: primero vista previa, después emisión real con CAE. Remitos y recibos quedan fuera de este módulo.</p><div class="grid"><div class="col-2"><label>Comprobante</label><select id="amTipo" onchange="arcaManualTypeChanged()"><option value="1">Factura A</option><option value="2">Nota de Débito A</option><option value="3">Nota de Crédito A</option><option value="6" selected>Factura B</option><option value="7">Nota de Débito B</option><option value="8">Nota de Crédito B</option><option value="11">Factura C</option><option value="12">Nota de Débito C</option><option value="13">Nota de Crédito C</option><option value="19" disabled>Factura de Exportación · WSFEX</option></select></div><div class="col-2"><label>Concepto</label><select id="amConcepto" onchange="arcaManualConceptChanged()"><option selected>Productos</option><option>Servicios</option><option>Productos y Servicios</option></select></div><div class="col-2"><label>Fecha</label><input id="amFecha" type="date"></div><div class="col-3"><label>Canal / referencia</label><input id="amSourceChannel" value="ARCA_MANUAL"></div><div class="col-3"><label>Operación opcional</label><input id="amSourceOrder" placeholder="Venta / referencia"></div><div id="amServiceDates" class="col-12 hidden"><div class="grid"><div class="col-4"><label>Servicio desde</label><input id="amServiceDesde" type="date"></div><div class="col-4"><label>Servicio hasta</label><input id="amServiceHasta" type="date"></div><div class="col-4"><label>Vencimiento de pago</label><input id="amVtoPago" type="date"></div></div></div><input id="amAssocInvoiceId" type="hidden"><input id="amAssocCbteTipo" type="hidden"><input id="amAssocPtoVta" type="hidden"><input id="amAssocCbteNro" type="hidden"><input id="amAssocInvoiceDate" type="hidden"><input id="amAssocCae" type="hidden"><div class="col-4"><label>Nombre / Razón social receptor *</label><input id="amCustomerName" placeholder="Consumidor Final / nombre real"></div><div class="col-2"><label>Doc. tipo</label><select id="amDocType"><option value="CF" selected>CF</option><option value="DNI">DNI</option><option value="CUIT">CUIT</option></select></div><div class="col-3"><label>Documento</label><div style="display:flex;gap:6px"><input id="amDocNumber" placeholder="DNI / CUIT" onblur="arcaLookupCustomerA5(false)" onkeydown="if(event.key==='Enter'){event.preventDefault();arcaLookupCustomerA5(true)}"><button type="button" class="secondary" style="padding:10px 11px" onclick="arcaLookupCustomerA5(true)">ARCA</button></div></div><div class="col-3"><label>Condición IVA</label><select id="amIvaCond"><option selected>Consumidor Final</option><option>Responsable Inscripto</option><option>Monotributo</option><option>Exento</option></select></div><div class="col-6"><label>Domicilio receptor</label><input id="amAddress" placeholder="Opcional / si viene del comprador"></div><div class="col-6"><label>Localidad receptor *</label><input id="amLocalidad" placeholder="Consumidor Final manual: Ciudad Autónoma de Buenos Aires"></div></div><div class="dividerLine"></div><h3>Conceptos</h3><div id="arcaManualLines"></div><div class="btnrow" style="margin-top:10px"><button class="secondary" onclick="arcaManualAddLine()">Agregar línea</button><button class="secondary" onclick="arcaManualClear()">Limpiar</button></div><div class="dividerLine"></div><div class="grid"><div class="col-12"><label>Notas internas/observaciones</label><textarea id="amNotes" rows="2"></textarea></div></div><div style="height:18px"></div><div class="btnrow" style="justify-content:flex-end;align-items:center"><label style="display:flex;align-items:center;gap:10px;margin:0 16px 0 0;text-transform:none;letter-spacing:0;font-size:15px;font-weight:900;color:#111;background:#fff7ed;border:1px solid #f7c56b;border-radius:14px;padding:12px 14px"><input id="amModificaStock" type="checkbox" style="width:18px;height:18px;margin:0"> Modifica stock</label><select id="amStockReason" title="Motivo stock" style="width:170px"><option value="comprobante" selected>Comprobante</option><option value="devolucion">Devolución</option><option value="ajuste">Ajuste</option><option value="no aplica">No aplica</option></select><button class="secondary" onclick="cancelToPreviousView()">Cancelar</button><button class="secondary" onclick="arcaManualPreview()">Vista previa</button><button class="danger" onclick="arcaManualEmit()">Emitir comprobante real</button></div><div id="arcaManualStatus" class="status"></div><pre id="arcaManualOut" class="hidden"></pre></div></section>
 
 <section id="base-conocimiento" class="view">
   <div class="card">
@@ -1168,7 +1168,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
     <div class="connGrid">
       <div><label>API</label><input id="cfgApiUrl" value="https://api.xeleria.com.ar"></div>
       <div><label>ADMIN_TOKEN</label><input id="cfgToken" type="password" placeholder="Token" autocomplete="off"></div>
-      <button class="primary" onclick="saveSettingsFromConfig()">Guardar</button>
+      <button class="primary" onclick="saveSettingsFromConfig()">Guardar</button><button class="secondary" onclick="cancelToPreviousView()">Cancelar</button>
       <button class="secondary" onclick="health()">Probar</button>
       <button class="secondary" onclick="showLastJson()">Ver último JSON</button>
     </div>
@@ -1240,7 +1240,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
     <div id="arcaOnboardingStatus" class="status"></div>
     <div class="dividerLine"></div>
     <div class="btnrow" style="justify-content:flex-end">
-      <button class="primary" onclick="saveConfig()">Guardar toda la configuración</button>
+      <button class="primary" onclick="saveConfig()">Guardar toda la configuración</button><button class="secondary" onclick="cancelToPreviousView()">Cancelar</button>
     </div>
     <div id="cfgStatus" class="status"></div>
   </div>
@@ -1319,8 +1319,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.81.3-tenantized-fiscal-report';
-const FRONTEND_BUILD='admin-erp-v2813-tenantized-fiscal-report';
+const FRONTEND_VERSION='2.81.4-fiscal-types-inventory-conversion';
+const FRONTEND_BUILD='admin-erp-v2814-fiscal-types-inventory-conversion';
 const SALES_DB_POLL_INTERVAL_MS=60000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const XELERIA_MIN_SEARCH_CHARS=4;function isShortSearch(q){q=String(q||'').trim();return q.length>0&&q.length<XELERIA_MIN_SEARCH_CHARS}function minSearchMessage(){return 'Ingresá al menos '+XELERIA_MIN_SEARCH_CHARS+' caracteres para buscar.'}
@@ -1482,6 +1482,16 @@ async function openInvoiceHtml(id){
     setTimeout(()=>URL.revokeObjectURL(objectUrl),120000);
   }catch(e){if(popup)popup.close();setStatus('arcaStatus','No pude abrir el PDF: '+errText(e),false);showPre('arcaOut',e)}
 }
+async function downloadInvoicePdf(id){
+  if(!id){alert('No encontré ID de comprobante.');return}
+  try{
+    let r=await fetch(url('/admin/arca/facturas/'+encodeURIComponent(id)+'/pdf'),{headers:xeleriaHeaders()});
+    if(!r.ok){let txt=await r.text();let data;try{data=JSON.parse(txt)}catch{data={detail:txt}};throw data}
+    let blob=await r.blob();let filename=r.headers.get('x-xeleria-filename')||`comprobante-${id}.pdf`;
+    let objectUrl=URL.createObjectURL(blob);let a=document.createElement('a');a.href=objectUrl;a.download=filename;
+    document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(objectUrl),60000);
+  }catch(e){setStatus('arcaStatus','No pude descargar el PDF: '+errText(e),false);showPre('arcaOut',e)}
+}
 function openInvoicePdf(id){return openInvoiceHtml(id)}function hideArcaMonitor(){let el=qs('arcaOut');if(el){el.classList.add('hidden');el.textContent=''}}
 function normalizar(s){return String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim()}function esc(s){return String(s??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}function dateAR(x){if(!x)return'';try{return new Date(x).toLocaleString('es-AR',{dateStyle:'short',timeStyle:'short',hour12:false})}catch{return x}}function money(n){let x=Number(n||0);return x?('$'+Math.round(x).toLocaleString('es-AR')):''}function shortVer(v){let m=String(v||'').match(/\d+(?:\.\d+){1,3}/);return m?m[0]:String(v||'?')}function jsq(s){return String(s??'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,' ')}
 function setStatus(id,msg,ok=null){let el=qs(id);if(!el)return;el.className='status '+(ok===true?'oktxt':ok===false?'badtxt':ok==='warn'?'warntxt':'');el.textContent=msg||''}function setStatusHtml(id,html,ok=null){let el=qs(id);if(!el)return;el.className='status '+(ok===true?'oktxt':ok===false?'badtxt':ok==='warn'?'warntxt':'');el.innerHTML=html||''}
@@ -1491,7 +1501,7 @@ function renderArcaManualPreview(d){
   let pre=qs('arcaManualOut'); if(pre){pre.classList.add('hidden');pre.textContent=JSON.stringify(d,null,2)}
   let old=qs('arcaManualPreviewBox'); if(old)old.remove();
   let host=qs('arcaManualStatus')?.parentElement || qs('arca-manual'); if(!host)return;
-  let box=document.createElement('div'); box.id='arcaManualPreviewBox'; box.className='arcaPreviewCard '+(([2,3,7,8].includes(Number(d.cbte_tipo)))?'nc':'');
+  let box=document.createElement('div'); box.id='arcaManualPreviewBox'; box.className='arcaPreviewCard '+(([2,3,7,8,12,13].includes(Number(d.cbte_tipo)))?'nc':'');
   let nro=`${esc(d.cbte_letra||'')} ${String(d.pto_vta||'').padStart(4,'0')}-${String(d.proximo||'').padStart(8,'0')}`;
   let lines=Array.isArray(d.lines)?d.lines:[];
   let assoc=(d.payload&&Array.isArray(d.payload.cbtes_asoc)&&d.payload.cbtes_asoc[0])?d.payload.cbtes_asoc[0]:null;
@@ -1647,7 +1657,13 @@ function copyVersionsJson(){
   navigator.clipboard?.writeText(t).then(()=>setStatus('versionsStatus','JSON copiado.',true)).catch(()=>setStatus('versionsStatus','No pude copiar automáticamente. Seleccioná el texto manualmente.','warn'));
 }
 
-function showView(id){
+let xeleriaCurrentView='inicio';
+let xeleriaPreviousView='inicio';
+function showView(id,options={}){
+  if(id!==xeleriaCurrentView){
+    if(!options.skipHistory)xeleriaPreviousView=xeleriaCurrentView;
+    xeleriaCurrentView=id;
+  }
   stopSalesDbPolling();
   if(id!=='configuracion')clearInventoryImportTransientSaveUi();
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
@@ -1687,6 +1703,7 @@ function showView(id){
   if(id==='bitacora')loadOpsLog(true);
   if(id==='versiones')loadVersionsPage(false);
 }
+function cancelToPreviousView(){showView(xeleriaPreviousView||'inicio',{skipHistory:true})}
 
 function toggleMobileMenu(){let a=document.querySelector('aside');if(!a)return;a.classList.toggle('mobileOpen');document.body.classList.toggle('mobileMenuOpen',a.classList.contains('mobileOpen'))}
 function closeMobileMenu(){let a=document.querySelector('aside');if(!a)return;a.classList.remove('mobileOpen');document.body.classList.remove('mobileMenuOpen')}
@@ -3172,7 +3189,7 @@ function comboToggleNew(){comboEnsureState();state.comboNewOpen=true;state.combo
 function comboCloseNew(){state.comboNewOpen=false;delete state.comboForms.new;renderCombos()}
 async function comboOpenEdit(sku){comboEnsureState();state.comboExpanded=state.comboExpanded===sku?'':sku;renderCombos()}
 async function comboLoadEditPanel(sku){let panel=qs('comboEditPanel_'+comboSafeKey(sku));if(!panel)return;try{let d=await fetchJson('/admin/v2/bundles/'+encodeURIComponent(sku));let key=comboFormKeyForSku(sku);let f=comboEmptyForm();f.sku=d.bundle?.sku||sku;f.name=d.bundle?.name||'';f.components=(d.components||[]).map(x=>({sku:x.component_sku||'',name:x.component_name||'',stock:x.component_stock,price:x.component_price??x.price??x.cost??x.component?.price??x.component?.cost??'',quantity:comboQtyInt(x.quantity)}));f.existingListings=(d.listings||[]).map(x=>({marketplace:String(x.marketplace||'').toUpperCase(),external_product_id:String(x.external_product_id||''),external_variant_id:String(x.external_variant_id||'0'),title:x.title||'',status:x.status||'',price:x.price}));f.listings=[...f.existingListings];state.comboForms[key]=f;panel.innerHTML=comboFormInner(key,{mode:'edit',sku});comboRenderComponents(key);comboRenderSelectedListings(key);comboLoadOrphans(key,'ML');comboLoadOrphans(key,'TN')}catch(e){panel.innerHTML='<div class="status badtxt">Error abriendo combo: '+esc(errText(e))+'</div>'}}
-function comboFormInner(key,opt){let f=comboForm(key);let edit=opt.mode==='edit';return `<div class="comboEditTop"><div>${edit?`<b class="comboSaasMono">${esc(f.sku)}</b>`:`<input value="${esc(f.sku)}" oninput="comboForm('${key}').sku=this.value" placeholder="SKU nuevo">`}</div><div><input value="${esc(f.name)}" oninput="comboForm('${key}').name=this.value" placeholder="Nombre del combo"></div><div style="text-align:right"><button class="secondary" onclick="${edit?`comboOpenEdit('${jsq(opt.sku)}')`:'comboCloseNew()'}">Cerrar</button></div><div class="comboPubEditor"><label>Publicaciones asociadas</label><div id="comboSelectedListings_${key}">${comboSelectedListingsMini(key)}</div><label class="comboLiveSearchLine"><input id="comboLiveSearch_${key}" type="checkbox" onchange="['ML','TN'].forEach(m=>comboLoadOrphans('${key}',m))"> Buscar en vivo en ML/TN</label><div class="comboLiveSearchHint">Apagado: busca en base local. Encendido: consulta el canal en vivo. Mínimo 3 caracteres.</div><div class="comboPubSearchGrid"><div><label>Buscar ML huérfana</label><input id="comboOrphan_${key}_ML_q" oninput="comboDebouncedOrphans('${key}','ML')" placeholder="Título, SKU o ID"><div id="comboOrphan_${key}_ML" class="comboPubMiniList"></div></div><div><label>Buscar TN huérfana</label><input id="comboOrphan_${key}_TN_q" oninput="comboDebouncedOrphans('${key}','TN')" placeholder="Título, SKU o ID"><div id="comboOrphan_${key}_TN" class="comboPubMiniList"></div></div></div></div></div><div class="comboSectionTitle comboComponentsSectionTitle">COMPONENTES</div><div style="margin-top:10px" id="comboComponents_${key}"></div><div class="btnrow" style="justify-content:center;margin-top:8px"><button class="comboAddComponentBtn" onclick="comboAddBlankComponent('${key}')">Agregar</button></div><div class="comboEditBottomActions"><button class="ok" onclick="comboSaveForm('${key}','${opt.mode}')">Guardar combo</button><span id="comboFormStatus_${key}" class="status comboEditStatus"></span></div>`}
+function comboFormInner(key,opt){let f=comboForm(key);let edit=opt.mode==='edit';return `<div class="comboEditTop"><div>${edit?`<b class="comboSaasMono">${esc(f.sku)}</b>`:`<input value="${esc(f.sku)}" oninput="comboForm('${key}').sku=this.value" placeholder="SKU nuevo">`}</div><div><input value="${esc(f.name)}" oninput="comboForm('${key}').name=this.value" placeholder="Nombre del combo"></div><div style="text-align:right"><button class="secondary" onclick="${edit?`comboOpenEdit('${jsq(opt.sku)}')`:'comboCloseNew()'}">Cancelar</button></div><div class="comboPubEditor"><label>Publicaciones asociadas</label><div id="comboSelectedListings_${key}">${comboSelectedListingsMini(key)}</div><label class="comboLiveSearchLine"><input id="comboLiveSearch_${key}" type="checkbox" onchange="['ML','TN'].forEach(m=>comboLoadOrphans('${key}',m))"> Buscar en vivo en ML/TN</label><div class="comboLiveSearchHint">Apagado: busca en base local. Encendido: consulta el canal en vivo. Mínimo 3 caracteres.</div><div class="comboPubSearchGrid"><div><label>Buscar ML huérfana</label><input id="comboOrphan_${key}_ML_q" oninput="comboDebouncedOrphans('${key}','ML')" placeholder="Título, SKU o ID"><div id="comboOrphan_${key}_ML" class="comboPubMiniList"></div></div><div><label>Buscar TN huérfana</label><input id="comboOrphan_${key}_TN_q" oninput="comboDebouncedOrphans('${key}','TN')" placeholder="Título, SKU o ID"><div id="comboOrphan_${key}_TN" class="comboPubMiniList"></div></div></div></div></div><div class="comboSectionTitle comboComponentsSectionTitle">COMPONENTES</div><div style="margin-top:10px" id="comboComponents_${key}"></div><div class="btnrow" style="justify-content:center;margin-top:8px"><button class="comboAddComponentBtn" onclick="comboAddBlankComponent('${key}')">Agregar</button></div><div class="comboEditBottomActions"><button class="ok" onclick="comboSaveForm('${key}','${opt.mode}')">Guardar combo</button><button class="secondary" onclick="${edit?`comboOpenEdit('${jsq(opt.sku)}')`:'comboCloseNew()'}">Cancelar</button><span id="comboFormStatus_${key}" class="status comboEditStatus"></span></div>`}
 function comboSelectedListingsMini(key){let f=comboForm(key);let rows=f.listings||[];if(!rows.length)return '<span class="muted">Sin publicaciones asociadas.</span>';return `<div class="comboPubSelected">${rows.map((l,i)=>`<div class="comboPubSelectedLine"><span class="pill ${String(l.marketplace||'').toUpperCase()==='TN'?'ok':'info'}">${esc(l.marketplace)}</span><span><b>${esc(l.title||l.external_product_id||'Publicación')}</b><br><span class="muted comboSaasMono">${esc(l.external_product_id)} · Var: ${esc(l.external_variant_id||'0')} · ${esc(l.status||'')}</span></span></div>`).join('')}</div>`}
 function comboRenderComponents(key){
   let f=comboForm(key);
@@ -3286,8 +3303,10 @@ async function comboSaveForm(key,mode){
       listings:(f.listings||[]).map(l=>({marketplace:String(l.marketplace||'').toUpperCase(),external_product_id:String(l.external_product_id||''),external_variant_id:String(l.external_variant_id||'0'),external_full_id:l.external_full_id||l.external_product_id,title:l.title||'',status:l.status||'',price:l.price??'',stock:l.stock??'',url:l.url||l.permalink||''}))
     };
     if(!payload.components.length)throw {message:'El combo debe tener al menos un componente'};
-    let path=mode==='create'?'/admin/v2/inventory/create-bundle':'/admin/v2/inventory/update-bundle';
-    let d=await fetchJson(path,{method:'POST',body:JSON.stringify(payload)});
+    let converting=mode==='create'&&!!f.conversionFromProduct;
+    let path=converting?'/admin/inventory/change-item-type/session':(mode==='create'?'/admin/v2/inventory/create-bundle':'/admin/v2/inventory/update-bundle');
+    let requestBody=converting?{sku:payload.sku,name:payload.name,item_type:'bundle',components:payload.components}:payload;
+    let d=await fetchJson(path,{method:'POST',body:JSON.stringify(requestBody)});
     if(st){st.className='status oktxt';st.innerHTML='<span class="comboFriendlyOk">Guardado OK · disponible '+esc(d.available_to_sell??'—')+'</span>'}
     if(mode==='create'){
       comboCloseNew();
@@ -3295,7 +3314,7 @@ async function comboSaveForm(key,mode){
       state.comboExpanded='';
       delete state.comboForms[key];
     }
-    setStatus('comboStatus','Combo guardado OK. Refrescando vista en segundo plano...',true);
+    setStatus('comboStatus',converting?'SKU convertido a Combo OK. Refrescando vista...':'Combo guardado OK. Refrescando vista en segundo plano...',true);
     loadCombos().catch(e=>{
       setStatus('comboStatus','Combo guardado OK, pero el refresco quedó lento. Podés actualizar manualmente.', 'warn');
     });
@@ -3316,8 +3335,8 @@ function movementTechDetails(m){return ''}
 function renderMovementsTable(rows){return `<table><thead><tr><th>Fecha</th><th>Origen</th><th>SKU</th><th>Movimiento</th><th>Cantidad</th><th>Stock anterior</th><th>Stock nuevo</th><th>Referencia</th><th>Detalle</th></tr></thead><tbody>${rows.map(m=>`<tr><td>${esc(m.fecha||dateAR(m.created_at))}</td><td>${movementOrigin(m)}</td><td><strong class="mono">${esc(m.sku||'')}</strong></td><td><strong>${movementKind(m)}</strong></td><td><strong class="${movementQtyClass(m)}">${esc(m.cantidad_label??m.cantidad??m.quantity??'')}</strong></td><td>${esc(m.stock_anterior??m.previous_stock??'')}</td><td><strong>${esc(m.stock_nuevo??m.new_stock??'')}</strong></td><td>${movementRef(m)}</td><td>${esc(m.detalle||m.notes||'')}${movementTechDetails(m)}</td></tr>`).join('')||'<tr><td colspan="9" class="muted" style="text-align:center">Sin movimientos.</td></tr>'}</tbody></table>`}
 async function loadMovements(){let sku=qs('movSku')?.value.trim()||'';let lim=Number(qs('movLimit')?.value||100);setStatus('movStatus','Cargando movimientos de stock...');try{let d=await fetchJson(`/admin/stock/movements/session?limit=${encodeURIComponent(lim)}${sku?'&sku='+encodeURIComponent(sku):''}`);let rows=d.items||[];qs('movTable').innerHTML=renderMovementsTable(rows);let total=Number(d.total||rows.length||0);setStatus('movStatus',`OK: ${rows.length} movimiento(s) mostrado(s)${total!==rows.length?` de ${total}`:''}`,true)}catch(e){setStatus('movStatus','Error movimientos: '+errText(e),false);showPre('movTable',e)}}function clearMovSku(){qs('movSku').value='';loadMovements()}
 function prevMonthRange(){let d=new Date();let firstPrev=new Date(d.getFullYear(),d.getMonth()-1,1);let fmt=x=>x.toISOString().slice(0,10);return{from:fmt(firstPrev),to:fmt(d)}}function initArcaDates(){let r=prevMonthRange();if(qs('arcaDesde')&&!qs('arcaDesde').value)qs('arcaDesde').value=r.from;if(qs('arcaHasta')&&!qs('arcaHasta').value)qs('arcaHasta').value=r.to}
-function arcaTypeLabel(r){let n=Number(r.cbte_tipo||0);return r.cbte_tipo_label||({1:'Factura A',2:'Nota de Débito A',3:'Nota de Crédito A',6:'Factura B',7:'Nota de Débito B',8:'Nota de Crédito B'}[n]||'Comprobante')}
-function arcaTypeShort(r){let t=arcaTypeLabel(r).toUpperCase();let l=t.includes(' A')?'A':(t.includes(' B')?'B':'');if(t.includes('CRED'))return 'NC '+l;if(t.includes('DEB'))return 'ND '+l;if(t.includes('FACT'))return 'FACTURA '+l;return t}
+function arcaTypeLabel(r){let n=Number(r.cbte_tipo||0);return r.cbte_tipo_label||({1:'Factura A',2:'Nota de Débito A',3:'Nota de Crédito A',6:'Factura B',7:'Nota de Débito B',8:'Nota de Crédito B',11:'Factura C',12:'Nota de Débito C',13:'Nota de Crédito C',19:'Factura de Exportación'}[n]||'Comprobante')}
+function arcaTypeShort(r){let t=arcaTypeLabel(r).toUpperCase();let l=t.includes(' A')?'A':(t.includes(' B')?'B':(t.includes(' C')?'C':(t.includes('EXPORT')?'E':'')));if(t.includes('CRED'))return 'NC '+l;if(t.includes('DEB'))return 'ND '+l;if(t.includes('FACT'))return 'FACTURA '+l;return t}
 function arcaChannelLabel(r){let ch=String(r.source_channel_display||r.source_channel||'');let up=ch.toUpperCase().replace(/[\s-]/g,'_');return (up==='ARCA_MANUAL'||up==='MANUAL'||up==='ARCA')?'MANUAL':ch}
 function arcaNumberCaeBlock(r){let p=String(r.pto_vta||'').padStart(4,'0');let n=r.cbte_nro?String(r.cbte_nro).padStart(8,'0'):'BORRADOR';let cae=r.cae?`CAE ${esc(r.cae)}`:(String(r.status||'').toLowerCase()==='pending_to_invoice'?'Pendiente para facturar':'Sin CAE');return `<div class="arcaCbteCell"><strong>${esc(arcaTypeShort(r))}</strong><br>${esc(p+'-'+n)}<br><span class="small">${cae}</span></div>`}
 function arcaStatusIcon(r){
@@ -3335,11 +3354,13 @@ function arcaActions(r){
   // ML puede usar pack/sale number para consolidar grupos.
   let oid=String(ch==='TN' ? (r.source_order_api_id||r.source_order_id||'') : (r.source_order_id||r.source_order_api_id||''));
   let view=id?`<button onclick="openInvoiceHtml('${esc(r.id||'')}')">Ver / imprimir PDF</button>`:'';
+  let download=id?`<button onclick="downloadInvoicePdf('${esc(r.id||'')}')">Descargar PDF</button>`:'';
   let facturar=(ch&&oid&&!r.cae)?`<button onclick="issueInvoiceFromArcaReport('${esc(ch)}','${esc(oid)}')">Facturar</button>`:'';
   let borrador=(ch&&oid&&!r.cae)?`<button onclick="createInvoiceDraft('${esc(ch)}','${esc(oid)}')">Actualizar borrador</button>`:'';
-  let nc=(id&&r.cae)?`<button onclick="arcaStartNoteFromInvoice('${esc(r.id||'')}','NC')">Nota de Crédito</button>`:'';
-  let nd=(id&&r.cae)?`<button onclick="arcaStartNoteFromInvoice('${esc(r.id||'')}','ND')">Nota de Débito</button>`:'';
-  return `<div class="arcaActionsWrap"><details class="kebabMenu"><summary title="Más acciones">⋮</summary><div class="kebabPanel">${facturar}${view}${borrador}${nc}${nd}</div></details></div>`;
+  let domestic=arca_cbte_letter_from_tipo_js(r.cbte_tipo)!=='E';
+  let nc=(id&&r.cae&&domestic)?`<button onclick="arcaStartNoteFromInvoice('${esc(r.id||'')}','NC')">Nota de Crédito</button>`:'';
+  let nd=(id&&r.cae&&domestic)?`<button onclick="arcaStartNoteFromInvoice('${esc(r.id||'')}','ND')">Nota de Débito</button>`:'';
+  return `<div class="arcaActionsWrap"><details class="kebabMenu"><summary title="Más acciones">⋮</summary><div class="kebabPanel">${facturar}${view}${download}${borrador}${nc}${nd}</div></details></div>`;
 }
 async function issueInvoiceFromArcaReport(ch,orderId){
   await issueInvoiceFromSale(ch,orderId,{fromArcaReport:true});
@@ -3390,10 +3411,10 @@ async function downloadArcaExcel(){
 function arcaTipoNotaDesdeOriginal(orig,kind){
   let tipo=Number(orig.cbte_tipo||0);
   let letra=(orig.cbte_letra||arca_cbte_letter_from_tipo_js(tipo)||'B').toUpperCase();
-  if(kind==='NC')return letra==='A'?3:8;
-  return letra==='A'?2:7;
+  if(kind==='NC')return letra==='A'?3:(letra==='C'?13:8);
+  return letra==='A'?2:(letra==='C'?12:7);
 }
-function arca_cbte_letter_from_tipo_js(tipo){tipo=Number(tipo||0);if([1,2,3].includes(tipo))return 'A';if([6,7,8].includes(tipo))return 'B';return ''}
+function arca_cbte_letter_from_tipo_js(tipo){tipo=Number(tipo||0);if([1,2,3].includes(tipo))return 'A';if([6,7,8].includes(tipo))return 'B';if([11,12,13].includes(tipo))return 'C';if(tipo===19)return 'E';return ''}
 function arcaLineUnitGross(l){
   let q=Number(l.quantity||1)||1;
   return Number(l.unit_price_gross||l.unit_price_display||l.unit_price||0)||((Number(l.total_gross||l.subtotal_display||l.subtotal||0)||0)/q);
@@ -3407,7 +3428,13 @@ async function arcaStartNoteFromInvoice(invoiceId,kind){
     let tipoNota=arcaTipoNotaDesdeOriginal(inv,kind);
     arcaManualClear();
     qs('amTipo').value=String(tipoNota);
+    arcaManualTypeChanged();
     qs('amConcepto').value=inv.concept||inv.concepto||'Productos';
+    let servicePeriod=inv.raw_data?.service_period||inv.raw_data?.input||{};
+    if(qs('amServiceDesde'))qs('amServiceDesde').value=servicePeriod.service_date_from||'';
+    if(qs('amServiceHasta'))qs('amServiceHasta').value=servicePeriod.service_date_to||'';
+    if(qs('amVtoPago'))qs('amVtoPago').value=servicePeriod.payment_due_date||'';
+    arcaManualConceptChanged();
     qs('amFecha').value=new Date().toISOString().slice(0,10);
     qs('amSourceChannel').value='ARCA_MANUAL';
     qs('amSourceOrder').value=`${kind}-${inv.source_channel||''}-${inv.source_order_number||inv.source_order_id||invoiceId}-${Date.now()}`;
@@ -3503,12 +3530,25 @@ async function issueInvoiceFromSale(ch,orderId,opts={}){
 }
 
 let arcaManualSeq=0;
+function arcaManualConceptChanged(){
+  let service=String(qs('amConcepto')?.value||'').toLowerCase().includes('servicio');
+  qs('amServiceDates')?.classList.toggle('hidden',!service);
+}
+function arcaManualTypeChanged(){
+  let isC=[11,12,13].includes(Number(qs('amTipo')?.value||0));
+  document.querySelectorAll('#arcaManualLines .amIva').forEach(input=>{
+    input.disabled=isC;
+    if(isC)input.value='0';else if(Number(input.value||0)===0)input.value='21';
+  });
+}
 function arcaManualInit(){
   if(qs('arcaManualLines') && !qs('arcaManualLines').children.length){
     if(!qs('amCustomerName').value)qs('amCustomerName').value='Consumidor Final';
     if(!qs('amLocalidad').value)qs('amLocalidad').value='Ciudad Autónoma de Buenos Aires';
     arcaManualAddLine({sku:'',description:'',quantity:1,unit_price_gross:''});
   }
+  arcaManualConceptChanged();
+  arcaManualTypeChanged();
 }
 function arcaManualLineHtml(id,d={}){
   return `<div class="marketBox arcaLine" data-id="${id}" style="grid-template-columns:120px 1fr 85px 110px 82px 44px">
@@ -3520,7 +3560,7 @@ function arcaManualLineHtml(id,d={}){
     <div><label>&nbsp;</label><button class="secondary" onclick="this.closest('.arcaLine').remove()">×</button></div>
   </div>`;
 }
-function arcaManualAddLine(d={}){let box=qs('arcaManualLines');if(!box)return;arcaManualSeq++;box.insertAdjacentHTML('beforeend',arcaManualLineHtml(arcaManualSeq,d))}
+function arcaManualAddLine(d={}){let box=qs('arcaManualLines');if(!box)return;arcaManualSeq++;box.insertAdjacentHTML('beforeend',arcaManualLineHtml(arcaManualSeq,d));arcaManualTypeChanged()}
 function arcaManualBestTnPrice(item){
   let listings=(item&&item.listings)||[];
   let tn=listings.find(l=>String(l.marketplace||'').toUpperCase()==='TN'&&Number(l.price||0)>0)||listings.find(l=>Number(l.price||0)>0);
@@ -3574,6 +3614,8 @@ function arcaManualClear(){hideManualPreviewBox();
   if(qs('amNotes'))qs('amNotes').value='';
   if(qs('amModificaStock'))qs('amModificaStock').checked=false;
   if(qs('amStockReason'))qs('amStockReason').value='comprobante';
+  ['amServiceDesde','amServiceHasta','amVtoPago'].forEach(id=>{if(qs(id))qs(id).value=''});
+  arcaManualConceptChanged();
   qs('arcaManualLines').innerHTML='';arcaManualAddLine();setStatus('arcaManualStatus','');qs('arcaManualOut').classList.add('hidden');
 }
 function arcaManualBody(dryRun=true,confirmar=false){
@@ -3587,6 +3629,7 @@ function arcaManualBody(dryRun=true,confirmar=false){
   if(!lines.length)throw new Error('Cargá al menos una línea con descripción, cantidad y precio.');
   return {
     dry_run:dryRun,confirmar:confirmar,cbte_tipo:Number(qs('amTipo').value||6),invoice_date:qs('amFecha').value||null,concept:qs('amConcepto').value,
+    service_date_from:qs('amServiceDesde')?.value||null,service_date_to:qs('amServiceHasta')?.value||null,payment_due_date:qs('amVtoPago')?.value||null,
     customer_name:qs('amCustomerName').value.trim(),customer_doc_type:qs('amDocType').value,customer_doc_number:qs('amDocNumber').value.trim(),customer_iva_condition:qs('amIvaCond').value,
     customer_address:qs('amAddress').value.trim()||null,customer_localidad:qs('amLocalidad').value.trim()||null,customer_email:null,
     source_channel:qs('amSourceChannel').value.trim()||'ARCA_MANUAL',source_order_id:qs('amSourceOrder').value.trim()||null,source_order_number:qs('amSourceOrder').value.trim()||null,
@@ -3620,7 +3663,7 @@ async function arcaManualEmit(){
     let invoiceId=String(d.invoice_id||d.invoice?.id||'');
     let localWarning=d.save_error?`<div style="margin-top:8px;color:#991b1b">ARCA lo emitió, pero falló el guardado local. No lo vuelvas a emitir; informá este número y CAE para recuperarlo.</div>`:'';
     qs('arcaManualStatus').className='status oktxt';
-    qs('arcaManualStatus').innerHTML=`<div class="successBox">Emitido OK · ${esc(nro)} · CAE ${esc(d.cae||'')}${esc(sm)}${localWarning}${invoiceId?`<div style="margin-top:8px"><button class="secondary" onclick="openInvoiceHtml('${esc(invoiceId)}')">Ver / imprimir / guardar PDF</button></div>`:''}</div>`;
+    qs('arcaManualStatus').innerHTML=`<div class="successBox">Emitido OK · ${esc(nro)} · CAE ${esc(d.cae||'')}${esc(sm)}${localWarning}${invoiceId?`<div style="margin-top:8px"><button class="secondary" onclick="openInvoiceHtml('${esc(invoiceId)}')">Ver / imprimir PDF</button> <button class="secondary" onclick="downloadInvoicePdf('${esc(invoiceId)}')">Descargar PDF</button></div>`:''}</div>`;
     if(d.save_error){showPre('arcaManualOut',d);return}
     setTimeout(()=>{arcaManualClear();showView('arca-reportes');loadArcaInvoices();setStatus('arcaStatus',`Emitido OK · ${nro} · CAE ${d.cae||''}`,true);window.scrollTo({top:0,behavior:'smooth'})},2200);
   }catch(e){saveLastArcaError(e,{fn:'arcaManualEmit'});setStatus('arcaManualStatus','Error emisión: '+errText(e),false);showPre('arcaManualOut',e)}
@@ -3843,12 +3886,12 @@ function positionOpenKebabMenus(){document.querySelectorAll('details.kebabMenu[o
 document.addEventListener('toggle',e=>{let d=e.target;if(!(d instanceof HTMLDetailsElement)||!d.classList.contains('kebabMenu'))return;if(d.open){document.querySelectorAll('details.kebabMenu[open]').forEach(x=>{if(x!==d)x.removeAttribute('open')});setTimeout(positionOpenKebabMenus,0)}},true);
 window.addEventListener('scroll',positionOpenKebabMenus,true);window.addEventListener('resize',positionOpenKebabMenus);
 function scrollToInventoryTool(){let box=inventoryToolBox();if(!box)return;setTimeout(()=>box.scrollIntoView({behavior:'smooth',block:'start'}),60)}
-function toggleInventoryTool(kind){let box=inventoryToolBox();if(!box)return;closeOpenKebabMenus();box.classList.remove('hidden');if(kind==='product')renderCreateProductTool();if(kind==='bundle')showView('combos');if(kind==='link')renderLinkPublicationsTool();scrollToInventoryTool()}function invToolStatus(msg,ok=true){let el=qs('inventoryToolStatus');if(!el)return;el.textContent=msg;el.style.color=ok?'var(--ok)':'var(--bad)'}function renderCreateProductTool(){inventoryToolBox().innerHTML=`<div class="card" style="background:#fffaf0;border-color:#eee2c8"><h3>Agregar producto simple</h3><p>Alta de SKU simple. Después podés vincular publicaciones ML/TN sin asociar.</p><div class="grid"><div class="col-3"><label>SKU *</label><input id="newSku" placeholder="Ej: PC..." oninput="if(qs('linkSku'))qs('linkSku').value=this.value"></div><div class="col-5"><label>Producto *</label><input id="newName" placeholder="Nombre comercial"></div><div class="col-2"><label>Stock inicial</label><input id="newStock" type="number" step="1" value="0"></div><div class="col-2"><label>Costo</label><input id="newCost" type="number" step="0.01" placeholder="Opcional"></div></div><div class="btnrow" style="margin-top:12px"><button class="ok" onclick="createInventoryProduct()">Crear producto</button><button class="secondary" onclick="renderLinkPublicationsTool(qs('newSku')?.value||'')">Vincular publicaciones</button><button class="secondary" onclick="inventoryToolBox().classList.add('hidden')">Cerrar</button></div><div id="inventoryToolStatus" class="status"></div></div>`}
+function toggleInventoryTool(kind){let box=inventoryToolBox();if(!box)return;closeOpenKebabMenus();box.classList.remove('hidden');if(kind==='product')renderCreateProductTool();if(kind==='bundle')showView('combos');if(kind==='link')renderLinkPublicationsTool();scrollToInventoryTool()}function invToolStatus(msg,ok=true){let el=qs('inventoryToolStatus');if(!el)return;el.textContent=msg;el.style.color=ok?'var(--ok)':'var(--bad)'}function renderCreateProductTool(){inventoryToolBox().innerHTML=`<div class="card" style="background:#fffaf0;border-color:#eee2c8"><h3>Agregar producto simple</h3><p>Alta de SKU simple. Después podés vincular publicaciones ML/TN sin asociar.</p><div class="grid"><div class="col-3"><label>SKU *</label><input id="newSku" placeholder="Ej: PC..." oninput="if(qs('linkSku'))qs('linkSku').value=this.value"></div><div class="col-5"><label>Producto *</label><input id="newName" placeholder="Nombre comercial"></div><div class="col-2"><label>Stock inicial</label><input id="newStock" type="number" step="1" value="0"></div><div class="col-2"><label>Costo</label><input id="newCost" type="number" step="0.01" placeholder="Opcional"></div></div><div class="btnrow" style="margin-top:12px"><button class="ok" onclick="createInventoryProduct()">Crear producto</button><button class="secondary" onclick="renderLinkPublicationsTool(qs('newSku')?.value||'')">Vincular publicaciones</button><button class="secondary" onclick="inventoryToolBox().classList.add('hidden')">Cancelar</button></div><div id="inventoryToolStatus" class="status"></div></div>`}
 async function createInventoryProduct(){let sku=(qs('newSku').value||'').trim();let name=(qs('newName').value||'').trim();if(!sku||!name){invToolStatus('SKU y producto son obligatorios.',false);return}let body={sku,name,cost:qs('newCost').value?Number(qs('newCost').value):null,stock:Number(qs('newStock').value||0),active:true};invToolStatus('Creando producto...');try{let d=await fetchJson('/admin/v2/inventory/product',{method:'POST',body:JSON.stringify(body)});invToolStatus(`Producto creado: ${d.item?.sku||sku}`,true);qs('invSearch').value=sku;await searchInventory(0,true)}catch(e){invToolStatus('Error creando producto: '+(e?.detail?JSON.stringify(e.detail):JSON.stringify(e)),false)}}
 
 /* COMBOS_LEGACY_MONOUSER_JS_REMOVED: la UI nueva debe vivir integrada en la vista combos SaaS. */
 
-function renderLinkPublicationsTool(prefillSku=''){inventoryToolBox().innerHTML=`<div class="card" style="background:#fffaf0;border-color:#eee2c8"><h3>Vincular publicaciones sin asociar</h3><p>Trae publicaciones/variantes huérfanas desde ML o TN y las asocia al SKU elegido. El usuario no carga IDs a mano.</p><div class="grid"><div class="col-3"><label>SKU destino *</label><input id="linkSku" value="${esc(prefillSku||qs('invSearch')?.value||'')}" placeholder="SKU simple o combo"></div><div class="col-2"><label>Canal</label><select id="linkMarket"><option>ML</option><option>TN</option></select></div><div class="col-5"><label>Buscar dentro de huérfanas</label><input id="linkQuery" placeholder="Título, SKU, publicación"></div><div class="col-2"><label>Límite</label><select id="linkLimit"><option>50</option><option selected>100</option><option>200</option></select></div></div><div class="btnrow" style="margin-top:12px"><button class="primary" onclick="loadUnlinkedPublications()">Buscar publicaciones sin vincular</button><button class="secondary" onclick="inventoryToolBox().classList.add('hidden')">Cerrar</button></div><div id="inventoryToolStatus" class="status"></div><div id="unlinkedResults" class="tableWrap" style="margin-top:12px"></div></div>`;scrollToInventoryTool()}async function loadUnlinkedPublications(){let market=qs('linkMarket').value;let lim=qs('linkLimit').value;let qRaw=(qs('linkQuery').value||'').trim();if(isShortSearch(qRaw)){state.linkCandidates=[];renderUnlinkedPublications();invToolStatus('Ingresá al menos 4 caracteres para buscar huérfanas.',false);return}let q=encodeURIComponent(qRaw);invToolStatus(`Buscando huérfanas ${market}...`);try{let d=await fetchJson(`/admin/v2/marketplace/unlinked?marketplace=${encodeURIComponent(market)}&limit=${encodeURIComponent(lim)}&q=${q}`);state.linkCandidates=d.items||[];renderUnlinkedPublications();invToolStatus(`${market}: ${state.linkCandidates.length} publicaciones/variantes sin vincular`,true)}catch(e){invToolStatus('Error buscando huérfanas: '+(e?.detail?JSON.stringify(e.detail):JSON.stringify(e)),false)}}function renderUnlinkedPublications(){let items=state.linkCandidates||[];if(!items.length){qs('unlinkedResults').innerHTML='<div class="muted" style="padding:18px">Sin publicaciones huérfanas para ese filtro.</div>';return}let rows=items.map((x,idx)=>`<tr><td><strong>${esc(x.marketplace)}</strong><br><span class="small">Pub: ${esc(x.external_product_id)}<br>Var: ${esc(x.external_variant_id||'0')}</span></td><td>${esc(x.title||'')}<br><span class="small">SKU canal: <strong class="mono">${esc(x.seller_sku||'sin SKU')}</strong> · ${esc(x.sku_source||'')}</span></td><td>$ ${esc(x.price??'')}<br><span class="small">stock canal: ${esc(x.stock??'')}</span></td><td>${statusPill(x.status||'')}</td><td><button class="ok" onclick="linkPublication(${idx})">Vincular al SKU</button>${x.url?`<br><a href="${esc(x.url)}" target="_blank" class="small">abrir</a>`:''}</td></tr>`).join('');qs('unlinkedResults').innerHTML=`<table><thead><tr><th>Canal / IDs</th><th>Publicación</th><th>Precio / stock</th><th>Estado</th><th>Acción</th></tr></thead><tbody>${rows}</tbody></table>`}async function linkPublication(idx){
+function renderLinkPublicationsTool(prefillSku=''){inventoryToolBox().innerHTML=`<div class="card" style="background:#fffaf0;border-color:#eee2c8"><h3>Vincular publicaciones sin asociar</h3><p>Trae publicaciones/variantes huérfanas desde ML o TN y las asocia al SKU elegido. El usuario no carga IDs a mano.</p><div class="grid"><div class="col-3"><label>SKU destino *</label><input id="linkSku" value="${esc(prefillSku||qs('invSearch')?.value||'')}" placeholder="SKU simple o combo"></div><div class="col-2"><label>Canal</label><select id="linkMarket"><option>ML</option><option>TN</option></select></div><div class="col-5"><label>Buscar dentro de huérfanas</label><input id="linkQuery" placeholder="Título, SKU, publicación"></div><div class="col-2"><label>Límite</label><select id="linkLimit"><option>50</option><option selected>100</option><option>200</option></select></div></div><div class="btnrow" style="margin-top:12px"><button class="primary" onclick="loadUnlinkedPublications()">Buscar publicaciones sin vincular</button><button class="secondary" onclick="inventoryToolBox().classList.add('hidden')">Cancelar</button></div><div id="inventoryToolStatus" class="status"></div><div id="unlinkedResults" class="tableWrap" style="margin-top:12px"></div></div>`;scrollToInventoryTool()}async function loadUnlinkedPublications(){let market=qs('linkMarket').value;let lim=qs('linkLimit').value;let qRaw=(qs('linkQuery').value||'').trim();if(isShortSearch(qRaw)){state.linkCandidates=[];renderUnlinkedPublications();invToolStatus('Ingresá al menos 4 caracteres para buscar huérfanas.',false);return}let q=encodeURIComponent(qRaw);invToolStatus(`Buscando huérfanas ${market}...`);try{let d=await fetchJson(`/admin/v2/marketplace/unlinked?marketplace=${encodeURIComponent(market)}&limit=${encodeURIComponent(lim)}&q=${q}`);state.linkCandidates=d.items||[];renderUnlinkedPublications();invToolStatus(`${market}: ${state.linkCandidates.length} publicaciones/variantes sin vincular`,true)}catch(e){invToolStatus('Error buscando huérfanas: '+(e?.detail?JSON.stringify(e.detail):JSON.stringify(e)),false)}}function renderUnlinkedPublications(){let items=state.linkCandidates||[];if(!items.length){qs('unlinkedResults').innerHTML='<div class="muted" style="padding:18px">Sin publicaciones huérfanas para ese filtro.</div>';return}let rows=items.map((x,idx)=>`<tr><td><strong>${esc(x.marketplace)}</strong><br><span class="small">Pub: ${esc(x.external_product_id)}<br>Var: ${esc(x.external_variant_id||'0')}</span></td><td>${esc(x.title||'')}<br><span class="small">SKU canal: <strong class="mono">${esc(x.seller_sku||'sin SKU')}</strong> · ${esc(x.sku_source||'')}</span></td><td>$ ${esc(x.price??'')}<br><span class="small">stock canal: ${esc(x.stock??'')}</span></td><td>${statusPill(x.status||'')}</td><td><button class="ok" onclick="linkPublication(${idx})">Vincular al SKU</button>${x.url?`<br><a href="${esc(x.url)}" target="_blank" class="small">abrir</a>`:''}</td></tr>`).join('');qs('unlinkedResults').innerHTML=`<table><thead><tr><th>Canal / IDs</th><th>Publicación</th><th>Precio / stock</th><th>Estado</th><th>Acción</th></tr></thead><tbody>${rows}</tbody></table>`}async function linkPublication(idx){
   let sku=(qs('linkSku').value||'').trim();
   if(!sku){invToolStatus('Primero indicá el SKU destino.',false);return}
   let x=state.linkCandidates[idx];if(!x)return;
@@ -3899,7 +3942,8 @@ function renderEditProductTool(idx){
     <p>${isBundle?'Combo listado como SKU: stock calculado. Los componentes se administran en Combos/Kits.':'Producto simple: datos operativos, stock y publicaciones asociadas.'}</p>
     <div class="grid compactEditGrid">
       <div class="col-3"><label>SKU</label><input id="editSku" value="${esc(item.sku||'')}" disabled></div>
-      <div class="col-5"><label>Producto *</label><input id="editName" value="${esc(item.name||'')}"></div>
+      <div class="col-2"><label>Tipo de SKU</label><select id="editItemType" onchange="inventoryEditTypeChanged()"><option value="single" ${isBundle?'':'selected'}>Simple</option><option value="bundle" ${isBundle?'selected':''}>Combo</option></select></div>
+      <div class="col-3"><label>Producto *</label><input id="editName" value="${esc(item.name||'')}"></div>
       <div class="col-2"><label>Stock</label><input id="editStock" type="number" step="1" value="${esc(item.stock??0)}" ${isBundle?'disabled title="Stock calculado desde componentes"':''}></div>
       <div class="col-2"><label>Precio lista</label><input id="editListPrice" type="number" step="0.01" value="${esc(inventoryListPrice(item)??'')}"></div>
       <div class="col-2"><label>Costo</label><input id="editCost" type="number" step="0.01" value="${esc(item.cost??'')}"></div>
@@ -3908,11 +3952,28 @@ function renderEditProductTool(idx){
     <div class="btnrow" style="margin-top:12px">
       <button class="ok" onclick="saveInventoryProductAll(${idx})">Guardar cambios</button>
       <button class="secondary" onclick="renderLinkPublicationsTool('${jsq(item.sku||'')}')">Buscar / asociar publicaciones</button>
-      <button class="secondary" onclick="inventoryToolBox().classList.add('hidden')">Cerrar</button>
+      <button class="secondary" onclick="cancelInventoryTool()">Cancelar</button>
     </div>
     <div id="inventoryToolStatus" class="status"></div>
   </div>`;
   scrollToInventoryTool();
+}
+
+function cancelInventoryTool(){let box=inventoryToolBox();if(box){box.classList.add('hidden');box.innerHTML=''}}
+function inventoryEditTypeChanged(){
+  let target=qs('editItemType')?.value||'single';let stock=qs('editStock');
+  if(stock)stock.disabled=target==='bundle';
+  invToolStatus(target==='bundle'?'Al guardar te voy a pedir los componentes del combo.':'El SKU quedará como producto simple.',true);
+}
+
+function prepareProductComboConversion(idx){
+  let item=state.inventoryItems[idx];if(!item)return;
+  showView('combos');comboEnsureState();state.comboNewOpen=true;
+  let f=comboEmptyForm();f.sku=item.sku||'';f.name=qs('editName')?.value||item.name||'';
+  f.listings=inventoryListingPayloadsFromEdit(idx,item);f.existingListings=[...f.listings];f.conversionFromProduct=true;
+  state.comboForms.new=f;renderCombos();comboLoadOrphans('new','ML');comboLoadOrphans('new','TN');
+  setStatus('comboStatus',`Conversión de ${item.sku}: agregá sus componentes y guardá el combo.`,true);
+  setTimeout(()=>qs('comboResults')?.scrollIntoView({behavior:'smooth',block:'start'}),50);
 }
 
 function inventoryListingPayloadsFromEdit(idx,item){
@@ -3982,6 +4043,13 @@ async function saveInventoryProductAll(idx){
   invToolStatus('Guardando cambios y generando sync ML/TN...');
   try{
     let isBundle=inventoryIsBundle(item);
+    let targetType=qs('editItemType')?.value||(isBundle?'bundle':'single');
+    if(!isBundle&&targetType==='bundle'){
+      prepareProductComboConversion(idx);
+      return;
+    }
+    let convertingToSimple=isBundle&&targetType==='single';
+    if(convertingToSimple&&!confirm(`Convertir ${item.sku} de Combo a Simple?\n\nSe quitará su composición. El SKU, publicaciones y stock actual se conservan.`))return;
     let costTxt=(qs('editCost').value||'').trim();
     let listTxt=(qs('editListPrice')?.value||'').trim();
     let body={name:qs('editName').value||'',list_price:listTxt!==''?Number(listTxt):null,listings:inventoryListingPayloadsFromEdit(idx,item)};
@@ -3993,13 +4061,17 @@ async function saveInventoryProductAll(idx){
       body.listings=(body.listings||[]).map(l=>({...l,stock:body.stock}));
     }
     let d=await fetchJson('/admin/v2/inventory/product-sync/'+encodeURIComponent(item.sku),{method:'PUT',body:JSON.stringify(body)});
+    if(convertingToSimple){
+      await fetchJson('/admin/inventory/change-item-type/session',{method:'POST',body:JSON.stringify({sku:item.sku,item_type:'simple',confirm_remove_components:true})});
+      item.item_type='single';
+    }
     let jobCount=(d.sync_jobs||[]).filter(j=>j&&j.ok!==false).length;
     applyInventoryProductSaveResultToOpenEditor(idx,item,d);
     invToolStatus(`Cambios guardados OK · stock ${d.new_stock??''} · jobs ML/TN ${jobCount}. Cerrando editor...`,true);
     await searchInventory(state.inventory.offset||0,true);
     let box=inventoryToolBox();
     if(box){box.classList.add('hidden');box.innerHTML='';}
-    setStatus('invStatus',`Cambios guardados OK para ${item.sku} · stock ${d.new_stock??''} · jobs ML/TN ${jobCount}`,true);
+    setStatus('invStatus',`Cambios guardados OK para ${item.sku}${convertingToSimple?' · ahora es Simple':''} · stock ${d.new_stock??''} · jobs ML/TN ${jobCount}`,true);
   }catch(e){
     invToolStatus('Error guardando cambios: '+friendlyInventoryError(e),false);
   }
@@ -4040,7 +4112,7 @@ function renderCustomers(ch){
 function editCustomer(ch,idx){
   let c=customersSorted(ch)[idx];if(!c)return;
   let tools=qs(customerToolsId(ch));
-  tools.innerHTML=`<div id="customerEditBox_${ch}" class="card" style="background:#fffaf0;border-color:#eee2c8"><h3>Editar cliente ${esc(ch==='ALL'?(c.last_order_channel||'ML/TN'):ch)}</h3><div class="grid"><div class="col-4"><label>Nombre fiscal</label><input id="custFiscal" value="${esc(c.fiscal_name||'')}"></div><div class="col-4"><label>Nombre visible</label><input id="custName" value="${esc(c.name||'')}"></div><div class="col-2"><label>Doc tipo</label><input id="custDocType" value="${esc(c.doc_type||'')}"></div><div class="col-2"><label>Documento</label><input id="custDoc" value="${esc(c.doc_number||'')}"></div><div class="col-3"><label>IVA</label><input id="custIva" value="${esc(c.iva_condition||'')}"></div><div class="col-3"><label>Email</label><input id="custEmail" value="${esc(c.email||'')}"></div><div class="col-3"><label>Teléfono</label><input id="custPhone" value="${esc(c.phone||'')}"></div><div class="col-3"><label>Provincia</label><input id="custProvince" value="${esc(c.province||'')}"></div><div class="col-4"><label>Localidad</label><input id="custCity" value="${esc(c.city||'')}"></div><div class="col-2"><label>CP</label><input id="custZip" value="${esc(c.zip||'')}"></div><div class="col-6"><label>Domicilio</label><input id="custAddress" value="${esc(c.address||'')}"></div></div><div class="btnrow" style="margin-top:12px"><button class="ok" onclick="saveCustomer('${ch}','${esc(String(c.id))}')">Guardar cliente</button><button class="secondary" onclick="qs('${customerToolsId(ch)}').innerHTML=''">Cerrar</button></div><div id="customerEditStatus" class="status"></div></div>`;
+  tools.innerHTML=`<div id="customerEditBox_${ch}" class="card" style="background:#fffaf0;border-color:#eee2c8"><h3>Editar cliente ${esc(ch==='ALL'?(c.last_order_channel||'ML/TN'):ch)}</h3><div class="grid"><div class="col-4"><label>Nombre fiscal</label><input id="custFiscal" value="${esc(c.fiscal_name||'')}"></div><div class="col-4"><label>Nombre visible</label><input id="custName" value="${esc(c.name||'')}"></div><div class="col-2"><label>Doc tipo</label><input id="custDocType" value="${esc(c.doc_type||'')}"></div><div class="col-2"><label>Documento</label><input id="custDoc" value="${esc(c.doc_number||'')}"></div><div class="col-3"><label>IVA</label><input id="custIva" value="${esc(c.iva_condition||'')}"></div><div class="col-3"><label>Email</label><input id="custEmail" value="${esc(c.email||'')}"></div><div class="col-3"><label>Teléfono</label><input id="custPhone" value="${esc(c.phone||'')}"></div><div class="col-3"><label>Provincia</label><input id="custProvince" value="${esc(c.province||'')}"></div><div class="col-4"><label>Localidad</label><input id="custCity" value="${esc(c.city||'')}"></div><div class="col-2"><label>CP</label><input id="custZip" value="${esc(c.zip||'')}"></div><div class="col-6"><label>Domicilio</label><input id="custAddress" value="${esc(c.address||'')}"></div></div><div class="btnrow" style="margin-top:12px"><button class="ok" onclick="saveCustomer('${ch}','${esc(String(c.id))}')">Guardar cliente</button><button class="secondary" onclick="qs('${customerToolsId(ch)}').innerHTML=''">Cancelar</button></div><div id="customerEditStatus" class="status"></div></div>`;
   setTimeout(()=>qs(`customerEditBox_${ch}`)?.scrollIntoView({behavior:'smooth',block:'start'}),50);
 }
 async function saveCustomer(ch,id){
