@@ -1319,8 +1319,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.81.1-manual-preview-clean';
-const FRONTEND_BUILD='admin-erp-v2811-manual-preview-clean';
+const FRONTEND_VERSION='2.81.2-invoice-report-session';
+const FRONTEND_BUILD='admin-erp-v2812-invoice-report-session';
 const SALES_DB_POLL_INTERVAL_MS=60000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const XELERIA_MIN_SEARCH_CHARS=4;function isShortSearch(q){q=String(q||'').trim();return q.length>0&&q.length<XELERIA_MIN_SEARCH_CHARS}function minSearchMessage(){return 'Ingresá al menos '+XELERIA_MIN_SEARCH_CHARS+' caracteres para buscar.'}
@@ -1471,7 +1471,18 @@ async function logoutXeleria(){
   try{updateVersionBar('sesión cerrada')}catch(e){}
   window.location.href='inicio.html?reason=logout&next=admin_erp.html';
 }
-function openInvoiceHtml(id){if(!id){alert('No encontré ID de factura.');return}window.open(url('/admin/arca/facturas/'+encodeURIComponent(id)+'/pdf'),'_blank')}function openInvoicePdf(id){if(!id){alert('No encontré ID de factura.');return}window.open(url('/admin/arca/facturas/'+encodeURIComponent(id)+'/pdf'),'_blank')}function hideArcaMonitor(){let el=qs('arcaOut');if(el){el.classList.add('hidden');el.textContent=''}}
+async function openInvoiceHtml(id){
+  if(!id){alert('No encontré ID de factura.');return}
+  let popup=window.open('','_blank');
+  try{
+    let r=await fetch(url('/admin/arca/facturas/'+encodeURIComponent(id)+'/pdf'),{headers:xeleriaHeaders()});
+    if(!r.ok){let txt=await r.text();let data;try{data=JSON.parse(txt)}catch{data={detail:txt}};throw data}
+    let blob=await r.blob();let objectUrl=URL.createObjectURL(blob);
+    if(popup)popup.location.href=objectUrl;else window.open(objectUrl,'_blank');
+    setTimeout(()=>URL.revokeObjectURL(objectUrl),120000);
+  }catch(e){if(popup)popup.close();setStatus('arcaStatus','No pude abrir el PDF: '+errText(e),false);showPre('arcaOut',e)}
+}
+function openInvoicePdf(id){return openInvoiceHtml(id)}function hideArcaMonitor(){let el=qs('arcaOut');if(el){el.classList.add('hidden');el.textContent=''}}
 function normalizar(s){return String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim()}function esc(s){return String(s??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}function dateAR(x){if(!x)return'';try{return new Date(x).toLocaleString('es-AR',{dateStyle:'short',timeStyle:'short',hour12:false})}catch{return x}}function money(n){let x=Number(n||0);return x?('$'+Math.round(x).toLocaleString('es-AR')):''}function shortVer(v){let m=String(v||'').match(/\d+(?:\.\d+){1,3}/);return m?m[0]:String(v||'?')}function jsq(s){return String(s??'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,' ')}
 function setStatus(id,msg,ok=null){let el=qs(id);if(!el)return;el.className='status '+(ok===true?'oktxt':ok===false?'badtxt':ok==='warn'?'warntxt':'');el.textContent=msg||''}function setStatusHtml(id,html,ok=null){let el=qs(id);if(!el)return;el.className='status '+(ok===true?'oktxt':ok===false?'badtxt':ok==='warn'?'warntxt':'');el.innerHTML=html||''}
 function clearStatusLater(id,ms=4500){let el=qs(id);if(!el)return;let txt=el.textContent;setTimeout(()=>{let cur=qs(id);if(cur&&cur.textContent===txt){cur.textContent='';cur.className='status'}},ms)}function showPre(id,obj){let el=qs(id);el.classList.remove('hidden');el.textContent=typeof obj==='string'?obj:JSON.stringify(obj,null,2)}
