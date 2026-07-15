@@ -1319,8 +1319,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.81.2-invoice-report-session';
-const FRONTEND_BUILD='admin-erp-v2812-invoice-report-session';
+const FRONTEND_VERSION='2.81.3-tenantized-fiscal-report';
+const FRONTEND_BUILD='admin-erp-v2813-tenantized-fiscal-report';
 const SALES_DB_POLL_INTERVAL_MS=60000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const XELERIA_MIN_SEARCH_CHARS=4;function isShortSearch(q){q=String(q||'').trim();return q.length>0&&q.length<XELERIA_MIN_SEARCH_CHARS}function minSearchMessage(){return 'Ingresá al menos '+XELERIA_MIN_SEARCH_CHARS+' caracteres para buscar.'}
@@ -3375,7 +3375,17 @@ async function loadArcaInvoices(){
   }catch(e){saveLastArcaError(e,{fn:'loadArcaInvoices'});setStatus('arcaStatus','Error ARCA: '+errText(e),false);showPre('arcaOut',e)}
 }
 function arcaReportQueryBase(){let p=`date_from=${encodeURIComponent(qs('arcaDesde')?.value||'')}&date_to=${encodeURIComponent(qs('arcaHasta')?.value||'')}`;let tipo=qs('arcaTipo')?.value||'Todos',canal=qs('arcaCanal')?.value||'Todos',concepto=qs('arcaConcepto')?.value||'Todos';if(tipo!=='Todos')p+=`&cbte_tipo=${encodeURIComponent(tipo)}`;if(canal!=='Todos')p+=`&channel=${encodeURIComponent(canal)}`;if(concepto!=='Todos')p+=`&concept=${encodeURIComponent(concepto)}`;return p}
-function downloadArcaExcel(){initArcaDates();window.open(url('/admin/arca/facturas/export_excel?'+arcaReportQueryBase()),'_blank')}
+async function downloadArcaExcel(){
+  initArcaDates();setStatus('arcaStatus','Generando Excel fiscal...');
+  try{
+    let r=await fetch(url('/admin/arca/facturas/export_excel?'+arcaReportQueryBase()),{headers:xeleriaHeaders()});
+    if(!r.ok){let txt=await r.text();let data;try{data=JSON.parse(txt)}catch{data={detail:txt}};throw data}
+    let blob=await r.blob();let objectUrl=URL.createObjectURL(blob);let a=document.createElement('a');
+    a.href=objectUrl;a.download=`reporte_arca_${qs('arcaDesde')?.value||'desde'}_a_${qs('arcaHasta')?.value||'hasta'}.xlsx`;
+    document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(objectUrl),60000);
+    setStatus('arcaStatus','Excel descargado con Neto, IVA, Total y jurisdicción discriminados.',true);
+  }catch(e){setStatus('arcaStatus','No pude descargar el Excel: '+errText(e),false);showPre('arcaOut',e)}
+}
 
 function arcaTipoNotaDesdeOriginal(orig,kind){
   let tipo=Number(orig.cbte_tipo||0);
@@ -3607,10 +3617,10 @@ async function arcaManualEmit(){
     let d=await fetchJson('/admin/arca/comprobantes/manual/emitir',{method:'POST',body:JSON.stringify(body)});
     let sm=d.stock_result&&d.stock_result.enabled?` · Stock: ${d.stock_result.mode}`:'';
     let nro=`${d.cbte_letra} ${String(d.pto_vta).padStart(4,'0')}-${String(d.cbte_nro).padStart(8,'0')}`;
-    let link=d.html_path?url(d.html_path):'';
+    let invoiceId=String(d.invoice_id||d.invoice?.id||'');
     let localWarning=d.save_error?`<div style="margin-top:8px;color:#991b1b">ARCA lo emitió, pero falló el guardado local. No lo vuelvas a emitir; informá este número y CAE para recuperarlo.</div>`:'';
     qs('arcaManualStatus').className='status oktxt';
-    qs('arcaManualStatus').innerHTML=`<div class="successBox">Emitido OK · ${esc(nro)} · CAE ${esc(d.cae||'')}${esc(sm)}${localWarning}${link?`<div style="margin-top:8px"><button class="secondary" onclick="window.open('${esc(link)}','_blank')">Ver / imprimir / guardar PDF</button></div>`:''}</div>`;
+    qs('arcaManualStatus').innerHTML=`<div class="successBox">Emitido OK · ${esc(nro)} · CAE ${esc(d.cae||'')}${esc(sm)}${localWarning}${invoiceId?`<div style="margin-top:8px"><button class="secondary" onclick="openInvoiceHtml('${esc(invoiceId)}')">Ver / imprimir / guardar PDF</button></div>`:''}</div>`;
     if(d.save_error){showPre('arcaManualOut',d);return}
     setTimeout(()=>{arcaManualClear();showView('arca-reportes');loadArcaInvoices();setStatus('arcaStatus',`Emitido OK · ${nro} · CAE ${d.cae||''}`,true);window.scrollTo({top:0,behavior:'smooth'})},2200);
   }catch(e){saveLastArcaError(e,{fn:'arcaManualEmit'});setStatus('arcaManualStatus','Error emisión: '+errText(e),false);showPre('arcaManualOut',e)}
