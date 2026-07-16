@@ -1313,8 +1313,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.82.0-xeli-training';
-const FRONTEND_BUILD='admin-erp-v2820-xeli-training';
+const FRONTEND_VERSION='2.82.1-combo-dropdown-close';
+const FRONTEND_BUILD='admin-erp-v2821-combo-dropdown-close';
 const SALES_DB_POLL_INTERVAL_MS=60000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const XELERIA_MIN_SEARCH_CHARS=4;function isShortSearch(q){q=String(q||'').trim();return q.length>0&&q.length<XELERIA_MIN_SEARCH_CHARS}function minSearchMessage(){return 'Ingresá al menos '+XELERIA_MIN_SEARCH_CHARS+' caracteres para buscar.'}
@@ -3246,6 +3246,25 @@ function comboPlaceSuggestBox(box,inputEl){
     box.style.display='block';
   }catch(_e){}
 }
+function comboCloseSuggestBoxes(exceptBox=null){
+  document.querySelectorAll('.comboCompSuggestInline').forEach(box=>{
+    if(box===exceptBox)return;
+    box.dataset.comboDismissed='1';
+    box.classList.add('hidden');
+    box.style.display='none';
+  });
+}
+document.addEventListener('click',e=>{
+  if(!(e.target instanceof Element)||!e.target.closest('.comboCompField'))comboCloseSuggestBoxes();
+},true);
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape')comboCloseSuggestBoxes();
+},true);
+window.addEventListener('scroll',e=>{
+  if(e.target instanceof Element&&e.target.closest('.comboCompSuggestInline'))return;
+  comboCloseSuggestBoxes();
+},true);
+window.addEventListener('resize',()=>comboCloseSuggestBoxes());
 function comboNormalizeSearchItem(x){return {sku:x.sku||'',name:x.name||x.title||'',stock:x.stock??x.master_stock??x.available_quantity??'',price:x.price??x.cost??'',item_type:x.item_type||''}}
 function comboIsSimpleSearchItem(x){let t=normalizar(x.item_type||'');return !['bundle','combo','kit'].includes(t)}
 async function comboSearchComponentItems(q){
@@ -3270,7 +3289,7 @@ async function comboSearchComponentItems(q){
     throw e2;
   }
 }
-function comboComponentInput(key,i,value,inputEl,force=false){let f=comboForm(key);if(!f.components[i])return;f.components[i].sku=value;let box=qs(`comboCompSuggest_${key}_${i}`);let q=String(value||'').trim();if(!box)return;if(q.length<XELERIA_MIN_SEARCH_CHARS){box.classList.add('hidden');box.style.display='none';box.innerHTML='';return}comboPlaceSuggestBox(box,inputEl||qs(`comboCompSku_${key}_${i}`));box.classList.remove('hidden');box.innerHTML='<div class="comboSaasSuggestItem">Buscando...</div>';if(force!==true){clearTimeout(timers[`comboCompLine_${key}_${i}`])}timers[`comboCompLine_${key}_${i}`]=setTimeout(async()=>{try{let items=await comboSearchComponentItems(q);comboPlaceSuggestBox(box,inputEl||qs(`comboCompSku_${key}_${i}`));box.innerHTML=items.map(x=>`<div class="comboSaasSuggestItem" onclick="comboPickComponent('${key}',${i},'${jsq(x.sku||'')}','${jsq(x.name||'')}','${jsq(x.stock??'')}','${jsq(x.price??'')}')"><b class="comboSaasMono">${esc(x.sku||'')}</b><div class="comboSaasMini">${esc(x.name||'')} · precio ${esc(comboPriceValue(x.price))} · stock ${esc(x.stock??'—')}</div></div>`).join('')||'<div class="comboSaasSuggestItem">Sin resultados. Probá con otra parte del SKU o del nombre.</div>';box.classList.remove('hidden');box.style.display='block'}catch(e){comboPlaceSuggestBox(box,inputEl||qs(`comboCompSku_${key}_${i}`));box.innerHTML='<div class="comboSaasSuggestItem">No pude buscar componentes ahora.</div>';box.classList.remove('hidden');box.style.display='block'}},force===true?0:350)}
+function comboComponentInput(key,i,value,inputEl,force=false){let f=comboForm(key);if(!f.components[i])return;f.components[i].sku=value;let box=qs(`comboCompSuggest_${key}_${i}`);let q=String(value||'').trim();if(!box)return;if(q.length<XELERIA_MIN_SEARCH_CHARS){box.dataset.comboDismissed='1';box.classList.add('hidden');box.style.display='none';box.innerHTML='';return}comboCloseSuggestBoxes(box);box.dataset.comboDismissed='0';box.dataset.comboQuery=q;comboPlaceSuggestBox(box,inputEl||qs(`comboCompSku_${key}_${i}`));box.classList.remove('hidden');box.innerHTML='<div class="comboSaasSuggestItem">Buscando...</div>';if(force!==true){clearTimeout(timers[`comboCompLine_${key}_${i}`])}timers[`comboCompLine_${key}_${i}`]=setTimeout(async()=>{try{let items=await comboSearchComponentItems(q);if(!box.isConnected||box.dataset.comboDismissed==='1'||box.dataset.comboQuery!==q)return;comboPlaceSuggestBox(box,inputEl||qs(`comboCompSku_${key}_${i}`));box.innerHTML=items.map(x=>`<div class="comboSaasSuggestItem" onclick="comboPickComponent('${key}',${i},'${jsq(x.sku||'')}','${jsq(x.name||'')}','${jsq(x.stock??'')}','${jsq(x.price??'')}')"><b class="comboSaasMono">${esc(x.sku||'')}</b><div class="comboSaasMini">${esc(x.name||'')} · precio ${esc(comboPriceValue(x.price))} · stock ${esc(x.stock??'—')}</div></div>`).join('')||'<div class="comboSaasSuggestItem">Sin resultados. Probá con otra parte del SKU o del nombre.</div>';box.classList.remove('hidden');box.style.display='block'}catch(e){if(!box.isConnected||box.dataset.comboDismissed==='1'||box.dataset.comboQuery!==q)return;comboPlaceSuggestBox(box,inputEl||qs(`comboCompSku_${key}_${i}`));box.innerHTML='<div class="comboSaasSuggestItem">No pude buscar componentes ahora.</div>';box.classList.remove('hidden');box.style.display='block'}},force===true?0:350)}
 function comboPickComponent(key,i,sku,name,stock,price){let f=comboForm(key);if(!f.components[i])return;f.components[i]={...f.components[i],sku,name,stock,price,quantity:f.components[i].quantity||1};comboRenderComponents(key)}
 function comboRemoveComponent(key,i){let f=comboForm(key);f.components.splice(i,1);comboRenderComponents(key)}
 function comboDebouncedOrphans(key,market){clearTimeout(timers['comboOrph_'+key+'_'+market]);timers['comboOrph_'+key+'_'+market]=setTimeout(()=>comboLoadOrphans(key,market),450)}
