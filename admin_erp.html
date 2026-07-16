@@ -53,6 +53,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 .kebabMenu[open] .kebabPanel{position:fixed!important;z-index:99999!important;right:auto!important;top:auto}.tableWrap{overflow:auto}
 
 .erpBusyOverlay{position:fixed;inset:0;background:rgba(16,16,16,.58);z-index:9999;display:none;align-items:center;justify-content:center;padding:24px}.erpBusyOverlay.active{display:flex}.erpBusyBox{width:min(520px,92vw);background:#fffdf8;border:1px solid var(--line);border-radius:22px;box-shadow:0 22px 70px rgba(0,0,0,.35);padding:24px;text-align:center}.erpBusyTitle{font-size:20px;font-weight:900;margin-bottom:8px}.erpBusyMsg{color:var(--muted);font-size:14px;line-height:1.45}.erpSpinner{width:42px;height:42px;border-radius:50%;border:5px solid #eee2c8;border-top-color:var(--brand2);margin:0 auto 16px;animation:erpSpin .9s linear infinite}@keyframes erpSpin{to{transform:rotate(360deg)}}body.erpBusy button,body.erpBusy .btn,body.erpBusy summary{pointer-events:none;opacity:.72}.erpBusyOverlay button{pointer-events:auto;opacity:1}
+.erpActivity{position:fixed;top:16px;right:18px;width:30px;height:30px;z-index:10001;border-radius:50%;background:#fffdf8;box-shadow:0 5px 18px rgba(17,17,17,.22);opacity:0;visibility:hidden;transform:scale(.82);transition:opacity .15s ease,transform .15s ease,visibility .15s}.erpActivity.active{opacity:1;visibility:visible;transform:scale(1)}.erpActivity::before{content:"";position:absolute;inset:6px;border:3px solid #eadfc9;border-top-color:var(--brand2);border-right-color:#111;border-radius:50%;animation:erpSpin .72s linear infinite}@media(prefers-reduced-motion:reduce){.erpActivity::before,.erpSpinner{animation-duration:1.5s}}
 
 .mlQuestionCard{border:1px solid var(--line);border-radius:18px;background:#fff;margin:12px 0;overflow:hidden;box-shadow:var(--shadow)}
 .mlQuestionHead{display:grid;grid-template-columns:96px 1fr auto;gap:12px;align-items:center;background:#fffaf0;border-bottom:1px solid #eee2c8;padding:12px 14px}
@@ -1102,13 +1103,13 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
         <p>Definí la composición interna de cada combo, asociá publicaciones huérfanas de ML/TN y calculá el stock disponible desde componentes reales. La lógica vive en backend tenant-aware.</p>
       </div>
       <div class="btnrow">
-        <button class="secondary" onclick="loadCombos()">Actualizar</button>
+        <button class="secondary" onclick="loadCombos(state.comboPage?.offset||0)">Actualizar</button>
         <button class="primary" onclick="comboToggleNew()">Agregar combo</button>
       </div>
     </div>
     <div class="comboSaasToolbar" style="margin-top:12px">
       <div><label>Buscar combo</label><input id="comboSearch" oninput="comboDebouncedLoad()" placeholder="SKU, nombre o categoría"></div>
-      <div><label>Cantidad</label><select id="comboLimit" onchange="loadCombos()"><option>50</option><option selected>100</option><option>200</option></select></div>
+      <div><label>Paginación</label><span class="pill">20 por página</span></div>
       <div><label>&nbsp;</label><button class="secondary" onclick="comboClearSearch()">Limpiar</button></div>
     </div>
     <div id="comboStatus" class="status warntxt">Buscando combos...</div>
@@ -1122,6 +1123,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
       <span id="comboSummary" class="small" style="margin-left:auto"></span>
     </div>
     <div id="comboResults" class="tableWrap inventoryWrap comboSaasTable" style="margin-top:12px"></div>
+    <div id="comboPager" class="btnrow inventoryPager"></div>
   </div>
 </section>
 <section id="full-inbound" class="view"><div class="card"><h3>Gestión · Inventario · Envío a Full</h3><p>Detecta el PDF de preparación de Mercado Libre Full y descuenta del stock las unidades que salen hacia bodega.</p><div class="grid"><div class="col-6"><label>PDF instrucciones ML Full</label><input id="fullInboundPdf" type="file" accept="application/pdf"></div><div class="col-6"><label>&nbsp;</label><div class="btnrow"><button onclick="previewFullInboundPdf()">Detectar PDF</button><button class="primary" onclick="applyFullInboundPdf(false)">Descontar stock</button><button class="secondary" onclick="applyFullInboundPdf(true)">Simular</button></div></div></div><div id="fullInboundStatus" class="status"></div><div id="fullInboundResult" class="tableWrap" style="margin-top:12px"></div><pre id="fullInboundOut" class="hidden"></pre></div></section>
@@ -1301,6 +1303,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 
 </main></div>
 <div id="erpBusyOverlay" class="erpBusyOverlay"><div class="erpBusyBox"><div class="erpSpinner"></div><div id="erpBusyTitle" class="erpBusyTitle">Procesando...</div><div id="erpBusyMsg" class="erpBusyMsg">No cierres esta pantalla.</div></div></div>
+<div id="erpActivity" class="erpActivity" aria-hidden="true"></div>
 <script>
 
 function comboQtyInt(v){
@@ -1313,8 +1316,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.82.2-xeli-quick-replies-cancel';
-const FRONTEND_BUILD='admin-erp-v2822-xeli-quick-replies-cancel';
+const FRONTEND_VERSION='2.83.0-combos-page20-global-spinner';
+const FRONTEND_BUILD='admin-erp-v2830-combos-page20-global-spinner';
 const SALES_DB_POLL_INTERVAL_MS=60000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const XELERIA_MIN_SEARCH_CHARS=4;function isShortSearch(q){q=String(q||'').trim();return q.length>0&&q.length<XELERIA_MIN_SEARCH_CHARS}function minSearchMessage(){return 'Ingresá al menos '+XELERIA_MIN_SEARCH_CHARS+' caracteres para buscar.'}
@@ -1514,6 +1517,11 @@ function renderArcaManualPreview(d){
   let st=qs('arcaManualStatus'); if(st)st.insertAdjacentElement('afterend',box); else host.appendChild(box);
 }
 function setBusy(on,title='Procesando...',msg='No cierres esta pantalla.'){let ov=qs('erpBusyOverlay');if(!ov)return;document.body.classList.toggle('erpBusy',!!on);ov.classList.toggle('active',!!on);if(qs('erpBusyTitle'))qs('erpBusyTitle').textContent=title;if(qs('erpBusyMsg'))qs('erpBusyMsg').textContent=msg}function setArcaAndSalesStatus(ch,msg,ok=null){setStatus('arcaStatus',msg,ok);setStatus(String(ch||'').toLowerCase()+'VentasStatus',msg,ok)}
+let globalActivityCount=0;
+function globalActivityBegin(){globalActivityCount+=1;let el=qs('erpActivity');if(el)el.classList.add('active')}
+function globalActivityEnd(){globalActivityCount=Math.max(0,globalActivityCount-1);if(globalActivityCount===0){let el=qs('erpActivity');if(el)el.classList.remove('active')}}
+const xeleriaNativeFetch=window.fetch.bind(window);
+window.fetch=async function(...args){globalActivityBegin();try{return await xeleriaNativeFetch(...args)}finally{globalActivityEnd()}};
 function syncConnectionFields(){['apiUrl','cfgApiUrl'].forEach(id=>{let el=qs(id);if(el)el.value=state.api});['token','cfgToken'].forEach(id=>{let el=qs(id);if(el)el.value=state.token})}function saveSettings(){state.api=apiBase();state.token=token().trim();localStorage.setItem('pc_erp_api',state.api);localStorage.setItem('pc_erp_token',state.token);localStorage.setItem('xeleria_admin_token',state.token);syncConnectionFields();setStatus('homeStatus','Guardado.',true);setStatus('connStatus',state.token?'Guardado.':'Guardado, pero ADMIN_TOKEN quedó vacío.',!!state.token);syncLinks()}function saveSettingsFromConfig(){saveSettings()}function loadSettings(){state.api=localStorage.getItem('pc_erp_api')||localStorage.getItem('xeleria_api_url')||state.api;state.token=localStorage.getItem('pc_erp_token')||localStorage.getItem('xeleria_admin_token')||'';syncConnectionFields();loadViewPrefs();loadConfig();syncLinks()}function syncLinks(){
   var d=qs('downloadCsv');
   if(d){
@@ -1810,38 +1818,43 @@ function rememberTenantIdFromPayload(data){
 }
 // ====== FIN MODULO SISTEMA / POWERSHELL INTERNO ======
 async function fetchJson(path,opt={}){
-  let r,txt='',data=null;
+  globalActivityBegin();
   try{
-    r=await fetch(url(path),{...opt,headers:xeleriaHeaders(opt.headers||{})});
-    txt=await r.text();
-    try{data=JSON.parse(txt)}catch{data={ok:r.ok,text:txt}}
-    rememberTenantIdFromPayload(data);
-    if(!opt.skipLastJson)saveLastJson({ok:r.ok,http_status:r.status,path,method:opt.method||'GET',response:data});
-  }catch(networkError){
-    let out={ok:false,network:true,message:networkError?.message||String(networkError),path,method:opt.method||'GET'};
-    if(!opt.skipLastJson)saveLastJson(out);
-    if(String(path).includes('/admin/arca/'))saveLastArcaError(out,{path,method:opt.method||'GET'});
-    throw out;
-  }
-  if(!r.ok){
-    let out={ok:false,http_status:r.status,http_status_text:r.statusText,path,method:opt.method||'GET',response:data,raw_text:txt};
-    if(data&&typeof data==='object'){
-      if(data.detail!==undefined)out.detail=data.detail;
-      if(data.message!==undefined)out.message=data.message;
-      if(data.error!==undefined)out.error=data.error;
-    }
-    if(!opt.skipLastJson)saveLastJson(out);
-    if(String(path).includes('/admin/arca/'))saveLastArcaError(out,{path,method:opt.method||'GET'});
+    let r,txt='',data=null;
     try{
-      if(authExpiredError(out)){
-        try{localStorage.removeItem('xeleria_session_token');sessionStorage.removeItem('xeleria_session_token');}catch(_e){}
-        setBusy(true,'Sesión expirada','Volviendo al inicio...');
-        setTimeout(()=>redirectToInicio('session_expired'),250);
+      r=await fetch(url(path),{...opt,headers:xeleriaHeaders(opt.headers||{})});
+      txt=await r.text();
+      try{data=JSON.parse(txt)}catch{data={ok:r.ok,text:txt}}
+      rememberTenantIdFromPayload(data);
+      if(!opt.skipLastJson)saveLastJson({ok:r.ok,http_status:r.status,path,method:opt.method||'GET',response:data});
+    }catch(networkError){
+      let out={ok:false,network:true,message:networkError?.message||String(networkError),path,method:opt.method||'GET'};
+      if(!opt.skipLastJson)saveLastJson(out);
+      if(String(path).includes('/admin/arca/'))saveLastArcaError(out,{path,method:opt.method||'GET'});
+      throw out;
+    }
+    if(!r.ok){
+      let out={ok:false,http_status:r.status,http_status_text:r.statusText,path,method:opt.method||'GET',response:data,raw_text:txt};
+      if(data&&typeof data==='object'){
+        if(data.detail!==undefined)out.detail=data.detail;
+        if(data.message!==undefined)out.message=data.message;
+        if(data.error!==undefined)out.error=data.error;
       }
-    }catch(_authRedirectError){}
-    throw out;
+      if(!opt.skipLastJson)saveLastJson(out);
+      if(String(path).includes('/admin/arca/'))saveLastArcaError(out,{path,method:opt.method||'GET'});
+      try{
+        if(authExpiredError(out)){
+          try{localStorage.removeItem('xeleria_session_token');sessionStorage.removeItem('xeleria_session_token');}catch(_e){}
+          setBusy(true,'Sesión expirada','Volviendo al inicio...');
+          setTimeout(()=>redirectToInicio('session_expired'),250);
+        }
+      }catch(_authRedirectError){}
+      throw out;
+    }
+    return data;
+  }finally{
+    globalActivityEnd();
   }
-  return data;
 }
 
 
@@ -3126,10 +3139,10 @@ function renderInventory(){
   qs('invResults').innerHTML=`<table class="comboMatrixTable productMatrixTable"><thead><tr><th>SKU</th><th>Producto</th><th>Publicaciones</th><th>Precio lista</th><th>Stock</th><th></th></tr></thead><tbody>${tbody}</tbody></table>`;
 }
 
-function comboLimit(){return Number(qs('comboLimit')?.value||100)}
-function comboEnsureState(){state.comboItems=state.comboItems||[];state.comboForms=state.comboForms||{};state.comboExpanded=state.comboExpanded||'';state.comboNewOpen=!!state.comboNewOpen;state.comboDraftVisible=!!state.comboDraftVisible;}
-function comboDebouncedLoad(){clearTimeout(timers.comboSearch);timers.comboSearch=setTimeout(()=>loadCombos(),450)}
-function comboClearSearch(){if(qs('comboSearch'))qs('comboSearch').value='';loadCombos()}
+function comboLimit(){return 20}
+function comboEnsureState(){state.comboItems=state.comboItems||[];state.comboForms=state.comboForms||{};state.comboExpanded=state.comboExpanded||'';state.comboNewOpen=!!state.comboNewOpen;state.comboDraftVisible=!!state.comboDraftVisible;state.comboPage=state.comboPage||{offset:0,total:0,has_more:false,loadSeq:0};}
+function comboDebouncedLoad(){clearTimeout(timers.comboSearch);timers.comboSearch=setTimeout(()=>loadCombos(0),450)}
+function comboClearSearch(){if(qs('comboSearch'))qs('comboSearch').value='';loadCombos(0)}
 function comboSafeKey(v){return 'c_'+String(v||'').replace(/[^a-zA-Z0-9_\-]/g,'_')}
 function comboFormKeyForSku(sku){return 'edit_'+comboSafeKey(sku)}
 function comboEmptyForm(){return {sku:'',name:'',components:[],listings:[],orphanML:[],orphanTN:[],existingListings:[]}}
@@ -3171,7 +3184,8 @@ function comboAfterRender(){
   comboInjectOrphanNote();
 }
 
-async function loadCombos(){comboEnsureState();let q=(qs('comboSearch')?.value||'').trim();let lim=comboLimit();if(isShortSearch(q)){state.comboItems=[];renderCombos();if(qs('comboSummary'))qs('comboSummary').textContent='Ingresá al menos 4 caracteres para buscar combos';setStatus('comboStatus','Ingresá al menos 4 caracteres para buscar combos.');return;}setStatus('comboStatus','Buscando combos...');try{let d=await fetchJson(`/admin/v2/combos?limit=${encodeURIComponent(lim)}&offset=0&q=${encodeURIComponent(q)}`);state.comboItems=d.items||[];renderCombos();let missing=state.comboItems.filter(x=>x.requires_action).length;let total=d.total??state.comboItems.length;if(qs('comboSummary'))qs('comboSummary').textContent=`${total} combos · ${missing} requieren acción en esta vista`;setStatus('comboStatus',`Combos cargados: ${state.comboItems.length} visibles${q?' filtrados':''}.`,true)}catch(e){setStatus('comboStatus','Error combos: '+errText(e),false)}}
+function comboPagerHtml(d){let limit=20,offset=Number(d.offset||0),total=Number(d.total||0),shown=(d.items||[]).length;let from=total?offset+1:0,to=Math.min(offset+shown,total||offset+shown);let prev=Math.max(0,offset-limit),next=offset+limit;return `<button class="secondary" ${offset<=0?'disabled':''} onclick="loadCombos(${prev})">Atrás</button><span class="pill">Mostrando ${from}–${to}${total?` de ${total}`:''}</span><button class="secondary" ${!d.has_more?'disabled':''} onclick="loadCombos(${next})">Siguiente</button>`}
+async function loadCombos(offset=0){comboEnsureState();let q=(qs('comboSearch')?.value||'').trim();let lim=20;offset=Math.max(0,Number(offset||0));state.comboPage.loadSeq+=1;let seq=state.comboPage.loadSeq;if(isShortSearch(q)){state.comboItems=[];state.comboPage={...state.comboPage,offset:0,total:0,has_more:false};renderCombos();if(qs('comboPager'))qs('comboPager').innerHTML='';if(qs('comboSummary'))qs('comboSummary').textContent='Ingresá al menos 4 caracteres para buscar combos';setStatus('comboStatus','Ingresá al menos 4 caracteres para buscar combos.');return;}setStatus('comboStatus','Buscando combos...');try{let d=await fetchJson(`/admin/v2/combos?limit=${lim}&offset=${encodeURIComponent(offset)}&q=${encodeURIComponent(q)}`);if(seq!==state.comboPage.loadSeq)return;state.comboItems=d.items||[];state.comboPage={...state.comboPage,offset:Number(d.offset??offset),total:Number(d.total??state.comboItems.length),has_more:!!d.has_more,loadSeq:seq};renderCombos();let missing=state.comboItems.filter(x=>x.requires_action).length,total=state.comboPage.total;if(qs('comboPager'))qs('comboPager').innerHTML=comboPagerHtml(d);if(qs('comboSummary'))qs('comboSummary').textContent=`${total} combos · ${missing} requieren acción en esta página`;setStatus('comboStatus',`Combos cargados: ${state.comboItems.length} visibles${q?' filtrados':''}.`,true)}catch(e){if(seq!==state.comboPage.loadSeq)return;setStatus('comboStatus','Error combos: '+errText(e),false)}}
 function renderCombos(){comboEnsureState();let items=[...(state.comboItems||[])];if(state.comboNewOpen){items=[{_draft:true,sku:'',name:'',listings:[],components_preview:[],available_to_sell:'—'},...items]}let tbody='';if(!items.length){tbody='<tr><td colspan="6"><div class="comboSaasEmpty">Sin combos para este filtro.</div></td></tr>'}else{tbody=items.map(c=>comboRenderMatrixRows(c)).join('')}let el=qs('comboResults');if(el)el.innerHTML=`<table class="comboMatrixTable"><thead><tr><th>SKU Combo</th><th>Nombre</th><th>Publicaciones</th><th>Precio</th><th>Stock</th><th></th></tr></thead><tbody>${tbody}</tbody></table>`;if(state.comboExpanded&&state.comboExpanded!=='__new__'){comboLoadEditPanel(state.comboExpanded)}}
 function comboMatrixMenu(sku){return `<button type="button" class="comboKebabButton" title="Más acciones" onclick="openComboActionMenu(event,'${jsq(sku)}')">⋮</button>`}
 function openComboActionMenu(ev,sku){openFloatingActionMenu(ev,[{label:'Modificar',onclick:`comboOpenEdit('${jsq(sku)}')`},{label:'Eliminar',cls:'danger',onclick:`comboDelete('${jsq(sku)}')`}])}
@@ -3300,8 +3314,12 @@ function comboToggleListing(key,market,i,on){if(on!==false)comboAddListing(key,m
 function comboRenderSelectedListings(key){let el=qs('comboSelectedListings_'+key);if(el)el.innerHTML=comboSelectedListingsMini(key)}
 function comboRemoveSelectedListing(key,i){let f=comboForm(key);f.listings.splice(i,1);comboRenderSelectedListings(key);['ML','TN'].forEach(m=>comboRenderOrphans(key,m));renderCombos()}
 async function comboSaveForm(key,mode){
+  if(state.comboSaving)return;
+  state.comboSaving=true;
   let f=comboForm(key);
   let st=qs('comboFormStatus_'+key);
+  let panel=st?.closest('.comboEditPanelMatrix');
+  if(panel)panel.querySelectorAll('button').forEach(b=>b.disabled=true);
   if(st){st.className='status';st.innerHTML='<span class="comboFriendlyOk">Guardando...</span>'}
   try{
     let rawComponents=(f.components||[]).filter(c=>String(c.sku||'').trim());
@@ -3328,14 +3346,17 @@ async function comboSaveForm(key,mode){
       delete state.comboForms[key];
     }
     setStatus('comboStatus',converting?'SKU convertido a Combo OK. Refrescando vista...':'Combo guardado OK. Refrescando vista en segundo plano...',true);
-    loadCombos().catch(e=>{
+    loadCombos(state.comboPage?.offset||0).catch(e=>{
       setStatus('comboStatus','Combo guardado OK, pero el refresco quedó lento. Podés actualizar manualmente.', 'warn');
     });
   }catch(e){
     if(st){st.className='status badtxt';st.innerHTML='<span class="comboFriendlyError">'+esc(comboFriendlyComboError(e))+'</span>'}
+  }finally{
+    state.comboSaving=false;
+    if(panel&&panel.isConnected)panel.querySelectorAll('button').forEach(b=>b.disabled=false);
   }
 }
-async function comboDelete(sku){if(!confirm('¿Desactivar combo '+sku+'?\n\nNo borra publicaciones del canal.'))return;try{setStatus('comboStatus','Desactivando combo...');await fetchJson('/admin/v2/bundles/'+encodeURIComponent(sku),{method:'DELETE'});setStatus('comboStatus','Combo desactivado.',true);await loadCombos()}catch(e){setStatus('comboStatus','Error desactivando: '+errText(e),false)}}
+async function comboDelete(sku){if(!confirm('¿Desactivar combo '+sku+'?\n\nNo borra publicaciones del canal.'))return;try{setStatus('comboStatus','Desactivando combo...');await fetchJson('/admin/v2/bundles/'+encodeURIComponent(sku),{method:'DELETE'});setStatus('comboStatus','Combo desactivado.',true);await loadCombos(state.comboPage?.offset||0)}catch(e){setStatus('comboStatus','Error desactivando: '+errText(e),false)}}
 
 
 async function saveInventoryStock(idx){let item=state.inventoryItems[idx];let el=qs('rowStatus_'+idx);if(String(item.item_type||'').toLowerCase()==='bundle'){if(el){el.textContent='Combo: el stock se calcula desde componentes.';el.style.color='var(--muted)'}return}let sku=item.sku;let stockEl=qs('stock_'+idx);let newStock=Number(stockEl&&stockEl.value);if(!Number.isFinite(newStock)){if(el)el.textContent='Stock inválido';return}let safeStock=Math.max(0,Math.trunc(newStock));if(el)el.textContent='Guardando y generando sync...';try{let d=await fetchJson('/admin/v2/inventory/product-sync/'+encodeURIComponent(sku),{method:'PUT',body:JSON.stringify({name:item.name||'',stock:safeStock,listings:item.listings||[]})});item.stock=safeStock;if(el){el.textContent=`OK: stock ${safeStock}. Jobs: ${(d.sync_jobs||[]).length}. Refrescando...`;el.style.color='var(--ok)'}await searchInventory(state.inventory.offset||0,false);setStatus('invStatus',`Stock guardado para ${sku}. Sync ML/TN generado y vista refrescada.`,true)}catch(e){if(el){el.textContent='Error: '+friendlyInventoryError(e);el.style.color='var(--bad)'}}}
