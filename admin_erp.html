@@ -533,6 +533,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 .productMatrixTable th:nth-child(5){width:12%!important}
 .productMatrixTable th:nth-child(6){width:7%!important}
 .productTypeText{display:block!important;margin-top:4px!important;color:#59544b!important;font-size:12px!important;font-weight:700!important;line-height:1.2!important;background:transparent!important;border:0!important;border-radius:0!important;padding:0!important;text-transform:lowercase!important}
+.productPackageLine{display:block;margin-top:4px;color:#59544b;font-size:11px;line-height:1.25}
 .productTypeText.bundle{color:#111!important;font-weight:800!important}
 .productMatrixMain .comboMatrixName .productCategoryLine{display:none!important}
 .productPublicationDetailRow td{background:#fffdf8!important;padding:0 9px 7px!important;border-bottom:1px solid #eadfc9!important}
@@ -1331,8 +1332,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.83.1-xeli-training-layout';
-const FRONTEND_BUILD='admin-erp-v2831-xeli-training-layout';
+const FRONTEND_VERSION='2.84.0-product-package-dimensions';
+const FRONTEND_BUILD='admin-erp-v2840-product-package-dimensions';
 const SALES_DB_POLL_INTERVAL_MS=60000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
 const XELERIA_MIN_SEARCH_CHARS=4;function isShortSearch(q){q=String(q||'').trim();return q.length>0&&q.length<XELERIA_MIN_SEARCH_CHARS}function minSearchMessage(){return 'Ingresá al menos '+XELERIA_MIN_SEARCH_CHARS+' caracteres para buscar.'}
@@ -3133,6 +3134,17 @@ function productCategoryLine(i){
   let c=String(i.category||'').trim();
   return c?`<span class="small productCategoryLine">${esc(c)}</span>`:'';
 }
+function inventoryPackageNumber(v){
+  if(v===null||v===undefined||String(v).trim()==='')return null;
+  let n=Number(v);return Number.isFinite(n)&&n>0?n:null;
+}
+function inventoryPackageLine(i){
+  let w=inventoryPackageNumber(i.weight_kg),a=inventoryPackageNumber(i.width_cm),h=inventoryPackageNumber(i.height_cm),l=inventoryPackageNumber(i.depth_cm);
+  let parts=[];
+  if(w!==null)parts.push(`${esc(w)} kg`);
+  if(a!==null||h!==null||l!==null)parts.push(`${a!==null?esc(a):'—'} × ${h!==null?esc(h):'—'} × ${l!==null?esc(l):'—'} cm`);
+  return parts.length?`<span class="productPackageLine">Bulto: ${parts.join(' · ')}</span>`:'';
+}
 function renderInventory(){
   let items=state.inventoryItems||[];
   let tbody='';
@@ -3143,7 +3155,7 @@ function renderInventory(){
       let isBundle=inventoryIsBundle(i);
       return `<tr class="comboMatrixMain productMatrixMain ${isBundle?'bundle':'simple'}">
         <td><div class="comboMatrixSku comboSaasMono">${esc(i.sku)}</div>${inventoryTypePill(i)}</td>
-        <td><div class="comboMatrixName">${esc(i.name||'')}${productCategoryLine(i)}</div></td>
+        <td><div class="comboMatrixName">${esc(i.name||'')}${productCategoryLine(i)}${inventoryPackageLine(i)}</div></td>
         <td class="comboMatrixPubs"><span class="small">${esc(inventoryListingSummary(i))}</span></td>
         <td class="productListPrice">${inventoryListPriceText(i)}</td>
         <td class="comboMatrixStock">${inventoryStockMatrixCell(i,idx)}</td>
@@ -3775,8 +3787,49 @@ document.addEventListener('click',e=>{if(!e.target.closest('details.kebabMenu'))
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeOpenKebabMenus();document.querySelectorAll('.floatingKebabPanel').forEach(x=>x.remove())}});
 window.addEventListener('scroll',positionOpenKebabMenus,true);window.addEventListener('resize',positionOpenKebabMenus);
 function scrollToInventoryTool(){let box=inventoryToolBox();if(!box)return;setTimeout(()=>box.scrollIntoView({behavior:'smooth',block:'start'}),60)}
-function toggleInventoryTool(kind){let box=inventoryToolBox();if(!box)return;closeOpenKebabMenus();box.classList.remove('hidden');if(kind==='product')renderCreateProductTool();if(kind==='bundle')showView('combos');if(kind==='link')renderLinkPublicationsTool();scrollToInventoryTool()}function invToolStatus(msg,ok=true){let el=qs('inventoryToolStatus');if(!el)return;el.textContent=msg;el.style.color=ok?'var(--ok)':'var(--bad)'}function renderCreateProductTool(){inventoryToolBox().innerHTML=`<div class="card" style="background:#fffaf0;border-color:#eee2c8"><h3>Agregar producto simple</h3><p>Alta de SKU simple. Después podés vincular publicaciones ML/TN sin asociar.</p><div class="grid"><div class="col-3"><label>SKU *</label><input id="newSku" placeholder="Ej: PC..." oninput="if(qs('linkSku'))qs('linkSku').value=this.value"></div><div class="col-5"><label>Producto *</label><input id="newName" placeholder="Nombre comercial"></div><div class="col-2"><label>Stock inicial</label><input id="newStock" type="number" step="1" value="0"></div><div class="col-2"><label>Costo</label><input id="newCost" type="number" step="0.01" placeholder="Opcional"></div></div><div class="btnrow" style="margin-top:12px"><button class="ok" onclick="createInventoryProduct()">Crear producto</button><button class="secondary" onclick="renderLinkPublicationsTool(qs('newSku')?.value||'')">Vincular publicaciones</button><button class="secondary" onclick="inventoryToolBox().classList.add('hidden')">Cancelar</button></div><div id="inventoryToolStatus" class="status"></div></div>`}
-async function createInventoryProduct(){let sku=(qs('newSku').value||'').trim();let name=(qs('newName').value||'').trim();if(!sku||!name){invToolStatus('SKU y producto son obligatorios.',false);return}let body={sku,name,cost:qs('newCost').value?Number(qs('newCost').value):null,stock:Number(qs('newStock').value||0),active:true};invToolStatus('Creando producto...');try{let d=await fetchJson('/admin/v2/inventory/product',{method:'POST',body:JSON.stringify(body)});invToolStatus(`Producto creado: ${d.item?.sku||sku}`,true);qs('invSearch').value=sku;await searchInventory(0,true)}catch(e){invToolStatus('Error creando producto: '+(e?.detail?JSON.stringify(e.detail):JSON.stringify(e)),false)}}
+function toggleInventoryTool(kind){let box=inventoryToolBox();if(!box)return;closeOpenKebabMenus();box.classList.remove('hidden');if(kind==='product')renderCreateProductTool();if(kind==='bundle')showView('combos');if(kind==='link')renderLinkPublicationsTool();scrollToInventoryTool()}
+function invToolStatus(msg,ok=true){let el=qs('inventoryToolStatus');if(!el)return;el.textContent=msg;el.style.color=ok?'var(--ok)':'var(--bad)'}
+function inventoryOptionalPositiveInput(id,label){
+  let raw=(qs(id)?.value||'').trim();
+  if(raw==='')return null;
+  let n=Number(raw.replace(',','.'));
+  if(!Number.isFinite(n)||n<=0)throw new Error(`${label} debe ser mayor que 0.`);
+  return n;
+}
+function inventoryPackageBody(prefix){
+  return {
+    weight_kg:inventoryOptionalPositiveInput(prefix+'WeightKg','Peso'),
+    width_cm:inventoryOptionalPositiveInput(prefix+'WidthCm','Ancho'),
+    height_cm:inventoryOptionalPositiveInput(prefix+'HeightCm','Alto'),
+    depth_cm:inventoryOptionalPositiveInput(prefix+'DepthCm','Largo')
+  };
+}
+function renderCreateProductTool(){
+  inventoryToolBox().innerHTML=`<div class="card" style="background:#fffaf0;border-color:#eee2c8">
+    <h3>Agregar producto simple</h3>
+    <p>Alta de SKU simple. Después podés vincular publicaciones ML/TN sin asociar.</p>
+    <div class="grid">
+      <div class="col-3"><label>SKU *</label><input id="newSku" placeholder="Ej: PC..." oninput="if(qs('linkSku'))qs('linkSku').value=this.value"></div>
+      <div class="col-5"><label>Producto *</label><input id="newName" placeholder="Nombre comercial"></div>
+      <div class="col-2"><label>Stock inicial</label><input id="newStock" type="number" step="1" value="0"></div>
+      <div class="col-2"><label>Costo</label><input id="newCost" type="number" step="0.01" placeholder="Opcional"></div>
+      <div class="col-3"><label>Peso (kg)</label><input id="newWeightKg" type="number" min="0" step="0.001" placeholder="Bulto embalado"></div>
+      <div class="col-3"><label>Ancho (cm)</label><input id="newWidthCm" type="number" min="0" step="0.1"></div>
+      <div class="col-3"><label>Alto (cm)</label><input id="newHeightCm" type="number" min="0" step="0.1"></div>
+      <div class="col-3"><label>Largo (cm)</label><input id="newDepthCm" type="number" min="0" step="0.1"></div>
+      <div class="col-12 small">Peso y medidas del paquete ya embalado. Quedarán listos para cotizar por MiCorreo.</div>
+    </div>
+    <div class="btnrow" style="margin-top:12px"><button class="ok" onclick="createInventoryProduct()">Crear producto</button><button class="secondary" onclick="renderLinkPublicationsTool(qs('newSku')?.value||'')">Vincular publicaciones</button><button class="secondary" onclick="inventoryToolBox().classList.add('hidden')">Cancelar</button></div><div id="inventoryToolStatus" class="status"></div>
+  </div>`;
+}
+async function createInventoryProduct(){
+  let sku=(qs('newSku').value||'').trim(),name=(qs('newName').value||'').trim();
+  if(!sku||!name){invToolStatus('SKU y producto son obligatorios.',false);return}
+  let body;
+  try{body={sku,name,cost:qs('newCost').value?Number(qs('newCost').value):null,stock:Number(qs('newStock').value||0),active:true,...inventoryPackageBody('new')}}catch(e){invToolStatus(e.message||String(e),false);return}
+  invToolStatus('Creando producto...');
+  try{let d=await fetchJson('/admin/v2/inventory/product',{method:'POST',body:JSON.stringify(body)});invToolStatus(`Producto creado: ${d.item?.sku||sku}`,true);qs('invSearch').value=sku;await searchInventory(0,true)}catch(e){invToolStatus('Error creando producto: '+(e?.detail?JSON.stringify(e.detail):JSON.stringify(e)),false)}
+}
 
 /* COMBOS_LEGACY_MONOUSER_JS_REMOVED: la UI nueva debe vivir integrada en la vista combos SaaS. */
 
@@ -3836,6 +3889,11 @@ function renderEditProductTool(idx){
       <div class="col-2"><label>Stock</label><input id="editStock" type="number" step="1" value="${esc(item.stock??0)}" ${isBundle?'disabled title="Stock calculado desde componentes"':''}></div>
       <div class="col-2"><label>Precio lista</label><input id="editListPrice" type="number" step="0.01" value="${esc(inventoryListPrice(item)??'')}"></div>
       <div class="col-2"><label>Costo</label><input id="editCost" type="number" step="0.01" value="${esc(item.cost??'')}"></div>
+      <div class="col-3"><label>Peso (kg)</label><input id="editWeightKg" type="number" min="0" step="0.001" value="${esc(item.weight_kg??'')}" placeholder="Bulto embalado"></div>
+      <div class="col-3"><label>Ancho (cm)</label><input id="editWidthCm" type="number" min="0" step="0.1" value="${esc(item.width_cm??'')}"></div>
+      <div class="col-3"><label>Alto (cm)</label><input id="editHeightCm" type="number" min="0" step="0.1" value="${esc(item.height_cm??'')}"></div>
+      <div class="col-3"><label>Largo (cm)</label><input id="editDepthCm" type="number" min="0" step="0.1" value="${esc(item.depth_cm??'')}"></div>
+      <div class="col-12 small">Datos del bulto terminado y embalado${isBundle?' del combo':''}. Quedarán listos para cotizar por MiCorreo.</div>
       <div class="col-12"><label>Precios / stock de publicaciones asociadas</label><div class="productEditListings">${renderEditableListingsForItem(item,idx)}</div><div class="small">Al guardar, el stock del SKU se replica como objetivo ML/TN mediante sync_jobs. Stock marketplace nunca baja de 0.</div></div>
     </div>
     <div class="btnrow" style="margin-top:12px">
@@ -3899,7 +3957,8 @@ async function saveInventoryProduct(idx){
   let isBundle=inventoryIsBundle(item);
   let costTxt=(qs('editCost').value||'').trim();
   let listTxt=(qs('editListPrice')?.value||'').trim();
-  let body={name:qs('editName').value||''};
+  let body;
+  try{body={name:qs('editName').value||'',...inventoryPackageBody('edit')}}catch(e){invToolStatus(e.message||String(e),false);return null}
   body.list_price=listTxt!==''?Number(listTxt):null;
   if(costTxt!=='')body.cost=Number(costTxt);
   if(!isBundle&&qs('editStock')){
@@ -3941,7 +4000,8 @@ async function saveInventoryProductAll(idx){
     if(convertingToSimple&&!confirm(`Convertir ${item.sku} de Combo a Simple?\n\nSe quitará su composición. El SKU, publicaciones y stock actual se conservan.`))return;
     let costTxt=(qs('editCost').value||'').trim();
     let listTxt=(qs('editListPrice')?.value||'').trim();
-    let body={name:qs('editName').value||'',list_price:listTxt!==''?Number(listTxt):null,listings:inventoryListingPayloadsFromEdit(idx,item)};
+    let body;
+    try{body={name:qs('editName').value||'',list_price:listTxt!==''?Number(listTxt):null,listings:inventoryListingPayloadsFromEdit(idx,item),...inventoryPackageBody('edit')}}catch(e){invToolStatus(e.message||String(e),false);return}
     if(costTxt!=='')body.cost=Number(costTxt);
     if(!isBundle&&qs('editStock')){
       let newStock=Number(qs('editStock').value);
