@@ -1097,7 +1097,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
   <div class="col-small"><label>&nbsp;</label><button onclick="searchInventory(0,true)">Filtrar</button></div>
   <div class="col-12"><div class="btnrow" style="margin-top:4px">
     <button class="primary" onclick="toggleInventoryTool('product')">Agregar producto</button>
-    <a class="btn secondary" id="downloadCsv" href="#">Bajar planilla inventario XLSX</a>
+    <button type="button" class="secondary" id="downloadCsv" onclick="downloadInventoryCsv()">Bajar planilla inventario XLSX</button>
     <input type="file" id="csvFile" accept=".xlsx,.csv" style="max-width:340px">
     <button class="secondary" onclick="uploadCsv()">Subir planilla inventario</button>
   </div></div>
