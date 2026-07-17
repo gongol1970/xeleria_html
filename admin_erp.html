@@ -1558,45 +1558,16 @@ function filenameFromContentDisposition(cd){
   return name||'inventario_xeleria.csv';
 }
 async function downloadInventoryCsv(){
+  setBusy(true,'Preparando inventario','Armando la planilla completa...');
   setStatus('invStatus','Preparando planilla...');
   try{
-    var h=xeleriaHeaders();
-    var r=await fetch(url('/admin/v2/inventory/products/export-ticket'),{method:'POST',headers:h,cache:'no-store'});
-    var txt='';
-    if(!r.ok){
-      try{txt=await r.text()}catch(_e){}
-      throw {http_status:r.status,http_status_text:r.statusText,raw_text:txt,detail:txt};
-    }
-    var d=await r.json();
-    var downloadPath=String((d&&d.download_path)||'').trim();
-    var downloadUrl=downloadPath?url(downloadPath):String((d&&d.download_url)||'').trim();
-    if(!downloadUrl){
-      throw {detail:'El backend no devolvió URL de descarga'};
-    }
-
-    // Chrome bloquea descargas disparadas automáticamente por JS.
-    // Dejamos un link real para que el segundo clic del usuario haga la descarga.
-    var host=qs('invStatus');
-    if(host){
-      host.className='status oktxt';
-      host.textContent='Planilla lista. ';
-      var a=document.createElement('a');
-      a.href=downloadUrl;
-      a.textContent='Descargar XLSX ahora';
-      a.style.fontWeight='900';
-      a.style.textDecoration='underline';
-      a.onclick=function(){
-        setTimeout(function(){
-          try{searchInventory(state.inventory.offset||0,true)}
-          catch(_e){}
-        },1800);
-      };
-      host.appendChild(a);
-    }else{
-      setStatus('invStatus','Planilla lista.',true);
-    }
+    await xeliDownload('/admin/v2/inventory/products/export','inventario_xeleria.xlsx');
+    setStatus('invStatus','Planilla de inventario descargada.',true);
+    clearStatusLater('invStatus',5000);
   }catch(e){
     setStatus('invStatus','Error preparando descarga: '+friendlyInventoryError(e),false);
+  }finally{
+    setBusy(false);
   }
 }
 
