@@ -977,7 +977,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 <aside>
 <div class="brand"><div class="brandTop"><span class="appMark"><img src="./favicon_xeleria.png?v=20260620" alt="XelerIA"></span><div class="brandName">XelerIA</div><div class="brandTenantStack"><div class="brandTenantLogo" id="brandTenantLogo">LOGO</div><button type="button" class="brandLogoutBtn" onclick="logoutXeleria()" title="Cerrar sesión">Salir</button></div><button class="mobileMenuToggle" type="button" onclick="toggleMobileMenu()">☰</button></div><p>Backoffice operativo</p></div>
 <nav>
-<button class="navBtn active" data-view="inicio">⌂ Inicio / Dashboard</button><button class="navBtn" data-view="notificaciones">🔔 Notificaciones<span class="navAlertBadge" id="navNotificationsBadge">0</span></button><button class="navBtn" data-view="metricas">◈ Métricas</button>
+<button class="navBtn active" data-view="inicio">⌂ Inicio / Dashboard</button><button class="navBtn" data-view="notificaciones">🔔 Notificaciones<span class="navAlertBadge" id="navNotificationsBadge">0</span></button>
 <div class="navTitle">Mercado Libre</div><div class="sub"><button class="navBtn" data-view="ml-publicaciones">Publicaciones</button><button class="navBtn" data-view="ml-preguntas">Preguntas</button><button class="navBtn" data-view="ml-ventas">Ventas</button><button class="navBtn" data-view="ml-clientes">Clientes</button></div>
 <div class="navTitle">Tienda Nube</div><div class="sub"><button class="navBtn" data-view="tn-publicaciones">Publicaciones</button><button class="navBtn" data-view="tn-ventas">Ventas</button><button class="navBtn" data-view="tn-clientes">Clientes</button></div>
 
@@ -992,7 +992,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
     <div class="dashStatusLine">
       <div>
         <h3>Inicio / Dashboard</h3>
-        <p>Resumen operativo real: ventas, facturación y envíos. Sin horóscopo de endpoints.</p>
+        <p>Resumen operativo real: ventas, facturación, envíos y alertas de la operación.</p>
       </div>
       <button class="secondary dashRefresh" onclick="loadDashboard(true)">Actualizar</button>
     </div>
@@ -1065,7 +1065,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 
     <div class="col-12 card">
       <h3>Accesos rápidos</h3>
-      <div class="btnrow"><button class="secondary" onclick="showView('ml-ventas')">Ventas ML</button><button class="secondary" onclick="showView('tn-ventas')">Ventas TN</button><button class="secondary" onclick="showView('inventario')">Inventario</button><button class="secondary" onclick="showView('movimientos')">Movimientos stock</button><button class="secondary" onclick="showView('arca-manual')">Comprobante manual</button><button class="secondary" onclick="showView('dashboard')"></div>
+      <div class="btnrow"><button class="secondary" onclick="showView('ml-ventas')">Ventas ML</button><button class="secondary" onclick="showView('tn-ventas')">Ventas TN</button><button class="secondary" onclick="showView('inventario')">Inventario</button><button class="secondary" onclick="showView('movimientos')">Movimientos stock</button><button class="secondary" onclick="showView('arca-manual')">Comprobante manual</button></div>
     </div>
   </div>
 </section>
@@ -1335,7 +1335,7 @@ function comboNormalizeQtyInput(el){
 const FRONTEND_VERSION='2.85.0-xeli-normalized-skills';
 const FRONTEND_BUILD='admin-erp-v2840-product-package-dimensions';
 const SALES_DB_POLL_INTERVAL_MS=60000;
-let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;let timers={};
+let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;let timers={};
 const XELERIA_MIN_SEARCH_CHARS=4;function isShortSearch(q){q=String(q||'').trim();return q.length>0&&q.length<XELERIA_MIN_SEARCH_CHARS}function minSearchMessage(){return 'Ingresá al menos '+XELERIA_MIN_SEARCH_CHARS+' caracteres para buscar.'}
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
 const INVENTORY_IMPORT_RUNNING_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
@@ -4061,13 +4061,13 @@ function renderFullInboundPreview(p){
 async function previewFullInboundPdf(){
   let f=fullInboundSelectedFile();if(!f){setStatus('fullInboundStatus','Elegí un PDF.',false);return}
   let fd=new FormData();fd.append('file',f);
-  try{setBusy(true,'Leyendo PDF Full','Detectando SKUs y unidades...');setStatus('fullInboundStatus','Leyendo PDF...');let r=await fetch(url('/admin/ml/full-inbound/pdf/preview'),{method:'POST',body:fd});let txt=await r.text();let d;try{d=JSON.parse(txt)}catch{d={ok:r.ok,text:txt}}if(!r.ok)throw d;renderFullInboundPreview(d.preview);setStatus('fullInboundStatus',`PDF detectado: envío #${d.preview?.shipment_id||''} · ${d.preview?.detected_units||0} unidades`,true);showPre('fullInboundOut',JSON.stringify(d,null,2));}catch(e){setStatus('fullInboundStatus','Error detectando PDF: '+(e.message||e.detail||JSON.stringify(e)),false);showPre('fullInboundOut',JSON.stringify(e,null,2));}finally{setBusy(false)}
+  try{setBusy(true,'Leyendo PDF Full','Detectando SKUs y unidades...');setStatus('fullInboundStatus','Leyendo PDF...');let h=xeleriaHeaders();delete h['Content-Type'];let r=await fetch(url('/admin/ml/full-inbound/pdf/preview'),{method:'POST',headers:h,body:fd});let txt=await r.text();let d;try{d=JSON.parse(txt)}catch{d={ok:r.ok,text:txt}}if(!r.ok)throw d;renderFullInboundPreview(d.preview);setStatus('fullInboundStatus',`PDF detectado: envío #${d.preview?.shipment_id||''} · ${d.preview?.detected_units||0} unidades`,true);showPre('fullInboundOut',JSON.stringify(d,null,2));}catch(e){setStatus('fullInboundStatus','Error detectando PDF: '+(e.message||e.detail||JSON.stringify(e)),false);showPre('fullInboundOut',JSON.stringify(e,null,2));}finally{setBusy(false)}
 }
 async function applyFullInboundPdf(dryRun=true){
   let f=fullInboundSelectedFile();if(!f){setStatus('fullInboundStatus','Elegí un PDF.',false);return}
   if(!dryRun&&!confirm('Esto va a descontar stock y crear sync jobs hacia marketplaces propios. ¿Confirmás?'))return;
   let fd=new FormData();fd.append('file',f);
-  try{setBusy(true,dryRun?'Simulando envío a Full':'Descontando envío a Full','Procesando PDF y stock...');let r=await fetch(url('/admin/ml/full-inbound/pdf/apply')+'&dry_run='+encodeURIComponent(dryRun?'true':'false'),{method:'POST',body:fd});let txt=await r.text();let d;try{d=JSON.parse(txt)}catch{d={ok:r.ok,text:txt}}if(!r.ok)throw d;if(d.preview){renderFullInboundPreview(d.preview)}if(d.duplicate||d.already_applied){setStatus('fullInboundStatus',d.message||`Este envío Full #${d.shipment_id||''} ya fue aplicado. No se volvió a descontar stock.`,'warn')}else{setStatus('fullInboundStatus',dryRun?`Simulación OK · ${d.units_applied||0} unidades`:`Descuento OK · ${d.units_applied||0} unidades · envío #${d.shipment_id||''}`,!!d.ok)}showPre('fullInboundOut',JSON.stringify(d,null,2));if(!dryRun&&!d.duplicate&&!d.already_applied){loadDashboard();}}catch(e){setStatus('fullInboundStatus','Error aplicando PDF Full: '+(e.message||e.detail||JSON.stringify(e)),false);showPre('fullInboundOut',JSON.stringify(e,null,2));}finally{setBusy(false)}
+  try{setBusy(true,dryRun?'Simulando envío a Full':'Descontando envío a Full','Procesando PDF y stock...');let h=xeleriaHeaders();delete h['Content-Type'];let r=await fetch(url('/admin/ml/full-inbound/pdf/apply')+'&dry_run='+encodeURIComponent(dryRun?'true':'false'),{method:'POST',headers:h,body:fd});let txt=await r.text();let d;try{d=JSON.parse(txt)}catch{d={ok:r.ok,text:txt}}if(!r.ok)throw d;if(d.preview){renderFullInboundPreview(d.preview)}if(d.duplicate||d.already_applied){setStatus('fullInboundStatus',d.message||`Este envío Full #${d.shipment_id||''} ya fue aplicado. No se volvió a descontar stock.`,'warn')}else{setStatus('fullInboundStatus',dryRun?`Simulación OK · ${d.units_applied||0} unidades`:`Descuento OK · ${d.units_applied||0} unidades · envío #${d.shipment_id||''}`,!!d.ok)}showPre('fullInboundOut',JSON.stringify(d,null,2));if(!dryRun&&!d.duplicate&&!d.already_applied){loadDashboard();}}catch(e){setStatus('fullInboundStatus','Error aplicando PDF Full: '+(e.message||e.detail||JSON.stringify(e)),false);showPre('fullInboundOut',JSON.stringify(e,null,2));}finally{setBusy(false)}
 }
 
 function summarizeInventoryUploadResult(j){
@@ -4156,9 +4156,9 @@ function cfgSet(id,val){let el=qs(id);if(el)el.value=val??''}
 function cfgGet(id){return qs(id)?.value||''}
 function configLogoValue(){return localStorage.getItem('xeleria_company_logo_data')||cfgGet('cfgLogoUrl')||''}
 function applyConfigLogo(src){let brand=qs('brandTenantLogo');let prev=qs('cfgLogoPreview');let logo=String(src||'').trim();if(brand){if(logo){brand.classList.add('hasLogo');brand.innerHTML=`<img src="${esc(logo)}" alt="Logo empresa">`}else{brand.classList.remove('hasLogo');brand.textContent='LOGO'}}if(prev){if(logo){prev.classList.add('hasLogo');prev.innerHTML=`<img src="${esc(logo)}" alt="Logo empresa">`}else{prev.classList.remove('hasLogo');prev.innerHTML='<div class="logoPlaceholder">LOGO</div>'}}}
-function previewConfigLogo(){let val=cfgGet('cfgLogoUrl').trim();if(val){localStorage.removeItem('xeleria_company_logo_data');applyConfigLogo(val)}else{applyConfigLogo(configLogoValue())}}
-function loadLogoFile(ev){let f=ev.target.files&&ev.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{localStorage.setItem('xeleria_company_logo_data',String(r.result||''));cfgSet('cfgLogoUrl','');applyConfigLogo(String(r.result||''));setStatus('cfgStatus','Logo cargado. Tocá Guardar configuración para persistirlo en la base.',true)};r.onerror=()=>setStatus('cfgStatus','No pude leer el archivo del logo.',false);r.readAsDataURL(f)}
-function clearLogoConfig(){localStorage.removeItem('xeleria_company_logo_data');cfgSet('cfgLogoUrl','');applyConfigLogo('');setStatus('cfgStatus','Logo quitado. Tocá Guardar configuración para persistir el cambio.',true)}
+function previewConfigLogo(){let val=cfgGet('cfgLogoUrl').trim();if(val){state.configLogoTouched=true;localStorage.removeItem('xeleria_company_logo_data');applyConfigLogo(val)}else{applyConfigLogo(configLogoValue())}}
+function loadLogoFile(ev){let f=ev.target.files&&ev.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{state.configLogoTouched=true;localStorage.setItem('xeleria_company_logo_data',String(r.result||''));cfgSet('cfgLogoUrl','');applyConfigLogo(String(r.result||''));setStatus('cfgStatus','Logo cargado. Tocá Guardar configuración para persistirlo en la base.',true)};r.onerror=()=>setStatus('cfgStatus','No pude leer el archivo del logo.',false);r.readAsDataURL(f)}
+function clearLogoConfig(){state.configLogoTouched=true;localStorage.removeItem('xeleria_company_logo_data');cfgSet('cfgLogoUrl','');applyConfigLogo('');setStatus('cfgStatus','Logo quitado. Tocá Guardar configuración para persistir el cambio.',true)}
 function cleanCuitDigits(v){return String(v||'').replace(/\D+/g,'').slice(0,11)}
 function settingsWantsArca(s={}){
   if(Object.prototype.hasOwnProperty.call(s,'arca_use_xeleria'))return boolishTrue(s.arca_use_xeleria);
@@ -4223,7 +4223,6 @@ function personalizationPayload(){
   let payload={
     display_name:cfgGet('cfgNombreFantasia'),
     logo_url:logoUrl,
-    logo_png_500_base64:logoData,
     arca_use_xeleria:wantsArca,
     arca_connect_requested:wantsArca,
     conectar_arca:wantsArca,
@@ -4233,6 +4232,9 @@ function personalizationPayload(){
     notification_sound:sound,
     settings:{notification_sound:sound}
   };
+  if(state.configLogoTouched||logoData){
+    payload.logo_png_500_base64=logoData;
+  }
   if(wantsArca)payload.fiscal_cuit=cleanCuitDigits(cfgGet('cfgCuit'));
   return payload;
 }
@@ -4241,6 +4243,7 @@ async function saveConfig(){
   try{
     let d=await fetchJson('/admin/tenant/settings',{method:'PUT',body:JSON.stringify(personalizationPayload())});
     state.tenantSettings=d.settings||{};
+    state.configLogoTouched=false;
     state.notificationSound=normalizeNotificationSound(cfgGet('cfgNotificationSound')||'off');
     preloadNotificationSound(state.notificationSound);
     renderArcaOnboardingUi(state.tenantSettings);
@@ -4334,7 +4337,8 @@ async function loadConfig(){
     cfgSet('cfgNotificationSound',sound);
     state.notificationSound=sound;
     preloadNotificationSound(sound);
-    if(s.logo_png_500_base64){localStorage.setItem('xeleria_company_logo_data',s.logo_png_500_base64)}else{localStorage.removeItem('xeleria_company_logo_data')}
+    if(s.logo_png_500_base64){localStorage.setItem('xeleria_company_logo_data',s.logo_png_500_base64)}
+    state.configLogoTouched=false;
     applyConfigLogo(configLogoValue());
     renderArcaOnboardingUi(s);
     renderNotificationsBadge();
