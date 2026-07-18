@@ -4859,7 +4859,7 @@ async function loadInventoryImportGrid(offset=0,opts={}){
 
 
 cleanTokenFromUrl();
-loadMLQuestionPrefs();renderMLQuickButtons();
+if(typeof loadMLQuestionSettings==='function')loadMLQuestionSettings();renderMLQuickButtons();
 loadSettings();health();handleOauthReturn();updateVersionBar();startAlertPolling();/* V15: no se llama automáticamente a import-jobs/grid al iniciar para evitar 404 legacy en consola. La grilla se carga sólo durante/tras una importación real. */
 </script>
 </body>
