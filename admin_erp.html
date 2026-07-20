@@ -984,6 +984,10 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 .invoiceActionPopover{position:fixed!important;display:none;z-index:99999;min-width:116px;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);padding:5px}
 .invoiceActionPopover.open{display:block!important}
 .invoiceActionPopover button{min-width:104px!important;width:100%!important;justify-content:center!important;padding:7px 10px!important}
+.invoiceActionPopover.hasDiagnostic{width:min(360px,calc(100vw - 16px));padding:8px}
+.invoiceActionDiagnostic{display:grid;gap:3px;padding:7px 8px 9px;margin-bottom:6px;border-bottom:1px solid var(--line);font-size:12px;line-height:1.35;text-align:left;overflow-wrap:anywhere}
+.invoiceActionDiagnostic.error{color:var(--bad)}
+.invoiceActionDiagnostic .small{color:var(--muted)}
 
 </style>
 <!-- UI_ALERTS_INVENTORY_FILTERS_FRONTEND_1_39 -->
@@ -1332,7 +1336,7 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.90.4-migration-audit';
+const FRONTEND_VERSION='2.90.5-invoice-diagnostics';
 const FRONTEND_BUILD='admin-erp-v2890-unified-operational-registry';
 const SALES_DB_POLL_INTERVAL_MS=60000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;let timers={};
@@ -1912,7 +1916,7 @@ function opsLogErrorText(error={}){if(typeof error==='string')return error;retur
 function opsLogErrorLabel(error={},idx=0){if(typeof error==='string')return `Error ${idx+1}`;let parts=[];if(error.row!==undefined)parts.push(`Fila ${error.row}`);if(error.sku)parts.push(`SKU ${error.sku}`);if(error.marketplace||error.channel)parts.push(String(error.marketplace||error.channel));if(error.operation)parts.push(`Operación ${error.operation}`);if(error.customer_name)parts.push(String(error.customer_name));if(error.external_product_id||error.publication_id)parts.push(`Publicación ${error.external_product_id||error.publication_id}`);if(error.external_variant_id||error.variant_id)parts.push(`Variante ${error.external_variant_id||error.variant_id}`);return parts.join(' · ')||`Error ${idx+1}`}
 function opsLogDetailHtml(n={}){let errors=opsLogPayloadErrors(n);if(!errors.length){let body=String(n.body||'').trim();return body?`<div class="opsLogDetailItem"><strong>Detalle</strong><span>${esc(body)}</span></div>`:'<div class="muted">No hay más detalle disponible.</div>'}return `<div class="opsLogErrorList">${errors.map((error,idx)=>`<div class="opsLogDetailItem"><strong>${esc(opsLogErrorLabel(error,idx))}</strong><span>${esc(opsLogErrorText(error))}</span></div>`).join('')}</div>`}
 function opsLogActionsHtml(n={}){let acts=Array.isArray(n.actions)?n.actions:[];let html='';acts.forEach(a=>{let kind=String(a.kind||'');if(kind==='retry_import'&&a.job_id){html+=`<button class="secondary" onclick="retryInventoryImportErrors('${esc(String(a.job_id))}',true)">${esc(a.label||'Reintentar importación')}</button>`}else if(kind==='repair_save'&&a.job_id){html+=`<button class="secondary" onclick="repairInventoryImportSaveObservations('${esc(String(a.job_id))}')">${esc(a.label||'Reparar observaciones')}</button>`}else if(kind==='open_view'&&a.view){html+=`<button class="secondary" onclick="showView('${esc(String(a.view))}')">${esc(a.label||'Abrir')}</button>`}else if(kind==='dismiss'&&a.id){html+=`<button class="secondary trashBtn" onclick="deleteOpsLogItem('${esc(String(a.id))}')">🗑 ${esc(a.label||'Borrar')}</button>`}});return html||'<button class="secondary" disabled>Sin acción automática</button>'}
-function opsLogLiveInvoiceItems(dashboard={}){let items=dashboard.failures?.invoices?.items||[];return items.map((x,idx)=>{let operation=x.sale_number||x.external_order_id||x.invoice_id||String(idx+1);let isInvoice=x.kind==='invoice';return{id:`live-invoice-${x.channel||''}-${operation}`,type:isInvoice?'invoice_review':'invoice_pending',severity:['error','failed'].includes(String(x.status||'').toLowerCase())?'error':'warning',title:isInvoice?'Comprobante con revisión.':'Factura pendiente de emitir.',created_at:x.created_at,payload:{errors:[{channel:x.channel,operation,customer_name:x.customer_name,total:x.total,status:x.status,reason:x.reason||x.status||'Pendiente de facturar'}]},actions:[{kind:'open_view',view:'arca-reportes',label:'Abrir Facturación'}],live_state:true}})}
+function opsLogLiveInvoiceItems(dashboard={}){let items=dashboard.failures?.invoices?.items||[];return items.map((x,idx)=>{let operation=x.sale_number||x.external_order_id||x.invoice_id||String(idx+1);let isInvoice=x.kind==='invoice';let status=String(x.status||'not_attempted').toLowerCase();let title=isInvoice?'Comprobante con revisión.':(status==='not_attempted'?'Factura pendiente sin intento registrado.':'Factura pendiente de emitir.');return{id:`live-invoice-${x.channel||''}-${operation}`,type:isInvoice?'invoice_review':'invoice_pending',severity:['error','failed'].includes(status)?'error':'warning',title,created_at:x.attempted_at||x.created_at,payload:{errors:[{channel:x.channel,operation,customer_name:x.customer_name,total:x.total,status:x.status,stage:x.stage,attempted_at:x.attempted_at,reason:x.reason||x.status||'Pendiente de facturar'}]},actions:[{kind:'open_view',view:'arca-reportes',label:'Abrir Facturación'}],live_state:true}})}
 function opsLogLiveStockItems(dashboard={}){let items=dashboard.failures?.sync_jobs?.items||[];return items.map((x,idx)=>{let operation=x.source_order_number||x.source_order_api_id||x.id||String(idx+1);return{id:`live-stock-${x.id||operation}`,type:'stock_sync_review',severity:['error','failed'].includes(String(x.status||'').toLowerCase())?'error':'warning',title:'Alerta de stock pendiente.',created_at:x.updated_at||x.created_at,payload:{errors:[{marketplace:x.marketplace,operation,sku:x.sku,item_name:x.item_name,current_stock:x.current_stock,target_stock:x.target_stock,status:x.status,reason:x.last_error||'La sincronización necesita revisión.'}]},actions:[{kind:'open_view',view:'fallas',label:'Resolver alerta de stock'}],live_state:true}})}
 function mergeOpsLogSources(logItems=[],dashboard={}){let merged=[...opsLogLiveInvoiceItems(dashboard),...opsLogLiveStockItems(dashboard),...(logItems||[])];let seen=new Set();return merged.filter(item=>{let key=String(item.id||`${item.type}|${item.created_at}|${item.title}`);if(seen.has(key))return false;seen.add(key);return true}).sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||'')))}
 function renderOpsLogFilters(){let ids={all:'opsFilterAll',invoice:'opsFilterInvoice',stock:'opsFilterStock',import:'opsFilterImport',other:'opsFilterOther'};Object.entries(ids).forEach(([key,id])=>qs(id)?.classList.toggle('active',state.opsLogFilter===key))}
@@ -2728,6 +2732,38 @@ async function viewIssuedInvoice(invoiceId){
     }catch(_e){}
   }
 }
+const AUTO_INVOICE_REASON_LABELS={
+  already_issued:'La factura ya estaba emitida.',
+  ml_fiscal_document_present:'Mercado Libre ya tenía una factura adjunta.',
+  arca_not_connected:'ARCA no estaba conectada.',
+  tenant_auto_invoice_disabled:'La facturación automática estaba desactivada.',
+  shipping_not_delivered:'La venta aún no figuraba entregada.',
+  unsupported_channel:'El canal no admite facturación automática.',
+  already_queued:'La factura ya estaba esperando en la cola de emisión.'
+};
+function invoiceDiagnostic(o={}){
+  let raw=o.raw_data||o.raw||o.rawData||{};
+  let error=raw&&typeof raw.arca_auto_invoice_last_error==='object'?raw.arca_auto_invoice_last_error:null;
+  let result=raw&&typeof raw.arca_auto_invoice_last_result==='object'?raw.arca_auto_invoice_last_result:null;
+  if(error){
+    let detail=error.detail&&typeof error.detail==='object'?error.detail:{};
+    let reason=detail.error||detail.message||detail.instruction||'El intento de facturación falló sin más detalle.';
+    if(typeof reason!=='string')reason='El intento de facturación falló; el detalle técnico quedó registrado.';
+    return{attempted:true,status:'error',reason,stage:error.stage||detail.stage||'auto_invoice',at:error.at||''};
+  }
+  if(result){
+    let code=String(result.reason||'');
+    let reason=result.error||AUTO_INVOICE_REASON_LABELS[code]||(!result.ok?'El intento terminó sin emitir una factura.':'El intento terminó correctamente.');
+    if(typeof reason!=='string')reason='El intento terminó sin emitir una factura.';
+    return{attempted:true,status:result.skipped?'skipped':(result.ok?'ok':'error'),reason,stage:'auto_invoice',at:result.at||''};
+  }
+  return{attempted:false,status:'not_attempted',reason:'No hay un intento de facturación registrado para esta venta.',stage:'',at:''};
+}
+function invoiceDiagnosticHtml(diagnostic={}){
+  let title=diagnostic.attempted?'Último intento':'Sin intento registrado';
+  let meta=[diagnostic.stage,diagnostic.at?dateAR(diagnostic.at):''].filter(Boolean).join(' · ');
+  return `<div class="invoiceActionDiagnostic ${diagnostic.status==='error'?'error':''}"><strong>${esc(title)}</strong><span>${esc(diagnostic.reason||'')}</span>${meta?`<span class="small">${esc(meta)}</span>`:''}</div>`;
+}
 function invoiceButton(o,ch){
   // Estados visuales de facturación:
   // 📄 emitida y consultable · 📄⏳ esperando entrega · 📄⚠️ entregada y pendiente.
@@ -2754,7 +2790,8 @@ function invoiceButton(o,ch){
     return `<div class="invoiceMiniWrap" data-invoice-channel="${channel}" data-invoice-order="${safeOid}"><span class="invoiceStatusIcon waiting" title="Esperando entrega para habilitar la facturación" aria-label="Esperando entrega para facturar">📄⏳</span></div>`;
   }
   if(!oid)return '';
-  return `<div class="invoiceMiniWrap" data-invoice-channel="${channel}" data-invoice-order="${safeOid}"><button type="button" class="invoiceActionTrigger" title="Entregada y pendiente de facturación" aria-label="Pendiente de facturación" onclick="toggleInvoiceAction(this,event)">📄⚠️</button><div class="invoiceActionPopover"><button type="button" onclick="closeInvoiceAction(this);issueInvoiceFromSale('${jsq(ch)}','${jsq(oid)}')">Facturar</button><button type="button" onclick="closeInvoiceAction(this);recoverIssuedInvoiceFromSale('${jsq(ch)}','${jsq(oid)}')">Ya está facturada</button></div></div>`;
+  let diagnostic=invoiceDiagnostic(o);
+  return `<div class="invoiceMiniWrap" data-invoice-channel="${channel}" data-invoice-order="${safeOid}"><button type="button" class="invoiceActionTrigger" title="${esc(diagnostic.reason)}" aria-label="Pendiente de facturación" onclick="toggleInvoiceAction(this,event)">📄⚠️</button><div class="invoiceActionPopover hasDiagnostic">${invoiceDiagnosticHtml(diagnostic)}<button type="button" onclick="closeInvoiceAction(this);issueInvoiceFromSale('${jsq(ch)}','${jsq(oid)}')">Facturar</button><button type="button" onclick="closeInvoiceAction(this);recoverIssuedInvoiceFromSale('${jsq(ch)}','${jsq(oid)}')">Ya está facturada</button></div></div>`;
 }
 function closeAllInvoiceActions(except=null){
   document.querySelectorAll('.invoiceActionPopover.open').forEach(panel=>{if(panel!==except)panel.classList.remove('open')});
