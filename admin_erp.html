@@ -1322,7 +1322,7 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.90.1-visible-sales-refresh';
+const FRONTEND_VERSION='2.90.2-ml-external-invoice';
 const FRONTEND_BUILD='admin-erp-v2890-unified-operational-registry';
 const SALES_DB_POLL_INTERVAL_MS=60000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;let timers={};
@@ -2516,6 +2516,7 @@ function invoiceStatus(o){
   let st=String(o.invoice_status||'none').toLowerCase();
   let label=o.invoice_label||'';
   if(st==='issued'||o.invoice_cae||o.cae)return `<span class="pill ok">🧾 Facturada${o.invoice_number?' '+esc(o.invoice_number):''}</span>`;
+  if(st==='external'||o.invoice_ml_fiscal_document_present)return `<span class="pill ok">🧾 Adjunta en ML</span>`;
   if(st==='draft')return `<span class="pill info">🧾 Borrador</span>`;
   if(st==='void')return `<span class="pill bad">🧾 Anulada</span>`;
   if(st==='test'||st==='preview')return `<span class="pill warn">🧾 ${esc(label||st)}</span>`;
@@ -2716,6 +2717,9 @@ function invoiceButton(o,ch){
     }
     return `<div class="invoiceMiniWrap" data-invoice-channel="${channel}" data-invoice-order="${safeOid}" data-invoice-id="${esc(invoiceId)}"><button type="button" class="invoiceActionTrigger issued" title="${esc(label)}" aria-label="${esc(label)}" onclick="toggleInvoiceAction(this,event)">📄</button><div class="invoiceActionPopover"><button type="button" onclick="closeInvoiceAction(this);viewIssuedInvoice('${jsq(invoiceId)}')">Ver factura</button></div></div>`;
   }
+  if(st==='external'||o.invoice_ml_fiscal_document_present){
+    return `<div class="invoiceMiniWrap" data-invoice-channel="${channel}" data-invoice-order="${safeOid}"><span class="invoiceStatusIcon issued" title="Factura adjunta en Mercado Libre" aria-label="Factura adjunta en Mercado Libre">📄</span></div>`;
+  }
   let shippingLabel=String(shippingStateLabel(o,ch)||'').trim();
   let shippingLow=shippingLabel.toLowerCase();
   if(shippingLow.includes('cancelado'))return '';
@@ -2835,7 +2839,7 @@ function salesVisibleOrderIds(ch,items){
   for(let item of (items||[])){
     let shipping=String(shippingStateLabel(item,ch)||'').trim().toLowerCase();
     let invoiceState=String(item.invoice_status||item.arca_status||'').trim().toLowerCase();
-    let invoiceIssued=invoiceState==='issued'||!!(item.invoice_cae||item.cae||item.arca_cae);
+    let invoiceIssued=invoiceState==='issued'||invoiceState==='external'||!!(item.invoice_cae||item.cae||item.arca_cae||item.invoice_ml_fiscal_document_present);
     // Estados terminales no requieren API. Una entrega ya facturada tampoco
     // necesita repetir los chequeos idempotentes de ARCA en cada entrada al menú.
     if(shipping==='cancelado'||shipping==='devuelto'||shipping==='devuelto al remitente'||(shipping==='entregado'&&invoiceIssued))continue;
