@@ -1322,7 +1322,7 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.90.0-auto-refresh-xeli-questions';
+const FRONTEND_VERSION='2.90.1-visible-sales-refresh';
 const FRONTEND_BUILD='admin-erp-v2890-unified-operational-registry';
 const SALES_DB_POLL_INTERVAL_MS=60000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;let timers={};
@@ -2905,6 +2905,9 @@ async function enterSalesView(ch){
     setStatus(sid,'No pude actualizar el canal; mostrando la última información guardada: '+errText(e),false);
   }
   await loadRecent(ch,state.sales[ch].offset||0,{refreshShipping:false});
+  if(salesViewIsActive(ch)&&(state.sales[ch].items||[]).length){
+    await refreshVisibleShipping(ch,state.sales[ch].items,{manual:false,reload:true});
+  }
   if(salesViewIsActive(ch))startSalesDbPolling(ch);
 }
 function pagerHtml(ch,d){
