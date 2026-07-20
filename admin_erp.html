@@ -439,20 +439,28 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 }
 
 
-/* VERSIONES_PAGE_V15 */
+.dashboardDetailGrid{margin-top:16px}
+.controlHeader{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:center}
+.controlHeader h3{margin-bottom:4px}
+.controlHeader p{margin:0}
+.controlHeader button{align-self:center}
+
+/* VERSIONES_PAGE_V16 */
 .versionGrid{display:grid;grid-template-columns:repeat(12,1fr);gap:10px}
 .versionCard{grid-column:span 12;background:#fffdf8;border:1px solid var(--line);border-radius:8px;padding:10px 12px;box-shadow:none}
-.versionCompact{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px}
-.versionTile{border:1px solid #eadfc9;background:#fff;border-radius:8px;padding:7px 8px;min-height:54px}
-.versionTile b{display:block;font-size:11px;text-transform:uppercase;color:#5d5242;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.versionBadge{display:inline-flex;align-items:center;border-radius:999px;padding:3px 7px;font-weight:900;font-size:12px;background:#eef7ee;color:#146c2e;font-family:Consolas,'Courier New',monospace;margin-top:5px}
-.versionBadge.warn{background:#fff3cd;color:#7a4d00}
-.versionBadge.bad{background:#fdeaea;color:#a41010}
+.versionCard h3{font-size:16px;margin:0 0 6px}
+.versionCompact{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px 18px}
+.versionTile{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:baseline;border-bottom:1px solid #eee2c8;padding:3px 0;min-width:0}
+.versionTile b{font-size:11px;color:#4d473d;overflow-wrap:anywhere}
+.versionValue{font:700 11px/1.25 Consolas,'Courier New',monospace;color:#146c2e;white-space:nowrap}
+.versionValue.warn{color:#7a4d00}
+.versionValue.bad{color:#a41010}
 .versionActions{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
 .versionStatusLine{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .sidebarFoot{display:none!important}
 .xeleriaVersionBar{display:none!important}
-@media(max-width:1050px){.versionCard{grid-column:span 12}}
+@media(max-width:1050px){.versionCard{grid-column:span 12}.versionCompact{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.versionCompact{grid-template-columns:1fr}.controlHeader{grid-template-columns:1fr}.controlHeader button{justify-self:start}}
 
 
 /* COMBOS_MATRIZ_V17_COMPONENTES_TITLE */
@@ -1018,13 +1026,13 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
       <div class="s">solo acciones pendientes</div>
     </div>
     <div class="col-3 stat dashStat">
-      <div class="k">ERP / ARCA</div>
+      <div class="k">Sistema / ARCA</div>
       <div class="v" id="stErp">OK</div>
       <div class="s">Backend <span id="dashBackendVer">?</span></div>
     </div>
   </div>
 
-  <div class="grid">
+  <div class="grid dashboardDetailGrid">
     <div class="col-6 card">
       <h3>Facturación pendiente</h3>
       <div class="dashGridSmall">
@@ -1052,10 +1060,10 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
     </div>
 
     <div class="col-12 card">
-      <div class="dashStatusLine">
+      <div class="controlHeader">
         <div>
           <h3>Control operativo</h3>
-          <p>Ventas entregadas pendientes de facturar y sync_jobs de stock con error/revisión. Las ventas no entregadas todavía no son error.</p>
+          <p>Ventas entregadas pendientes de facturar y alertas de stock que necesitan una decisión. Las ventas no entregadas todavía no son error.</p>
         </div>
         <button class="secondary" onclick="loadSyncJobs(0,true);showView('fallas')">Ver control operativo</button>
       </div>
@@ -1170,7 +1178,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
   </div>
 </section>
 
-<section id="fallas" class="view"><div class="card"><h3>Gestión · Monitor de sync_jobs</h3><p>Solo monitoreo. La ejecución de jobs queda a cargo del autosync del ERP.</p><div class="grid"><div class="col-2"><label>Cantidad visible</label><select id="jobsLimit" class="limitSelect" onchange="loadSyncJobs(0,true)"><option>20</option><option>50</option><option selected>100</option><option>200</option></select></div><div class="col-2"><label>&nbsp;</label><button onclick="loadSyncJobs(0,true)">Actualizar</button></div></div><div id="jobsStatus" class="status"></div><div id="jobsTable" class="tableWrap" style="margin-top:12px"></div><div id="jobsPager" class="btnrow jobsPager"></div><pre id="jobsOut" class="hidden"></pre></div></section>
+<section id="fallas" class="view"><div class="card"><div class="controlHeader"><div><h3>Alertas de stock</h3><p>Son actualizaciones que un canal rechazó. Corregí el stock, reintentá con el valor actual o marcá la alerta como resuelta.</p></div><button class="secondary" onclick="loadSyncJobs(0,true)">Actualizar</button></div><div class="grid"><div class="col-2"><label>Cantidad visible</label><select id="jobsLimit" class="limitSelect" onchange="loadSyncJobs(0,true)"><option selected>20</option><option>50</option></select></div></div><div id="jobsStatus" class="status"></div><div id="jobsTable" class="tableWrap" style="margin-top:12px"></div><div id="jobsPager" class="btnrow jobsPager"></div></div></section>
 
 <section id="configuracion" class="view">
   <div class="card connectionSettings">
@@ -1299,8 +1307,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.86.0-tn-closed-test-ui';
-const FRONTEND_BUILD='admin-erp-v2860-compact-version';
+const FRONTEND_VERSION='2.87.0-operational-alerts';
+const FRONTEND_BUILD='admin-erp-v2870-operational-alerts';
 const SALES_DB_POLL_INTERVAL_MS=60000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;let timers={};
 const XELERIA_MIN_SEARCH_CHARS=4;function isShortSearch(q){q=String(q||'').trim();return q.length>0&&q.length<XELERIA_MIN_SEARCH_CHARS}function minSearchMessage(){return 'Ingresá al menos '+XELERIA_MIN_SEARCH_CHARS+' caracteres para buscar.'}
@@ -1610,7 +1618,7 @@ function prefKey(section,key){return `pc_erp_pref_${section}_${key}`}function sa
 function versionCell(v){
   let s=compactVersion(v);
   let cls=s==='?'?'warn':(s.startsWith('err:')?'bad':'');
-  return `<span class="versionBadge ${cls}">${esc(s)}</span>`;
+  return `<span class="versionValue ${cls}">${esc(s)}</span>`;
 }
 function versionRows(obj){
   let rows=Object.keys(obj||{}).sort((a,b)=>a.localeCompare(b)).map(k=>`<div class="versionTile"><b>${esc(k)}</b>${versionCell(obj[k])}</div>`).join('');
@@ -1621,7 +1629,7 @@ function compactVersion(v){
   if(!s)return'?';
   if(s.startsWith('err:'))return s;
   let m=s.match(/\d+(?:\.\d+){1,3}/);
-  return m?m[0]:s;
+  return m?m[0]:'?';
 }
 function normalizeModuleVersionValue(v){
   if(v===undefined||v===null)return'?';
@@ -1638,37 +1646,26 @@ function renderVersionsPage(){
   let modules=d.modules||{};
   let inv=d.inventory_products_version||null;
   let frontend={
-    'admin_erp.html':FRONTEND_VERSION,
-    'FRONTEND_BUILD':FRONTEND_BUILD
+    'admin_erp.html':FRONTEND_VERSION
   };
   let backend={
     'xeleria_app.py':versions.xeleria_app||versionFromDebug('xeleria_app'),
-    'app_v2.py':versions.app_v2||versionFromDebug('app_v2'),
-    'xeleria_import_jobs.py':versions.xeleria_import_jobs||versionFromDebug('xeleria_import_jobs'),
-    'xeleria_inventory_admin_core.py':(inv&&inv.version)||versions.xeleria_inventory_admin_core||versionFromDebug('xeleria_inventory_admin_core'),
-    'xeleria_combo_admin_core.py':versions.xeleria_combo_admin_core||versionFromDebug('xeleria_combo_admin_core'),
-    'xeleria_multitenant_dispatcher.py':versions.multitenant_dispatcher||versions.xeleria_multitenant_dispatcher||versionFromDebug('multitenant_dispatcher'),
-    'xeleria_tenant_db.py':versions.xeleria_tenant_db||versionFromDebug('xeleria_tenant_db'),
-    'xeleria_tenant_context.py':versions.xeleria_tenant_context||versionFromDebug('xeleria_tenant_context'),
-    'xeleria_personalization.py':versions.xeleria_personalization||versionFromDebug('xeleria_personalization'),
-    'sessions':versions.sessions||versionFromDebug('sessions'),
-    'oauth_ml':versions.oauth_ml||versionFromDebug('oauth_ml'),
-    'oauth_tn':versions.oauth_tn||versionFromDebug('oauth_tn'),
-    'inventory_import_grid':versions.inventory_import_grid||versionFromDebug('inventory_import_grid'),
-    'connection_status':versions.connection_status||versionFromDebug('connection_status'),
-    'import_connected_channels':versions.import_connected_channels||versionFromDebug('import_connected_channels'),
-    'debug_versions':versions.debug_versions||versionFromDebug('debug_versions'),
-    'arca':versions.arca||versionFromDebug('arca')
+    'app_v2.py':versions.app_v2||versionFromDebug('app_v2')
   };
-  Object.keys(versions||{}).forEach(k=>{ if(backend[k]===undefined) backend[k]=versions[k]; });
-  if(inv&&inv.version&&backend['xeleria_inventory_admin_core.py']==='?')backend['xeleria_inventory_admin_core.py']=inv.version;
   if(qs('versionsFrontendBody'))qs('versionsFrontendBody').innerHTML=versionRows(frontend);
   if(qs('versionsBackendBody'))qs('versionsBackendBody').innerHTML=versionRows(backend);
 
   let modMap={};
-  Object.keys(versions||{}).forEach(k=>{modMap[k]=versions[k];});
-  Object.keys(modules||{}).forEach(k=>{modMap[k]=normalizeModuleVersionValue(modules[k]);});
+  Object.keys(versions||{}).forEach(k=>{
+    if(!['xeleria_app','app_v2'].includes(k))modMap[k]=versions[k];
+  });
+  Object.keys(modules||{}).forEach(k=>{
+    let primary=String(k||'').toLowerCase().replace(/\.py$/,'');
+    if(!['xeleria_app','app_v2'].includes(primary))modMap[k]=normalizeModuleVersionValue(modules[k]);
+  });
   if(inv&&inv.version)modMap['xeleria_inventory_admin_core']=inv.version;
+  delete modMap.xeleria_app;
+  delete modMap.app_v2;
   if(qs('versionsModulesBody'))qs('versionsModulesBody').innerHTML=versionRows(modMap);
   if(qs('versionsStatus'))setStatus('versionsStatus',state.debugVersionError?('Error consultando backend: '+state.debugVersionError):'Versiones actualizadas.',!state.debugVersionError);
 }
@@ -1697,11 +1694,12 @@ function showView(id,options={}){
   document.querySelectorAll('.navBtn').forEach(b=>b.classList.toggle('active',b.dataset.view===id));
   clearAlertForView(id);
   let b=document.querySelector(`.navBtn[data-view="${id}"]`);
-  let cleanTitle='ERP';
+  let viewTitles={fallas:'Alertas de stock'};
+  let cleanTitle=viewTitles[id]||'XelerIA';
   if(b){
     let clone=b.cloneNode(true);
     clone.querySelectorAll('.navAlertBadge').forEach(x=>x.remove());
-    cleanTitle=(clone.textContent||'').replace(/\s+\d+\s*$/,'').trim()||'ERP';
+    cleanTitle=(clone.textContent||'').replace(/\s+\d+\s*$/,'').trim()||cleanTitle;
   }
   qs('pageTitle').textContent=cleanTitle;
   qs('pageCrumb').textContent='XelerIA · '+cleanTitle;
@@ -2835,12 +2833,16 @@ async function refreshVisibleShipping(ch,items,opts={}){
       body:JSON.stringify({order_ids:ids}),
       skipLastJson:!manual
     });
-    let errors=Number(d.errors_count||0),done=Number(d.refreshed_count||0),issued=Number(d.invoice_issued_count||0),queued=Number(d.invoice_queued_count||0);
-    let summary=`Actualización ${ch}: ${done} estados${queued?`, ${queued} factura${queued===1?'':'s'} procesándose en segundo plano`:''}${issued?`, ${issued} factura${issued===1?'':'s'} emitida${issued===1?'':'s'}`:''}${errors?`, ${errors} errores`:''}`;
+    let errors=Number(d.errors_count||0),done=Number(d.refreshed_count||0),issued=Number(d.invoice_issued_count||0),queued=Number(d.invoice_queued_count||0),checked=Number(d.invoice_checked_count||0),skippedInvoices=Number(d.invoice_skipped_count||0);
+    let invoiceText=queued?`, ${queued} factura${queued===1?'':'s'} enviada${queued===1?'':'s'} a emitir`:(issued?`, ${issued} factura${issued===1?'':'s'} emitida${issued===1?'':'s'}`:((checked||skippedInvoices)?', sin facturas nuevas':''));
+    let summary=`Actualización ${ch}: ${done} estados${invoiceText}${errors?`, ${errors} errores`:''}`;
     if(opts.reload!==false&&seq===salesState.refreshSeq&&salesViewIsActive(ch)){
       await loadRecent(ch,salesState.offset||0,{refreshShipping:false,skipShippingRefresh:true});
     }
     if(seq===salesState.refreshSeq)setStatus(sid,summary,errors?false:true);
+    if(queued&&salesViewIsActive(ch)){
+      setTimeout(()=>loadRecent(ch,salesState.offset||0,{refreshShipping:false,background:true}),3500);
+    }
     return d;
   }catch(e){
     if(seq===salesState.refreshSeq)setStatus(sid,'Ventas mostradas; falló la actualización: '+errText(e),false);
@@ -4215,7 +4217,71 @@ async function uploadCsv(){
 }async function postText(path,out){try{let txt=await fetchText(path,{method:'POST'});showPre(out,txt)}catch(e){showPre(out,'Error: '+e)}}function statusPill(s){let cls=s==='done'||s==='issued'?'ok':(s==='manual_review'||s==='failed_retry'||s==='error'||s==='rejected'?'bad':(s==='pending'?'warn':'info'));return `<span class="pill ${cls}">${s||''}</span>`}
 function jobsLimit(){return Number(qs('jobsLimit')?.value||100)}
 function jobsPagerHtml(d){let limit=Number(d.limit||jobsLimit()||100),offset=Number(d.offset||0),total=Number(d.total||0);let from=total?offset+1:0;let to=Math.min(offset+(d.items||[]).length,total||offset+(d.items||[]).length);let prev=Math.max(0,offset-limit);let next=offset+limit;let prevDisabled=offset<=0?'disabled':'';let nextDisabled=!d.has_more?'disabled':'';return `<button class="secondary" ${prevDisabled} onclick="loadSyncJobs(${prev})">Atrás</button><span class="pill">Mostrando ${from}–${to}${total?` de ${total}`:''}</span><button class="secondary" ${nextDisabled} onclick="loadSyncJobs(${next})">Siguiente</button>`}
-async function loadSyncJobs(offset=0,manual=false){let lim=jobsLimit();saveViewPref('jobs','limit',lim);state.jobs.offset=offset;setStatus('jobsStatus','Consultando jobs...');try{let d=await fetchJson(`/erp/sync_jobs?limit=${encodeURIComponent(lim)}&offset=${encodeURIComponent(offset)}`);let rows=d.items||[];qs('jobsTable').innerHTML=`<table><thead><tr><th>Fecha</th><th>Market</th><th>SKU</th><th>Stock</th><th>Precio</th><th>Status</th><th>Attempts</th><th>Error</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${dateAR(r.created_at)}</td><td>${esc(r.marketplace||'')}</td><td><strong class="mono">${esc(r.sku||'')}</strong></td><td>${esc(r.target_stock??'')}</td><td>${esc(r.target_price??'')}</td><td>${statusPill(r.status)}</td><td>${esc(r.attempts??'')}</td><td>${esc(r.last_error||'')}</td></tr>`).join('')||'<tr><td colspan="8" class="muted" style="text-align:center">Sin jobs.</td></tr>'}</tbody></table>`;if(qs('jobsPager'))qs('jobsPager').innerHTML=jobsPagerHtml(d);setStatus('jobsStatus',`OK: ${d.total||0} jobs. Autosync operativo. TN products_store_id: ${d.tn_products_store_id_used||''}`,true)}catch(e){setStatus('jobsStatus','Error: '+JSON.stringify(e),false)}}async function debugEnvBeforeJobs(){setStatus('jobsStatus','Leyendo environment real de Render...');qs('confirmProcessJobsBtn').classList.add('hidden');try{let d=await fetchJson('/admin/debug/env');showPre('jobsOut',d);setStatus('jobsStatus','Environment mostrado. No se ejecutó ningún job.',true);return d}catch(e){showPre('jobsOut','Error debug env: '+JSON.stringify(e,null,2));setStatus('jobsStatus','Error leyendo environment',false);throw e}}async function processJobs(limit){state.pendingJobLimit=limit;await debugEnvBeforeJobs();qs('confirmProcessJobsBtn').classList.remove('hidden');setStatus('jobsStatus',`Environment mostrado. Para procesar ${limit} job(s), tocá Confirmar ejecución.`,null)}async function confirmProcessJobs(){let limit=state.pendingJobLimit||1;qs('confirmProcessJobsBtn').classList.add('hidden');setStatus('jobsStatus','Procesando jobs...');try{let txt=await fetchText(`/erp/process_sync_jobs?limit=${limit}`,{method:'POST'});showPre('jobsOut',txt);setStatus('jobsStatus','Proceso terminado. Actualizando lista...',true);state.pendingJobLimit=null;await loadSyncJobs()}catch(e){showPre('jobsOut','Error: '+e);setStatus('jobsStatus','Error procesando jobs',false)}}
+function syncIssueMessage(row){
+  let current=Number(row.current_stock),target=Number(row.target_stock);
+  if(Number.isFinite(current)&&current<0)return `El stock actual es ${current}. ML y TN no aceptan valores negativos.`;
+  if(Number.isFinite(current)&&Number.isFinite(target)&&target<0)return `El stock ya está en ${current}; quedó pendiente una alerta anterior con ${target}.`;
+  return 'El canal rechazó esta actualización de stock.';
+}
+function syncIssueActions(row,idx){
+  let current=Number(row.current_stock);
+  let inventory=`<button class="secondary" onclick="openSyncIssueInventory(${idx})">Corregir stock</button>`;
+  let retry=Number.isFinite(current)&&current>=0?`<button class="primary" onclick="retrySyncIssue(${idx})">Reintentar con ${esc(current)}</button>`:'';
+  let resolve=`<button class="secondary" onclick="resolveSyncIssue(${idx})">Marcar resuelta</button>`;
+  return `<div class="btnrow">${inventory}${retry}${resolve}</div>`;
+}
+async function loadSyncJobs(offset=0,manual=false){
+  let lim=jobsLimit();
+  saveViewPref('jobs','limit',lim);
+  state.jobs.offset=offset;
+  setStatus('jobsStatus','Consultando alertas...');
+  try{
+    let d=await fetchJson(`/admin/dashboard/sync_jobs_stock_issues?limit=${encodeURIComponent(lim)}&offset=${encodeURIComponent(offset)}`);
+    let rows=d.items||[];
+    state.jobs.items=rows;
+    qs('jobsTable').innerHTML=`<table><thead><tr><th>Fecha</th><th>Canal</th><th>Producto</th><th>Stock actual</th><th>Qué ocurrió</th><th>Acción</th></tr></thead><tbody>${rows.map((r,idx)=>`<tr><td>${dateAR(r.updated_at||r.created_at)}</td><td><strong>${esc(r.marketplace||'')}</strong></td><td><strong class="mono">${esc(r.sku||'')}</strong><br><span class="small">${esc(r.item_name||'')}</span></td><td><strong style="color:${Number(r.current_stock)<0?'var(--bad)':'var(--ok)'}">${esc(r.current_stock??'Sin dato')}</strong></td><td>${esc(syncIssueMessage(r))}</td><td>${syncIssueActions(r,idx)}</td></tr>`).join('')||'<tr><td colspan="6" class="muted" style="text-align:center;padding:24px">No hay alertas de stock pendientes.</td></tr>'}</tbody></table>`;
+    if(qs('jobsPager'))qs('jobsPager').innerHTML=jobsPagerHtml(d);
+    setStatus('jobsStatus',rows.length?`${d.total||d.count||rows.length} alerta${Number(d.total||d.count||rows.length)===1?'':'s'} pendiente${Number(d.total||d.count||rows.length)===1?'':'s'}.`:'Todo al día: no hay alertas pendientes.',true);
+  }catch(e){
+    setStatus('jobsStatus','No pude consultar las alertas: '+errText(e),false);
+  }
+}
+function openSyncIssueInventory(idx){
+  let row=(state.jobs.items||[])[idx];
+  if(!row)return;
+  if(qs('invSearch'))qs('invSearch').value=row.sku||'';
+  showView('inventario');
+  searchInventory(0,true);
+}
+async function retrySyncIssue(idx){
+  let row=(state.jobs.items||[])[idx];
+  if(!row)return;
+  if(!confirm(`Reintentar ${row.marketplace||''} para ${row.sku||''} con stock ${row.current_stock}?`))return;
+  setBusy(true,'Reintentando stock','La alerta volverá a la cola automática.');
+  try{
+    let d=await fetchJson(`/admin/dashboard/sync_jobs_stock_issues/${encodeURIComponent(row.id)}/retry`,{method:'POST'});
+    setStatus('jobsStatus',d.message||'Reintento preparado.',true);
+    await loadSyncJobs(state.jobs.offset||0,true);
+    loadDashboard(false);
+  }catch(e){
+    setStatus('jobsStatus','No pude reintentar: '+errText(e),false);
+  }finally{
+    setBusy(false);
+  }
+}
+async function resolveSyncIssue(idx){
+  let row=(state.jobs.items||[])[idx];
+  if(!row)return;
+  if(!confirm(`Marcar como resuelta la alerta ${row.marketplace||''} de ${row.sku||''}?\n\nEsto la quita del control operativo sin enviar cambios al canal.`))return;
+  try{
+    let d=await fetchJson(`/admin/dashboard/sync_jobs_stock_issues/${encodeURIComponent(row.id)}/resolve`,{method:'POST'});
+    setStatus('jobsStatus',d.message||'Alerta resuelta.',true);
+    await loadSyncJobs(state.jobs.offset||0,true);
+    loadDashboard(false);
+  }catch(e){
+    setStatus('jobsStatus','No pude resolver la alerta: '+errText(e),false);
+  }
+}
 
 function cfgSet(id,val){let el=qs(id);if(el)el.value=val??''}
 function cfgGet(id){return qs(id)?.value||''}
