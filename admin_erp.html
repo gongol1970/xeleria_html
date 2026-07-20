@@ -1305,6 +1305,16 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
       <div id="versionsModulesBody" class="versionCompact"></div>
     </div>
   </div>
+  <div id="migrationAuditPanel" class="card hidden">
+    <div class="versionStatusLine">
+      <div>
+        <h3>Auditoría de migración</h3>
+        <div id="migrationAuditStatus" class="status">Pendiente.</div>
+      </div>
+      <button class="primary" onclick="loadMigrationAudit()">Actualizar auditoría</button>
+    </div>
+    <pre id="migrationAuditOutput" style="max-height:65vh;overflow:auto;white-space:pre-wrap"></pre>
+  </div>
 </section>
 
 </main></div>
@@ -1322,7 +1332,7 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.90.3-arca-reconcile-action';
+const FRONTEND_VERSION='2.90.4-migration-audit';
 const FRONTEND_BUILD='admin-erp-v2890-unified-operational-registry';
 const SALES_DB_POLL_INTERVAL_MS=60000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;let timers={};
@@ -2330,6 +2340,23 @@ async function health(){
     setStatus('connStatus','Error conexión: '+errText(e),false);
     renderInventoryImportConnections({});
     updateVersionBar('BE error: '+errText(e));
+  }
+}
+async function loadMigrationAudit(){
+  let panel=qs('migrationAuditPanel');
+  if(panel)panel.classList.remove('hidden');
+  setStatus('migrationAuditStatus','Calculando huellas exactas de las tablas AWS...');
+  try{
+    let data=await fetchJson('/admin/migration/table-stats',{skipLastJson:true});
+    state.migrationAudit=data;
+    if(qs('migrationAuditOutput'))qs('migrationAuditOutput').textContent=JSON.stringify(data,null,2);
+    setStatus('migrationAuditStatus','AWS: '+String(data.table_count||0)+' tablas verificadas en modo lectura.',true);
+    return data;
+  }catch(e){
+    let message=errText(e);
+    if(qs('migrationAuditOutput'))qs('migrationAuditOutput').textContent=JSON.stringify(e,null,2);
+    setStatus('migrationAuditStatus','Error de auditoría: '+message,false);
+    throw e;
   }
 }
 function dashMoney(n){return money(Number(n||0))||'$0'}
@@ -4989,7 +5016,8 @@ async function loadInventoryImportGrid(offset=0,opts={}){
 
 cleanTokenFromUrl();
 loadSettings();if(typeof loadMLQuestionSettings==='function')loadMLQuestionSettings();renderMLQuickButtons();
-showView('inicio',{skipHistory:true});health();handleOauthReturn();updateVersionBar();startAlertPolling();/* V15: no se llama automáticamente a import-jobs/grid al iniciar para evitar 404 legacy en consola. La grilla se carga sólo durante/tras una importación real. */
+let migrationAuditRequested=new URLSearchParams(location.search).get('migration_audit')==='1';
+showView(migrationAuditRequested?'versiones':'inicio',{skipHistory:true});health();handleOauthReturn();updateVersionBar();startAlertPolling();if(migrationAuditRequested)loadMigrationAudit();/* V15: no se llama automáticamente a import-jobs/grid al iniciar para evitar 404 legacy en consola. La grilla se carga sólo durante/tras una importación real. */
 </script>
 </body>
 </html>
