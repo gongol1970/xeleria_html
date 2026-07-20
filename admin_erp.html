@@ -1322,7 +1322,7 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.90.2-ml-external-invoice';
+const FRONTEND_VERSION='2.90.3-arca-reconcile-action';
 const FRONTEND_BUILD='admin-erp-v2890-unified-operational-registry';
 const SALES_DB_POLL_INTERVAL_MS=60000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;let timers={};
@@ -2727,7 +2727,7 @@ function invoiceButton(o,ch){
     return `<div class="invoiceMiniWrap" data-invoice-channel="${channel}" data-invoice-order="${safeOid}"><span class="invoiceStatusIcon waiting" title="Esperando entrega para habilitar la facturación" aria-label="Esperando entrega para facturar">📄⏳</span></div>`;
   }
   if(!oid)return '';
-  return `<div class="invoiceMiniWrap" data-invoice-channel="${channel}" data-invoice-order="${safeOid}"><button type="button" class="invoiceActionTrigger" title="Entregada y pendiente de facturación" aria-label="Pendiente de facturación" onclick="toggleInvoiceAction(this,event)">📄⚠️</button><div class="invoiceActionPopover"><button type="button" onclick="closeInvoiceAction(this);issueInvoiceFromSale('${jsq(ch)}','${jsq(oid)}')">Facturar</button></div></div>`;
+  return `<div class="invoiceMiniWrap" data-invoice-channel="${channel}" data-invoice-order="${safeOid}"><button type="button" class="invoiceActionTrigger" title="Entregada y pendiente de facturación" aria-label="Pendiente de facturación" onclick="toggleInvoiceAction(this,event)">📄⚠️</button><div class="invoiceActionPopover"><button type="button" onclick="closeInvoiceAction(this);issueInvoiceFromSale('${jsq(ch)}','${jsq(oid)}')">Facturar</button><button type="button" onclick="closeInvoiceAction(this);recoverIssuedInvoiceFromSale('${jsq(ch)}','${jsq(oid)}')">Ya está facturada</button></div></div>`;
 }
 function closeAllInvoiceActions(except=null){
   document.querySelectorAll('.invoiceActionPopover.open').forEach(panel=>{if(panel!==except)panel.classList.remove('open')});
@@ -3651,6 +3651,39 @@ async function issueInvoiceFromSale(ch,orderId,opts={}){
     setArcaAndSalesStatus(ch,'Error emitiendo: '+errorMsg,false);
     console.error('issueInvoiceFromSale',e);
     alert(`No se pudo emitir la factura.\n\n${errorMsg}`);
+  }finally{
+    setBusy(false);
+  }
+}
+
+async function recoverIssuedInvoiceFromSale(ch,orderId){
+  hideArcaMonitor();
+  if(!orderId){alert('No encontré ID de orden para recuperar.');return}
+  let raw=prompt('Ingresá solamente el número del comprobante ya emitido en ARCA.');
+  if(raw===null)return;
+  let cbteNro=Number(String(raw).replace(/\D/g,''));
+  if(!Number.isInteger(cbteNro)||cbteNro<=0){alert('El número de comprobante no es válido.');return}
+  let confirmed=confirm(`¿Consultar en ARCA el comprobante ${cbteNro} y vincularlo con ${ch} ${orderId}?\n\nXelerIA comparará receptor, importe, punto de venta y tipo. Esta acción no emite un CAE nuevo.`);
+  if(!confirmed)return;
+  setArcaAndSalesStatus(ch,`Consultando comprobante ${cbteNro} en ARCA...`,null);
+  setBusy(true,'Recuperando factura','Consultando ARCA y verificando que coincida exactamente con la venta.');
+  try{
+    let d=await fetchJson(`/admin/arca/orders/${encodeURIComponent(ch)}/${encodeURIComponent(orderId)}/recover-issued`,{
+      method:'POST',
+      body:JSON.stringify({cbte_tipo:6,cbte_nro:cbteNro,confirmar:true})
+    });
+    let inv=d.invoice||{};
+    let number=`${inv.cbte_letra||'B'} ${String(inv.pto_vta||'').padStart(4,'0')}-${String(inv.cbte_nro||cbteNro).padStart(8,'0')}`.trim();
+    setArcaAndSalesStatus(ch,`Recuperada OK: ${number} · sin nueva emisión`,true);
+    if(inv.cae)removeInvoiceAction(ch,orderId,inv.id||d.invoice_id||'',number);
+    await loadArcaInvoices();
+    await loadRecent(ch,state.sales[ch]?.offset||0);
+    await loadDashboard();
+    alert(`Factura recuperada correctamente.\n\nComprobante: ${number}\nNo se emitió un CAE nuevo.`);
+  }catch(e){
+    let errorMsg=errText(e);
+    setArcaAndSalesStatus(ch,'No se pudo recuperar: '+errorMsg,false);
+    alert(`No se pudo vincular el comprobante.\n\n${errorMsg}\n\nNo se emitió una factura nueva.`);
   }finally{
     setBusy(false);
   }
