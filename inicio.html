@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>XelerIA · Operaciones inteligentes para e-commerce</title>
   <meta name="description" content="Centralizá ventas, inventario, facturación y atención de Mercado Libre y Tienda Nube con XelerIA.">
-  <!-- XELERIA_INICIO_V25_PRO_ENTRY -->
+  <!-- XELERIA_INICIO_V27_CHANNEL_ACCOUNT_LOGIN -->
   <script>
     if (location.protocol === 'http:' && location.hostname.endsWith('xeleria.com.ar')) {
       location.replace('https://' + location.host + location.pathname + location.search + location.hash);
@@ -73,13 +73,14 @@
   <footer class="siteFooter"><span>© 2026 XelerIA</span><span>Operaciones inteligentes para e-commerce</span></footer>
 <script>
 const API_BASE='https://api.xeleria.com.ar';
-const FRONTEND_VERSION='inicio-v26-session-tenant-restore';
+const FRONTEND_VERSION='inicio-v27-channel-account-login';
 const VERSION_BAR=document.getElementById('xeleriaVersionBar');
 const params=new URLSearchParams(location.search);
 const NEXT_PAGE=params.get('next')||'admin_erp.html';
 const REASON=params.get('reason')||'';
+const LOGIN_STATE=params.get('login_state')||'';
+const OAUTH_STATUS=params.get('status')||'';
 const TENANT_FROM_URL=params.get('tenant_id')||params.get('tenant')||'';
-const LAST_TENANT_ID=localStorage.getItem('xeleria_last_tenant_id')||'';
 localStorage.setItem('xeleria_next',NEXT_PAGE);
 if(TENANT_FROM_URL&&TENANT_FROM_URL!=='00000000-0000-0000-0000-000000000001'){localStorage.setItem('xeleria_tenant_id',TENANT_FROM_URL);localStorage.setItem('xeleria_last_tenant_id',TENANT_FROM_URL)}
 const betaAccessCodeInput=document.getElementById('betaAccessCode');
@@ -89,20 +90,17 @@ const betaAccessCode=()=>betaAccessCodeInput.value.trim();
 function shortId(v){const s=String(v||'');return s.length>12?s.slice(0,8)+'…':(s||'?')}
 function setStatus(msg,bad=false){statusBox.textContent=msg||'';statusBox.classList.toggle('bad',!!bad)}
 function updateVersionBar(text){if(VERSION_BAR)VERSION_BAR.textContent=text}
-function cleanSessionOnly(){localStorage.removeItem('xeleria_session_token');localStorage.removeItem('xeleria_session_expires_at');sessionStorage.removeItem('xeleria_session_token')}
 function saveSession(data){const tenantId=(data.tenant&&data.tenant.id)||data.tenant_id;const sessionToken=data.session&&data.session.token;if(!tenantId)throw new Error('El backend no devolvió tenant_id.');if(!sessionToken)throw new Error('El backend no devolvió sesión.');localStorage.setItem('xeleria_tenant_id',tenantId);localStorage.setItem('xeleria_last_tenant_id',tenantId);localStorage.setItem('xeleria_session_token',sessionToken);if(data.session&&data.session.expires_at)localStorage.setItem('xeleria_session_expires_at',data.session.expires_at);return {tenantId,sessionToken}}
 async function readJson(response){let data={};try{data=await response.json()}catch{}return data}
-function sessionLooksValid(){const token=localStorage.getItem('xeleria_session_token')||'';const exp=localStorage.getItem('xeleria_session_expires_at')||'';const ms=exp?Date.parse(exp):0;return !!(token&&ms&&Date.now()<(ms-30000))}
 async function loadVersionBar(){const tenant=localStorage.getItem('xeleria_tenant_id')||'';const exp=localStorage.getItem('xeleria_session_expires_at')||'';const sess=localStorage.getItem('xeleria_session_token')?'sí':'no';try{const r=await fetch(`${API_BASE}/admin/health`,{cache:'no-store'});const h=await r.json();const modules=h.module_versions||{};updateVersionBar(`FE ${FRONTEND_VERSION} | BE ${h.version||'?'} | import_jobs ${modules.xeleria_import_jobs||modules.import_jobs||'?'} | tenant ${shortId(tenant||h.tenant_id)} | sesión ${sess}${exp?' exp '+exp:''} | ML ${h.ml_configurado?'ok':'no'} | TN ${h.tn_configurado?'ok':'no'}`)}catch(e){updateVersionBar(`FE ${FRONTEND_VERSION} | BE sin respuesta | tenant ${shortId(tenant)} | sesión ${sess}`)}}
-async function validateExistingSession(existing,sessionToken){const r=await fetch(`${API_BASE}/admin/session/context?tenant_id=${encodeURIComponent(existing)}`,{headers:{'x-session-token':sessionToken,'Authorization':'Bearer '+sessionToken,'x-xeleria-tenant':existing},cache:'no-store'});const d=await readJson(r);if(r.status===409){cleanSessionOnly();return restoreExistingTenant(existing)}if(!r.ok||!d.ok){cleanSessionOnly();throw new Error(d.detail||d.message||'Sesión inválida. Tocá de nuevo Entrar para restaurar.')}if(String(d.tenant_id)!==String(existing)){cleanSessionOnly();throw new Error('Tenant inconsistente. Sesión cerrada por seguridad.')}return {tenantId:d.tenant_id,sessionToken}}
-async function restoreExistingTenant(existing){if(!betaAccessCode())throw new Error('Cargá el código beta privado para restaurar la sesión del comercio existente.');const r=await fetch(`${API_BASE}/tenant/session/restore`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tenant_id:existing,beta_access_code:betaAccessCode(),next:NEXT_PAGE})});const d=await readJson(r);if(!r.ok||!d.ok){throw new Error(d.detail||d.message||`No pude restaurar sesión del tenant ${shortId(existing)}`)}return saveSession(d)}
-async function bootstrapNewTenant(){const r=await fetch(`${API_BASE}/tenant/bootstrap`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({beta_access_code:betaAccessCode(),display_name:'',next:NEXT_PAGE})});const d=await readJson(r);if(!r.ok||!d.ok){throw new Error(d.detail||d.error||d.message||`HTTP ${r.status}`)}return saveSession(d)}
-async function ensureTenant(){const existing=TENANT_FROM_URL||localStorage.getItem('xeleria_tenant_id')||LAST_TENANT_ID||'';const existingSession=localStorage.getItem('xeleria_session_token')||'';if(existing&&existingSession&&sessionLooksValid()&&existing!=='00000000-0000-0000-0000-000000000001'){return validateExistingSession(existing,existingSession)}if(existing&&existing!=='00000000-0000-0000-0000-000000000001'){return restoreExistingTenant(existing)}if(REASON==='session_expired')throw new Error('No pude identificar tu comercio para restaurar la sesión. Volvé al panel e intentá ingresar nuevamente.');return bootstrapNewTenant()}
-async function startChannel(channel){try{if(!betaAccessCode())throw new Error('Cargá el código beta privado.');localStorage.setItem('xeleria_beta_access_code',betaAccessCode());setStatus('Validando comercio y sesión…');const session=await ensureTenant();setStatus('Preparando autorización…');const oauthResponse=await fetch(`${API_BASE}/oauth/${channel}/prepare`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tenant_id:session.tenantId,session_token:session.sessionToken,next:NEXT_PAGE})});const oauthData=await readJson(oauthResponse);if(!oauthResponse.ok||!oauthData.ok||!oauthData.authorization_url){throw new Error(typeof(oauthData.detail||oauthData.error||oauthData.message)==='string'?(oauthData.detail||oauthData.error||oauthData.message):JSON.stringify(oauthData.detail||oauthData))}setStatus('Redirigiendo…');location.href=oauthData.authorization_url}catch(error){setStatus(error.message||'No se pudo iniciar.',true);alert(error.message||'No se pudo iniciar.')}finally{loadVersionBar()}}
+function apiError(data,fallback){const value=data.detail||data.error||data.message||fallback;return typeof value==='string'?value:JSON.stringify(value)}
+async function exchangeChannelLogin(){if(!LOGIN_STATE||OAUTH_STATUS!=='identified')return false;const code=betaAccessCode();if(!code)throw new Error('Volvé a cargar el código beta privado para completar el ingreso.');setStatus('Abriendo tu comercio…');const r=await fetch(`${API_BASE}/tenant/session/exchange`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:LOGIN_STATE,beta_access_code:code})});const d=await readJson(r);if(!r.ok||!d.ok)throw new Error(apiError(d,`HTTP ${r.status}`));saveSession(d);location.replace(d.next||NEXT_PAGE);return true}
+async function startChannel(channel){try{if(!betaAccessCode())throw new Error('Cargá el código beta privado.');localStorage.setItem('xeleria_beta_access_code',betaAccessCode());setStatus('Identificando tu comercio con '+(channel==='ml'?'Mercado Libre':'Tienda Nube')+'…');const oauthResponse=await fetch(`${API_BASE}/oauth/${channel}/login/prepare`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({beta_access_code:betaAccessCode(),next:NEXT_PAGE})});const oauthData=await readJson(oauthResponse);if(!oauthResponse.ok||!oauthData.ok||!oauthData.authorization_url)throw new Error(apiError(oauthData,`HTTP ${oauthResponse.status}`));setStatus('Redirigiendo…');location.href=oauthData.authorization_url}catch(error){setStatus(error.message||'No se pudo iniciar.',true);alert(error.message||'No se pudo iniciar.')}finally{loadVersionBar()}}
 document.getElementById('ml').addEventListener('click',e=>{e.preventDefault();startChannel('ml')});
 document.getElementById('tn').addEventListener('click',e=>{e.preventDefault();startChannel('tn')});
 if(REASON==='tenant_mismatch')setStatus('Sesión cerrada por seguridad: pertenecía a otro comercio. Tocá Entrar para restaurar la sesión correcta.',true);
-if(REASON==='session_expired')setStatus('Tu sesión venció. Elegí ML o TN para volver a entrar al mismo comercio.',true);
+if(REASON==='session_expired')setStatus('Tu sesión venció. Elegí ML o TN para identificar tu comercio y volver a entrar.',true);
+if(LOGIN_STATE&&OAUTH_STATUS==='identified'){exchangeChannelLogin().catch(error=>{setStatus(error.message||'No se pudo completar el ingreso.',true);alert(error.message||'No se pudo completar el ingreso.')})}
 loadVersionBar();
 </script>
 </body>
