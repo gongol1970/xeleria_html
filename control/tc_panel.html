@@ -161,7 +161,7 @@
     function filteredUsers(){const q=$('search').value.trim().toLocaleLowerCase('es');return q?users.filter(user=>String(user.name||'').toLocaleLowerCase('es').includes(q)):users}
     function renderUsers(){
       const items=filteredUsers();$('resultsMeta').textContent=`Mostrando ${items.length} de ${users.length} usuarios`;
-      $('userRows').innerHTML=items.map(user=>`<tr><td>${rowIdentity(user)}</td><td>${fmt(user.onboarding_at)}</td><td><strong>${fmt(user.subscription_ends_at)}</strong></td><td>${statusHtml(user)}</td><td>${Number(user.gifted_months_total||0)} mes${Number(user.gifted_months_total||0)===1?'':'es'}</td><td><button class="manage" type="button" data-id="${escapeHtml(user.id)}">Gestionar</button></td></tr>`).join('');
+      $('userRows').innerHTML=items.map(user=>`<tr><td>${rowIdentity(user)}</td><td>${fmt(user.onboarding_at)}</td><td><strong>${fmt(user.subscription_ends_at)}</strong></td><td>${statusHtml(user)}</td><td>${Number(user.bonified_months_total||0)} mes${Number(user.bonified_months_total||0)===1?'':'es'}</td><td><button class="manage" type="button" data-id="${escapeHtml(user.id)}">Gestionar</button></td></tr>`).join('');
       $('usersEmpty').classList.toggle('hidden',items.length>0);$('userRows').parentElement.classList.toggle('hidden',items.length===0);
       document.querySelectorAll('.manage').forEach(button=>button.addEventListener('click',()=>openManager(button.dataset.id)));
     }
