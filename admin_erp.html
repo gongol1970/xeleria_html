@@ -4785,7 +4785,7 @@ async function connectInventoryChannel(ch){
       throw {ok:false,message:'El backend no devolvió authorization_url para '+c,response:d};
     }
     setStatus('inventoryImportStatus','Abriendo autorización '+c+'...',true);
-    window.location.href=d.authorization_url;
+    window.top.location.href=d.authorization_url;
   }catch(e){
     let msg='No pude iniciar conexión '+c+': '+errText(e);
     if(authExpiredError(e)){
