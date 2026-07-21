@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Control de suscripciones | XelerIA</title>
+  <style>
+    :root{
+      color-scheme:light;
+      --bg:#f2f0eb;--surface:#fff;--ink:#111;--muted:#655f56;--line:#ddd5c8;
+      --gold:#d7b760;--gold-dark:#9d7518;--green:#087a4b;--green-bg:#e7f5ed;
+      --red:#b3261e;--red-bg:#fbe9e7;--black:#111;--shadow:0 12px 28px rgba(29,24,16,.08)
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif;letter-spacing:0}
+    button,input,textarea{font:inherit;letter-spacing:0}
+    button{cursor:pointer}
+    .shell{width:min(1240px,calc(100% - 32px));margin:0 auto;padding:22px 0 56px}
+    .top{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:0 0 18px;border-bottom:2px solid var(--black)}
+    .brand{display:flex;align-items:center;gap:12px;min-width:0}
+    .mark{width:42px;height:42px;display:grid;place-items:center;background:var(--black);color:var(--gold);font-weight:900;border-radius:6px;flex:0 0 auto}
+    h1,h2,p{margin:0}.brand h1{font-size:22px}.brand p{margin-top:3px;color:var(--muted);font-size:13px}
+    .top-actions{display:flex;align-items:center;gap:8px}
+    .icon-button,.button{border:1px solid var(--line);background:var(--surface);color:var(--ink);min-height:40px;border-radius:6px;font-weight:700}
+    .icon-button{width:40px;padding:0;font-size:22px;line-height:1}.button{padding:9px 14px}
+    .button.primary{background:var(--black);color:#fff;border-color:var(--black)}
+    .button.gold{background:var(--gold);border-color:var(--gold-dark)}
+    .button:disabled,.icon-button:disabled{opacity:.55;cursor:wait}
+    .summary{margin-top:22px;background:var(--surface);border:1px solid var(--line);border-radius:6px;box-shadow:var(--shadow);display:grid;grid-template-columns:1.25fr repeat(3,1fr)}
+    .summary-main,.stat{padding:22px;min-width:0}.stat{border-left:1px solid var(--line)}
+    .eyebrow{font-size:12px;font-weight:800;text-transform:uppercase;color:var(--muted)}
+    .big-number{font-size:48px;line-height:1;font-weight:900;margin-top:9px;color:var(--green)}
+    .big-label{margin-top:7px;color:var(--muted)}
+    .stat strong{display:block;font-size:28px;margin-top:9px}.stat span{display:block;color:var(--muted);margin-top:5px;font-size:13px}
+    .section{margin-top:24px;padding:0;background:var(--surface);border:1px solid var(--line);border-radius:6px;box-shadow:var(--shadow);overflow:hidden}
+    .section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;padding:20px 22px;border-bottom:1px solid var(--line)}
+    .section-head h2{font-size:20px}.section-head p{color:var(--muted);font-size:13px;margin-top:5px}
+    .table-scroll{overflow:auto}.connected-scroll{max-height:280px}
+    table{width:100%;border-collapse:collapse;min-width:790px;table-layout:fixed}
+    th,td{text-align:left;padding:12px 16px;border-bottom:1px solid #eee8de;vertical-align:middle;overflow-wrap:anywhere}
+    th{position:sticky;top:0;background:var(--black);color:#fff;font-size:12px;text-transform:uppercase;z-index:1}
+    tbody tr:last-child td{border-bottom:0}tbody tr:hover{background:#fbfaf7}
+    .name{font-weight:800}.subline{display:block;color:var(--muted);font-size:12px;margin-top:3px}
+    .status{display:inline-flex;align-items:center;gap:6px;border-radius:99px;padding:5px 9px;font-size:12px;font-weight:800;white-space:nowrap}
+    .status::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+    .status.online,.status.current{color:var(--green);background:var(--green-bg)}
+    .status.offline{color:var(--muted);background:#f0ede8}.status.expired{color:var(--red);background:var(--red-bg)}
+    .empty{padding:32px;text-align:center;color:var(--muted)}
+    .admin-tools{display:grid;grid-template-columns:minmax(260px,1fr) auto;gap:12px;width:min(620px,100%)}
+    .field{display:grid;gap:6px}.field label{font-size:12px;text-transform:uppercase;font-weight:800;color:var(--muted)}
+    .field input,.field textarea{width:100%;border:1px solid #cfc6b8;background:#fff;padding:11px 12px;border-radius:6px;color:var(--ink);outline:none}
+    .field input:focus,.field textarea:focus{border-color:var(--gold-dark);box-shadow:0 0 0 3px rgba(215,183,96,.2)}
+    .results-meta{padding:12px 22px;color:var(--muted);font-size:13px;border-bottom:1px solid var(--line)}
+    .manage{border:1px solid var(--line);background:#fff;padding:7px 11px;border-radius:6px;font-weight:700;white-space:nowrap}
+    .flash{margin-top:14px;padding:11px 13px;border:1px solid #abd2bc;background:var(--green-bg);color:var(--green);border-radius:6px;font-weight:700;display:none}
+    .flash.error{display:block;border-color:#e3b1ad;background:var(--red-bg);color:var(--red)}
+    dialog{width:min(520px,calc(100% - 28px));border:1px solid var(--line);border-radius:6px;padding:0;box-shadow:0 28px 70px rgba(0,0,0,.3)}
+    dialog::backdrop{background:rgba(0,0,0,.48)}
+    .dialog-head{padding:20px 22px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:20px}
+    .dialog-head h2{font-size:19px}.close{width:34px;height:34px;border:0;background:transparent;font-size:24px;line-height:1}
+    .dialog-body{padding:20px 22px;display:grid;gap:18px}.current-due{padding:13px 0;border-bottom:1px solid var(--line)}
+    .current-due span{display:block;color:var(--muted);font-size:12px;text-transform:uppercase;font-weight:800}.current-due strong{display:block;font-size:22px;margin-top:5px}
+    .month-control{display:grid;grid-template-columns:42px 1fr 42px;gap:8px}.month-control button{border:1px solid var(--line);background:#fff;border-radius:6px;font-size:22px}.month-control input{text-align:center;font-weight:900;font-size:18px}
+    .dialog-actions{display:flex;justify-content:flex-end;gap:9px;padding:0 22px 22px}
+    .login{position:fixed;inset:0;background:rgba(17,17,17,.82);display:grid;place-items:center;padding:18px;z-index:10}
+    .login-box{width:min(410px,100%);background:#fff;border-radius:6px;padding:26px;box-shadow:0 28px 70px rgba(0,0,0,.35)}
+    .login-box h2{font-size:22px}.login-box p{color:var(--muted);margin:8px 0 20px}.login-box .button{width:100%;margin-top:12px}
+    .login-error{color:var(--red);font-weight:700;margin-top:12px;display:none}.hidden{display:none!important}
+    @media(max-width:820px){.summary{grid-template-columns:1fr 1fr}.summary-main{grid-column:1/-1}.stat{border-left:0;border-top:1px solid var(--line)}.stat:nth-child(even){border-left:1px solid var(--line)}.section-head{align-items:flex-start;flex-direction:column}.admin-tools{grid-template-columns:1fr}.shell{width:min(100% - 20px,1240px)}}
+    @media(max-width:480px){.summary{grid-template-columns:1fr}.summary-main,.stat{grid-column:auto;border-left:0!important}.top{align-items:flex-start}.brand p{max-width:180px}.button.logout-label{font-size:0}.button.logout-label::after{content:"Salir";font-size:14px}.big-number{font-size:42px}.section-head{padding:17px}.dialog-actions{flex-direction:column-reverse}.dialog-actions .button{width:100%}}
+  </style>
+</head>
+<body>
+  <div id="login" class="login">
+    <form id="loginForm" class="login-box">
+      <div class="eyebrow">Acceso del propietario</div>
+      <h2>Control de XelerIA</h2>
+      <p>Ingresá tu clave privada para administrar usuarios y suscripciones.</p>
+      <div class="field"><label for="key">Clave</label><input id="key" type="password" autocomplete="current-password" required autofocus></div>
+      <button class="button primary" type="submit">Entrar</button>
+      <div id="loginError" class="login-error"></div>
+    </form>
+  </div>
+
+  <main class="shell">
+    <header class="top">
+      <div class="brand"><div class="mark">X</div><div><h1>XelerIA Control</h1><p>Usuarios y suscripciones</p></div></div>
+      <div class="top-actions"><button id="refresh" class="icon-button" type="button" title="Actualizar" aria-label="Actualizar">↻</button><button id="logout" class="button logout-label" type="button">Cerrar sesión</button></div>
+    </header>
+
+    <section class="summary" aria-label="Resumen de usuarios">
+      <div class="summary-main"><div class="eyebrow">Activos ahora</div><div id="connectedCount" class="big-number">—</div><div id="connectedLabel" class="big-label">Actividad de los últimos 15 minutos</div></div>
+      <div class="stat"><div class="eyebrow">Registrados</div><strong id="registeredCount">—</strong><span>Comercios incorporados</span></div>
+      <div class="stat"><div class="eyebrow">Vencen pronto</div><strong id="expiringCount">—</strong><span>Dentro de 7 días</span></div>
+      <div class="stat"><div class="eyebrow">Vencidos</div><strong id="expiredCount">—</strong><span>Requieren revisión</span></div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><div><h2>Usuarios conectados</h2><p>Sesiones válidas con actividad reciente.</p></div><div id="checkedAt" class="subline"></div></div>
+      <div class="table-scroll connected-scroll">
+        <table><thead><tr><th style="width:30%">Usuario</th><th style="width:16%">Estado</th><th style="width:20%">Onboarding</th><th style="width:20%">Vencimiento</th><th style="width:14%">Última actividad</th></tr></thead><tbody id="connectedRows"></tbody></table>
+        <div id="connectedEmpty" class="empty hidden">No hay usuarios activos en este momento.</div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div><h2>Administrar suscripciones</h2><p>Buscá un comercio, revisá su vencimiento y agregale meses.</p></div>
+        <div class="admin-tools"><div class="field"><label for="search">Buscar usuario</label><input id="search" type="search" placeholder="Nombre del comercio"></div><button id="clearSearch" class="button" type="button">Limpiar</button></div>
+      </div>
+      <div id="resultsMeta" class="results-meta">Cargando usuarios…</div>
+      <div class="table-scroll">
+        <table><thead><tr><th style="width:29%">Usuario</th><th style="width:16%">Onboarding</th><th style="width:18%">Vencimiento</th><th style="width:13%">Estado</th><th style="width:14%">Meses bonificados</th><th style="width:10%"></th></tr></thead><tbody id="userRows"></tbody></table>
+        <div id="usersEmpty" class="empty hidden">No encontré usuarios con ese nombre.</div>
+      </div>
+    </section>
+    <div id="flash" class="flash" role="status"></div>
+  </main>
+
+  <dialog id="subscriptionDialog">
+    <form id="giftForm" method="dialog">
+      <div class="dialog-head"><div><div class="eyebrow">Suscripción</div><h2 id="dialogName">Usuario</h2></div><button id="closeDialog" class="close" type="button" aria-label="Cerrar" title="Cerrar">×</button></div>
+      <div class="dialog-body">
+        <div class="current-due"><span>Vencimiento actual</span><strong id="dialogDue">—</strong></div>
+        <div class="field"><label for="giftMonths">Meses bonificados</label><div class="month-control"><button id="minusMonth" type="button" aria-label="Quitar un mes">−</button><input id="giftMonths" type="number" min="1" max="24" value="1" required><button id="plusMonth" type="button" aria-label="Agregar un mes">+</button></div></div>
+        <div class="field"><label for="giftNote">Motivo</label><textarea id="giftNote" rows="2" maxlength="200" placeholder="Ej.: Tester inicial"></textarea></div>
+      </div>
+      <div class="dialog-actions"><button id="cancelDialog" class="button" type="button">Cancelar</button><button id="confirmGift" class="button gold" type="submit">Bonificar meses</button></div>
+    </form>
+  </dialog>
+
+  <script>
+    const $=id=>document.getElementById(id);
+    const api='https://api.xeleria.com.ar/control';
+    const key=()=>sessionStorage.getItem('xeleria_owner_key')||'';
+    let users=[],selectedUser=null,refreshTimer=null;
+
+    async function call(path,options={}){
+      const headers={...(options.headers||{}),Authorization:`Bearer ${key()}`};
+      if(options.body)headers['Content-Type']='application/json';
+      const response=await fetch(api+path,{...options,headers});
+      let data={};try{data=await response.json()}catch{}
+      if(!response.ok)throw new Error(typeof data.detail==='string'?data.detail:`Error ${response.status}`);
+      return data;
+    }
+    function fmt(value,withTime=false){
+      if(!value)return '—';const d=new Date(value);if(Number.isNaN(d.getTime()))return '—';
+      return new Intl.DateTimeFormat('es-AR',withTime?{dateStyle:'short',timeStyle:'short'}:{dateStyle:'medium'}).format(d);
+    }
+    function escapeHtml(value){return String(value??'').replace(/[&<>'"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]))}
+    function statusHtml(user){const current=user.subscription_status==='vigente';return `<span class="status ${current?'current':'expired'}">${current?'Vigente':'Vencida'}</span>`}
+    function showFlash(message,isError=false){const el=$('flash');el.textContent=message;el.className='flash'+(isError?' error':'');el.style.display='block';setTimeout(()=>{el.style.display='none'},5000)}
+    function tenantStatusLabel(value){return ({active:'Activo',onboarding_pending:'En incorporacion',inactive:'Inactivo',suspended:'Suspendido'})[String(value||'').toLowerCase()]||'Usuario registrado'}
+    function rowIdentity(user){return `<span class="name">${escapeHtml(user.name)}</span><span class="subline">${escapeHtml(tenantStatusLabel(user.tenant_status))}</span>`}
+
+    function renderConnected(items){
+      $('connectedRows').innerHTML=items.map(user=>`<tr><td>${rowIdentity(user)}</td><td><span class="status online">En línea</span></td><td>${fmt(user.onboarding_at)}</td><td>${fmt(user.subscription_ends_at)}</td><td>${fmt(user.last_seen_at,true)}</td></tr>`).join('');
+      $('connectedEmpty').classList.toggle('hidden',items.length>0);
+      $('connectedRows').parentElement.classList.toggle('hidden',items.length===0);
+    }
+    function filteredUsers(){const q=$('search').value.trim().toLocaleLowerCase('es');return q?users.filter(user=>String(user.name||'').toLocaleLowerCase('es').includes(q)):users}
+    function renderUsers(){
+      const items=filteredUsers();$('resultsMeta').textContent=`Mostrando ${items.length} de ${users.length} usuarios`;
+      $('userRows').innerHTML=items.map(user=>`<tr><td>${rowIdentity(user)}</td><td>${fmt(user.onboarding_at)}</td><td><strong>${fmt(user.subscription_ends_at)}</strong></td><td>${statusHtml(user)}</td><td>${Number(user.gifted_months_total||0)} mes${Number(user.gifted_months_total||0)===1?'':'es'}</td><td><button class="manage" type="button" data-id="${escapeHtml(user.id)}">Gestionar</button></td></tr>`).join('');
+      $('usersEmpty').classList.toggle('hidden',items.length>0);$('userRows').parentElement.classList.toggle('hidden',items.length===0);
+      document.querySelectorAll('.manage').forEach(button=>button.addEventListener('click',()=>openManager(button.dataset.id)));
+    }
+    async function load(){
+      $('refresh').disabled=true;
+      try{
+        const data=await call('/overview');users=data.users||[];
+        $('connectedCount').textContent=data.summary.connected_now;$('registeredCount').textContent=data.summary.registered;
+        $('expiringCount').textContent=data.summary.expiring_7_days;$('expiredCount').textContent=data.summary.expired;
+        $('connectedLabel').textContent=`Actividad de los últimos ${data.connected_window_minutes} minutos`;
+        $('checkedAt').textContent=`Actualizado ${fmt(data.checked_at,true)}`;
+        renderConnected(data.connected||[]);renderUsers();
+      }catch(error){if(String(error.message).toLowerCase().includes('clave'))logout();else showFlash(error.message,true)}
+      finally{$('refresh').disabled=false}
+    }
+    function openManager(id){
+      selectedUser=users.find(user=>String(user.id)===String(id));if(!selectedUser)return;
+      $('dialogName').textContent=selectedUser.name;$('dialogDue').textContent=fmt(selectedUser.subscription_ends_at);
+      $('giftMonths').value='1';$('giftNote').value='';$('subscriptionDialog').showModal();
+    }
+    function adjustMonths(delta){const input=$('giftMonths');input.value=String(Math.max(1,Math.min(24,Number(input.value||1)+delta)))}
+    async function submitGift(event){
+      event.preventDefault();if(!selectedUser)return;const months=Number($('giftMonths').value||0);if(months<1||months>24)return;
+      const button=$('confirmGift');button.disabled=true;
+      try{
+        const data=await call(`/subscriptions/${encodeURIComponent(selectedUser.id)}/gift`,{method:'POST',body:JSON.stringify({months,note:$('giftNote').value.trim()})});
+        $('subscriptionDialog').close();showFlash(data.message||'Suscripción actualizada.');await load();
+      }catch(error){showFlash(error.message,true)}finally{button.disabled=false}
+    }
+    async function login(value){sessionStorage.setItem('xeleria_owner_key',value);await call('/session');$('login').classList.add('hidden');$('loginError').style.display='none';await load();clearInterval(refreshTimer);refreshTimer=setInterval(load,30000)}
+    function logout(){sessionStorage.removeItem('xeleria_owner_key');clearInterval(refreshTimer);$('login').classList.remove('hidden');$('key').value='';$('key').focus()}
+
+    $('loginForm').addEventListener('submit',async event=>{event.preventDefault();try{await login($('key').value)}catch(error){sessionStorage.removeItem('xeleria_owner_key');$('loginError').textContent=error.message;$('loginError').style.display='block'}});
+    $('refresh').addEventListener('click',load);$('logout').addEventListener('click',logout);$('search').addEventListener('input',renderUsers);$('clearSearch').addEventListener('click',()=>{$('search').value='';renderUsers();$('search').focus()});
+    $('closeDialog').addEventListener('click',()=>$('subscriptionDialog').close());$('cancelDialog').addEventListener('click',()=>$('subscriptionDialog').close());$('minusMonth').addEventListener('click',()=>adjustMonths(-1));$('plusMonth').addEventListener('click',()=>adjustMonths(1));$('giftForm').addEventListener('submit',submitGift);
+    document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&key())load()});
+    if(key())login(key()).catch(logout);
+  </script>
+</body>
+</html>
