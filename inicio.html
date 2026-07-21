@@ -3,8 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>XelerIA · Inicio</title>
-  <!-- XELERIA_INICIO_V24_AUTO_RESTORE_DUPLICATE_TENANT -->
+  <title>XelerIA · Operaciones inteligentes para e-commerce</title>
+  <meta name="description" content="Centralizá ventas, inventario, facturación y atención de Mercado Libre y Tienda Nube con XelerIA.">
+  <!-- XELERIA_INICIO_V25_PRO_ENTRY -->
   <script>
     if (location.protocol === 'http:' && location.hostname.endsWith('xeleria.com.ar')) {
       location.replace('https://' + location.host + location.pathname + location.search + location.hash);
@@ -12,37 +13,67 @@
   </script>
   <link rel="icon" type="image/png" href="./favicon_xeleria.png?v=1">
   <style>
-    :root{--bg:#07111f;--text:#f5f7fb;--muted:#aab6c8;--accent:#5eead4;--border:rgba(255,255,255,.14);--ml:#ffe600;--tn:#202849;--bad:#fca5a5}
-    *{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:Arial,Helvetica,sans-serif;background:radial-gradient(circle at top left,rgba(94,234,212,.18),transparent 34%),radial-gradient(circle at bottom right,rgba(96,165,250,.14),transparent 30%),var(--bg);color:var(--text);display:flex;align-items:center;justify-content:center;padding:26px}.wrap{width:min(980px,100%);display:grid;grid-template-columns:1.1fr .9fr;gap:18px}.hero,.panel{border:1px solid var(--border);background:rgba(255,255,255,.04);border-radius:28px;padding:30px;box-shadow:0 22px 70px rgba(0,0,0,.22)}.brand{display:flex;gap:14px;align-items:center;margin-bottom:28px}.brand img{width:54px;height:54px;border-radius:16px}.brand strong{font-size:32px;letter-spacing:-.06em}.brand span{color:var(--accent)}h1{font-size:clamp(42px,6vw,74px);line-height:.9;margin:0 0 18px;letter-spacing:-.08em}h2{font-size:34px;margin:0 0 10px}p{color:var(--muted);line-height:1.55}.badge{display:inline-flex;border:1px solid var(--border);border-radius:999px;padding:8px 12px;color:var(--accent);font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:16px}.actions{display:grid;gap:10px;margin-top:18px}.btn{border:1px solid var(--border);border-radius:16px;background:rgba(255,255,255,.07);color:var(--text);padding:14px 16px;text-decoration:none;font-weight:800;display:flex;justify-content:space-between;gap:10px;cursor:pointer}.btn:hover{border-color:var(--accent);color:var(--accent)}.primary{background:var(--ml);color:#111;border:0}.primary:hover{color:#111}.tn{background:var(--tn);color:#fff}.small{font-size:12px;color:var(--muted)}.input{width:100%;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--text);border-radius:14px;padding:13px;margin:7px 0 12px}.line{height:1px;background:var(--border);margin:18px 0}.ok,.status{color:var(--accent)}.status{font-size:12px;min-height:18px;margin-top:10px;white-space:pre-wrap}.status.bad{color:var(--bad)}.xeleria-version-bar{position:fixed;left:0;right:0;bottom:0;z-index:999999;height:21px;background:#050505;color:#b8f7d4;font:11px/21px Consolas,'Courier New',monospace;padding:0 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-top:1px solid #222}@media(max-width:820px){.wrap{grid-template-columns:1fr}.hero,.panel{padding:22px}}
+    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Oxanium:wght@600&display=swap');
+    :root{--ink:#111318;--paper:#f4f5f7;--white:#fff;--muted:#626874;--line:#d9dde5;--blue:#2563eb;--green:#087a50;--yellow:#ffe600;--coral:#d84a35;--tn:#242746;--bad:#b42318}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font-family:Manrope,Arial,sans-serif}button,input{font:inherit}
+    .siteHeader{height:72px;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:0 max(28px,calc((100vw - 1440px)/2));background:var(--white);border-bottom:1px solid var(--line);position:relative;z-index:10}
+    .brand{display:flex;align-items:center;gap:12px}.brand img{width:42px;height:42px;border-radius:50%;object-fit:cover}.brandName{font-family:Oxanium,Manrope,sans-serif;font-size:24px;font-weight:600}.brandClaim{font-size:12px;color:var(--muted);border-left:1px solid var(--line);padding-left:14px}
+    .privateBadge{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:800;color:#313640}.privateBadge:before{content:"";width:8px;height:8px;border-radius:50%;background:#28b779;box-shadow:0 0 0 4px #e5f6ee}
+    main{overflow:hidden}.hero{position:relative;min-height:clamp(620px,82svh,820px);display:flex;align-items:center;padding:54px max(28px,calc((100vw - 1440px)/2));background:#eef1f5;border-bottom:1px solid var(--line)}
+    .heroContent{position:relative;z-index:3;width:min(650px,52vw)}.eyebrow{margin:0 0 18px;color:var(--blue);font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.08em}.eyebrow span{color:var(--green)}
+    h1{font-family:Oxanium,Manrope,sans-serif;font-size:clamp(62px,8vw,118px);line-height:.88;margin:0;color:var(--ink);letter-spacing:0}h2{font-size:clamp(27px,3vw,44px);line-height:1.12;margin:20px 0 14px;max-width:650px;letter-spacing:0}.heroLead{max-width:610px;margin:0;color:var(--muted);font-size:16px;line-height:1.6}
+    .access{margin-top:28px;max-width:650px}.accessLabel{display:block;margin-bottom:8px;font-size:12px;font-weight:800;color:#3d434e}.accessGrid{display:grid;grid-template-columns:minmax(180px,1fr) auto auto;gap:8px}.input{width:100%;min-height:52px;border:1px solid #bfc5cf;background:#fff;color:var(--ink);border-radius:6px;padding:0 14px;outline:none;box-shadow:0 5px 15px rgba(24,31,43,.05)}.input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.14)}
+    .btn{min-height:52px;border:1px solid transparent;border-radius:6px;padding:0 17px;text-decoration:none;font-size:13px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;white-space:nowrap;transition:transform .15s ease,box-shadow .15s ease,background .15s ease}.btn:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(24,31,43,.14)}.primary{background:var(--yellow);color:#111;border-color:#d7c400}.primary:hover{background:#ffed45}.tn{background:var(--tn);color:#fff;border-color:var(--tn)}.tn:hover{background:#34385f}.channelMark{display:inline-grid;place-items:center;width:27px;height:27px;border-radius:50%;background:rgba(255,255,255,.75);color:#111;font-size:10px;font-weight:900}.tn .channelMark{background:#fff;color:var(--tn)}
+    .status{min-height:20px;margin-top:10px;color:var(--green);font-size:12px;font-weight:700;white-space:pre-wrap}.status.bad{color:var(--bad)}.accessNote{margin:4px 0 0;color:#777e89;font-size:11px}
+    .productScene{position:absolute;z-index:1;top:58px;right:max(-150px,calc((100vw - 1560px)/2));width:min(790px,54vw);height:calc(100% - 116px);pointer-events:none;filter:drop-shadow(0 28px 35px rgba(27,36,50,.17))}.productScene img{width:100%;height:100%;object-fit:cover;object-position:left top;border:1px solid #c8ced8;border-radius:8px;background:#fff;transform:rotate(-1.6deg)}.sceneXeli{position:absolute;right:30px;bottom:18px;width:220px;background:#2563eb;color:#fff;border-radius:6px;padding:12px 14px;box-shadow:0 14px 25px rgba(37,99,235,.28);transform:rotate(1.4deg)}.sceneXeli small{display:block;color:#cfe0ff;font-size:8px;text-transform:uppercase;font-weight:900}.sceneXeli strong{display:block;margin-top:5px;font-size:11px;line-height:1.35}
+    .valueBand{background:#fff;padding:34px max(28px,calc((100vw - 1440px)/2)) 40px}.valueIntro{display:flex;align-items:flex-end;justify-content:space-between;gap:30px;margin-bottom:25px}.valueIntro h3{font-size:25px;margin:0}.valueIntro p{max-width:570px;margin:0;color:var(--muted);font-size:13px;line-height:1.5}.valueGrid{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.valueItem{padding:22px 22px 22px 0;border-right:1px solid var(--line)}.valueItem+.valueItem{padding-left:22px}.valueItem:last-child{border-right:0}.valueNumber{display:block;margin-bottom:10px;color:var(--blue);font-size:11px;font-weight:900}.valueItem strong{display:block;font-size:14px}.valueItem span:last-child{display:block;margin-top:6px;color:var(--muted);font-size:12px;line-height:1.45}
+    .siteFooter{display:flex;justify-content:space-between;gap:20px;padding:20px max(28px,calc((100vw - 1440px)/2));background:#111318;color:#9ca3af;font-size:11px}
+    @media(max-width:1080px){.brandClaim{display:none}.heroContent{width:min(680px,64vw)}.productScene{right:-260px;width:680px;opacity:.6}.productScene:after{content:"";position:absolute;inset:0;background:rgba(238,241,245,.34)}.accessGrid{grid-template-columns:1fr 1fr}.accessGrid .input{grid-column:1/-1}.valueGrid{grid-template-columns:1fr 1fr}.valueItem:nth-child(2){border-right:0}.valueItem:nth-child(-n+2){border-bottom:1px solid var(--line)}}
+    @media(max-width:720px){.siteHeader{height:64px;padding:0 18px}.brand img{width:36px;height:36px}.brandName{font-size:21px}.privateBadge{font-size:10px}.hero{min-height:auto;padding:58px 18px 50px;display:block}.heroContent{width:100%}.productScene{display:none}h1{font-size:64px}h2{font-size:29px}.heroLead{font-size:14px}.accessGrid{grid-template-columns:1fr}.accessGrid .input{grid-column:auto}.btn{width:100%}.valueBand{padding:32px 18px}.valueIntro{display:block}.valueIntro p{margin-top:10px}.valueGrid{grid-template-columns:1fr}.valueItem,.valueItem+.valueItem{padding:18px 0;border-right:0;border-bottom:1px solid var(--line)}.valueItem:last-child{border-bottom:0}.siteFooter{display:block;padding:18px}.siteFooter span{display:block;margin-top:5px}}
   </style>
 </head>
 <body>
-  <div class="wrap">
+  <header class="siteHeader">
+    <div class="brand"><img src="./favicon_xeleria.png?v=1" alt=""><span class="brandName">XelerIA</span><span class="brandClaim">Operaciones inteligentes para e-commerce</span></div>
+    <span class="privateBadge">Beta privada</span>
+  </header>
+  <main>
     <section class="hero">
-      <div class="brand"><img src="./favicon_xeleria.png?v=1" alt="XelerIA"><strong>Xeler<span>IA</span></strong></div>
-      <div class="badge">15 días de prueba</div>
-      <h1>Probá XelerIA</h1>
-      <p>Entrás con Mercado Libre o Tienda Nube. XelerIA identifica tu cuenta y usa tu comercio interno activo.</p>
-      <p class="small">Guardia nueva: si la sesión pertenece a otro comercio, no entra al backoffice.</p>
-    </section>
-    <section class="panel">
-      <h2>Ingresar</h2>
-      <p class="small">Elegí tu canal principal para empezar.</p>
-      <label class="small" for="betaAccessCode">Código beta privado</label>
-      <input class="input" id="betaAccessCode" type="password" placeholder="Código de acceso">
-      <div class="actions">
-        <a class="btn primary" id="ml" href="#">Entrar con Mercado Libre <span>ML</span></a>
-        <a class="btn tn" id="tn" href="#">Entrar con Tienda Nube <span>TN</span></a>
+      <div class="heroContent">
+        <p class="eyebrow">Mercado Libre <span>+</span> Tienda Nube <span>+</span> ARCA <span>+</span> Xeli</p>
+        <h1>XelerIA</h1>
+        <h2>Tu operación de e-commerce, conectada de verdad.</h2>
+        <p class="heroLead">Ventas, inventario, facturación y atención reunidos en un solo lugar para trabajar con menos pasos y más control.</p>
+        <div class="access">
+          <label class="accessLabel" for="betaAccessCode">Código beta privado *</label>
+          <div class="accessGrid">
+            <input class="input" id="betaAccessCode" type="password" autocomplete="current-password" placeholder="Código de acceso" required>
+            <a class="btn primary" id="ml" href="#"><span class="channelMark">ML</span>Entrar con Mercado Libre</a>
+            <a class="btn tn" id="tn" href="#"><span class="channelMark">TN</span>Entrar con Tienda Nube</a>
+          </div>
+          <div class="status" id="status" role="status" aria-live="polite"></div>
+          <p class="accessNote">Acceso seguro por comercio. Tus datos y credenciales permanecen separados.</p>
+        </div>
       </div>
-      <div class="status" id="status"></div>
-      <div class="line"></div>
-      <p class="small">No escribe cambios reales en ML/TN durante la prueba.</p>
+      <div class="productScene" aria-hidden="true">
+        <img src="./xeleria_sales_preview.png?v=20260721" alt="">
+        <div class="sceneXeli"><small>Xeli está trabajando</small><strong>La respuesta quedó preparada y lista para revisar.</strong></div>
+      </div>
     </section>
-  </div>
-  <div id="xeleriaVersionBar" class="xeleria-version-bar">FE inicio-v23-session-tenant-guard | BE consultando…</div>
+    <section class="valueBand">
+      <div class="valueIntro"><h3>Dos canales. Una sola operación.</h3><p>XelerIA acompaña el circuito completo, desde la venta y el stock hasta el comprobante y la atención.</p></div>
+      <div class="valueGrid">
+        <div class="valueItem"><span class="valueNumber">01</span><strong>Ventas conectadas</strong><span>Mercado Libre y Tienda Nube en una misma vista operativa.</span></div>
+        <div class="valueItem"><span class="valueNumber">02</span><strong>Inventario unificado</strong><span>Productos, combos, publicaciones y movimientos por comercio.</span></div>
+        <div class="valueItem"><span class="valueNumber">03</span><strong>Facturación ARCA</strong><span>Comprobantes integrados al circuito real de cada venta.</span></div>
+        <div class="valueItem"><span class="valueNumber">04</span><strong>Xeli dentro de la app</strong><span>Asistencia inteligente para responder y comprender la operación.</span></div>
+      </div>
+    </section>
+  </main>
+  <footer class="siteFooter"><span>© 2026 XelerIA</span><span>Operaciones inteligentes para e-commerce</span></footer>
 <script>
 const API_BASE='https://api.xeleria.com.ar';
-const FRONTEND_VERSION='inicio-v24-auto-restore-duplicate-tenant';
+const FRONTEND_VERSION='inicio-v25-pro-entry';
 const VERSION_BAR=document.getElementById('xeleriaVersionBar');
 const params=new URLSearchParams(location.search);
 const NEXT_PAGE=params.get('next')||'admin_erp.html';
