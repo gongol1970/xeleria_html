@@ -983,7 +983,8 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 .invoiceActionTrigger.issued{background:#ecfdf5!important;color:#047857!important;border-color:#a7f3d0!important}
 .invoiceActionPopover{position:fixed!important;display:none;z-index:99999;min-width:116px;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);padding:5px}
 .invoiceActionPopover.open{display:block!important}
-.invoiceActionPopover button{min-width:104px!important;width:100%!important;justify-content:center!important;padding:7px 10px!important}
+.invoiceActionPopover button{min-width:104px!important;width:100%!important;justify-content:center!important;padding:7px 10px!important;background:#fff!important;color:#111!important;border:1px solid #eee2c8!important}
+.invoiceActionPopover button:hover{background:#fffaf0!important}
 .invoiceActionPopover.hasDiagnostic{width:min(360px,calc(100vw - 16px));padding:8px}
 .invoiceActionDiagnostic{display:grid;gap:3px;padding:7px 8px 9px;margin-bottom:6px;border-bottom:1px solid var(--line);font-size:12px;line-height:1.35;text-align:left;overflow-wrap:anywhere}
 .invoiceActionDiagnostic.error{color:var(--bad)}
@@ -1336,8 +1337,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.90.5-invoice-diagnostics';
-const FRONTEND_BUILD='admin-erp-v2890-unified-operational-registry';
+const FRONTEND_VERSION='2.90.6-invoice-menu-clean';
+const FRONTEND_BUILD='admin-erp-v2906-invoice-menu-clean';
 const SALES_DB_POLL_INTERVAL_MS=60000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;let timers={};
 const XELERIA_MIN_SEARCH_CHARS=4;function isShortSearch(q){q=String(q||'').trim();return q.length>0&&q.length<XELERIA_MIN_SEARCH_CHARS}function minSearchMessage(){return 'Ingresá al menos '+XELERIA_MIN_SEARCH_CHARS+' caracteres para buscar.'}
@@ -2791,7 +2792,7 @@ function invoiceButton(o,ch){
   }
   if(!oid)return '';
   let diagnostic=invoiceDiagnostic(o);
-  return `<div class="invoiceMiniWrap" data-invoice-channel="${channel}" data-invoice-order="${safeOid}"><button type="button" class="invoiceActionTrigger" title="${esc(diagnostic.reason)}" aria-label="Pendiente de facturación" onclick="toggleInvoiceAction(this,event)">📄⚠️</button><div class="invoiceActionPopover hasDiagnostic">${invoiceDiagnosticHtml(diagnostic)}<button type="button" onclick="closeInvoiceAction(this);issueInvoiceFromSale('${jsq(ch)}','${jsq(oid)}')">Facturar</button><button type="button" onclick="closeInvoiceAction(this);recoverIssuedInvoiceFromSale('${jsq(ch)}','${jsq(oid)}')">Ya está facturada</button></div></div>`;
+  return `<div class="invoiceMiniWrap" data-invoice-channel="${channel}" data-invoice-order="${safeOid}"><button type="button" class="invoiceActionTrigger" title="${esc(diagnostic.reason)}" aria-label="Pendiente de facturación" onclick="toggleInvoiceAction(this,event)">📄⚠️</button><div class="invoiceActionPopover hasDiagnostic">${invoiceDiagnosticHtml(diagnostic)}<button type="button" onclick="closeInvoiceAction(this);issueInvoiceFromSale('${jsq(ch)}','${jsq(oid)}')">Facturar</button></div></div>`;
 }
 function closeAllInvoiceActions(except=null){
   document.querySelectorAll('.invoiceActionPopover.open').forEach(panel=>{if(panel!==except)panel.classList.remove('open')});
