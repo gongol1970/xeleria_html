@@ -1483,7 +1483,7 @@ async function logoutXeleria(){
     }
   }catch(e){console.debug('logoutXeleria backend',e)}
   try{
-    ['xeleria_session_token','xeleria_tenant_id','xeleria_last_json','xeleria_admin_token','pc_erp_token'].forEach(k=>localStorage.removeItem(k));
+    ['xeleria_session_token','xeleria_last_json','xeleria_admin_token','pc_erp_token'].forEach(k=>localStorage.removeItem(k));
     ['xeleria_session_token'].forEach(k=>sessionStorage.removeItem(k));
   }catch(e){}
   try{updateVersionBar('sesión cerrada')}catch(e){}
@@ -2212,12 +2212,16 @@ function cleanOauthParamsFromUrl(){
 function redirectToInicio(reason='no_channel_connected'){
   try{
     let next=(location.pathname.split('/').pop()||'admin_erp.html')+location.search;
+    let currentTenant=tenantId();
     let p=new URLSearchParams({next:next,reason:reason});
+    if(currentTenant&&currentTenant!=='00000000-0000-0000-0000-000000000001')p.set('tenant_id',currentTenant);
     setStatus('inventoryImportStatus','Sin canal conectado. Redirigiendo al login inicial...',false);
     updateVersionBar('redirigiendo a inicio');
     window.location.href='inicio.html?'+p.toString();
   }catch(e){
-    window.location.href='inicio.html?next=admin_erp.html&reason='+encodeURIComponent(reason);
+    let currentTenant=tenantId();
+    let tenantParam=currentTenant&&currentTenant!=='00000000-0000-0000-0000-000000000001'?'&tenant_id='+encodeURIComponent(currentTenant):'';
+    window.location.href='inicio.html?next=admin_erp.html&reason='+encodeURIComponent(reason)+tenantParam;
   }
 }
 function authExpiredError(e){
