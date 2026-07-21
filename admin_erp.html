@@ -1337,8 +1337,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.90.6-invoice-menu-clean';
-const FRONTEND_BUILD='admin-erp-v2906-invoice-menu-clean';
+const FRONTEND_VERSION='2.90.7-subscription-gate';
+const FRONTEND_BUILD='admin-erp-v2907-subscription-gate';
 const SALES_DB_POLL_INTERVAL_MS=60000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;let timers={};
 const XELERIA_MIN_SEARCH_CHARS=4;function isShortSearch(q){q=String(q||'').trim();return q.length>0&&q.length<XELERIA_MIN_SEARCH_CHARS}function minSearchMessage(){return 'Ingresá al menos '+XELERIA_MIN_SEARCH_CHARS+' caracteres para buscar.'}
@@ -1895,7 +1895,11 @@ async function fetchJson(path,opt={}){
       if(!opt.skipLastJson)saveLastJson(out);
       if(String(path).includes('/admin/arca/'))saveLastArcaError(out,{path,method:opt.method||'GET'});
       try{
-        if(authExpiredError(out)){
+        if(subscriptionExpiredError(out)){
+          try{localStorage.removeItem('xeleria_session_token');sessionStorage.removeItem('xeleria_session_token');}catch(_e){}
+          setBusy(true,'Suscripción vencida','Tu acceso y los procesos automáticos están pausados.');
+          setTimeout(()=>redirectToInicio('subscription_expired'),700);
+        }else if(authExpiredError(out)){
           try{localStorage.removeItem('xeleria_session_token');sessionStorage.removeItem('xeleria_session_token');}catch(_e){}
           setBusy(true,'Sesión expirada','Volviendo al inicio...');
           setTimeout(()=>redirectToInicio('session_expired'),250);
@@ -2350,6 +2354,11 @@ async function health(){
     renderInventoryImportConnections({});
     updateVersionBar('BE error: '+errText(e));
   }
+}
+function subscriptionExpiredError(e){
+  let code=String(e?.error||e?.response?.error||'').toLowerCase();
+  let txt=errText(e).toLowerCase();
+  return code==='subscription_expired'||txt.includes('suscripci')&&txt.includes('vencida');
 }
 async function loadMigrationAudit(){
   let panel=qs('migrationAuditPanel');
