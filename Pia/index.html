@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Pia - Planeta Casa</title>
+  <link rel="icon" type="image/png" href="../favicon_xeleria.png">
+  <link rel="stylesheet" href="pia.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <img src="../favicon_xeleria.png" alt="">
+      <div><strong>Pia</strong><span>Atenci&oacute;n de Planeta Casa</span></div>
+    </div>
+    <div class="header-status">
+      <span id="connectionState" class="connection"><span></span>Conectando</span>
+      <span class="demo-label">Sin Meta</span>
+      <button id="newConversationButton" class="header-command" type="button">
+        <i data-lucide="plus"></i><span>Nueva prueba</span>
+      </button>
+      <button id="knowledgeButton" class="icon-button" type="button" title="Cargar conocimiento" aria-label="Cargar conocimiento">
+        <i data-lucide="book-up"></i>
+      </button>
+      <input id="knowledgeFile" type="file" accept=".xlsx" hidden>
+      <button id="refreshButton" class="icon-button" type="button" title="Actualizar" aria-label="Actualizar"><i data-lucide="refresh-cw"></i></button>
+      <button id="soundButton" class="header-command" type="button"><i data-lucide="volume-2"></i><span>Probar sonido</span></button>
+      <button id="pauseButton" class="icon-button" type="button" title="Pausar a Pia" aria-label="Pausar a Pia" aria-pressed="false"><i data-lucide="pause"></i></button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <aside class="inbox" aria-label="Conversaciones">
+      <div class="inbox-head">
+        <div><p class="eyebrow">Bandeja</p><h1>Conversaciones</h1></div>
+        <span id="conversationCount" class="count">0</span>
+      </div>
+      <label class="search-field" for="conversationSearch">
+        <i data-lucide="search"></i><input id="conversationSearch" type="search" placeholder="Buscar cliente o mensaje" autocomplete="off">
+      </label>
+      <div class="segments" role="group" aria-label="Filtrar conversaciones">
+        <button class="segment active" type="button" data-filter="all">Todas</button>
+        <button class="segment" type="button" data-filter="attention">Revisar</button>
+        <button class="segment" type="button" data-filter="identified">Con SKU</button>
+      </div>
+      <div id="conversationList" class="conversation-list"></div>
+    </aside>
+
+    <section class="conversation" aria-label="Chat activo">
+      <header class="conversation-head">
+        <div class="contact-block">
+          <span id="contactInitials" class="avatar">--</span>
+          <div>
+            <div class="contact-line"><h2 id="contactName">Sin conversaci&oacute;n</h2><span id="conversationState" class="state">Bot</span></div>
+            <p id="contactMeta">Crea una prueba para comenzar</p>
+          </div>
+        </div>
+        <div class="conversation-actions">
+          <button id="customerMessageButton" class="command-button customer-message" type="button" title="Agregar mensaje del comprador"><i data-lucide="message-circle-plus"></i><span>Comprador</span></button>
+          <button id="takeoverButton" class="command-button" type="button"><i data-lucide="hand"></i><span>Tomar</span></button>
+          <button id="releaseButton" class="command-button release" type="button"><i data-lucide="bot"></i><span>Liberar bot</span></button>
+          <button id="deleteButton" class="command-button danger" type="button"><i data-lucide="trash-2"></i><span>Borrar</span></button>
+          <button id="spyToggle" class="icon-button" type="button" title="Mostrar u ocultar diagn&oacute;stico" aria-label="Mostrar u ocultar diagn&oacute;stico" aria-pressed="true"><i data-lucide="scan-search"></i></button>
+        </div>
+      </header>
+
+      <div id="detectionBar" class="detection-bar attention">
+        <div class="detection-icon"><i data-lucide="crosshair"></i></div>
+        <div><span id="flowStage">Etapa 1 - Descubrimiento</span><strong id="focusSku">Sin identificar</strong></div>
+        <div class="confidence-compact"><span id="focusConfidence">0%</span><div><i id="confidenceFill"></i></div></div>
+      </div>
+
+      <div id="messages" class="messages" aria-live="polite"></div>
+
+      <form id="composer" class="composer">
+        <div class="composer-tools">
+          <button class="icon-button subtle" type="button" title="Adjuntar" aria-label="Adjuntar"><i data-lucide="paperclip"></i></button>
+          <button class="icon-button subtle" type="button" title="Respuesta guardada" aria-label="Respuesta guardada"><i data-lucide="message-square-quote"></i></button>
+        </div>
+        <label class="message-field" for="messageInput"><textarea id="messageInput" rows="1" placeholder="Tom&aacute; la conversaci&oacute;n para responder" disabled></textarea></label>
+        <button class="send-button" type="submit" title="Enviar" aria-label="Enviar"><i data-lucide="send"></i></button>
+      </form>
+    </section>
+
+    <aside id="spyPanel" class="spy-panel" aria-label="Diagn&oacute;stico de Pia">
+      <header class="spy-head">
+        <div><p class="eyebrow">Ventana esp&iacute;a</p><h2>Diagn&oacute;stico de Pia</h2><p id="phaseLabel" class="phase-label">GENERAL + b&uacute;squeda por t&iacute;tulos y tags</p></div>
+        <span id="analysisState" class="analysis-state"><i></i>Analizando</span>
+      </header>
+      <div class="spy-tabs" role="tablist" aria-label="Detalle del diagn&oacute;stico">
+        <button class="spy-tab active" type="button" role="tab" aria-selected="true" data-tab="detection">Detecci&oacute;n</button>
+        <button class="spy-tab" type="button" role="tab" aria-selected="false" data-tab="skills">Skills</button>
+        <button class="spy-tab" type="button" role="tab" aria-selected="false" data-tab="context">Contexto</button>
+      </div>
+      <div class="stage-track" aria-label="Etapas de conversaci&oacute;n">
+        <span id="discoveryStep" class="stage-step active"><b>1</b>Descubrir</span><i></i><span id="salesStep" class="stage-step"><b>2</b>Vender</span>
+      </div>
+      <div id="spyContent" class="spy-content"></div>
+      <footer class="spy-footer"><span>&Uacute;ltimo an&aacute;lisis</span><strong id="analysisTime">sin an&aacute;lisis</strong></footer>
+    </aside>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <dialog id="deleteDialog" class="confirm-dialog">
+    <form method="dialog">
+      <div class="dialog-icon"><i data-lucide="trash-2"></i></div>
+      <h2>Borrar conversaci&oacute;n</h2>
+      <p>Se eliminar&aacute; la conversaci&oacute;n completa de <strong id="deleteContactName">este contacto</strong>.</p>
+      <div class="dialog-actions"><button class="command-button" value="cancel">Cancelar</button><button class="command-button danger" value="confirm">Borrar</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="loginDialog" class="confirm-dialog form-dialog">
+    <form id="loginForm">
+      <div class="dialog-icon"><i data-lucide="key-round"></i></div>
+      <h2>Acceso privado</h2>
+      <p>Ingres&aacute; la clave privada de Pia para abrir la bandeja.</p>
+      <label class="dialog-field">Clave<input id="piaTokenInput" type="password" autocomplete="current-password" required></label>
+      <div class="dialog-actions"><button class="command-button release" type="submit">Entrar</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="newConversationDialog" class="confirm-dialog form-dialog">
+    <form id="newConversationForm">
+      <div class="dialog-icon"><i data-lucide="message-square-plus"></i></div>
+      <h2>Nueva prueba</h2>
+      <label class="dialog-field">Nombre<input id="newContactName" type="text" maxlength="120" value="Cliente de prueba" required></label>
+      <label class="dialog-field">Primer mensaje del comprador<textarea id="newContactMessage" rows="3" maxlength="4000" required></textarea></label>
+      <div class="dialog-actions"><button id="cancelNewConversation" class="command-button" type="button">Cancelar</button><button class="command-button release" type="submit">Crear</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="customerMessageDialog" class="confirm-dialog form-dialog">
+    <form id="customerMessageForm">
+      <div class="dialog-icon"><i data-lucide="message-circle-plus"></i></div>
+      <h2>Mensaje del comprador</h2>
+      <label class="dialog-field">Mensaje<textarea id="customerMessageInput" rows="3" maxlength="4000" required></textarea></label>
+      <div class="dialog-actions"><button id="cancelCustomerMessage" class="command-button" type="button">Cancelar</button><button class="command-button release" type="submit">Procesar</button></div>
+    </form>
+  </dialog>
+
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <script src="pia.js"></script>
+</body>
+</html>
