@@ -205,12 +205,14 @@ function renderDetection(item) {
 }
 
 function renderSkills(item) {
-  const active = item.analysis?.active_skills || ["GENERAL"];
+  const active = item.activated_skills?.length
+    ? item.activated_skills
+    : (item.analysis?.active_skills || ["GENERAL"]);
   return `
     <section class="spy-section">
-      <span class="section-label">Skills activas</span>
+      <span class="section-label">Skills activadas en la conversación</span>
       <div class="skill-list">${active.map(skill => `
-        <div class="skill-row"><div><strong>${escapeHtml(skill)}</strong><span>${skill === "GENERAL" ? "Reglas permanentes" : "Conocimiento del producto"}</span></div><span class="skill-status">Activa</span></div>
+        <div class="skill-row"><div><strong>${escapeHtml(skill)}</strong><span>${skill === "GENERAL" ? "Reglas permanentes" : "Conocimiento incorporado"}</span></div><span class="skill-status">Activa</span></div>
       `).join("")}</div>
     </section>
     <section class="spy-section">
