@@ -159,7 +159,17 @@
     </form>
   </dialog>
 
+  <dialog id="correctionDialog" class="confirm-dialog form-dialog correction-dialog">
+    <form id="correctionForm">
+      <div class="dialog-icon"><i data-lucide="graduation-cap"></i></div>
+      <h2>Ense&ntilde;ar a Pia</h2>
+      <div class="correction-target"><span>Destino</span><strong id="correctionTarget">GENERAL</strong></div>
+      <label class="dialog-field">Correcci&oacute;n<textarea id="correctionInput" rows="4" maxlength="5000" placeholder="Indic&aacute; qu&eacute; debe aprender" required></textarea></label>
+      <div class="dialog-actions"><button id="cancelCorrection" class="command-button" type="button">Cancelar</button><button class="command-button release" type="submit">Guardar regla</button></div>
+    </form>
+  </dialog>
+
   <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
-  <script src="pia.js?v=20260722-skill-history"></script>
+  <script src="pia.js?v=20260722-explicit-training"></script>
 </body>
 </html>

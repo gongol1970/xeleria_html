@@ -11,7 +11,8 @@ const state = {
   filter: "all",
   spyTab: "detection",
   paused: false,
-  loading: false
+  loading: false,
+  correction: null
 };
 
 const $ = id => document.getElementById(id);
@@ -96,6 +97,7 @@ function renderMessages(item) {
         return `<div class="system-note">${escapeHtml(message.body)}</div>`;
       }
       const incoming = message.direction === "IN";
+      const botMessage = message.direction === "BOT";
       const author = message.direction === "HUMAN" ? "Gonzalo" : "Atenci\u00f3n";
       const attachments = message.attachments || [];
       const media = attachments.map(attachment => attachment.expired || !attachment.url
@@ -111,10 +113,63 @@ function renderMessages(item) {
             ${media}
             <p>${escapeHtml(message.body)}</p>
             <div class="message-meta"><span>${escapeHtml(timeLabel(message.created_at))}</span>${incoming ? "" : '<i data-lucide="check-check"></i>'}</div>
+            ${botMessage ? `<div class="message-training-actions">
+              <button type="button" data-correction-target="general" data-message-id="${escapeHtml(message.id)}"><i data-lucide="book-plus"></i><span>General</span></button>
+              <button type="button" data-correction-target="skill" data-message-id="${escapeHtml(message.id)}"><i data-lucide="badge-plus"></i><span>Skill</span></button>
+            </div>` : ""}
           </div>
         </div>`;
     }).join("")}` : '<div class="empty-list chat-empty">Todav\u00eda no hay mensajes.</div>';
+  document.querySelectorAll("[data-correction-target]").forEach(button => {
+    button.addEventListener("click", () => openCorrectionDialog(
+      button.dataset.messageId,
+      button.dataset.correctionTarget
+    ));
+  });
   $("messages").scrollTop = $("messages").scrollHeight;
+}
+
+function correctionSkill(item, message) {
+  const values = [
+    message?.raw?.skill_id,
+    item.detected_skill_id,
+    item.analysis?.skill_id,
+    ...[...(item.activated_skills || [])].reverse()
+  ];
+  return values.map(value => String(value || "").trim().toUpperCase())
+    .find(value => value && value !== "GENERAL") || "";
+}
+
+function precedingCustomerMessage(item, messageId) {
+  let latest = "";
+  for (const message of item.messages || []) {
+    if (message.id === messageId) break;
+    if (message.direction === "IN") latest = message.body || latest;
+  }
+  return latest;
+}
+
+function openCorrectionDialog(messageId, target) {
+  const item = selectedConversation();
+  const message = (item?.messages || []).find(candidate => candidate.id === messageId);
+  if (!item || !message) return;
+  const skillId = target === "general" ? "GENERAL" : correctionSkill(item, message);
+  if (target === "skill" && !skillId) {
+    showToast("Pia todav\u00eda no identific\u00f3 un skill de producto", true);
+    return;
+  }
+  state.correction = {
+    target,
+    skillId,
+    messageId,
+    questionText: precedingCustomerMessage(item, messageId),
+    proposedAnswer: message.body || ""
+  };
+  $("correctionTarget").textContent = skillId;
+  $("correctionInput").value = "";
+  $("correctionDialog").showModal();
+  setTimeout(() => $("correctionInput").focus(), 0);
+  refreshIcons();
 }
 
 function renderConversation() {
@@ -447,6 +502,41 @@ function resetAttachment() {
 $("cancelAttachment").addEventListener("click", () => {
   $("attachmentDialog").close();
   resetAttachment();
+});
+
+$("cancelCorrection").addEventListener("click", () => {
+  $("correctionDialog").close();
+  state.correction = null;
+});
+$("correctionForm").addEventListener("submit", async event => {
+  event.preventDefault();
+  const item = selectedConversation();
+  const correction = state.correction;
+  const text = $("correctionInput").value.trim();
+  if (!item || !correction || !text) return;
+  setBusy(true);
+  try {
+    const payload = await api(
+      `/pia/conversations/${encodeURIComponent(item.id)}/knowledge/${encodeURIComponent(correction.target)}`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          correction: text,
+          skill_id: correction.skillId,
+          question_text: correction.questionText,
+          proposed_answer: correction.proposedAnswer
+        })
+      }
+    );
+    $("correctionDialog").close();
+    $("correctionInput").value = "";
+    state.correction = null;
+    showToast(`Regla guardada en ${payload.skill_id}`);
+  } catch (error) {
+    showToast(error.message, true);
+  } finally {
+    setBusy(false);
+  }
 });
 $("attachmentForm").addEventListener("submit", async event => {
   event.preventDefault();

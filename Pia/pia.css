@@ -644,6 +644,34 @@ h2 {
   height: 12px;
 }
 
+.message-training-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 5px;
+  margin-top: 7px;
+  padding-top: 7px;
+  border-top: 1px solid rgba(8, 126, 118, .16);
+}
+
+.message-training-actions button {
+  min-height: 25px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 7px;
+  border: 1px solid #a9d4cd;
+  border-radius: 5px;
+  background: #fff;
+  color: var(--teal);
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.message-training-actions svg {
+  width: 13px;
+  height: 13px;
+}
+
 .message-attachment {
   display: grid;
   gap: 6px;
@@ -1296,6 +1324,30 @@ body.is-busy button {
 .dialog-field textarea:focus {
   border-color: var(--teal);
   box-shadow: 0 0 0 3px rgba(8, 126, 118, .12);
+}
+
+.correction-target {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 11px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-soft);
+}
+
+.correction-target span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.correction-target strong {
+  color: var(--teal);
+  font-family: Consolas, monospace;
+  font-size: 13px;
 }
 
 .attachment-preview {
