@@ -547,6 +547,38 @@ $("pauseButton").addEventListener("click", async () => {
 });
 
 $("knowledgeButton").addEventListener("click", () => $("knowledgeFile").click());
+$("downloadKnowledgeButton").addEventListener("click", async () => {
+  setBusy(true);
+  try {
+    const response = await fetch(`${API_BASE}/pia/knowledge.xlsx`, {
+      headers: { "x-pia-token": state.token }
+    });
+    if (response.status === 401) {
+      state.token = "";
+      localStorage.removeItem("pia_admin_token");
+      showLogin();
+    }
+    if (!response.ok) {
+      let payload = {};
+      try { payload = await response.json(); } catch (_) { payload = {}; }
+      throw new Error(payload.detail || `Error ${response.status}`);
+    }
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "conocimiento_Pia.xlsx";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    showToast("Conocimiento descargado");
+  } catch (error) {
+    showToast(error.message, true);
+  } finally {
+    setBusy(false);
+  }
+});
 $("knowledgeFile").addEventListener("change", async event => {
   const file = event.target.files?.[0];
   if (!file) return;
