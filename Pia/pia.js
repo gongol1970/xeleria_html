@@ -97,10 +97,18 @@ function renderMessages(item) {
       }
       const incoming = message.direction === "IN";
       const author = message.direction === "HUMAN" ? "Gonzalo" : "Atenci\u00f3n";
+      const attachments = message.attachments || [];
+      const media = attachments.map(attachment => attachment.expired || !attachment.url
+        ? `<div class="message-attachment expired-attachment"><i data-lucide="timer-off"></i><span>Adjunto eliminado a los 3 d\u00edas</span></div>`
+        : attachment.kind === "image"
+          ? `<figure class="message-attachment"><img src="${escapeHtml(attachment.url)}" alt="Imagen enviada por el comprador" loading="lazy"><figcaption>${escapeHtml(attachment.filename || "Imagen")}</figcaption></figure>`
+          : `<div class="message-attachment audio-attachment"><audio controls preload="metadata" src="${escapeHtml(attachment.url)}"></audio><span>${escapeHtml(attachment.filename || "Audio")}</span></div>`
+      ).join("");
       return `
         <div class="message-row ${incoming ? "" : "outgoing"}">
           <div class="message">
             ${incoming ? "" : `<span class="message-author">${author}</span>`}
+            ${media}
             <p>${escapeHtml(message.body)}</p>
             <div class="message-meta"><span>${escapeHtml(timeLabel(message.created_at))}</span>${incoming ? "" : '<i data-lucide="check-check"></i>'}</div>
           </div>
@@ -163,6 +171,9 @@ function renderDetection(item) {
   const confidence = percent(analysis.confidence ?? item.confidence);
   const tags = analysis.matched_tags || [];
   const candidates = candidateRows(analysis);
+  const visual = [...(item.messages || [])].reverse()
+    .map(message => message.raw?.visual_detection)
+    .find(Boolean);
   return `
     <section class="spy-section">
       <span class="section-label">Hip\u00f3tesis principal</span>
@@ -171,6 +182,10 @@ function renderDetection(item) {
         <div class="score-ring" style="--score:${confidence}%" data-score="${confidence}%"></div>
       </div>
     </section>
+    ${visual ? `<section class="spy-section">
+      <span class="section-label">Lectura de imagen</span>
+      <div class="visual-reading"><i data-lucide="scan-eye"></i><div><strong>${escapeHtml(visual.primary_sku || "Sin confirmar")}</strong><span>${escapeHtml(visual.description || "Producto visible analizado")}</span>${visual.notes ? `<small>${escapeHtml(visual.notes)}</small>` : ""}</div></div>
+    </section>` : ""}
     <section class="spy-section">
       <span class="section-label">Tags coincidentes</span>
       <div class="tag-list">${tags.length ? tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join("") : '<span class="muted-value">Sin coincidencias suficientes</span>'}</div>
@@ -398,6 +413,62 @@ $("customerMessageForm").addEventListener("submit", async event => {
   }
 });
 
+let pendingAttachment = null;
+$("attachmentButton").addEventListener("click", () => {
+  if (!selectedConversation()) return showToast("Primero seleccion\u00e1 una conversaci\u00f3n", true);
+  $("attachmentFile").click();
+});
+$("attachmentFile").addEventListener("change", event => {
+  pendingAttachment = event.target.files?.[0] || null;
+  if (!pendingAttachment) return;
+  $("attachmentFilename").textContent = pendingAttachment.name;
+  const preview = $("attachmentPreview");
+  preview.innerHTML = "";
+  const url = URL.createObjectURL(pendingAttachment);
+  preview.dataset.url = url;
+  if (pendingAttachment.type.startsWith("image/")) {
+    preview.innerHTML = `<img src="${escapeHtml(url)}" alt="Vista previa del adjunto">`;
+  } else {
+    preview.innerHTML = `<audio controls src="${escapeHtml(url)}"></audio>`;
+  }
+  $("attachmentDialog").showModal();
+});
+function resetAttachment() {
+  const url = $("attachmentPreview").dataset.url;
+  if (url) URL.revokeObjectURL(url);
+  $("attachmentPreview").innerHTML = "";
+  $("attachmentPreview").dataset.url = "";
+  $("attachmentCaption").value = "";
+  $("attachmentFile").value = "";
+  pendingAttachment = null;
+}
+$("cancelAttachment").addEventListener("click", () => {
+  $("attachmentDialog").close();
+  resetAttachment();
+});
+$("attachmentForm").addEventListener("submit", async event => {
+  event.preventDefault();
+  const item = selectedConversation();
+  if (!item || !pendingAttachment) return;
+  const form = new FormData();
+  form.append("file", pendingAttachment);
+  form.append("caption", $("attachmentCaption").value.trim());
+  setBusy(true);
+  try {
+    const payload = await api(`/pia/conversations/${encodeURIComponent(item.id)}/attachments`, {
+      method: "POST", body: form
+    });
+    $("attachmentDialog").close();
+    resetAttachment();
+    await loadConversations(item.id);
+    showToast(payload.ok ? "Adjunto procesado" : payload.error || "Adjunto guardado sin respuesta", !payload.ok);
+  } catch (error) {
+    showToast(error.message, true);
+  } finally {
+    setBusy(false);
+  }
+});
+
 $("takeoverButton").addEventListener("click", async () => {
   const item = selectedConversation();
   if (!item) return;
@@ -490,6 +561,19 @@ $("knowledgeFile").addEventListener("change", async event => {
   } finally {
     setBusy(false);
     event.target.value = "";
+  }
+});
+
+$("catalogMediaButton").addEventListener("click", async () => {
+  setBusy(true);
+  try {
+    const payload = await api("/pia/catalog-media/refresh?limit=500", { method: "POST" });
+    const detail = payload.errors?.length ? `, ${payload.errors.length} con error` : "";
+    showToast(`Fotos actualizadas: ${payload.saved}; en cach\u00e9: ${payload.cached}${detail}`, Boolean(payload.errors?.length));
+  } catch (error) {
+    showToast(error.message, true);
+  } finally {
+    setBusy(false);
   }
 });
 

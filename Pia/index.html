@@ -23,6 +23,9 @@
       <button id="knowledgeButton" class="icon-button" type="button" title="Cargar conocimiento" aria-label="Cargar conocimiento">
         <i data-lucide="book-up"></i>
       </button>
+      <button id="catalogMediaButton" class="icon-button" type="button" title="Actualizar fotos del cat&aacute;logo" aria-label="Actualizar fotos del cat&aacute;logo">
+        <i data-lucide="images"></i>
+      </button>
       <input id="knowledgeFile" type="file" accept=".xlsx" hidden>
       <button id="refreshButton" class="icon-button" type="button" title="Actualizar" aria-label="Actualizar"><i data-lucide="refresh-cw"></i></button>
       <button id="soundButton" class="header-command" type="button"><i data-lucide="volume-2"></i><span>Probar sonido</span></button>
@@ -75,7 +78,8 @@
 
       <form id="composer" class="composer">
         <div class="composer-tools">
-          <button class="icon-button subtle" type="button" title="Adjuntar" aria-label="Adjuntar"><i data-lucide="paperclip"></i></button>
+          <button id="attachmentButton" class="icon-button subtle" type="button" title="Adjuntar como comprador" aria-label="Adjuntar como comprador"><i data-lucide="paperclip"></i></button>
+          <input id="attachmentFile" type="file" accept="image/jpeg,image/png,image/webp,audio/*,video/mp4,video/webm" hidden>
           <button class="icon-button subtle" type="button" title="Respuesta guardada" aria-label="Respuesta guardada"><i data-lucide="message-square-quote"></i></button>
         </div>
         <label class="message-field" for="messageInput"><textarea id="messageInput" rows="1" placeholder="Tom&aacute; la conversaci&oacute;n para responder" disabled></textarea></label>
@@ -138,6 +142,17 @@
       <h2>Mensaje del comprador</h2>
       <label class="dialog-field">Mensaje<textarea id="customerMessageInput" rows="3" maxlength="4000" required></textarea></label>
       <div class="dialog-actions"><button id="cancelCustomerMessage" class="command-button" type="button">Cancelar</button><button class="command-button release" type="submit">Procesar</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="attachmentDialog" class="confirm-dialog form-dialog attachment-dialog">
+    <form id="attachmentForm">
+      <div class="dialog-icon"><i data-lucide="paperclip"></i></div>
+      <h2>Adjunto del comprador</h2>
+      <div id="attachmentPreview" class="attachment-preview"></div>
+      <p id="attachmentFilename" class="attachment-filename"></p>
+      <label class="dialog-field">Mensaje opcional<textarea id="attachmentCaption" rows="2" maxlength="4000" placeholder="Ej: Estoy interesado en esto"></textarea></label>
+      <div class="dialog-actions"><button id="cancelAttachment" class="command-button" type="button">Cancelar</button><button class="command-button release" type="submit">Procesar</button></div>
     </form>
   </dialog>
 
