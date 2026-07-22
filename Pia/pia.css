@@ -931,8 +931,16 @@ h2 {
 
 .candidate-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 36px;
+  grid-template-columns: minmax(0, 1fr) 58px;
   gap: 8px;
+}
+
+.candidate-row.selected .candidate-bar i {
+  background: var(--teal);
+}
+
+.candidate-row.selected .candidate-score {
+  color: var(--teal-dark);
 }
 
 .candidate-name {

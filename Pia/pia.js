@@ -144,10 +144,17 @@ function renderConversation() {
 function candidateRows(analysis) {
   const candidates = analysis.candidate_skus || [];
   const maximum = Math.max(...candidates.map(item => Number(item.score || 0)), 1);
-  return candidates.map(candidate => ({
-    ...candidate,
-    relative: Math.round((Number(candidate.score || 0) / maximum) * 100)
-  }));
+  const leaders = candidates.filter(item => Math.abs(Number(item.score || 0) - maximum) < 0.001).length;
+  return candidates.map(candidate => {
+    const relative = Math.round((Number(candidate.score || 0) / maximum) * 100);
+    const selected = candidate.sku === analysis.primary_sku;
+    return {
+      ...candidate,
+      relative,
+      selected,
+      label: selected ? "ELEGIDO" : (relative === 100 && leaders > 1 ? "EMPATE" : `${relative}%`)
+    };
+  });
 }
 
 function renderDetection(item) {
@@ -172,7 +179,7 @@ function renderDetection(item) {
       <span class="section-label">Candidatos</span>
       <div class="candidate-list">
         ${candidates.length ? candidates.map(candidate => `
-          <div class="candidate-row"><div><div class="candidate-name"><code>${escapeHtml(candidate.sku)}</code></div><div class="candidate-bar"><i style="width:${candidate.relative}%"></i></div></div><span class="candidate-score">${candidate.relative}%</span></div>
+          <div class="candidate-row ${candidate.selected ? "selected" : ""}"><div><div class="candidate-name"><code>${escapeHtml(candidate.sku)}</code></div><div class="candidate-bar"><i style="width:${candidate.relative}%"></i></div></div><span class="candidate-score">${candidate.label}</span></div>
         `).join("") : '<span class="muted-value">Esperando m\u00e1s contexto</span>'}
       </div>
     </section>
