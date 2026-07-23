@@ -31,6 +31,7 @@
       </button>
       <input id="knowledgeFile" type="file" accept=".xlsx" hidden>
       <button id="refreshButton" class="icon-button" type="button" title="Actualizar" aria-label="Actualizar"><i data-lucide="refresh-cw"></i></button>
+      <button id="settingsButton" class="icon-button" type="button" title="Configuraci&oacute;n" aria-label="Configuraci&oacute;n"><i data-lucide="settings"></i></button>
       <button id="soundButton" class="header-command" type="button"><i data-lucide="volume-2"></i><span>Probar sonido</span></button>
       <button id="pauseButton" class="icon-button" type="button" title="Pausar a Pia" aria-label="Pausar a Pia" aria-pressed="false"><i data-lucide="pause"></i></button>
     </div>
@@ -139,6 +140,26 @@
     </form>
   </dialog>
 
+  <dialog id="settingsDialog" class="confirm-dialog form-dialog">
+    <form id="settingsForm">
+      <div class="dialog-icon"><i data-lucide="settings"></i></div>
+      <h2>Configuraci&oacute;n de Pia</h2>
+      <p>Defin&iacute; el adicional que Pia suma a las cotizaciones de Correo Argentino.</p>
+      <label class="dialog-field">Tipo de recargo
+        <select id="shippingMarkupType">
+          <option value="none">Sin recargo</option>
+          <option value="percent">Porcentaje</option>
+          <option value="fixed">Monto fijo</option>
+        </select>
+      </label>
+      <label id="shippingMarkupValueField" class="dialog-field">Valor
+        <input id="shippingMarkupValue" type="number" min="0" max="10000000" step="0.01" value="0">
+        <span id="shippingMarkupUnit">%</span>
+      </label>
+      <div class="dialog-actions"><button id="cancelSettings" class="command-button" type="button">Cancelar</button><button class="command-button release" type="submit">Guardar</button></div>
+    </form>
+  </dialog>
+
   <dialog id="customerMessageDialog" class="confirm-dialog form-dialog">
     <form id="customerMessageForm">
       <div class="dialog-icon"><i data-lucide="message-circle-plus"></i></div>
@@ -170,6 +191,6 @@
   </dialog>
 
   <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
-  <script src="pia.js?v=20260723-meta-status"></script>
+  <script src="pia.js?v=20260723-correo-settings"></script>
 </body>
 </html>

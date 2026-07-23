@@ -11,6 +11,7 @@ const state = {
   filter: "all",
   spyTab: "detection",
   paused: false,
+  settings: { shipping_markup_type: "none", shipping_markup_value: 0 },
   loading: false,
   correction: null
 };
@@ -335,10 +336,25 @@ function showLogin() {
 async function loadHealth() {
   const payload = await api("/pia/health");
   state.paused = Boolean(payload.settings?.bot_paused);
+  state.settings = { ...state.settings, ...(payload.settings || {}) };
   $("connectionState").innerHTML = `<span></span>${escapeHtml(payload.database || "pia_app")} conectada`;
   $("metaState").textContent = payload.meta_enabled ? "Meta conectada" : "Sin Meta";
   $("pauseButton").setAttribute("aria-pressed", String(state.paused));
   $("pauseButton").innerHTML = `<i data-lucide="${state.paused ? "play" : "pause"}"></i>`;
+}
+
+function renderShippingMarkupFields() {
+  const type = $("shippingMarkupType").value;
+  $("shippingMarkupValueField").hidden = type === "none";
+  $("shippingMarkupUnit").textContent = type === "percent" ? "%" : "$";
+}
+
+function openSettings() {
+  $("shippingMarkupType").value = state.settings.shipping_markup_type || "none";
+  $("shippingMarkupValue").value = Number(state.settings.shipping_markup_value || 0);
+  renderShippingMarkupFields();
+  $("settingsDialog").showModal();
+  refreshIcons();
 }
 
 async function loadConversations(preferredId = "") {
@@ -637,6 +653,33 @@ $("pauseButton").addEventListener("click", async () => {
     showToast(state.paused ? "Pia qued\u00f3 pausada" : "Pia volvi\u00f3 a estar activa");
     refreshIcons();
   } catch (error) { showToast(error.message, true); }
+});
+
+$("settingsButton").addEventListener("click", openSettings);
+$("cancelSettings").addEventListener("click", () => $("settingsDialog").close());
+$("shippingMarkupType").addEventListener("change", renderShippingMarkupFields);
+$("settingsForm").addEventListener("submit", async event => {
+  event.preventDefault();
+  const type = $("shippingMarkupType").value;
+  const value = type === "none" ? 0 : Number($("shippingMarkupValue").value);
+  if (!Number.isFinite(value) || value < 0) {
+    showToast("Ingresá un recargo válido", true);
+    return;
+  }
+  try {
+    const payload = await api("/pia/settings", {
+      method: "PUT",
+      body: JSON.stringify({
+        shipping_markup_type: type,
+        shipping_markup_value: value
+      })
+    });
+    state.settings = { ...state.settings, ...(payload.settings || {}) };
+    $("settingsDialog").close();
+    showToast("Configuración de envíos guardada");
+  } catch (error) {
+    showToast(error.message, true);
+  }
 });
 
 $("knowledgeButton").addEventListener("click", () => $("knowledgeFile").click());
