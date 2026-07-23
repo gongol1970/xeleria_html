@@ -336,6 +336,7 @@ async function loadHealth() {
   const payload = await api("/pia/health");
   state.paused = Boolean(payload.settings?.bot_paused);
   $("connectionState").innerHTML = `<span></span>${escapeHtml(payload.database || "pia_app")} conectada`;
+  $("metaState").textContent = payload.meta_enabled ? "Meta conectada" : "Sin Meta";
   $("pauseButton").setAttribute("aria-pressed", String(state.paused));
   $("pauseButton").innerHTML = `<i data-lucide="${state.paused ? "play" : "pause"}"></i>`;
 }
