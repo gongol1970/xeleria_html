@@ -1248,23 +1248,11 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 
   <div class="card" id="correoSettingsCard">
     <h3>Correo Argentino</h3>
-    <p>Cotizaciones automáticas para Xeli. El recargo se suma al valor oficial antes de informarlo.</p>
+    <p>Servicio de cotización incluido en Xeli para responder preguntas. El CP de cada SKU define desde qué depósito sale.</p>
     <div class="grid">
       <div class="col-4">
-        <label>Usar cotizador</label>
-        <select id="cfgCorreoEnabled" onchange="renderCorreoSettingsUi()"><option value="false">No</option><option value="true">Sí</option></select>
-      </div>
-      <div class="col-4 correoRequired">
-        <label>Usuario API *</label>
-        <input id="cfgCorreoApiUser" autocomplete="off" placeholder="Dejar vacío para conservar">
-      </div>
-      <div class="col-4 correoRequired">
-        <label>Clave API *</label>
-        <input id="cfgCorreoApiPassword" type="password" autocomplete="new-password" placeholder="Dejar vacía para conservar">
-      </div>
-      <div class="col-4 correoRequired">
-        <label>Customer ID *</label>
-        <input id="cfgCorreoCustomerId" autocomplete="off">
+        <label>Estado del servicio</label>
+        <div id="correoSettingsStatus" class="status"></div>
       </div>
       <div class="col-4">
         <label>CP de origen predeterminado</label>
@@ -1279,7 +1267,6 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
         <input id="cfgShippingMarkupValue" type="number" min="0" max="10000000" step="0.01" value="0">
       </div>
     </div>
-    <div id="correoSettingsStatus" class="status"></div>
   </div>
 
   <div class="card" id="arcaOnboardingCard">
@@ -1373,8 +1360,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.91.1-origin-postal';
-const FRONTEND_BUILD='admin-erp-v2911-origin-postal';
+const FRONTEND_VERSION='2.91.2-xeli-shipping-service';
+const FRONTEND_BUILD='admin-erp-v2912-xeli-shipping-service';
 const SALES_DB_POLL_INTERVAL_MS=60000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;let timers={};
 const XELERIA_MIN_SEARCH_CHARS=4;function isShortSearch(q){q=String(q||'').trim();return q.length>0&&q.length<XELERIA_MIN_SEARCH_CHARS}function minSearchMessage(){return 'Ingresá al menos '+XELERIA_MIN_SEARCH_CHARS+' caracteres para buscar.'}
@@ -4559,7 +4546,6 @@ function personalizationPayload(){
   let wantsArca=cfgGet('cfgArcaUseXeleria')==='true';
   let connected=arcaConnectedFromSettings(state.tenantSettings||{});
   let auto=wantsArca&&connected&&cfgGet('cfgAutoInvoice')==='true';
-  let correoEnabled=cfgGet('cfgCorreoEnabled')==='true';
   let markupType=cfgGet('cfgShippingMarkupType')||'none';
   let markupValue=markupType==='none'?0:Number(cfgGet('cfgShippingMarkupValue')||0);
   let payload={
@@ -4572,10 +4558,6 @@ function personalizationPayload(){
     auto_invoice_tn:auto,
     default_invoice_concept:cfgGet('cfgConcepto')||'Productos',
     notification_sound:sound,
-    correo_enabled:correoEnabled,
-    correo_api_user:cfgGet('cfgCorreoApiUser').trim()||null,
-    correo_api_password:cfgGet('cfgCorreoApiPassword')||null,
-    correo_customer_id:cfgGet('cfgCorreoCustomerId').trim()||null,
     correo_origin_postal_code:cfgGet('cfgCorreoOriginPostalCode').trim().toUpperCase()||null,
     shipping_markup_type:markupType,
     shipping_markup_value:markupValue,
@@ -4598,8 +4580,6 @@ async function saveConfig(){
     state.notificationSound=normalizeNotificationSound(cfgGet('cfgNotificationSound')||'off');
     preloadNotificationSound(state.notificationSound);
     renderArcaOnboardingUi(state.tenantSettings);
-    cfgSet('cfgCorreoApiUser','');
-    cfgSet('cfgCorreoApiPassword','');
     renderCorreoSettingsUi(state.tenantSettings);
     setStatus('cfgStatus',d.warning?('Configuración guardada. '+d.warning):'Configuración guardada en base.',d.warning?'warn':true);
     clearStatusLater('cfgStatus');
@@ -4613,8 +4593,6 @@ async function saveConfig(){
 
 function renderCorreoSettingsUi(settingsArg=null){
   let s=settingsArg||state.tenantSettings||{};
-  let enabled=cfgGet('cfgCorreoEnabled')==='true';
-  document.querySelectorAll('.correoRequired').forEach(el=>el.classList.toggle('hidden',!enabled));
   let type=cfgGet('cfgShippingMarkupType')||'none';
   let valueBox=qs('cfgShippingMarkupValueBox');
   if(valueBox)valueBox.classList.toggle('hidden',type==='none');
@@ -4622,22 +4600,15 @@ function renderCorreoSettingsUi(settingsArg=null){
   if(label)label.textContent=type==='percent'?'Porcentaje de recargo *':'Monto fijo de recargo *';
   let status=qs('correoSettingsStatus');
   if(status){
-    let configured=!!s.correo_credentials_configured;
-    status.textContent=enabled?(configured?'Credenciales guardadas.':'Falta guardar las credenciales de Correo Argentino.'):'Cotizador desactivado.';
-    status.className='status '+(enabled&&!configured?'bad':enabled?'ok':'');
+    let configured=!!(s.correo_service_configured||s.correo_credentials_configured);
+    status.textContent=configured?'Disponible para Xeli.':'Servicio temporalmente no disponible.';
+    status.className='status '+(configured?'ok':'bad');
   }
 }
 
 function validateCorreoSettings(){
-  let enabled=cfgGet('cfgCorreoEnabled')==='true';
-  let s=state.tenantSettings||{};
-  if(enabled){
-    let hasNewCredentials=!!cfgGet('cfgCorreoApiUser').trim()&&!!cfgGet('cfgCorreoApiPassword');
-    if(!hasNewCredentials&&!s.correo_credentials_configured)return'Completá usuario y clave de la API de Correo Argentino.';
-    if(!cfgGet('cfgCorreoCustomerId').trim())return'Completá Customer ID de Correo Argentino.';
-    let originPostalCode=cfgGet('cfgCorreoOriginPostalCode').trim();
-    if(originPostalCode&&!/^(?:\d{4}|[A-Za-z]\d{4}[A-Za-z]{3})$/.test(originPostalCode))return'Ingresá un código postal de origen válido.';
-  }
+  let originPostalCode=cfgGet('cfgCorreoOriginPostalCode').trim();
+  if(originPostalCode&&!/^(?:\d{4}|[A-Za-z]\d{4}[A-Za-z]{3})$/.test(originPostalCode))return'Ingresá un código postal de origen válido.';
   let type=cfgGet('cfgShippingMarkupType')||'none';
   let value=Number(cfgGet('cfgShippingMarkupValue')||0);
   if(type!=='none'&&(!Number.isFinite(value)||value<0))return'Ingresá un recargo de envío válido.';
@@ -4722,10 +4693,6 @@ async function loadConfig(){
     cfgSet('cfgConcepto',s.default_invoice_concept||'Productos');
     let sound=normalizeNotificationSound(s.notification_sound||(s.raw_settings&&s.raw_settings.notification_sound)||'off');
     cfgSet('cfgNotificationSound',sound);
-    cfgSet('cfgCorreoEnabled',s.correo_enabled?'true':'false');
-    cfgSet('cfgCorreoApiUser','');
-    cfgSet('cfgCorreoApiPassword','');
-    cfgSet('cfgCorreoCustomerId',s.correo_customer_id||'');
     cfgSet('cfgCorreoOriginPostalCode',s.correo_origin_postal_code||'');
     cfgSet('cfgShippingMarkupType',s.shipping_markup_type||'none');
     cfgSet('cfgShippingMarkupValue',s.shipping_markup_value||0);
