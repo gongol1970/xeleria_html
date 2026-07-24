@@ -1268,6 +1268,16 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
         <label id="cfgShippingMarkupValueLabel">Valor del recargo</label>
         <input id="cfgShippingMarkupValue" type="number" min="0" max="10000000" step="0.01" value="0">
       </div>
+      <div class="col-4">
+        <label>Redondeo final</label>
+        <select id="cfgShippingRoundingStep">
+          <option value="0">Sin redondeo</option>
+          <option value="100">De $100 en $100</option>
+          <option value="500" selected>De $500 en $500</option>
+          <option value="1000">De $1.000 en $1.000</option>
+          <option value="5000">De $5.000 en $5.000</option>
+        </select>
+      </div>
     </div>
   </div>
 
@@ -4557,6 +4567,7 @@ function personalizationPayload(){
     correo_origin_postal_code:cfgGet('cfgCorreoOriginPostalCode').trim().toUpperCase()||null,
     shipping_markup_type:markupType,
     shipping_markup_value:markupValue,
+    shipping_rounding_step:Number(cfgGet('cfgShippingRoundingStep')||500),
     settings:{notification_sound:sound}
   };
   if(state.configLogoTouched||logoData){
@@ -4692,6 +4703,7 @@ async function loadConfig(){
     cfgSet('cfgCorreoOriginPostalCode',s.correo_origin_postal_code||'');
     cfgSet('cfgShippingMarkupType',s.shipping_markup_type||'none');
     cfgSet('cfgShippingMarkupValue',s.shipping_markup_value||0);
+    cfgSet('cfgShippingRoundingStep',s.shipping_rounding_step??500);
     state.notificationSound=sound;
     preloadNotificationSound(sound);
     if(s.logo_png_500_base64){localStorage.setItem('xeleria_company_logo_data',s.logo_png_500_base64)}
