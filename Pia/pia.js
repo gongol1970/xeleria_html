@@ -11,7 +11,11 @@ const state = {
   filter: "all",
   spyTab: "detection",
   paused: false,
-  settings: { shipping_markup_type: "none", shipping_markup_value: 0 },
+  settings: {
+    shipping_markup_type: "none",
+    shipping_markup_value: 0,
+    shipping_rounding_step: 500
+  },
   loading: false,
   correction: null
 };
@@ -352,6 +356,7 @@ function renderShippingMarkupFields() {
 function openSettings() {
   $("shippingMarkupType").value = state.settings.shipping_markup_type || "none";
   $("shippingMarkupValue").value = Number(state.settings.shipping_markup_value || 0);
+  $("shippingRoundingStep").value = String(state.settings.shipping_rounding_step ?? 500);
   renderShippingMarkupFields();
   $("settingsDialog").showModal();
   refreshIcons();
@@ -662,6 +667,7 @@ $("settingsForm").addEventListener("submit", async event => {
   event.preventDefault();
   const type = $("shippingMarkupType").value;
   const value = type === "none" ? 0 : Number($("shippingMarkupValue").value);
+  const roundingStep = Number($("shippingRoundingStep").value);
   if (!Number.isFinite(value) || value < 0) {
     showToast("Ingresá un recargo válido", true);
     return;
@@ -671,7 +677,8 @@ $("settingsForm").addEventListener("submit", async event => {
       method: "PUT",
       body: JSON.stringify({
         shipping_markup_type: type,
-        shipping_markup_value: value
+        shipping_markup_value: value,
+        shipping_rounding_step: roundingStep
       })
     });
     state.settings = { ...state.settings, ...(payload.settings || {}) };
