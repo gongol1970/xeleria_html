@@ -1,0 +1,649 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Puro · Inventario</title>
+  <link rel="icon" type="image/png" href="./Pia.png">
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #161a1d;
+      --muted: #667085;
+      --line: #d9dee5;
+      --paper: #f7f8fa;
+      --white: #ffffff;
+      --green: #087f6f;
+      --green-soft: #e6f5f1;
+      --yellow: #f4d83f;
+      --red: #b42318;
+      --blue: #2d64d8;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background: var(--paper);
+    }
+
+    button, textarea, input { font: inherit; }
+
+    .topbar {
+      min-height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px 24px;
+      color: #fff;
+      background: #15181c;
+      border-bottom: 4px solid var(--yellow);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand img {
+      width: 38px;
+      height: 38px;
+      object-fit: cover;
+      border-radius: 50%;
+      background: #fff;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    .brand small {
+      display: block;
+      margin-top: 4px;
+      color: #aeb7c3;
+      font-size: 12px;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 32px;
+      padding: 0 10px;
+      color: #d9e2ec;
+      border: 1px solid #3a424d;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #8d99a8;
+    }
+
+    .status.ok .status-dot { background: #21b795; }
+    .status.error .status-dot { background: #ef645d; }
+
+    main {
+      width: min(1180px, calc(100% - 32px));
+      margin: 28px auto 48px;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 310px;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .conversation {
+      min-width: 0;
+    }
+
+    .composer {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: end;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      color: #4b5563;
+      font-size: 12px;
+      font-weight: 850;
+      text-transform: uppercase;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 92px;
+      resize: vertical;
+      padding: 14px 15px;
+      color: var(--ink);
+      background: var(--white);
+      border: 1px solid #bcc5d0;
+      border-radius: 6px;
+      outline: none;
+      line-height: 1.45;
+    }
+
+    textarea:focus, input:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(8, 127, 111, .12);
+    }
+
+    .primary, .icon-button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    .primary {
+      min-height: 46px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 18px;
+      color: #111;
+      background: var(--yellow);
+      border: 1px solid #d2b715;
+      border-radius: 6px;
+      font-weight: 850;
+    }
+
+    .primary:disabled {
+      cursor: wait;
+      opacity: .65;
+    }
+
+    .messages {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      min-height: 360px;
+      padding: 24px 0;
+    }
+
+    .empty {
+      padding: 64px 20px;
+      color: #7a8492;
+      text-align: center;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .bubble {
+      max-width: min(760px, 88%);
+      padding: 13px 15px;
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .bubble.user {
+      align-self: flex-end;
+      background: var(--green-soft);
+      border-color: #b8ddd5;
+    }
+
+    .bubble.assistant { align-self: flex-start; }
+
+    .bubble-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 7px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 850;
+      text-transform: uppercase;
+    }
+
+    .thinking {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--green);
+      font-weight: 800;
+    }
+
+    .spinner {
+      width: 17px;
+      height: 17px;
+      border: 2px solid #a9d8ce;
+      border-top-color: var(--green);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    aside {
+      border-left: 1px solid var(--line);
+      padding-left: 22px;
+    }
+
+    aside h2 {
+      margin: 0 0 16px;
+      font-size: 16px;
+      letter-spacing: 0;
+    }
+
+    .metric-list {
+      margin: 0;
+    }
+
+    .metric {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      padding: 11px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .metric dt {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .metric dd {
+      margin: 0;
+      font-size: 12px;
+      font-weight: 850;
+      text-align: right;
+    }
+
+    .evidence {
+      margin-top: 24px;
+    }
+
+    .evidence h3 {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+
+    .evidence ul {
+      margin: 0;
+      padding-left: 18px;
+      color: #475467;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .products {
+      display: grid;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .product {
+      padding: 10px;
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+
+    .product code {
+      display: block;
+      color: var(--blue);
+      font-size: 11px;
+      font-weight: 850;
+    }
+
+    .product strong {
+      display: block;
+      margin-top: 4px;
+      font-size: 12px;
+    }
+
+    .product small {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    dialog {
+      width: min(430px, calc(100% - 32px));
+      padding: 24px;
+      background: var(--white);
+      border: 1px solid #cfd6df;
+      border-radius: 8px;
+      box-shadow: 0 24px 70px rgba(16, 24, 40, .24);
+    }
+
+    dialog::backdrop { background: rgba(15, 20, 26, .68); }
+
+    dialog h2 {
+      margin: 0 0 18px;
+      font-size: 21px;
+    }
+
+    dialog input {
+      width: 100%;
+      min-height: 44px;
+      padding: 0 12px;
+      border: 1px solid #bcc5d0;
+      border-radius: 6px;
+      outline: none;
+    }
+
+    .dialog-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 14px;
+    }
+
+    .error {
+      color: var(--red);
+      font-weight: 750;
+    }
+
+    @media (max-width: 820px) {
+      .workspace { grid-template-columns: 1fr; }
+      aside {
+        border-top: 1px solid var(--line);
+        border-left: 0;
+        padding: 20px 0 0;
+      }
+      .composer { grid-template-columns: 1fr; }
+      .primary { width: 100%; }
+      .topbar { padding-inline: 16px; }
+      main { width: min(100% - 24px, 1180px); margin-top: 18px; }
+      .bubble { max-width: 94%; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img src="./Pia.png" alt="">
+      <div>
+        <h1>Puro</h1>
+        <small>Inventario · GPT‑5.1</small>
+      </div>
+    </div>
+    <div id="status" class="status">
+      <span class="status-dot"></span>
+      <span id="statusText">Conectando</span>
+    </div>
+  </header>
+
+  <main>
+    <div class="workspace">
+      <section class="conversation" aria-label="Consulta">
+        <form id="questionForm" class="composer">
+          <div>
+            <label for="question">Pregunta</label>
+            <textarea id="question" required maxlength="4000" placeholder="Escribí una pregunta sobre el inventario"></textarea>
+          </div>
+          <button id="askButton" class="primary" type="submit">
+            <i data-lucide="send"></i>
+            Consultar
+          </button>
+        </form>
+
+        <div id="messages" class="messages">
+          <div id="emptyState" class="empty">Sin consultas</div>
+        </div>
+      </section>
+
+      <aside aria-label="Diagnóstico">
+        <h2>Medición</h2>
+        <dl class="metric-list">
+          <div class="metric"><dt>Estado</dt><dd id="metricState">Listo</dd></div>
+          <div class="metric"><dt>Tiempo visible</dt><dd id="metricLive">0,0 s</dd></div>
+          <div class="metric"><dt>Base</dt><dd id="metricDb">—</dd></div>
+          <div class="metric"><dt>GPT</dt><dd id="metricModelTime">—</dd></div>
+          <div class="metric"><dt>Total servidor</dt><dd id="metricTotal">—</dd></div>
+          <div class="metric"><dt>Modelo</dt><dd id="metricModel">GPT‑5.1</dd></div>
+          <div class="metric"><dt>Esfuerzo</dt><dd id="metricEffort">high</dd></div>
+          <div class="metric"><dt>SKU leídos</dt><dd id="metricItems">—</dd></div>
+          <div class="metric"><dt>Publicaciones</dt><dd id="metricListings">—</dd></div>
+          <div class="metric"><dt>Acceso</dt><dd>Solo lectura</dd></div>
+        </dl>
+
+        <div id="products" class="products"></div>
+        <div id="evidence" class="evidence" hidden>
+          <h3>Evidencia usada</h3>
+          <ul id="evidenceList"></ul>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <dialog id="accessDialog">
+    <form id="accessForm">
+      <h2>Acceso privado</h2>
+      <label for="token">Clave</label>
+      <input id="token" type="password" autocomplete="current-password" required>
+      <div class="dialog-actions">
+        <button class="primary" type="submit">Entrar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script>
+    const API_BASE = new URLSearchParams(location.search).get("api")
+      || (location.hostname === "localhost" || location.hostname === "127.0.0.1"
+        ? "http://localhost:8000"
+        : "https://api.xeleria.com.ar");
+
+    const state = {
+      token: localStorage.getItem("pia_admin_token") || "",
+      timer: null,
+      startedAt: 0
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    function formatMs(ms) {
+      if (ms === null || ms === undefined || Number.isNaN(Number(ms))) return "—";
+      return `${(Number(ms) / 1000).toLocaleString("es-AR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })} s`;
+    }
+
+    function setStatus(kind, text) {
+      $("status").className = `status ${kind || ""}`;
+      $("statusText").textContent = text;
+    }
+
+    function resetResults() {
+      $("products").replaceChildren();
+      $("evidenceList").replaceChildren();
+      $("evidence").hidden = true;
+      $("metricDb").textContent = "—";
+      $("metricModelTime").textContent = "—";
+      $("metricTotal").textContent = "—";
+    }
+
+    function addBubble(role, text, pending = false) {
+      $("emptyState")?.remove();
+      const bubble = document.createElement("article");
+      bubble.className = `bubble ${role}`;
+      const head = document.createElement("div");
+      head.className = "bubble-head";
+      head.innerHTML = `<span>${role === "user" ? "Pregunta" : "GPT‑5.1"}</span><span>${new Date().toLocaleTimeString("es-AR", {hour: "2-digit", minute: "2-digit", second: "2-digit"})}</span>`;
+      const body = document.createElement("div");
+      if (pending) {
+        body.className = "thinking";
+        body.innerHTML = '<span class="spinner"></span><span>Consultando inventario y pensando</span>';
+      } else {
+        body.textContent = text;
+      }
+      bubble.append(head, body);
+      $("messages").appendChild(bubble);
+      bubble.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      return { bubble, body };
+    }
+
+    function startTimer() {
+      clearInterval(state.timer);
+      state.startedAt = performance.now();
+      $("metricState").textContent = "Procesando";
+      state.timer = setInterval(() => {
+        const seconds = (performance.now() - state.startedAt) / 1000;
+        $("metricLive").textContent = `${seconds.toLocaleString("es-AR", {
+          minimumFractionDigits: 1,
+          maximumFractionDigits: 1
+        })} s`;
+      }, 100);
+    }
+
+    function stopTimer() {
+      clearInterval(state.timer);
+      state.timer = null;
+      const seconds = (performance.now() - state.startedAt) / 1000;
+      $("metricLive").textContent = `${seconds.toLocaleString("es-AR", {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1
+      })} s`;
+    }
+
+    async function api(path, options = {}) {
+      const response = await fetch(`${API_BASE}${path}`, {
+        ...options,
+        headers: {
+          "content-type": "application/json",
+          "x-pia-token": state.token,
+          ...(options.headers || {})
+        }
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (response.status === 401) {
+        localStorage.removeItem("pia_admin_token");
+        state.token = "";
+        $("accessDialog").showModal();
+      }
+      if (!response.ok) {
+        throw new Error(payload.detail || `Error HTTP ${response.status}`);
+      }
+      return payload;
+    }
+
+    function renderMetrics(metrics) {
+      $("metricDb").textContent = formatMs(metrics.database_ms);
+      $("metricModelTime").textContent = formatMs(metrics.model_ms);
+      $("metricTotal").textContent = formatMs(metrics.total_ms);
+      $("metricModel").textContent = metrics.model || "GPT‑5.1";
+      $("metricEffort").textContent = metrics.reasoning_effort || "—";
+      $("metricItems").textContent = Number(metrics.inventory_items || 0).toLocaleString("es-AR");
+      $("metricListings").textContent = Number(metrics.inventory_listings || 0).toLocaleString("es-AR");
+    }
+
+    function renderEvidence(payload) {
+      $("products").replaceChildren();
+      for (const product of payload.matched_products || []) {
+        const row = document.createElement("div");
+        row.className = "product";
+        const sku = document.createElement("code");
+        sku.textContent = product.sku;
+        const name = document.createElement("strong");
+        name.textContent = product.name || product.variant_name || "Sin nombre";
+        const stock = document.createElement("small");
+        stock.textContent = `Stock: ${product.stock ?? "—"} · Publicaciones: ${(product.publications || []).length}`;
+        row.append(sku, name, stock);
+        $("products").appendChild(row);
+      }
+
+      const evidence = payload.evidence || [];
+      $("evidence").hidden = evidence.length === 0;
+      $("evidenceList").replaceChildren();
+      for (const value of evidence) {
+        const item = document.createElement("li");
+        item.textContent = value;
+        $("evidenceList").appendChild(item);
+      }
+    }
+
+    async function loadStatus() {
+      if (!state.token) {
+        $("accessDialog").showModal();
+        return;
+      }
+      try {
+        const payload = await api("/pia/puro/status");
+        setStatus("ok", "Inventario conectado");
+        $("metricModel").textContent = payload.model || "GPT‑5.1";
+        $("metricEffort").textContent = payload.reasoning_effort || "—";
+        $("metricItems").textContent = Number(payload.inventory_items || 0).toLocaleString("es-AR");
+        $("metricListings").textContent = Number(payload.inventory_listings || 0).toLocaleString("es-AR");
+        $("metricDb").textContent = formatMs(payload.database_ms);
+      } catch (error) {
+        setStatus("error", "Sin conexión");
+        if (state.token) addBubble("assistant", error.message);
+      }
+    }
+
+    $("questionForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const question = $("question").value.trim();
+      if (!question || !state.token) return;
+
+      $("question").value = "";
+      $("askButton").disabled = true;
+      resetResults();
+      addBubble("user", question);
+      const pending = addBubble("assistant", "", true);
+      startTimer();
+      setStatus("", "Procesando");
+
+      try {
+        const payload = await api("/pia/puro/ask", {
+          method: "POST",
+          body: JSON.stringify({ question })
+        });
+        pending.body.className = "";
+        pending.body.textContent = payload.answer;
+        renderMetrics(payload.metrics || {});
+        renderEvidence(payload);
+        $("metricState").textContent = "Respondido";
+        setStatus("ok", "Inventario conectado");
+      } catch (error) {
+        pending.body.className = "error";
+        pending.body.textContent = error.message;
+        $("metricState").textContent = "Error";
+        setStatus("error", "Error de consulta");
+      } finally {
+        stopTimer();
+        $("askButton").disabled = false;
+        $("question").focus();
+      }
+    });
+
+    $("accessForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      state.token = $("token").value.trim();
+      if (!state.token) return;
+      localStorage.setItem("pia_admin_token", state.token);
+      $("accessDialog").close();
+      await loadStatus();
+    });
+
+    lucide.createIcons({ attrs: { width: 18, height: 18, "stroke-width": 2 } });
+    loadStatus();
+  </script>
+</body>
+</html>
