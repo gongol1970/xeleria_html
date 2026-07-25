@@ -1195,7 +1195,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
   <div class="card xeliKnowledgeCard">
     <h3>Conocimiento organizado por skills</h3>
     <p>Cada fila tiene skill, tema, instrucción, prioridad y trazabilidad. No es una bolsa de campos ni usa la base de PIA.</p>
-    <div class="xeliKnowledgeToolbar"><button class="primary" onclick="downloadXeliKnowledge()">Bajar conocimiento</button><div class="xeliKnowledgeFile"><input id="xeliKnowledgeFile" type="file" accept=".xlsx"></div><button class="primary" onclick="uploadXeliKnowledge()">Subir conocimiento</button><button class="secondary" onclick="deduplicateXeliKnowledge()">Limpiar duplicados</button></div>
+    <div class="xeliKnowledgeToolbar"><button class="primary" onclick="downloadXeliKnowledge()">Bajar conocimiento</button><div class="xeliKnowledgeFile"><input id="xeliKnowledgeFile" type="file" accept=".xlsx"></div><button class="primary" onclick="uploadXeliKnowledge()">Subir conocimiento</button></div>
     <div id="xeliKnowledgeStatus" class="status xeliKnowledgeStatus" role="status" aria-live="polite"></div>
   </div>
 </section>
@@ -1267,16 +1267,6 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
       <div class="col-4" id="cfgShippingMarkupValueBox">
         <label id="cfgShippingMarkupValueLabel">Valor del recargo</label>
         <input id="cfgShippingMarkupValue" type="number" min="0" max="10000000" step="0.01" value="0">
-      </div>
-      <div class="col-4">
-        <label>Redondeo final</label>
-        <select id="cfgShippingRoundingStep">
-          <option value="0">Sin redondeo</option>
-          <option value="100">De $100 en $100</option>
-          <option value="500" selected>De $500 en $500</option>
-          <option value="1000">De $1.000 en $1.000</option>
-          <option value="5000">De $5.000 en $5.000</option>
-        </select>
       </div>
     </div>
   </div>
@@ -1372,7 +1362,7 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.93.0-knowledge-dedupe';
+const FRONTEND_VERSION='2.92.0-stock-truth';
 const FRONTEND_BUILD='admin-erp-v292-stock-truth';
 const SALES_DB_POLL_INTERVAL_MS=60000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;let timers={};
@@ -4003,7 +3993,38 @@ function mlQLimit(){return Number(qs('mlQLimit')?.value||20)}
 function mlQPagerHtml(d){let limit=Number(d.limit||mlQLimit()),offset=Number(d.offset||0),total=Number(d.total||0),count=(d.items||[]).length;return `<button class="secondary" ${offset<=0?'disabled':''} onclick="loadMLQuestions(${Math.max(0,offset-limit)})">Anterior</button><span class="pill">Mostrando ${total?offset+1:0}–${Math.min(offset+count,total||offset+count)}${total?` de ${total}`:''}</span><button class="secondary" ${!d.has_more?'disabled':''} onclick="loadMLQuestions(${offset+limit})">Siguiente</button>`}
 function mlQCard(q,idx){let item=q.item||{},buyer=q.from||{},title=item.title||q.item_id||'Publicación',thumb=item.thumbnail||'',link=item.permalink||'',answered=q.answer&&q.answer.text,g=qs('mlQGreetingDefault')?.checked!==false,sig=qs('mlQSignatureDefault')?.checked!==false;let buyerPlace=[buyer.city,buyer.state,buyer.country_id].filter(Boolean).join(' · '),buyerLine=[buyer.nickname?`Nickname: ${buyer.nickname}`:'',buyerPlace].filter(Boolean).join(' · ');return `<div class="mlQuestionCard"><div class="mlQuestionHead"><div>${thumb?`<img class="mlQuestionImg" src="${esc(thumb)}" alt="">`:'<div class="mlQuestionImg"></div>'}</div><div><strong>${link?`<a href="${esc(link)}" target="_blank">${esc(title)}</a>`:esc(title)}</strong><div class="mlQuestionMeta">SKU: <span class="mono">${esc(item.seller_sku||'')}</span> · Item: <span class="mono">${esc(q.item_id||'')}</span><br>Pregunta: <span class="mono">${esc(q.id||'')}</span> · ${dateAR(q.date_created)}${buyerLine?`<br>${esc(buyerLine)}`:''}</div></div><div>${statusPill(q.status||'')}</div></div><div class="mlQuestionBody"><div class="mlQuestionText">${esc(q.text||'')}</div>${answered?`<p><strong>Respuesta ML:</strong> ${esc(q.answer.text||'')}</p>`:`<div id="mlQXeliStatus_${idx}" class="small">Xeli está preparando una respuesta...</div><textarea id="mlQText_${idx}" rows="3" placeholder="Escribí el cuerpo. Para un link: # y 4 caracteres..." onfocus="mlQSetActive(${idx})" oninput="mlQTextInput(${idx})"></textarea><div id="mlQLinks_${idx}" class="mlLinkSuggest"></div><div class="btnrow" style="margin-top:10px"><label class="inlineCheck"><input id="mlQGreeting_${idx}" type="checkbox" ${g?'checked':''} onchange="mlQUpdatePreview(${idx})"> Saludo inicial</label><label class="inlineCheck"><input id="mlQSignature_${idx}" type="checkbox" ${sig?'checked':''} onchange="mlQUpdatePreview(${idx})"> Firma</label></div><div id="mlQPreview_${idx}" class="mlAnswerPreview">Xeli está preparando la respuesta.</div><div class="mlInlineTraining"><div><label>Corrección para Xeli</label><textarea id="mlQCorrection_${idx}" rows="2" placeholder="Indicá solamente qué debe corregir"></textarea></div><div class="btnrow"><button class="secondary" onclick="mlQCorrect(${idx},'general')">Corregir general</button><button class="secondary" onclick="mlQCorrect(${idx},'skill')">Corregir skill</button></div></div><div class="mlQuestionActions"><span class="small">La respuesta queda editable antes de enviar.</span><button class="primary" onclick="answerMLQuestion(${idx})">Responder en ML</button></div>`}</div></div>`}
 function renderMLQuestions(items){state.mlQuestions.items=items||[];state.mlQuestions.activeIdx=0;state.mlQuestions.linkSearch={};renderMLQuickButtons();qs('mlQList').innerHTML=items.length?items.map((q,idx)=>mlQCard(q,idx)).join(''):'<div class="card"><p>No hay preguntas para este filtro.</p></div>';renderMLQuestionPreviews()}
-async function mlQPreanswer(idx,allowAutoSend=true){let q=state.mlQuestions.items[idx],status=qs('mlQXeliStatus_'+idx),ta=qs('mlQText_'+idx);if(!q||!ta)return{sent:false};if(status)status.textContent='Xeli está leyendo la publicación y sus reglas...';try{let body={question:q,question_id:q.id||null,question_text:q.text||null,item_id:q.item_id||null,sku:(q.item||{}).seller_sku||null};let d=await fetchJson('/admin/xeli/training/preanswer',{method:'POST',body:JSON.stringify(body),skipLastJson:true});q.response_mode=d.response_mode||'pre_respuesta';q.skill_id=d.skill_id||null;if(d.response_mode==='manual'){ta.value='';if(status)status.textContent='Modo manual · escribí la respuesta.';mlQUpdatePreview(idx);return{sent:false,mode:'manual'}}ta.value=d.response||'';mlQUpdatePreview(idx);let safeAuto=d.response_mode==='auto_aprobada'&&d.response&&!d.needs_human&&!(d.missing_information||[]).length;if(safeAuto&&allowAutoSend){if(status)status.textContent='Auto-aprobada · enviando a Mercado Libre...';await fetchJson(`/admin/xeli/ml/questions/${encodeURIComponent(q.id)}/answer`,{method:'POST',body:JSON.stringify({text:d.response}),skipLastJson:true});if(status)status.textContent='Respuesta enviada automáticamente por Xeli.';return{sent:true,mode:d.response_mode}}if(status)status.textContent=`${d.response_mode==='auto_aprobada'?'Auto-aprobada frenada para revisión':'Pre-respuesta editable'} · Skill ${d.skill_id||'sin asignar'}`;return{sent:false,mode:d.response_mode}}catch(e){if(status)status.textContent='Xeli no pudo pre-responder: '+errText(e);return{sent:false,error:e}}}
+async function mlQPreanswer(idx,allowAutoSend=true){
+  let q=state.mlQuestions.items[idx],status=qs('mlQXeliStatus_'+idx),ta=qs('mlQText_'+idx);
+  if(!q||!ta)return{sent:false};
+  if(status)status.textContent='Xeli está leyendo la publicación y sus reglas...';
+  try{
+    let body={question:q,question_id:q.id||null,question_text:q.text||null,item_id:q.item_id||null,sku:(q.item||{}).seller_sku||null};
+    let d=await fetchJson('/admin/xeli/training/preanswer',{method:'POST',body:JSON.stringify(body),skipLastJson:true});
+    q.response_mode=d.response_mode||'pre_respuesta';
+    q.skill_id=d.skill_id||null;
+    q.openai_model=d.openai_model||'';
+    if(d.response_mode==='manual'){
+      ta.value='';
+      if(status)status.textContent='Modo manual · escribí la respuesta.';
+      mlQUpdatePreview(idx);
+      return{sent:false,mode:'manual'}
+    }
+    ta.value=d.response||'';
+    mlQUpdatePreview(idx);
+    let safeAuto=d.response_mode==='auto_aprobada'&&d.response&&!d.needs_human&&!(d.missing_information||[]).length;
+    if(safeAuto&&allowAutoSend){
+      if(status)status.textContent='Auto-aprobada · enviando a Mercado Libre...';
+      await fetchJson(`/admin/xeli/ml/questions/${encodeURIComponent(q.id)}/answer`,{method:'POST',body:JSON.stringify({text:d.response}),skipLastJson:true});
+      if(status)status.textContent=`Respuesta enviada automáticamente por Xeli · Modelo ${d.openai_model||'sin informar'}.`;
+      return{sent:true,mode:d.response_mode}
+    }
+    if(status)status.textContent=`${d.response_mode==='auto_aprobada'?'Auto-aprobada frenada para revisión':'Pre-respuesta editable'} · Skill ${d.skill_id||'sin asignar'} · Modelo ${d.openai_model||'sin informar'}`;
+    return{sent:false,mode:d.response_mode}
+  }catch(e){
+    if(status)status.textContent='Xeli no pudo pre-responder: '+errText(e);
+    return{sent:false,error:e}
+  }
+}
 async function mlQAutoPreanswer(){let indexes=(state.mlQuestions.items||[]).map((q,idx)=>({q,idx})).filter(x=>String(x.q.status||'').toUpperCase()!=='ANSWERED').map(x=>x.idx),cursor=0,sent=0;async function worker(){while(cursor<indexes.length){let idx=indexes[cursor++],r=await mlQPreanswer(idx,true);if(r?.sent)sent++}}await Promise.all(Array.from({length:Math.min(2,indexes.length)},worker));return sent}
 async function mlQCorrect(idx,target){let q=state.mlQuestions.items[idx],correction=(qs('mlQCorrection_'+idx)?.value||'').trim(),sku=(q?.item?.seller_sku||'').trim();if(!q||!correction){alert('Escribí la corrección para Xeli.');return}if(target==='skill'&&!sku){alert('Esta publicación no tiene SKU para corregir el skill.');return}setBusy(true,'Entrenando a Xeli','Guardando la regla y preparando una nueva respuesta...');try{let body={correction,sku:sku||null,question_text:q.text||null,proposed_answer:qs('mlQText_'+idx)?.value||null,item_id:q.item_id||null};let path=target==='general'?'/admin/xeli/training/correct-general':'/admin/xeli/training/correct-skill';await fetchJson(path,{method:'POST',body:JSON.stringify(body),skipLastJson:true});qs('mlQCorrection_'+idx).value='';await mlQPreanswer(idx,true);setStatus('mlQStatusBox','Corrección guardada y pre-respuesta actualizada.',true)}catch(e){setStatus('mlQStatusBox','Error entrenando Xeli: '+errText(e),false)}finally{setBusy(false)}}
 async function loadMLQuestions(offset=0,refresh=false,autoPreanswer=true){state.mlQuestions.offset=offset;let st=mlQStatus(),seq=(state.mlQuestions.loadSeq||0)+1;state.mlQuestions.loadSeq=seq;setStatus('mlQStatusBox',refresh?'Actualizando desde Mercado Libre...':'Leyendo preguntas...');try{await loadMLQuestionSettings();let d=await fetchJson(`/admin/xeli/ml/questions?status=${encodeURIComponent(st)}&limit=${mlQLimit()}&offset=${offset}&refresh=${refresh?'true':'false'}`);if(seq!==state.mlQuestions.loadSeq)return;renderMLQuestions(d.items||[]);qs('mlQPager').innerHTML=mlQPagerHtml(d);let label=st==='ANSWERED'?'respondidas':'sin responder';setStatus('mlQStatusBox',`OK: ${d.total||0} preguntas ${label}${d.warning?' · ML avisó: '+d.warning:''}`,!d.warning);if(st==='UNANSWERED'&&autoPreanswer&&(d.items||[]).length){let sent=await mlQAutoPreanswer();if(sent&&seq===state.mlQuestions.loadSeq)await loadMLQuestions(offset,false,false)}}catch(e){setStatus('mlQStatusBox','Error preguntas ML: '+errText(e),false)}}
@@ -4020,7 +4041,28 @@ async function loadXeliResponseModes(){let skuEl=qs('xeliModeSku');if(!skuEl)ret
 function xeliModeSkuChanged(){let row=(state.xeliTraining.responseModes||[]).find(r=>r.sku===qs('xeliModeSku')?.value);if(row&&qs('xeliModeValue'))qs('xeliModeValue').value=row.response_mode||'pre_respuesta'}
 async function saveXeliResponseMode(){let sku=qs('xeliModeSku')?.value||'',mode=qs('xeliModeValue')?.value||'';if(!sku){alert('Elegí un SKU.');return}setStatus('xeliTrainingStatus','Guardando modo de respuesta...');try{let d=await fetchJson('/admin/xeli/response-modes/'+encodeURIComponent(sku),{method:'PUT',body:JSON.stringify({response_mode:mode})});let idx=(state.xeliTraining.responseModes||[]).findIndex(r=>r.sku===sku);if(idx>=0)state.xeliTraining.responseModes[idx]=d.item;setStatus('xeliTrainingStatus',`Modo ${mode} guardado para ${sku}.`,true)}catch(e){setStatus('xeliTrainingStatus','Error guardando modo: '+errText(e),false)}}
 function selectXeliTrainingQuestion(idx){let q=state.xeliTraining.items[idx];if(!q)return;state.xeliTraining.selected=idx;let item=q.item||{},sku=item.seller_sku||'';qs('xeliQuestionId').value=q.id||'';qs('xeliItemId').value=q.item_id||item.id||'';qs('xeliSku').value=sku;qs('xeliQuestionText').value=q.text||'';qs('xeliProposedAnswer').value='';qs('xeliCorrection').value='';qs('xeliSkillSummary').innerHTML='';if(sku&&Array.from(qs('xeliModeSku')?.options||[]).some(o=>o.value===sku)){qs('xeliModeSku').value=sku;xeliModeSkuChanged()}renderXeliTrainingQuestions()}
-async function xeliPreanswer(){let question=(qs('xeliQuestionText')?.value||'').trim();if(!question){alert('Elegí o escribí una pregunta.');return}let startedAt=Date.now();setBusy(true,'Xeli está pre-respondiendo','Leyendo GENERAL, el skill asignado y la publicación...');setStatus('xeliTrainingStatus','Armando pre-respuesta...');try{let body={question_id:qs('xeliQuestionId').value||null,question_text:question,item_id:qs('xeliItemId').value||null,sku:qs('xeliSku').value||null};let d=await fetchJson('/admin/xeli/training/preanswer',{method:'POST',body:JSON.stringify(body)});await waitForXeliReading(startedAt);qs('xeliSku').value=d.sku||qs('xeliSku').value;qs('xeliProposedAnswer').value=d.response||'';qs('xeliSkillSummary').innerHTML=`<span class="pill">Skill: ${esc(d.skill_id||'sin asignar')}</span><span class="pill">${esc(d.response_mode||'pre_respuesta')}</span><span class="pill ${d.needs_human?'warn':'ok'}">${d.response_mode==='manual'?'respuesta manual':d.needs_human?'revisar':'pre-respuesta lista'}</span>`;setStatus('xeliTrainingStatus',d.response_mode==='manual'?'Este SKU está en modo manual.':'Pre-respuesta generada por Xeli.',true)}catch(e){let msg=errText(e);if(e?.network||/failed to fetch/i.test(msg))msg='Se cortó la conexión mientras Xeli preparaba la respuesta. Volvé a intentar una vez.';setStatus('xeliTrainingStatus','Error pre-respondiendo: '+msg,false)}finally{setBusy(false)}}
+async function xeliPreanswer(){
+  let question=(qs('xeliQuestionText')?.value||'').trim();
+  if(!question){alert('Elegí o escribí una pregunta.');return}
+  let startedAt=Date.now();
+  setBusy(true,'Xeli está pre-respondiendo','Leyendo GENERAL, el skill asignado y la publicación...');
+  setStatus('xeliTrainingStatus','Armando pre-respuesta...');
+  try{
+    let body={question_id:qs('xeliQuestionId').value||null,question_text:question,item_id:qs('xeliItemId').value||null,sku:qs('xeliSku').value||null};
+    let d=await fetchJson('/admin/xeli/training/preanswer',{method:'POST',body:JSON.stringify(body)});
+    await waitForXeliReading(startedAt);
+    qs('xeliSku').value=d.sku||qs('xeliSku').value;
+    qs('xeliProposedAnswer').value=d.response||'';
+    qs('xeliSkillSummary').innerHTML=`<span class="pill">Skill: ${esc(d.skill_id||'sin asignar')}</span><span class="pill">${esc(d.response_mode||'pre_respuesta')}</span><span class="pill">Modelo: ${esc(d.openai_model||'sin informar')}</span><span class="pill ${d.needs_human?'warn':'ok'}">${d.response_mode==='manual'?'respuesta manual':d.needs_human?'revisar':'pre-respuesta lista'}</span>`;
+    setStatus('xeliTrainingStatus',d.response_mode==='manual'?'Este SKU está en modo manual.':'Pre-respuesta generada por Xeli.',true)
+  }catch(e){
+    let msg=errText(e);
+    if(e?.network||/failed to fetch/i.test(msg))msg='Se cortó la conexión mientras Xeli preparaba la respuesta. Volvé a intentar una vez.';
+    setStatus('xeliTrainingStatus','Error pre-respondiendo: '+msg,false)
+  }finally{
+    setBusy(false)
+  }
+}
 async function xeliCorrect(target){let correction=(qs('xeliCorrection')?.value||'').trim(),sku=(qs('xeliSku')?.value||'').trim();if(!correction){alert('Escribí la corrección humana.');return}if(target==='skill'&&!sku){alert('Para corregir skill hace falta el SKU exacto.');return}setBusy(true,'Guardando regla dura','Xeli la resume y prepara una nueva respuesta...');try{let body={correction,sku:sku||null,question_text:qs('xeliQuestionText').value||null,proposed_answer:qs('xeliProposedAnswer').value||null,item_id:qs('xeliItemId').value||null};let path=target==='general'?'/admin/xeli/training/correct-general':'/admin/xeli/training/correct-skill';let d=await fetchJson(path,{method:'POST',body:JSON.stringify(body)});qs('xeliCorrection').value='';qs('xeliSkillSummary').innerHTML=`<span class="pill ok">Skill: ${esc(d.skill_id||target)}</span><span class="pill">regla guardada</span>`;setStatus('xeliTrainingStatus','Regla guardada. Xeli está rehaciendo la respuesta...',true);await xeliPreanswer()}catch(e){setStatus('xeliTrainingStatus','Error guardando corrección: '+errText(e),false)}finally{setBusy(false)}}
 function xeliKnowledgeNotice(message,ok=null,autoClear=false){setStatus('xeliKnowledgeStatus',message,ok);if(autoClear)clearStatusLater('xeliKnowledgeStatus',5000)}
 async function xeliTransferFetch(path,options={},attempts=2){let lastError=null;for(let attempt=0;attempt<attempts;attempt++){try{return await fetch(url(path),options)}catch(error){lastError=error;if(attempt+1>=attempts)break;await new Promise(resolve=>setTimeout(resolve,800*(attempt+1)))}}throw new Error(`No pude comunicarme con Xeleria después de ${attempts} intentos${lastError?.message?': '+lastError.message:'.'}`)}
@@ -4028,7 +4070,6 @@ async function xeliDownload(path,filename){let r=await xeliTransferFetch(path,{h
 async function downloadXeliQuestionsTxt(){try{await xeliDownload('/admin/xeli/training/questions.txt?limit=50&refresh=true','ultimas_preguntas_xeli.txt');setStatus('xeliTrainingStatus','TXT de preguntas descargado.',true)}catch(e){setStatus('xeliTrainingStatus','Error bajando preguntas: '+errText(e),false)}}
 async function downloadXeliKnowledge(){setBusy(true,'Preparando conocimiento Xeli','Armando la planilla por skills...');xeliKnowledgeNotice('Preparando la descarga...');try{await xeliDownload('/admin/xeli/knowledge.xlsx','conocimiento_xeli.xlsx');xeliKnowledgeNotice('Conocimiento Xeli descargado.',true,true)}catch(e){xeliKnowledgeNotice('Error bajando conocimiento: '+errText(e),false)}finally{setBusy(false)}}
 async function uploadXeliKnowledge(){let input=qs('xeliKnowledgeFile'),file=input?.files?.[0];if(!file){alert('Elegí un archivo .xlsx.');return}let fd=new FormData();fd.append('file',file);let h=xeleriaHeaders();delete h['Content-Type'];let uploaded=false;setBusy(true,'Subiendo conocimiento Xeli','Validando relaciones SKU y reglas por skill...');xeliKnowledgeNotice('Subiendo y validando la planilla...');try{let r=await xeliTransferFetch('/admin/xeli/knowledge.xlsx',{method:'POST',headers:h,body:fd});let text=await r.text(),d;try{d=JSON.parse(text)}catch{d={detail:text}}if(!r.ok||d.ok===false)throw d;uploaded=true;if(input)input.value='';xeliKnowledgeNotice(`Conocimiento importado · ${d.sku_rows||0} SKU · ${d.skill_instructions||0} reglas`,true,true)}catch(e){xeliKnowledgeNotice('Error subiendo conocimiento: '+errText(e),false)}finally{if(uploaded&&input)input.value='';setBusy(false)}}
-async function deduplicateXeliKnowledge(){if(!confirm('Se conservara una sola copia de cada regla exacta del tenant actual. Continuar?'))return;setBusy(true,'Limpiando conocimiento Xeli','Conservando reglas unicas y eliminando solamente copias exactas...');xeliKnowledgeNotice('Revisando reglas duplicadas...');try{let d=await fetchJson('/admin/xeli/knowledge/deduplicate',{method:'POST',skipLastJson:true});let removed=Number(d.removed_duplicates||0);xeliKnowledgeNotice(removed?`Listo: ${removed} copia${removed===1?'':'s'} exacta${removed===1?'':'s'} eliminada${removed===1?'':'s'}; quedaron ${d.skill_instructions||0} reglas unicas`:`Listo: no habia copias exactas; hay ${d.skill_instructions||0} reglas unicas`,true,true)}catch(e){xeliKnowledgeNotice('Error limpiando conocimiento: '+errText(e),false)}finally{setBusy(false)}}
 function inventoryToolBox(){let comboActive=qs('combos')&&qs('combos').classList.contains('active');return comboActive&&qs('comboTools')?qs('comboTools'):qs('inventoryTools')}
 function closeOpenKebabMenus(){document.querySelectorAll('details.kebabMenu[open]').forEach(d=>d.removeAttribute('open'))}
 function positionOpenKebabMenus(){document.querySelectorAll('details.kebabMenu[open]').forEach(d=>{let s=d.querySelector('summary');let p=d.querySelector('.kebabPanel');if(!s||!p)return;if(window.matchMedia('(max-width:720px)').matches){['left','top','bottom','visibility','display'].forEach(k=>p.style.removeProperty(k));return}let r=s.getBoundingClientRect();if(r.bottom<0||r.top>window.innerHeight){d.removeAttribute('open');return}p.style.visibility='hidden';p.style.display='grid';p.style.bottom='auto';let w=p.offsetWidth||220;let h=p.offsetHeight||180;let left=Math.min(Math.max(8,r.right-w),window.innerWidth-w-8);let below=r.bottom+6;let above=r.top-h-6;let top=below+h<=window.innerHeight-8?below:Math.max(8,above);p.style.left=left+'px';p.style.top=top+'px';p.style.visibility='visible';});}
@@ -4567,7 +4608,6 @@ function personalizationPayload(){
     correo_origin_postal_code:cfgGet('cfgCorreoOriginPostalCode').trim().toUpperCase()||null,
     shipping_markup_type:markupType,
     shipping_markup_value:markupValue,
-    shipping_rounding_step:Number(cfgGet('cfgShippingRoundingStep')||500),
     settings:{notification_sound:sound}
   };
   if(state.configLogoTouched||logoData){
@@ -4703,7 +4743,6 @@ async function loadConfig(){
     cfgSet('cfgCorreoOriginPostalCode',s.correo_origin_postal_code||'');
     cfgSet('cfgShippingMarkupType',s.shipping_markup_type||'none');
     cfgSet('cfgShippingMarkupValue',s.shipping_markup_value||0);
-    cfgSet('cfgShippingRoundingStep',s.shipping_rounding_step??500);
     state.notificationSound=sound;
     preloadNotificationSound(sound);
     if(s.logo_png_500_base64){localStorage.setItem('xeleria_company_logo_data',s.logo_png_500_base64)}
