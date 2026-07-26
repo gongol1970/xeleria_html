@@ -644,6 +644,28 @@ h2 {
   height: 12px;
 }
 
+.message-usage {
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 5px;
+  color: #56706c;
+  font-size: 9px;
+}
+
+.message-usage svg {
+  width: 12px;
+  height: 12px;
+  color: var(--teal);
+}
+
+.message-usage span + span {
+  padding-left: 6px;
+  border-left: 1px solid rgba(8, 126, 118, .18);
+}
+
 .message-training-actions {
   display: flex;
   justify-content: flex-end;
@@ -1164,6 +1186,77 @@ h2 {
   text-align: right;
 }
 
+.usage-summary {
+  display: grid;
+  gap: 10px;
+}
+
+.usage-summary > div:first-child {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.usage-summary > div:first-child strong {
+  font-family: Consolas, monospace;
+  font-size: 18px;
+}
+
+.usage-summary > div:first-child span {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.usage-meter {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: #e8ebef;
+}
+
+.usage-meter i {
+  min-width: 2px;
+  height: 100%;
+  display: block;
+  background: var(--teal);
+  transition: width .25s ease;
+}
+
+.usage-meter.warning i {
+  background: #d2a517;
+}
+
+.usage-meter.danger i {
+  background: var(--coral);
+}
+
+.usage-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.usage-grid span {
+  min-width: 0;
+  padding: 7px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--surface-soft);
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.usage-grid b {
+  display: block;
+  overflow: hidden;
+  margin-bottom: 2px;
+  color: var(--ink);
+  font-family: Consolas, monospace;
+  font-size: 11px;
+  text-overflow: ellipsis;
+}
+
 .spy-footer {
   display: flex;
   align-items: center;
@@ -1177,6 +1270,10 @@ h2 {
 
 .spy-footer strong {
   color: var(--ink);
+}
+
+.spy-footer span {
+  white-space: nowrap;
 }
 
 .empty-list {

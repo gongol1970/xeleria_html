@@ -28,8 +28,38 @@ const percent = value => Math.max(0, Math.min(99, Math.round(Number(value || 0) 
 const timeLabel = value => value
   ? new Date(value).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })
   : "";
+const usd = value => `USD ${Number(value || 0).toLocaleString("es-AR", {
+  minimumFractionDigits: 4,
+  maximumFractionDigits: 6
+})}`;
+const tokenCount = value => Number(value || 0).toLocaleString("es-AR");
 const initials = name => String(name || "Cliente")
   .split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join("").toUpperCase();
+
+function conversationUsage(item) {
+  const usages = (item?.messages || [])
+    .map(message => message.raw?.openai_usage)
+    .filter(usage => usage && Number(usage.requests || 0) > 0);
+  const totals = {
+    requests: 0,
+    input_tokens: 0,
+    cached_input_tokens: 0,
+    output_tokens: 0,
+    reasoning_tokens: 0,
+    total_tokens: 0,
+    estimated_cost_usd: 0,
+    chat_cost_gauge_usd: 1
+  };
+  for (const usage of usages) {
+    for (const key of [
+      "requests", "input_tokens", "cached_input_tokens", "output_tokens",
+      "reasoning_tokens", "total_tokens"
+    ]) totals[key] += Number(usage[key] || 0);
+    totals.estimated_cost_usd += Number(usage.estimated_cost_usd || 0);
+    totals.chat_cost_gauge_usd = Number(usage.chat_cost_gauge_usd || totals.chat_cost_gauge_usd);
+  }
+  return totals;
+}
 
 async function api(path, options = {}) {
   const headers = { ...(options.headers || {}), "x-pia-token": state.token };
@@ -90,6 +120,7 @@ function renderEmptyConversation() {
   $("focusConfidence").textContent = "0%";
   $("confidenceFill").style.width = "0%";
   $("spyContent").innerHTML = '<div class="empty-list">El diagn\u00f3stico aparecer\u00e1 con el primer mensaje.</div>';
+  $("chatCost").textContent = "USD 0,0000";
   $("messageInput").disabled = true;
 }
 
@@ -103,6 +134,7 @@ function renderMessages(item) {
       }
       const incoming = message.direction === "IN";
       const botMessage = message.direction === "BOT";
+      const usage = botMessage ? message.raw?.openai_usage : null;
       const author = message.direction === "HUMAN" ? "Gonzalo" : "Atenci\u00f3n";
       const attachments = message.attachments || [];
       const media = attachments.map(attachment => attachment.expired || !attachment.url
@@ -118,6 +150,12 @@ function renderMessages(item) {
             ${media}
             <p>${escapeHtml(message.body)}</p>
             <div class="message-meta"><span>${escapeHtml(timeLabel(message.created_at))}</span>${incoming ? "" : '<i data-lucide="check-check"></i>'}</div>
+            ${usage?.requests ? `<div class="message-usage" title="Consumo OpenAI de esta respuesta">
+              <i data-lucide="circle-dollar-sign"></i>
+              <span>${escapeHtml(usd(usage.estimated_cost_usd))}</span>
+              <span>${escapeHtml(usage.requests)} llamada${Number(usage.requests) === 1 ? "" : "s"}</span>
+              <span>${escapeHtml(tokenCount(usage.total_tokens))} tokens</span>
+            </div>` : ""}
             ${botMessage ? `<div class="message-training-actions">
               <button type="button" data-correction-target="general" data-message-id="${escapeHtml(message.id)}"><i data-lucide="book-plus"></i><span>General</span></button>
               <button type="button" data-correction-target="skill" data-message-id="${escapeHtml(message.id)}"><i data-lucide="badge-plus"></i><span>Skill</span></button>
@@ -184,6 +222,7 @@ function renderConversation() {
   const products = analysis.product_context?.products || [];
   const hasFocus = products.length > 0 || Boolean(item.current_sku);
   const usedTools = analysis.product_context?.tools || [];
+  const usage = conversationUsage(item);
   const confidence = percent(item.confidence);
   $("contactInitials").textContent = initials(item.display_name);
   $("contactName").textContent = item.display_name;
@@ -202,6 +241,7 @@ function renderConversation() {
   $("detectionBar").classList.toggle("attention", !hasFocus);
   $("analysisState").className = `analysis-state ${hasFocus ? "identified" : ""}`;
   $("analysisState").innerHTML = `<i></i>${hasFocus ? "En foco" : "Libre"}`;
+  $("chatCost").textContent = usd(usage.estimated_cost_usd);
   $("takeoverButton").classList.toggle("active", item.status === "HUMAN");
   $("takeoverButton").querySelector("span").textContent = item.status === "HUMAN" ? "Tomada" : "Tomar";
   $("messageInput").disabled = item.status !== "HUMAN";
@@ -294,6 +334,13 @@ function renderSkills(item) {
 function renderContext(item) {
   const context = item.analysis?.product_context || {};
   const products = context.products || [];
+  const turnUsage = context.openai_usage || {};
+  const usage = conversationUsage(item);
+  const gauge = Math.max(0.01, Number(usage.chat_cost_gauge_usd || 1));
+  const gaugePercent = Math.min(100, Math.round(
+    Number(usage.estimated_cost_usd || 0) / gauge * 100
+  ));
+  const gaugeState = gaugePercent >= 85 ? "danger" : gaugePercent >= 60 ? "warning" : "";
   const rows = [
     ["Productos en foco", products.length || "Ninguno"],
     ["Inventario le\u00eddo", context.inventory_items ?? "Sin dato"],
@@ -302,7 +349,30 @@ function renderContext(item) {
     ["Foco principal", item.current_sku || "Conversaci\u00f3n abierta"],
     ["Mensajes", (item.messages || []).length]
   ];
-  return `<section class="spy-section"><span class="section-label">Contexto recuperado</span><div class="context-list">
+  return `
+    <section class="spy-section">
+      <span class="section-label">Term&oacute;metro OpenAI del chat</span>
+      <div class="usage-summary">
+        <div><strong>${escapeHtml(usd(usage.estimated_cost_usd))}</strong><span>de ${escapeHtml(usd(gauge))}</span></div>
+        <div class="usage-meter ${gaugeState}"><i style="width:${gaugePercent}%"></i></div>
+        <div class="usage-grid">
+          <span><b>${escapeHtml(usage.requests)}</b> llamadas</span>
+          <span><b>${escapeHtml(tokenCount(usage.input_tokens))}</b> entrada</span>
+          <span><b>${escapeHtml(tokenCount(usage.cached_input_tokens))}</b> cach&eacute;</span>
+          <span><b>${escapeHtml(tokenCount(usage.output_tokens))}</b> salida</span>
+        </div>
+      </div>
+    </section>
+    <section class="spy-section">
+      <span class="section-label">Última respuesta</span>
+      <div class="context-list">
+        <div class="context-row"><div><span>Costo estimado</span></div><strong>${escapeHtml(usd(turnUsage.estimated_cost_usd))}</strong></div>
+        <div class="context-row"><div><span>Llamadas</span></div><strong>${escapeHtml(turnUsage.requests || 0)}</strong></div>
+        <div class="context-row"><div><span>Tokens totales</span></div><strong>${escapeHtml(tokenCount(turnUsage.total_tokens))}</strong></div>
+        <div class="context-row"><div><span>Razonamiento</span></div><strong>${escapeHtml(tokenCount(turnUsage.reasoning_tokens))}</strong></div>
+      </div>
+    </section>
+    <section class="spy-section"><span class="section-label">Contexto recuperado</span><div class="context-list">
     ${rows.map(([label, value]) => `<div class="context-row"><div><span>${escapeHtml(label)}</span></div><strong>${escapeHtml(value)}</strong></div>`).join("")}
   </div></section>`;
 }

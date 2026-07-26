@@ -6,7 +6,7 @@
   <meta name="color-scheme" content="light">
   <title>Pia - Planeta Casa</title>
   <link rel="icon" type="image/png" href="Pia.png">
-  <link rel="stylesheet" href="pia.css">
+  <link rel="stylesheet" href="pia.css?v=20260725-usage-1">
 </head>
 <body>
   <header class="app-header">
@@ -105,7 +105,10 @@
         <span id="discoveryStep" class="stage-step complete"><b>1</b>Conversar</span><i></i><span id="salesStep" class="stage-step"><b>2</b>Herramientas</span>
       </div>
       <div id="spyContent" class="spy-content"></div>
-      <footer class="spy-footer"><span>&Uacute;ltimo an&aacute;lisis</span><strong id="analysisTime">sin an&aacute;lisis</strong></footer>
+      <footer class="spy-footer">
+        <span>Chat OpenAI <strong id="chatCost">USD 0,0000</strong></span>
+        <span>&Uacute;ltimo <strong id="analysisTime">sin an&aacute;lisis</strong></span>
+      </footer>
     </aside>
   </main>
 
@@ -191,6 +194,6 @@
   </dialog>
 
   <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
-  <script src="pia.js?v=20260725-free-agent-2"></script>
+  <script src="pia.js?v=20260725-usage-1"></script>
 </body>
 </html>
