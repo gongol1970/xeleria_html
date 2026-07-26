@@ -30,7 +30,7 @@
     .button.gold{background:var(--gold);border-color:var(--gold-dark)}
     .button.danger{background:#fff;color:var(--red);border-color:#d9a7a3}
     .button:disabled,.icon-button:disabled{opacity:.55;cursor:wait}
-    .summary{margin-top:22px;background:var(--surface);border:1px solid var(--line);border-radius:6px;box-shadow:var(--shadow);display:grid;grid-template-columns:1.25fr repeat(3,1fr)}
+    .summary{margin-top:22px;background:var(--surface);border:1px solid var(--line);border-radius:6px;box-shadow:var(--shadow);display:grid;grid-template-columns:1.25fr repeat(4,1fr)}
     .summary-main,.stat{padding:22px;min-width:0}.stat{border-left:1px solid var(--line)}
     .eyebrow{font-size:12px;font-weight:800;text-transform:uppercase;color:var(--muted)}
     .big-number{font-size:48px;line-height:1;font-weight:900;margin-top:9px;color:var(--green)}
@@ -50,12 +50,13 @@
     .status.online,.status.current{color:var(--green);background:var(--green-bg)}
     .status.offline{color:var(--muted);background:#f0ede8}.status.expired{color:var(--red);background:var(--red-bg)}
     .empty{padding:32px;text-align:center;color:var(--muted)}
-    .admin-tools{display:grid;grid-template-columns:minmax(260px,1fr) auto;gap:12px;width:min(620px,100%)}
+    .admin-tools{display:grid;grid-template-columns:minmax(230px,1fr) 155px auto;gap:12px;width:min(760px,100%)}
     .field{display:grid;gap:6px}.field label{font-size:12px;text-transform:uppercase;font-weight:800;color:var(--muted)}
     .field input,.field textarea{width:100%;border:1px solid #cfc6b8;background:#fff;padding:11px 12px;border-radius:6px;color:var(--ink);outline:none}
     .field input:focus,.field textarea:focus{border-color:var(--gold-dark);box-shadow:0 0 0 3px rgba(215,183,96,.2)}
     .results-meta{padding:12px 22px;color:var(--muted);font-size:13px;border-bottom:1px solid var(--line)}
     .manage{border:1px solid var(--line);background:#fff;padding:7px 11px;border-radius:6px;font-weight:700;white-space:nowrap}
+    .usage-cost{display:block;font-weight:900;white-space:nowrap}.usage-warning{color:var(--red)}
     .flash{margin-top:14px;padding:11px 13px;border:1px solid #abd2bc;background:var(--green-bg);color:var(--green);border-radius:6px;font-weight:700;display:none}
     .flash.error{display:block;border-color:#e3b1ad;background:var(--red-bg);color:var(--red)}
     dialog{width:min(520px,calc(100% - 28px));border:1px solid var(--line);border-radius:6px;padding:0;box-shadow:0 28px 70px rgba(0,0,0,.3)}
@@ -97,12 +98,13 @@
       <div class="stat"><div class="eyebrow">Registrados</div><strong id="registeredCount">—</strong><span>Comercios incorporados</span></div>
       <div class="stat"><div class="eyebrow">Vencen pronto</div><strong id="expiringCount">—</strong><span>Dentro de 7 días</span></div>
       <div class="stat"><div class="eyebrow">Vencidos</div><strong id="expiredCount">—</strong><span>Requieren revisión</span></div>
+      <div class="stat"><div id="aiMonthTitle" class="eyebrow">IA este mes</div><strong id="aiCostTotal">—</strong><span id="aiRequestsTotal">Llamadas registradas</span></div>
     </section>
 
     <section class="section">
       <div class="section-head"><div><h2>Usuarios conectados</h2><p>Sesiones válidas con actividad reciente.</p></div><div id="checkedAt" class="subline"></div></div>
       <div class="table-scroll connected-scroll">
-        <table><thead><tr><th style="width:30%">Usuario</th><th style="width:16%">Estado</th><th style="width:20%">Onboarding</th><th style="width:20%">Vencimiento</th><th style="width:14%">Última actividad</th></tr></thead><tbody id="connectedRows"></tbody></table>
+        <table><thead><tr><th style="width:26%">Usuario</th><th style="width:13%">Estado</th><th style="width:17%">Onboarding</th><th style="width:17%">Vencimiento</th><th style="width:14%">IA del mes</th><th style="width:13%">Última actividad</th></tr></thead><tbody id="connectedRows"></tbody></table>
         <div id="connectedEmpty" class="empty hidden">No hay usuarios activos en este momento.</div>
       </div>
     </section>
@@ -110,11 +112,11 @@
     <section class="section">
       <div class="section-head">
         <div><h2>Administrar suscripciones</h2><p>Buscá un comercio, controlá su acceso y agregale meses.</p></div>
-        <div class="admin-tools"><div class="field"><label for="search">Buscar usuario</label><input id="search" type="search" placeholder="Nombre del comercio"></div><button id="clearSearch" class="button" type="button">Limpiar</button></div>
+        <div class="admin-tools"><div class="field"><label for="search">Buscar usuario</label><input id="search" type="search" placeholder="Nombre del comercio"></div><div class="field"><label for="usageMonth">Mes de IA</label><input id="usageMonth" type="month"></div><button id="clearSearch" class="button" type="button">Limpiar</button></div>
       </div>
       <div id="resultsMeta" class="results-meta">Cargando usuarios…</div>
       <div class="table-scroll">
-        <table><thead><tr><th style="width:29%">Usuario</th><th style="width:16%">Onboarding</th><th style="width:18%">Vencimiento</th><th style="width:13%">Estado</th><th style="width:14%">Meses bonificados</th><th style="width:10%"></th></tr></thead><tbody id="userRows"></tbody></table>
+        <table><thead><tr><th style="width:24%">Usuario</th><th style="width:13%">Onboarding</th><th style="width:15%">Vencimiento</th><th style="width:11%">Estado</th><th style="width:15%">IA del mes</th><th style="width:13%">Meses bonificados</th><th style="width:9%"></th></tr></thead><tbody id="userRows"></tbody></table>
         <div id="usersEmpty" class="empty hidden">No encontré usuarios con ese nombre.</div>
       </div>
     </section>
@@ -138,7 +140,7 @@
     const $=id=>document.getElementById(id);
     const api='https://api.xeleria.com.ar/control';
     const key=()=>sessionStorage.getItem('xeleria_owner_key')||'';
-    let users=[],selectedUser=null,refreshTimer=null;
+    let users=[],selectedUser=null,refreshTimer=null,aiMonth='';
 
     async function call(path,options={}){
       const headers={...(options.headers||{}),Authorization:`Bearer ${key()}`};
@@ -152,6 +154,14 @@
       if(!value)return '—';const d=new Date(value);if(Number.isNaN(d.getTime()))return '—';
       return new Intl.DateTimeFormat('es-AR',withTime?{dateStyle:'short',timeStyle:'short'}:{dateStyle:'medium'}).format(d);
     }
+    function currentMonth(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`}
+    function fmtUsd(value){const amount=Number(value||0);return `USD ${amount.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:6})}`}
+    function fmtMonth(value){if(!/^\d{4}-\d{2}$/.test(String(value||'')))return 'este mes';const [year,month]=value.split('-').map(Number);return new Intl.DateTimeFormat('es-AR',{month:'short',year:'numeric'}).format(new Date(year,month-1,1))}
+    function usageHtml(user){
+      const requests=Number(user.ai_requests_month||0),unpriced=Number(user.ai_unpriced_requests_month||0);
+      const warning=unpriced?`<span class="subline usage-warning">${unpriced} sin tarifar</span>`:'';
+      return `<span class="usage-cost">${fmtUsd(user.ai_cost_usd_month)}</span><span class="subline">${requests} llamada${requests===1?'':'s'}</span>${warning}`;
+    }
     function escapeHtml(value){return String(value??'').replace(/[&<>'"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]))}
     function statusHtml(user){const current=!!user.subscription_active;return `<span class="status ${current?'current':'expired'}">${current?'Activo':'Inactivo'}</span>`}
     function showFlash(message,isError=false){const el=$('flash');el.textContent=message;el.className='flash'+(isError?' error':'');el.style.display='block';setTimeout(()=>{el.style.display='none'},5000)}
@@ -159,23 +169,27 @@
     function rowIdentity(user){return `<span class="name">${escapeHtml(user.name)}</span><span class="subline">${escapeHtml(tenantStatusLabel(user.tenant_status))}</span>`}
 
     function renderConnected(items){
-      $('connectedRows').innerHTML=items.map(user=>`<tr><td>${rowIdentity(user)}</td><td><span class="status online">En línea</span></td><td>${fmt(user.onboarding_at)}</td><td>${fmt(user.subscription_ends_at)}</td><td>${fmt(user.last_seen_at,true)}</td></tr>`).join('');
+      $('connectedRows').innerHTML=items.map(user=>`<tr><td>${rowIdentity(user)}</td><td><span class="status online">En línea</span></td><td>${fmt(user.onboarding_at)}</td><td>${fmt(user.subscription_ends_at)}</td><td>${usageHtml(user)}</td><td>${fmt(user.last_seen_at,true)}</td></tr>`).join('');
       $('connectedEmpty').classList.toggle('hidden',items.length>0);
       $('connectedRows').parentElement.classList.toggle('hidden',items.length===0);
     }
     function filteredUsers(){const q=$('search').value.trim().toLocaleLowerCase('es');return q?users.filter(user=>String(user.name||'').toLocaleLowerCase('es').includes(q)):users}
     function renderUsers(){
-      const items=filteredUsers();$('resultsMeta').textContent=`Mostrando ${items.length} de ${users.length} usuarios`;
-      $('userRows').innerHTML=items.map(user=>`<tr><td>${rowIdentity(user)}</td><td>${fmt(user.onboarding_at)}</td><td><strong>${fmt(user.subscription_ends_at)}</strong></td><td>${statusHtml(user)}</td><td>${Number(user.bonified_months_total||0)} mes${Number(user.bonified_months_total||0)===1?'':'es'}</td><td><button class="manage" type="button" data-id="${escapeHtml(user.id)}">Gestionar</button></td></tr>`).join('');
+      const items=filteredUsers();$('resultsMeta').textContent=`Mostrando ${items.length} de ${users.length} usuarios · IA de ${fmtMonth(aiMonth)}`;
+      $('userRows').innerHTML=items.map(user=>`<tr><td>${rowIdentity(user)}</td><td>${fmt(user.onboarding_at)}</td><td><strong>${fmt(user.subscription_ends_at)}</strong></td><td>${statusHtml(user)}</td><td>${usageHtml(user)}</td><td>${Number(user.bonified_months_total||0)} mes${Number(user.bonified_months_total||0)===1?'':'es'}</td><td><button class="manage" type="button" data-id="${escapeHtml(user.id)}">Gestionar</button></td></tr>`).join('');
       $('usersEmpty').classList.toggle('hidden',items.length>0);$('userRows').parentElement.classList.toggle('hidden',items.length===0);
       document.querySelectorAll('.manage').forEach(button=>button.addEventListener('click',()=>openManager(button.dataset.id)));
     }
     async function load(){
       $('refresh').disabled=true;
       try{
-        const data=await call('/overview');users=data.users||[];
+        const requestedMonth=$('usageMonth').value||currentMonth();
+        const data=await call(`/overview?month=${encodeURIComponent(requestedMonth)}`);users=data.users||[];aiMonth=data.ai_month||requestedMonth;
         $('connectedCount').textContent=data.summary.connected_now;$('registeredCount').textContent=data.summary.registered;
         $('expiringCount').textContent=data.summary.expiring_7_days;$('expiredCount').textContent=data.summary.expired;
+        $('aiMonthTitle').textContent=`IA · ${fmtMonth(aiMonth)}`;$('aiCostTotal').textContent=fmtUsd(data.summary.ai_cost_usd_month);
+        const unpriced=Number(data.summary.ai_unpriced_requests_month||0);
+        $('aiRequestsTotal').textContent=`${Number(data.summary.ai_requests_month||0)} llamadas${unpriced?` · ${unpriced} sin tarifar`:''}`;
         $('connectedLabel').textContent=`Actividad de los últimos ${data.connected_window_minutes} minutos`;
         $('checkedAt').textContent=`Actualizado ${fmt(data.checked_at,true)}`;
         renderConnected(data.connected||[]);renderUsers();
@@ -212,9 +226,10 @@
     function logout(){sessionStorage.removeItem('xeleria_owner_key');clearInterval(refreshTimer);$('login').classList.remove('hidden');$('key').value='';$('key').focus()}
 
     $('loginForm').addEventListener('submit',async event=>{event.preventDefault();try{await login($('key').value)}catch(error){sessionStorage.removeItem('xeleria_owner_key');$('loginError').textContent=error.message;$('loginError').style.display='block'}});
-    $('refresh').addEventListener('click',load);$('logout').addEventListener('click',logout);$('search').addEventListener('input',renderUsers);$('clearSearch').addEventListener('click',()=>{$('search').value='';renderUsers();$('search').focus()});
+    $('refresh').addEventListener('click',load);$('logout').addEventListener('click',logout);$('search').addEventListener('input',renderUsers);$('usageMonth').addEventListener('change',load);$('clearSearch').addEventListener('click',()=>{$('search').value='';renderUsers();$('search').focus()});
     $('closeDialog').addEventListener('click',()=>$('subscriptionDialog').close());$('cancelDialog').addEventListener('click',()=>$('subscriptionDialog').close());$('toggleAccess').addEventListener('click',toggleAccess);$('minusMonth').addEventListener('click',()=>adjustMonths(-1));$('plusMonth').addEventListener('click',()=>adjustMonths(1));$('giftForm').addEventListener('submit',submitGift);
     document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&key())load()});
+    $('usageMonth').value=currentMonth();
     if(key())login(key()).catch(logout);
   </script>
 </body>
