@@ -181,25 +181,27 @@ function renderConversation() {
   const item = selectedConversation();
   if (!item) return renderEmptyConversation();
   const analysis = item.analysis || {};
-  const inSales = item.current_stage === "sales";
+  const products = analysis.product_context?.products || [];
+  const hasFocus = products.length > 0 || Boolean(item.current_sku);
+  const usedTools = analysis.product_context?.tools || [];
   const confidence = percent(item.confidence);
   $("contactInitials").textContent = initials(item.display_name);
   $("contactName").textContent = item.display_name;
   $("contactMeta").textContent = item.channel || "INTERNO";
   $("conversationState").textContent = item.status === "HUMAN" ? "Tomada" : "Bot";
-  $("conversationState").className = `state ${inSales ? "" : "attention"}`;
-  $("focusSku").textContent = item.current_sku || "Sin identificar";
-  $("flowStage").textContent = inSales ? "Etapa 2 - Venta" : "Etapa 1 - Descubrimiento";
-  $("phaseLabel").textContent = inSales
-    ? `GENERAL + ${item.detected_skill_id || analysis.skill_id || "skill del producto"}`
-    : "GENERAL + b\u00fasqueda por t\u00edtulos y tags";
-  $("discoveryStep").className = `stage-step ${inSales ? "complete" : "active"}`;
-  $("salesStep").className = `stage-step ${inSales ? "active" : ""}`;
+  $("conversationState").className = `state ${hasFocus ? "" : "attention"}`;
+  $("focusSku").textContent = products.length > 1
+    ? `${products.length} productos en foco`
+    : (item.current_sku || "Conversando");
+  $("flowStage").textContent = hasFocus ? "Foco comercial" : "Conversaci\u00f3n libre";
+  $("phaseLabel").textContent = "GPT-5.1 + inventario + conocimiento";
+  $("discoveryStep").className = "stage-step complete";
+  $("salesStep").className = `stage-step ${usedTools.length ? "active" : ""}`;
   $("focusConfidence").textContent = `${confidence}%`;
   $("confidenceFill").style.width = `${confidence}%`;
-  $("detectionBar").classList.toggle("attention", !inSales);
-  $("analysisState").className = `analysis-state ${inSales ? "identified" : ""}`;
-  $("analysisState").innerHTML = `<i></i>${inSales ? "Identificado" : "Analizando"}`;
+  $("detectionBar").classList.toggle("attention", !hasFocus);
+  $("analysisState").className = `analysis-state ${hasFocus ? "identified" : ""}`;
+  $("analysisState").innerHTML = `<i></i>${hasFocus ? "En foco" : "Libre"}`;
   $("takeoverButton").classList.toggle("active", item.status === "HUMAN");
   $("takeoverButton").querySelector("span").textContent = item.status === "HUMAN" ? "Tomada" : "Tomar";
   $("messageInput").disabled = item.status !== "HUMAN";
@@ -211,16 +213,21 @@ function renderConversation() {
 
 function candidateRows(analysis) {
   const candidates = analysis.candidate_skus || [];
+  const focused = new Set(
+    (analysis.product_context?.products || []).map(item => item.sku)
+  );
   const maximum = Math.max(...candidates.map(item => Number(item.score || 0)), 1);
   const leaders = candidates.filter(item => Math.abs(Number(item.score || 0) - maximum) < 0.001).length;
   return candidates.map(candidate => {
     const relative = Math.round((Number(candidate.score || 0) / maximum) * 100);
-    const selected = candidate.sku === analysis.primary_sku;
+    const selected = focused.has(candidate.sku) || candidate.sku === analysis.primary_sku;
     return {
       ...candidate,
       relative,
       selected,
-      label: selected ? "ELEGIDO" : (relative === 100 && leaders > 1 ? "EMPATE" : `${relative}%`)
+      label: focused.has(candidate.sku)
+        ? "EN FOCO"
+        : (selected ? "ELEGIDO" : (relative === 100 && leaders > 1 ? "CONSIDERADO" : `${relative}%`))
     };
   });
 }
@@ -236,7 +243,7 @@ function renderDetection(item) {
     .find(Boolean);
   return `
     <section class="spy-section">
-      <span class="section-label">Hip\u00f3tesis principal</span>
+      <span class="section-label">Foco elegido por Pia</span>
       <div class="primary-sku">
         <div><strong>${escapeHtml(analysis.primary_sku || "Sin identificar")}</strong><span>${escapeHtml(product.title || analysis.missing_signal || "Sin producto confirmado")}</span></div>
         <div class="score-ring" style="--score:${confidence}%" data-score="${confidence}%"></div>
@@ -247,11 +254,11 @@ function renderDetection(item) {
       <div class="visual-reading"><i data-lucide="scan-eye"></i><div><strong>${escapeHtml(visual.primary_sku || "Sin confirmar")}</strong><span>${escapeHtml(visual.description || "Producto visible analizado")}</span>${visual.notes ? `<small>${escapeHtml(visual.notes)}</small>` : ""}</div></div>
     </section>` : ""}
     <section class="spy-section">
-      <span class="section-label">Tags coincidentes</span>
+      <span class="section-label">Tags incorporados</span>
       <div class="tag-list">${tags.length ? tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join("") : '<span class="muted-value">Sin coincidencias suficientes</span>'}</div>
     </section>
     <section class="spy-section">
-      <span class="section-label">Candidatos</span>
+      <span class="section-label">Productos en contexto</span>
       <div class="candidate-list">
         ${candidates.length ? candidates.map(candidate => `
           <div class="candidate-row ${candidate.selected ? "selected" : ""}"><div><div class="candidate-name"><code>${escapeHtml(candidate.sku)}</code></div><div class="candidate-bar"><i style="width:${candidate.relative}%"></i></div></div><span class="candidate-score">${candidate.label}</span></div>
@@ -259,8 +266,8 @@ function renderDetection(item) {
       </div>
     </section>
     <section class="spy-section">
-      <span class="section-label">Dato a confirmar</span>
-      <div class="missing-signal"><i data-lucide="circle-help"></i><div><strong>Siguiente se\u00f1al \u00fatil</strong><span>${escapeHtml(analysis.missing_signal || "Ninguna: el producto est\u00e1 identificado.")}</span></div></div>
+      <span class="section-label">Foco del turno</span>
+      <div class="missing-signal"><i data-lucide="scan-search"></i><div><strong>Lectura de Pia</strong><span>${escapeHtml(product.focus || analysis.missing_signal || "Conversaci\u00f3n abierta.")}</span></div></div>
     </section>`;
 }
 
@@ -268,6 +275,7 @@ function renderSkills(item) {
   const active = item.activated_skills?.length
     ? item.activated_skills
     : (item.analysis?.active_skills || ["GENERAL"]);
+  const tools = item.analysis?.product_context?.tools || [];
   return `
     <section class="spy-section">
       <span class="section-label">Skills activadas en la conversación</span>
@@ -276,19 +284,22 @@ function renderSkills(item) {
       `).join("")}</div>
     </section>
     <section class="spy-section">
-      <span class="section-label">L\u00edmite de conversaci\u00f3n</span>
-      <div class="missing-signal"><i data-lucide="shield-check"></i><div><strong>Rubro controlado</strong><span>La atenci\u00f3n se mantiene dentro de productos, compra, disponibilidad y env\u00edo.</span></div></div>
+      <span class="section-label">Herramientas invocadas</span>
+      <div class="skill-list">${tools.length ? tools.map(tool => `
+        <div class="skill-row"><div><strong>${escapeHtml(tool.name || "Herramienta")}</strong><span>Solicitada por Pia en este turno</span></div><span class="skill-status">Usada</span></div>
+      `).join("") : '<span class="muted-value">Ninguna: respondi\u00f3 directamente con el contexto disponible</span>'}</div>
     </section>`;
 }
 
 function renderContext(item) {
   const context = item.analysis?.product_context || {};
+  const products = context.products || [];
   const rows = [
-    ["Publicaci\u00f3n", context.title || "Sin identificar"],
-    ["Precio", context.price ?? "Sin dato"],
-    ["Stock", context.stock ?? "Sin dato"],
-    ["URL TN", context.publication_url || "Sin dato"],
-    ["SKU", item.current_sku || "Sin identificar"],
+    ["Productos en foco", products.length || "Ninguno"],
+    ["Inventario le\u00eddo", context.inventory_items ?? "Sin dato"],
+    ["Publicaciones le\u00eddas", context.inventory_listings ?? "Sin dato"],
+    ["Herramientas usadas", (context.tools || []).map(tool => tool.name).join(", ") || "Ninguna"],
+    ["Foco principal", item.current_sku || "Conversaci\u00f3n abierta"],
     ["Mensajes", (item.messages || []).length]
   ];
   return `<section class="spy-section"><span class="section-label">Contexto recuperado</span><div class="context-list">
