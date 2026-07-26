@@ -23,7 +23,11 @@ const state = {
   conversationSnapshots: new Map(),
   audioContext: null,
   soundUnlocked: false,
-  suppressAlertsUntil: 0
+  suppressAlertsUntil: 0,
+  renderedConversationId: "",
+  renderedMessagesSignature: "",
+  renderedConversationListSignature: "",
+  renderedSpySignature: ""
 };
 
 const $ = id => document.getElementById(id);
@@ -47,6 +51,31 @@ const phoneLabel = item => {
   const digits = value.replace(/\D/g, "");
   return digits ? `+${digits}` : value;
 };
+const ars = value => Number.isFinite(Number(value))
+  ? `$${Number(value).toLocaleString("es-AR", { maximumFractionDigits: 0 })}`
+  : String(value ?? "");
+
+function messagesSignature(messages) {
+  return JSON.stringify((messages || []).map(message => ({
+    id: message.id,
+    direction: message.direction,
+    body: message.body,
+    created_at: message.created_at,
+    attachments: (message.attachments || []).map(attachment => ({
+      kind: attachment.kind,
+      url: attachment.url,
+      expired: attachment.expired,
+      filename: attachment.filename
+    }))
+  })));
+}
+
+function selectionInside(element) {
+  const selection = window.getSelection?.();
+  if (!selection || selection.isCollapsed || !selection.rangeCount) return false;
+  const range = selection.getRangeAt(0);
+  return element.contains(range.commonAncestorContainer);
+}
 
 function conversationUsage(item) {
   const usages = (item?.messages || [])
@@ -103,8 +132,21 @@ function statusFor(item) {
 
 function renderConversationList() {
   const list = state.conversations;
+  const container = $("conversationList");
+  const signature = JSON.stringify({
+    selectedId: state.selectedId,
+    items: list.map(item => [
+      item.id,
+      item.display_name,
+      phoneLabel(item),
+      item.current_stage,
+      item.last_message_at
+    ])
+  });
+  if (signature === state.renderedConversationListSignature) return false;
+  const previousScrollTop = container.scrollTop;
   $("conversationCount").textContent = list.length;
-  $("conversationList").innerHTML = list.length ? list.map(item => {
+  container.innerHTML = list.length ? list.map(item => {
     const status = statusFor(item);
     return `
       <button class="conversation-item ${item.id === state.selectedId ? "active" : ""}" type="button" data-id="${escapeHtml(item.id)}">
@@ -121,9 +163,14 @@ function renderConversationList() {
   document.querySelectorAll(".conversation-item").forEach(button => {
     button.addEventListener("click", () => selectConversation(button.dataset.id));
   });
+  container.scrollTop = previousScrollTop;
+  state.renderedConversationListSignature = signature;
+  return true;
 }
 
 function renderEmptyConversation() {
+  state.renderedConversationId = "";
+  state.renderedMessagesSignature = "";
   $("contactInitials").textContent = "--";
   $("contactName").textContent = "Sin conversaci\u00f3n";
   $("contactMeta").textContent = "Cre\u00e1 una prueba para comenzar";
@@ -138,7 +185,16 @@ function renderEmptyConversation() {
 
 function renderMessages(item) {
   const messages = item.messages || [];
-  $("messages").innerHTML = messages.length ? `
+  const container = $("messages");
+  const signature = messagesSignature(messages);
+  const conversationChanged = state.renderedConversationId !== item.id;
+  if (!conversationChanged && signature === state.renderedMessagesSignature) return false;
+  if (!conversationChanged && selectionInside(container)) return false;
+
+  const previousScrollTop = container.scrollTop;
+  const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+  const wasNearBottom = distanceFromBottom <= 96;
+  container.innerHTML = messages.length ? `
     <div class="day-divider">Hoy</div>
     ${messages.map(message => {
       if (message.direction === "SYSTEM") {
@@ -174,7 +230,12 @@ function renderMessages(item) {
       button.dataset.correctionTarget
     ));
   });
-  $("messages").scrollTop = $("messages").scrollHeight;
+  state.renderedConversationId = item.id;
+  state.renderedMessagesSignature = signature;
+  container.scrollTop = conversationChanged || wasNearBottom
+    ? container.scrollHeight
+    : previousScrollTop;
+  return true;
 }
 
 function correctionSkill(item, message) {
@@ -339,6 +400,8 @@ function renderSkills(item) {
 function renderContext(item) {
   const context = item.analysis?.product_context || {};
   const products = context.products || [];
+  const shipping = context.shipping || {};
+  const shippingOptions = Array.isArray(shipping.options) ? shipping.options : [];
   const usage = conversationUsage(item);
   const gauge = Math.max(0.01, Number(usage.chat_cost_gauge_usd || 1));
   const gaugePercent = Math.min(100, Math.round(
@@ -353,6 +416,20 @@ function renderContext(item) {
     ["Foco principal", item.current_sku || "Conversaci\u00f3n abierta"],
     ["Mensajes", (item.messages || []).length]
   ];
+  if (Object.keys(shipping).length) {
+    rows.push(
+      ["Cotizaci\u00f3n", shipping.status || "Sin estado"],
+      ["CP destino", shipping.destination_postal_code || "No informado"],
+      ["Tienda Nube", shipping.storefront_status || "Sin consulta"],
+      ["Correo Argentino", shipping.correo_status || shipping.status || "Sin consulta"],
+      ["Opciones devueltas", shippingOptions.length
+        ? shippingOptions.map(option => {
+          const delivery = option.delivery_type ? ` ${option.delivery_type}` : "";
+          return `${option.service || option.kind || "Env\u00edo"}${delivery}: ${ars(option.price)}`;
+        }).join(" \u00b7 ")
+        : (shipping.message || shipping.storefront_error || "Ninguna")]
+    );
+  }
   return `
     <section class="spy-section">
       <span class="section-label">Term&oacute;metro OpenAI del chat</span>
@@ -375,9 +452,15 @@ function renderContext(item) {
 function renderSpy() {
   const item = selectedConversation();
   if (!item) return;
-  $("spyContent").innerHTML = state.spyTab === "skills"
+  const container = $("spyContent");
+  const html = state.spyTab === "skills"
     ? renderSkills(item)
     : state.spyTab === "context" ? renderContext(item) : renderDetection(item);
+  const signature = `${state.spyTab}:${item.id}:${item.analysis?.created_at || ""}:${html}`;
+  if (signature !== state.renderedSpySignature && !selectionInside(container)) {
+    container.innerHTML = html;
+    state.renderedSpySignature = signature;
+  }
   $("analysisTime").textContent = item.analysis?.created_at
     ? timeLabel(item.analysis.created_at)
     : "sin an\u00e1lisis";

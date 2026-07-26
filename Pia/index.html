@@ -159,6 +159,15 @@
         <input id="shippingMarkupValue" type="number" min="0" max="10000000" step="0.01" value="0">
         <span id="shippingMarkupUnit">%</span>
       </label>
+      <label class="dialog-field">Redondeo final
+        <select id="shippingRoundingStep">
+          <option value="0">Sin redondeo</option>
+          <option value="100">De $100 en $100</option>
+          <option value="500" selected>De $500 en $500</option>
+          <option value="1000">De $1.000 en $1.000</option>
+          <option value="5000">De $5.000 en $5.000</option>
+        </select>
+      </label>
       <div class="dialog-actions"><button id="cancelSettings" class="command-button" type="button">Cancelar</button><button class="command-button release" type="submit">Guardar</button></div>
     </form>
   </dialog>
@@ -194,6 +203,6 @@
   </dialog>
 
   <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
-  <script src="pia.js?v=20260725-live-2"></script>
+  <script src="pia.js?v=20260726-whatsapp-scroll"></script>
 </body>
 </html>
