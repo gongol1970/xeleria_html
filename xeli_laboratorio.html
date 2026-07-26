@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Xeli · Laboratorio</title>
+  <link rel="icon" type="image/png" href="./favicon_xeleria.png">
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17191c;
+      --muted: #667085;
+      --line: #d8dde4;
+      --paper: #f5f6f7;
+      --white: #fff;
+      --green: #087f6f;
+      --green-soft: #e7f5f2;
+      --yellow: #efd63c;
+      --red: #b42318;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; color: var(--ink); background: var(--paper); }
+    button, input, textarea { font: inherit; }
+    .topbar {
+      min-height: 64px; display: flex; align-items: center; justify-content: space-between;
+      gap: 18px; padding: 12px 22px; color: #fff; background: #15181c;
+      border-bottom: 4px solid var(--yellow);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .brand img { width: 38px; height: 38px; object-fit: contain; background: #fff; border-radius: 50%; }
+    .brand h1 { margin: 0; font-size: 20px; letter-spacing: 0; }
+    .brand small { display: block; margin-top: 3px; color: #adb7c4; font-size: 12px; }
+    .status {
+      display: inline-flex; align-items: center; gap: 8px; min-height: 32px; padding: 0 10px;
+      border: 1px solid #404750; border-radius: 6px; color: #e4e9ef; font-size: 12px; font-weight: 800;
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #8d99a8; }
+    .status.ok .dot { background: #21b795; }
+    .status.error .dot { background: #ef645d; }
+    main { width: min(1280px, calc(100% - 32px)); margin: 24px auto 44px; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr) 350px; gap: 24px; }
+    .form-grid {
+      display: grid; grid-template-columns: minmax(180px, .7fr) minmax(220px, 1fr);
+      gap: 12px; padding-bottom: 20px; border-bottom: 1px solid var(--line);
+    }
+    .question-field { grid-column: 1 / -1; }
+    label {
+      display: block; margin-bottom: 6px; color: #4b5563; font-size: 12px;
+      font-weight: 850; text-transform: uppercase;
+    }
+    input, textarea {
+      width: 100%; padding: 12px 13px; color: var(--ink); background: var(--white);
+      border: 1px solid #bcc5d0; border-radius: 6px; outline: none;
+    }
+    textarea { min-height: 110px; resize: vertical; line-height: 1.45; }
+    input:focus, textarea:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(8,127,111,.12); }
+    .actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; }
+    .primary {
+      min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 0 18px; color: #111; background: var(--yellow); border: 1px solid #d1b919;
+      border-radius: 6px; cursor: pointer; font-weight: 850;
+    }
+    .primary:disabled { cursor: wait; opacity: .62; }
+    .messages { min-height: 380px; display: flex; flex-direction: column; gap: 14px; padding: 22px 0; }
+    .empty { padding: 72px 12px; color: #7a8492; text-align: center; }
+    .bubble {
+      max-width: min(820px, 92%); padding: 13px 15px; white-space: pre-wrap;
+      overflow-wrap: anywhere; line-height: 1.5; background: var(--white);
+      border: 1px solid var(--line); border-radius: 6px;
+    }
+    .bubble.user { align-self: flex-end; background: var(--green-soft); border-color: #b8ddd5; }
+    .bubble.assistant { align-self: flex-start; }
+    .bubble-head {
+      display: flex; justify-content: space-between; gap: 14px; margin-bottom: 7px;
+      color: var(--muted); font-size: 11px; font-weight: 850; text-transform: uppercase;
+    }
+    .thinking { display: inline-flex; align-items: center; gap: 10px; color: var(--green); font-weight: 800; }
+    .spinner {
+      width: 17px; height: 17px; border: 2px solid #a9d8ce; border-top-color: var(--green);
+      border-radius: 50%; animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    aside { min-width: 0; padding-left: 22px; border-left: 1px solid var(--line); }
+    aside h2 { margin: 0 0 12px; font-size: 16px; }
+    .metric { display: grid; grid-template-columns: 1fr auto; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+    .metric dt { color: var(--muted); font-size: 12px; }
+    .metric dd { margin: 0; font-size: 12px; font-weight: 850; text-align: right; }
+    .section { padding-top: 20px; }
+    .section h3 { margin: 0 0 9px; color: var(--muted); font-size: 11px; text-transform: uppercase; }
+    .search-row { padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 12px; }
+    .tag-list { display: flex; flex-wrap: wrap; gap: 5px; }
+    .tag {
+      display: inline-flex; align-items: center; min-height: 25px; padding: 0 7px;
+      color: #344054; background: var(--white); border: 1px solid #ccd3dc;
+      border-radius: 4px; font-size: 11px;
+    }
+    .tag-sku { color: var(--green); border-color: #a9d8ce; font-weight: 850; }
+    .error-text { color: var(--red); font-weight: 750; }
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      aside { padding: 20px 0 0; border-top: 1px solid var(--line); border-left: 0; }
+    }
+    @media (max-width: 600px) {
+      .topbar { padding-inline: 14px; }
+      main { width: calc(100% - 20px); margin-top: 16px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .question-field, .actions { grid-column: 1; }
+      .primary { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img src="./favicon_xeleria.png" alt="">
+      <div>
+        <h1>Xeli · Laboratorio</h1>
+        <small>Tags de título</small>
+      </div>
+    </div>
+    <div id="status" class="status"><span class="dot"></span><span id="statusText">Conectando</span></div>
+  </header>
+
+  <main>
+    <div class="layout">
+      <section>
+        <form id="labForm" class="form-grid">
+          <div>
+            <label for="sku">SKU exacto</label>
+            <input id="sku" autocomplete="off" required placeholder="LCSCOMBrectx5">
+          </div>
+          <div>
+            <label for="itemId">Item Mercado Libre</label>
+            <input id="itemId" autocomplete="off" required placeholder="MLA1672565459">
+          </div>
+          <div class="question-field">
+            <label for="question">Pregunta</label>
+            <textarea id="question" required maxlength="4000" placeholder="Tenés punta para taco de 12mm?"></textarea>
+          </div>
+          <div class="actions">
+            <button id="submitButton" class="primary" type="submit">
+              <i data-lucide="send"></i><span>Probar</span>
+            </button>
+          </div>
+        </form>
+        <div id="messages" class="messages"><div id="empty" class="empty">Sin pruebas</div></div>
+      </section>
+
+      <aside>
+        <h2>Medición</h2>
+        <dl>
+          <div class="metric"><dt>Estado</dt><dd id="metricState">Listo</dd></div>
+          <div class="metric"><dt>Tiempo visible</dt><dd id="metricLive">0,0 s</dd></div>
+          <div class="metric"><dt>Servidor</dt><dd id="metricTotal">—</dd></div>
+          <div class="metric"><dt>Modelo</dt><dd id="metricModel">—</dd></div>
+          <div class="metric"><dt>Esfuerzo</dt><dd id="metricEffort">—</dd></div>
+          <div class="metric"><dt>Skill</dt><dd id="metricSkill">—</dd></div>
+          <div class="metric"><dt>Títulos indexados</dt><dd id="metricTags">—</dd></div>
+          <div class="metric"><dt>Producción</dt><dd>Sin cambios</dd></div>
+        </dl>
+
+        <div id="searchSection" class="section" hidden>
+          <h3>Búsquedas SQL</h3>
+          <div id="searches"></div>
+        </div>
+        <div id="tagsSection" class="section" hidden>
+          <h3>Tags de título disponibles</h3>
+          <div id="tags"></div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    const API_BASE = new URLSearchParams(location.search).get("api")
+      || (location.hostname === "localhost" || location.hostname === "127.0.0.1"
+        ? "http://localhost:8000"
+        : "https://api.xeleria.com.ar");
+    const state = { timer: null, startedAt: 0 };
+    const $ = (id) => document.getElementById(id);
+
+    function tenantId() {
+      const params = new URLSearchParams(location.search);
+      return params.get("tenant_id")
+        || localStorage.getItem("xeleria_tenant_id")
+        || localStorage.getItem("xeleria_last_tenant_id")
+        || "";
+    }
+    function sessionToken() {
+      return localStorage.getItem("xeleria_session_token")
+        || sessionStorage.getItem("xeleria_session_token")
+        || "";
+    }
+    function adminToken() {
+      return localStorage.getItem("xeleria_admin_token")
+        || localStorage.getItem("pc_erp_token")
+        || "";
+    }
+    function headers() {
+      const session = sessionToken();
+      const admin = adminToken();
+      const output = { "content-type": "application/json", "x-xeleria-tenant": tenantId() };
+      if (session) {
+        output["x-session-token"] = session;
+        output.Authorization = `Bearer ${session}`;
+      } else if (admin) {
+        output["x-admin-token"] = admin;
+        output.Authorization = `Bearer ${admin}`;
+      }
+      return output;
+    }
+    async function api(path, options = {}) {
+      const response = await fetch(`${API_BASE}${path}`, {
+        ...options,
+        headers: { ...headers(), ...(options.headers || {}) }
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const detail = typeof payload.detail === "string"
+          ? payload.detail
+          : JSON.stringify(payload.detail || payload);
+        throw new Error(detail || `Error HTTP ${response.status}`);
+      }
+      return payload;
+    }
+    function setStatus(kind, text) {
+      $("status").className = `status ${kind || ""}`;
+      $("statusText").textContent = text;
+    }
+    function formatMs(value) {
+      return Number.isFinite(Number(value))
+        ? `${(Number(value) / 1000).toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} s`
+        : "—";
+    }
+    function addBubble(role, text, pending = false) {
+      $("empty")?.remove();
+      const bubble = document.createElement("article");
+      bubble.className = `bubble ${role}`;
+      const head = document.createElement("div");
+      head.className = "bubble-head";
+      head.innerHTML = `<span>${role === "user" ? "Pregunta" : "Xeli Lab"}</span><span>${new Date().toLocaleTimeString("es-AR")}</span>`;
+      const body = document.createElement("div");
+      if (pending) {
+        body.className = "thinking";
+        body.innerHTML = '<span class="spinner"></span><span>Interpretando skill y consultando catálogo</span>';
+      } else {
+        body.textContent = text;
+      }
+      bubble.append(head, body);
+      $("messages").appendChild(bubble);
+      bubble.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      return body;
+    }
+    function startTimer() {
+      clearInterval(state.timer);
+      state.startedAt = performance.now();
+      $("metricState").textContent = "Procesando";
+      state.timer = setInterval(() => {
+        $("metricLive").textContent = `${((performance.now() - state.startedAt) / 1000).toLocaleString("es-AR", {
+          minimumFractionDigits: 1, maximumFractionDigits: 1
+        })} s`;
+      }, 100);
+    }
+    function stopTimer() {
+      clearInterval(state.timer);
+      state.timer = null;
+      $("metricLive").textContent = `${((performance.now() - state.startedAt) / 1000).toLocaleString("es-AR", {
+        minimumFractionDigits: 1, maximumFractionDigits: 1
+      })} s`;
+    }
+    function renderDiagnostics(payload) {
+      const lab = payload.lab || {};
+      $("metricTotal").textContent = formatMs(lab.total_ms);
+      $("metricModel").textContent = lab.model || "—";
+      $("metricEffort").textContent = lab.reasoning_effort || "—";
+      $("metricSkill").textContent = payload.skill_id || "GENERAL";
+      $("metricTags").textContent = Number(lab.title_tag_rows || 0).toLocaleString("es-AR");
+
+      const searches = payload.inventory_searches || [];
+      $("searches").replaceChildren();
+      $("searchSection").hidden = searches.length === 0;
+      searches.forEach((row) => {
+        const block = document.createElement("div");
+        block.className = "search-row";
+        const terms = [
+          ...(row.search?.product_terms || []),
+          ...(row.search?.context_terms || [])
+        ];
+        block.textContent = `${terms.join(", ") || "sin términos"} · ${Number(row.total || 0)} candidato(s)`;
+        $("searches").appendChild(block);
+      });
+
+      const index = payload.title_tag_index || [];
+      $("tags").replaceChildren();
+      $("tagsSection").hidden = index.length === 0;
+      index.slice(0, 80).forEach((row) => {
+        const list = document.createElement("div");
+        list.className = "tag-list search-row";
+        const sku = document.createElement("span");
+        sku.className = "tag tag-sku";
+        sku.textContent = row.sku || "";
+        list.appendChild(sku);
+        (row.title_tags || []).forEach((value) => {
+          const tag = document.createElement("span");
+          tag.className = "tag";
+          tag.textContent = value;
+          list.appendChild(tag);
+        });
+        $("tags").appendChild(list);
+      });
+    }
+    async function loadStatus() {
+      if (!tenantId() || (!sessionToken() && !adminToken())) {
+        setStatus("error", "Ingresá primero a XelerIA");
+        return;
+      }
+      try {
+        const data = await api("/admin/xeli/lab/status");
+        setStatus("ok", `${data.model} · ${data.reasoning_effort}`);
+        $("metricModel").textContent = data.model || "—";
+        $("metricEffort").textContent = data.reasoning_effort || "—";
+      } catch (error) {
+        setStatus("error", error.message);
+      }
+    }
+    $("labForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const question = $("question").value.trim();
+      const sku = $("sku").value.trim();
+      const itemId = $("itemId").value.trim();
+      if (!question || !sku || !itemId) return;
+      addBubble("user", question);
+      const pending = addBubble("assistant", "", true);
+      $("submitButton").disabled = true;
+      startTimer();
+      try {
+        const payload = await api("/admin/xeli/lab/preanswer", {
+          method: "POST",
+          body: JSON.stringify({ question_text: question, sku, item_id: itemId })
+        });
+        pending.className = "";
+        pending.textContent = payload.response || "Sin respuesta";
+        renderDiagnostics(payload);
+        $("metricState").textContent = "Listo";
+        setStatus("ok", `${payload.lab?.model || "modelo"} · ${payload.lab?.reasoning_effort || "—"}`);
+      } catch (error) {
+        pending.className = "error-text";
+        pending.textContent = error.message;
+        $("metricState").textContent = "Error";
+        setStatus("error", "Error");
+      } finally {
+        stopTimer();
+        $("submitButton").disabled = false;
+        $("question").focus();
+      }
+    });
+    $("question").addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        $("labForm").requestSubmit();
+      }
+    });
+    lucide.createIcons();
+    loadStatus();
+  </script>
+</body>
+</html>
