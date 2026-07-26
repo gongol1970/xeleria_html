@@ -419,6 +419,7 @@ function renderContext(item) {
   if (Object.keys(shipping).length) {
     rows.push(
       ["Cotizaci\u00f3n", shipping.status || "Sin estado"],
+      ["CP origen", shipping.origin_postal_code || "No configurado"],
       ["CP destino", shipping.destination_postal_code || "No informado"],
       ["Tienda Nube", shipping.storefront_status || "Sin consulta"],
       ["Correo Argentino", shipping.correo_status || shipping.status || "Sin consulta"],
@@ -429,6 +430,12 @@ function renderContext(item) {
         }).join(" \u00b7 ")
         : (shipping.message || shipping.storefront_error || "Ninguna")]
     );
+    if (shipping.storefront_error) {
+      rows.push(["Error Tienda Nube", shipping.storefront_error]);
+    }
+    if (shipping.message) {
+      rows.push(["Error Correo Argentino", shipping.message]);
+    }
   }
   return `
     <section class="spy-section">
