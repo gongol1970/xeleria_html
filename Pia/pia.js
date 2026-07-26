@@ -61,13 +61,46 @@ function messagesSignature(messages) {
     direction: message.direction,
     body: message.body,
     created_at: message.created_at,
-    attachments: (message.attachments || []).map(attachment => ({
+    attachments: (message.attachments || []).map((attachment, index) => ({
+      key: attachmentKey(message.id, attachment, index),
       kind: attachment.kind,
-      url: attachment.url,
       expired: attachment.expired,
       filename: attachment.filename
     }))
   })));
+}
+
+function attachmentKey(messageId, attachment, index) {
+  const identity = attachment.id
+    || attachment.s3_key
+    || `${attachment.kind || "file"}:${attachment.filename || index}`;
+  return `${messageId}:${identity}`;
+}
+
+function refreshAttachmentSources(container, messages) {
+  const latestUrls = new Map();
+  for (const message of messages || []) {
+    (message.attachments || []).forEach((attachment, index) => {
+      latestUrls.set(
+        attachmentKey(message.id, attachment, index),
+        attachment.expired ? "" : String(attachment.url || "")
+      );
+    });
+  }
+  container.querySelectorAll("[data-attachment-key]").forEach(media => {
+    media.dataset.latestUrl = latestUrls.get(media.dataset.attachmentKey) || "";
+  });
+}
+
+function bindAttachmentFallbacks(container) {
+  container.querySelectorAll("[data-attachment-key]").forEach(media => {
+    media.addEventListener("error", () => {
+      const latestUrl = media.dataset.latestUrl || "";
+      if (!latestUrl || media.dataset.retryUrl === latestUrl || media.src === latestUrl) return;
+      media.dataset.retryUrl = latestUrl;
+      media.src = latestUrl;
+    });
+  });
 }
 
 function selectionInside(element) {
@@ -188,7 +221,10 @@ function renderMessages(item) {
   const container = $("messages");
   const signature = messagesSignature(messages);
   const conversationChanged = state.renderedConversationId !== item.id;
-  if (!conversationChanged && signature === state.renderedMessagesSignature) return false;
+  if (!conversationChanged && signature === state.renderedMessagesSignature) {
+    refreshAttachmentSources(container, messages);
+    return false;
+  }
   if (!conversationChanged && selectionInside(container)) return false;
 
   const previousScrollTop = container.scrollTop;
@@ -204,11 +240,11 @@ function renderMessages(item) {
       const botMessage = message.direction === "BOT";
       const author = message.direction === "HUMAN" ? "Gonzalo" : "Atenci\u00f3n";
       const attachments = message.attachments || [];
-      const media = attachments.map(attachment => attachment.expired || !attachment.url
+      const media = attachments.map((attachment, index) => attachment.expired || !attachment.url
         ? `<div class="message-attachment expired-attachment"><i data-lucide="timer-off"></i><span>Adjunto eliminado a los 3 d\u00edas</span></div>`
         : attachment.kind === "image"
-          ? `<figure class="message-attachment"><img src="${escapeHtml(attachment.url)}" alt="Imagen enviada por el comprador" loading="lazy"><figcaption>${escapeHtml(attachment.filename || "Imagen")}</figcaption></figure>`
-          : `<div class="message-attachment audio-attachment"><audio controls preload="metadata" src="${escapeHtml(attachment.url)}"></audio><span>${escapeHtml(attachment.filename || "Audio")}</span></div>`
+          ? `<figure class="message-attachment"><img data-attachment-key="${escapeHtml(attachmentKey(message.id, attachment, index))}" data-latest-url="${escapeHtml(attachment.url)}" src="${escapeHtml(attachment.url)}" alt="Imagen enviada por el comprador" loading="lazy"><figcaption>${escapeHtml(attachment.filename || "Imagen")}</figcaption></figure>`
+          : `<div class="message-attachment audio-attachment"><audio data-attachment-key="${escapeHtml(attachmentKey(message.id, attachment, index))}" data-latest-url="${escapeHtml(attachment.url)}" controls preload="metadata" src="${escapeHtml(attachment.url)}"></audio><span>${escapeHtml(attachment.filename || "Audio")}</span></div>`
       ).join("");
       return `
         <div class="message-row ${incoming ? "" : "outgoing"}">
@@ -230,6 +266,7 @@ function renderMessages(item) {
       button.dataset.correctionTarget
     ));
   });
+  bindAttachmentFallbacks(container);
   state.renderedConversationId = item.id;
   state.renderedMessagesSignature = signature;
   container.scrollTop = conversationChanged || wasNearBottom
