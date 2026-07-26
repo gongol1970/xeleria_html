@@ -115,6 +115,13 @@
     .section { padding-top: 20px; }
     .section h3 { margin: 0 0 9px; color: var(--muted); font-size: 11px; text-transform: uppercase; }
     .search-row { padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 12px; }
+    .search-meta { display: block; margin-top: 4px; color: var(--muted); font-size: 11px; }
+    .candidate-name { display: block; margin-top: 3px; color: var(--muted); }
+    details.section summary {
+      cursor: pointer; color: var(--muted); font-size: 11px; font-weight: 850;
+      text-transform: uppercase;
+    }
+    details.section[open] summary { margin-bottom: 9px; }
     .tag-list { display: flex; flex-wrap: wrap; gap: 5px; }
     .tag {
       display: inline-flex; align-items: center; min-height: 25px; padding: 0 7px;
@@ -209,7 +216,8 @@
           <div class="metric"><dt>Modelo</dt><dd id="metricModel">—</dd></div>
           <div class="metric"><dt>Esfuerzo</dt><dd id="metricEffort">—</dd></div>
           <div class="metric"><dt>Skill</dt><dd id="metricSkill">—</dd></div>
-          <div class="metric"><dt>Títulos indexados</dt><dd id="metricTags">—</dd></div>
+          <div class="metric"><dt>SKU del subrubro</dt><dd id="metricScope">—</dd></div>
+          <div class="metric"><dt>Títulos del subrubro</dt><dd id="metricTags">—</dd></div>
           <div class="metric"><dt>Rondas IA</dt><dd id="metricRounds">—</dd></div>
           <div class="metric"><dt>Producción</dt><dd>Sin cambios</dd></div>
         </dl>
@@ -218,10 +226,18 @@
           <h3>Búsquedas SQL</h3>
           <div id="searches"></div>
         </div>
-        <div id="tagsSection" class="section" hidden>
-          <h3>Tags de título disponibles</h3>
-          <div id="tags"></div>
+        <div id="candidateSection" class="section" hidden>
+          <h3>Candidatos reales</h3>
+          <div id="candidates"></div>
         </div>
+        <div id="validationSection" class="section" hidden>
+          <h3>Validación</h3>
+          <div id="validation"></div>
+        </div>
+        <details id="tagsSection" class="section" hidden>
+          <summary>Índice del subrubro (no candidatos)</summary>
+          <div id="tags"></div>
+        </details>
       </aside>
     </div>
   </main>
@@ -368,18 +384,44 @@
         minimumFractionDigits: 1, maximumFractionDigits: 1
       })} s`;
     }
+    function resetRunView() {
+      $("messages").replaceChildren();
+      $("searches").replaceChildren();
+      $("candidates").replaceChildren();
+      $("validation").replaceChildren();
+      $("tags").replaceChildren();
+      $("searchSection").hidden = true;
+      $("candidateSection").hidden = true;
+      $("validationSection").hidden = true;
+      $("tagsSection").hidden = true;
+      $("tagsSection").open = false;
+      $("metricState").textContent = "Listo";
+      $("metricLive").textContent = "0,0 s";
+      $("metricTotal").textContent = "—";
+      $("metricSkill").textContent = "—";
+      $("metricScope").textContent = "—";
+      $("metricTags").textContent = "—";
+      $("metricRounds").textContent = "—";
+    }
     function renderDiagnostics(payload) {
       const lab = payload.lab || {};
       $("metricTotal").textContent = formatMs(lab.total_ms);
       $("metricModel").textContent = lab.model || "—";
       $("metricEffort").textContent = lab.reasoning_effort || "—";
       $("metricSkill").textContent = payload.skill_id || "GENERAL";
+      $("metricScope").textContent = Number(lab.skill_scope_skus || 0).toLocaleString("es-AR");
       $("metricTags").textContent = Number(lab.title_tag_rows || 0).toLocaleString("es-AR");
       $("metricRounds").textContent = Number(lab.openai_rounds || 0) || "—";
+      $("metricState").textContent = payload.outside_current_skill
+        ? "Manual"
+        : payload.needs_human
+          ? "Revisar"
+          : "Listo";
 
       const searches = payload.inventory_searches || [];
       $("searches").replaceChildren();
       $("searchSection").hidden = searches.length === 0;
+      const candidateMap = new Map();
       searches.forEach((row) => {
         const block = document.createElement("div");
         block.className = "search-row";
@@ -387,14 +429,65 @@
           ...(row.search?.product_terms || []),
           ...(row.search?.context_terms || [])
         ];
-        block.textContent = `${terms.join(", ") || "sin términos"} · ${Number(row.total || 0)} candidato(s)`;
+        const title = document.createElement("div");
+        title.textContent = `${terms.join(", ") || "sin términos"} · ${Number(row.total || 0)} candidato(s)`;
+        const meta = document.createElement("span");
+        meta.className = "search-meta";
+        const scope = row.scope || {};
+        meta.textContent = [
+          scope.skill_id || payload.skill_id || "GENERAL",
+          `${Number(scope.sku_count || 0)} SKU delimitados`,
+          `${Number(row.inventory_rows_scanned || 0)} productos leídos`,
+          `${Number(row.ml_listings_scanned || 0)} publicaciones leídas`
+        ].join(" · ");
+        block.append(title, meta);
         $("searches").appendChild(block);
+        (row.candidates || []).forEach((candidate) => {
+          const key = candidate.sku || JSON.stringify(candidate);
+          if (!candidateMap.has(key)) candidateMap.set(key, candidate);
+        });
+      });
+
+      $("candidates").replaceChildren();
+      $("candidateSection").hidden = candidateMap.size === 0;
+      candidateMap.forEach((candidate) => {
+        const row = document.createElement("div");
+        row.className = "search-row";
+        const sku = document.createElement("strong");
+        sku.textContent = candidate.sku || "Sin SKU";
+        const name = document.createElement("span");
+        name.className = "candidate-name";
+        name.textContent = candidate.variant_name || candidate.name || "Sin nombre";
+        const meta = document.createElement("span");
+        meta.className = "search-meta";
+        const hits = [
+          ...(candidate.product_hits || []),
+          ...(candidate.context_hits || [])
+        ];
+        const sizes = candidate.matched_size_mm == null ? "" : `Medida ${candidate.matched_size_mm} mm`;
+        meta.textContent = [sizes, hits.length ? `Coincide: ${hits.join(", ")}` : ""]
+          .filter(Boolean)
+          .join(" · ");
+        row.append(sku, name);
+        if (meta.textContent) row.appendChild(meta);
+        $("candidates").appendChild(row);
+      });
+
+      const validationErrors = payload.catalog_validation_errors || [];
+      $("validation").replaceChildren();
+      $("validationSection").hidden = validationErrors.length === 0;
+      validationErrors.forEach((error) => {
+        const row = document.createElement("div");
+        row.className = "search-row error-text";
+        row.textContent = typeof error === "string" ? error : JSON.stringify(error);
+        $("validation").appendChild(row);
       });
 
       const index = payload.title_tag_index || [];
       $("tags").replaceChildren();
       $("tagsSection").hidden = index.length === 0;
-      index.slice(0, 80).forEach((row) => {
+      $("tagsSection").open = false;
+      index.slice(0, 200).forEach((row) => {
         const list = document.createElement("div");
         list.className = "tag-list search-row";
         const sku = document.createElement("span");
@@ -475,6 +568,7 @@
       const sku = $("sku").value.trim();
       const itemId = $("itemId").value.trim();
       if (!question || !sku || !itemId) return;
+      resetRunView();
       addBubble("user", question);
       const pending = addBubble("assistant", "", true);
       $("submitButton").disabled = true;
@@ -487,7 +581,6 @@
         pending.className = "";
         pending.textContent = payload.response || "Sin respuesta";
         renderDiagnostics(payload);
-        $("metricState").textContent = "Listo";
         setStatus("ok", `${payload.lab?.model || "modelo"} · ${payload.lab?.reasoning_effort || "—"}`);
       } catch (error) {
         pending.className = "error-text";
