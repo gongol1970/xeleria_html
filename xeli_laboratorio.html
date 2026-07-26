@@ -41,6 +41,31 @@
     .status.error .dot { background: #ef645d; }
     main { width: min(1280px, calc(100% - 32px)); margin: 24px auto 44px; }
     .layout { display: grid; grid-template-columns: minmax(0, 1fr) 350px; gap: 24px; }
+    .sources {
+      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;
+      padding-bottom: 18px; margin-bottom: 18px; border-bottom: 1px solid var(--line);
+    }
+    .source {
+      min-width: 0; padding: 14px; background: var(--white); border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+    .source-row { display: flex; align-items: center; gap: 9px; min-width: 0; }
+    .source-state {
+      min-width: 0; color: var(--muted); font-size: 12px; overflow: hidden;
+      text-overflow: ellipsis; white-space: nowrap;
+    }
+    .source-state.ok { color: var(--green); font-weight: 800; }
+    .source-state.error { color: var(--red); font-weight: 800; }
+    .secondary {
+      min-height: 38px; display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      padding: 0 12px; color: var(--ink); background: var(--white); border: 1px solid #aeb8c4;
+      border-radius: 6px; cursor: pointer; font-weight: 800; white-space: nowrap;
+    }
+    .case-picker { grid-column: 1 / -1; }
+    select {
+      width: 100%; min-height: 43px; padding: 9px 12px; color: var(--ink);
+      background: var(--white); border: 1px solid #bcc5d0; border-radius: 6px;
+    }
     .form-grid {
       display: grid; grid-template-columns: minmax(180px, .7fr) minmax(220px, 1fr);
       gap: 12px; padding-bottom: 20px; border-bottom: 1px solid var(--line);
@@ -106,6 +131,7 @@
       .topbar { padding-inline: 14px; }
       main { width: calc(100% - 20px); margin-top: 16px; }
       .form-grid { grid-template-columns: 1fr; }
+      .sources { grid-template-columns: 1fr; }
       .question-field, .actions { grid-column: 1; }
       .primary { width: 100%; }
     }
@@ -126,6 +152,32 @@
   <main>
     <div class="layout">
       <section>
+        <div class="sources">
+          <div class="source">
+            <label>Planilla Xeli</label>
+            <div class="source-row">
+              <input id="knowledgeFile" type="file" accept=".xlsx" hidden>
+              <button id="knowledgeButton" class="secondary" type="button">
+                <i data-lucide="file-spreadsheet"></i><span>Subir XLSX</span>
+              </button>
+              <span id="knowledgeState" class="source-state">Sin cargar</span>
+            </div>
+          </div>
+          <div class="source">
+            <label>Preguntas históricas</label>
+            <div class="source-row">
+              <input id="questionsFile" type="file" accept=".txt,text/plain" hidden>
+              <button id="questionsButton" class="secondary" type="button">
+                <i data-lucide="file-text"></i><span>Subir TXT</span>
+              </button>
+              <span id="questionsState" class="source-state">Sin cargar</span>
+            </div>
+          </div>
+          <div id="casePicker" class="case-picker" hidden>
+            <label for="questionCase">Pregunta de prueba</label>
+            <select id="questionCase"></select>
+          </div>
+        </div>
         <form id="labForm" class="form-grid">
           <div>
             <label for="sku">SKU exacto</label>
@@ -158,6 +210,7 @@
           <div class="metric"><dt>Esfuerzo</dt><dd id="metricEffort">—</dd></div>
           <div class="metric"><dt>Skill</dt><dd id="metricSkill">—</dd></div>
           <div class="metric"><dt>Títulos indexados</dt><dd id="metricTags">—</dd></div>
+          <div class="metric"><dt>Rondas IA</dt><dd id="metricRounds">—</dd></div>
           <div class="metric"><dt>Producción</dt><dd>Sin cambios</dd></div>
         </dl>
 
@@ -178,7 +231,7 @@
       || (location.hostname === "localhost" || location.hostname === "127.0.0.1"
         ? "http://localhost:8000"
         : "https://api.xeleria.com.ar");
-    const state = { timer: null, startedAt: 0 };
+    const state = { timer: null, startedAt: 0, cases: [] };
     const $ = (id) => document.getElementById(id);
 
     function tenantId() {
@@ -224,6 +277,51 @@
         throw new Error(detail || `Error HTTP ${response.status}`);
       }
       return payload;
+    }
+    async function uploadApi(path, file) {
+      const form = new FormData();
+      form.append("file", file);
+      const requestHeaders = headers();
+      delete requestHeaders["content-type"];
+      const response = await fetch(`${API_BASE}${path}`, {
+        method: "POST",
+        headers: requestHeaders,
+        body: form
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const detail = typeof payload.detail === "string"
+          ? payload.detail
+          : JSON.stringify(payload.detail || payload);
+        throw new Error(detail || `Error HTTP ${response.status}`);
+      }
+      return payload;
+    }
+    function setSourceState(id, text, kind = "") {
+      const element = $(id);
+      element.textContent = text;
+      element.className = `source-state ${kind}`;
+    }
+    function selectCase(index) {
+      const item = state.cases[index];
+      if (!item) return;
+      $("sku").value = item.sku || "";
+      $("itemId").value = item.item_id || "";
+      $("question").value = item.question_text || "";
+    }
+    function renderCases(items) {
+      state.cases = Array.isArray(items) ? items : [];
+      const picker = $("casePicker");
+      const select = $("questionCase");
+      select.replaceChildren();
+      state.cases.forEach((item, index) => {
+        const option = document.createElement("option");
+        option.value = String(index);
+        option.textContent = `${item.number || index + 1} · ${item.sku || "sin SKU"} · ${item.question_text || ""}`;
+        select.appendChild(option);
+      });
+      picker.hidden = state.cases.length === 0;
+      if (state.cases.length) selectCase(0);
     }
     function setStatus(kind, text) {
       $("status").className = `status ${kind || ""}`;
@@ -277,6 +375,7 @@
       $("metricEffort").textContent = lab.reasoning_effort || "—";
       $("metricSkill").textContent = payload.skill_id || "GENERAL";
       $("metricTags").textContent = Number(lab.title_tag_rows || 0).toLocaleString("es-AR");
+      $("metricRounds").textContent = Number(lab.openai_rounds || 0) || "—";
 
       const searches = payload.inventory_searches || [];
       $("searches").replaceChildren();
@@ -321,10 +420,55 @@
         setStatus("ok", `${data.model} · ${data.reasoning_effort}`);
         $("metricModel").textContent = data.model || "—";
         $("metricEffort").textContent = data.reasoning_effort || "—";
+        if (data.knowledge_loaded) {
+          setSourceState("knowledgeState", `${data.sku_rows || 0} SKU · ${data.skill_instructions || 0} reglas`, "ok");
+        }
+        if (Array.isArray(data.questions) && data.questions.length) {
+          renderCases(data.questions);
+          setSourceState("questionsState", `${data.questions.length} preguntas`, "ok");
+        }
       } catch (error) {
         setStatus("error", error.message);
       }
     }
+    $("knowledgeButton").addEventListener("click", () => $("knowledgeFile").click());
+    $("questionsButton").addEventListener("click", () => $("questionsFile").click());
+    $("questionCase").addEventListener("change", (event) => {
+      selectCase(Number(event.target.value));
+    });
+    $("knowledgeFile").addEventListener("change", async (event) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      setSourceState("knowledgeState", "Cargando...");
+      $("knowledgeButton").disabled = true;
+      try {
+        const data = await uploadApi("/admin/xeli/lab/knowledge.xlsx", file);
+        setSourceState(
+          "knowledgeState",
+          `${data.sku_rows || 0} SKU · ${data.skill_instructions || 0} reglas · ${data.title_rows || 0} títulos`,
+          "ok"
+        );
+      } catch (error) {
+        setSourceState("knowledgeState", error.message, "error");
+      } finally {
+        $("knowledgeButton").disabled = false;
+      }
+    });
+    $("questionsFile").addEventListener("change", async (event) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      setSourceState("questionsState", "Cargando...");
+      $("questionsButton").disabled = true;
+      try {
+        const data = await uploadApi("/admin/xeli/lab/questions.txt", file);
+        renderCases(data.items || []);
+        setSourceState("questionsState", `${data.total || 0} preguntas`, "ok");
+      } catch (error) {
+        setSourceState("questionsState", error.message, "error");
+      } finally {
+        $("questionsButton").disabled = false;
+      }
+    });
     $("labForm").addEventListener("submit", async (event) => {
       event.preventDefault();
       const question = $("question").value.trim();
