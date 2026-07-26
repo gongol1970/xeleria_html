@@ -17,7 +17,13 @@ const state = {
     shipping_rounding_step: 500
   },
   loading: false,
-  correction: null
+  correction: null,
+  polling: false,
+  initialized: false,
+  conversationSnapshots: new Map(),
+  audioContext: null,
+  soundUnlocked: false,
+  suppressAlertsUntil: 0
 };
 
 const $ = id => document.getElementById(id);
@@ -35,6 +41,12 @@ const usd = value => `USD ${Number(value || 0).toLocaleString("es-AR", {
 const tokenCount = value => Number(value || 0).toLocaleString("es-AR");
 const initials = name => String(name || "Cliente")
   .split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join("").toUpperCase();
+const phoneLabel = item => {
+  const value = String(item?.external_contact_id || "").trim();
+  if (!value) return String(item?.channel || "INTERNO").toUpperCase();
+  const digits = value.replace(/\D/g, "");
+  return digits ? `+${digits}` : value;
+};
 
 function conversationUsage(item) {
   const usages = (item?.messages || [])
@@ -99,7 +111,7 @@ function renderConversationList() {
         <span class="avatar">${escapeHtml(initials(item.display_name))}</span>
         <span class="item-copy">
           <span class="item-name">${escapeHtml(item.display_name)}</span>
-          <span class="item-preview">${escapeHtml(item.preview || "Sin mensajes")}</span>
+          <span class="item-preview">${escapeHtml(phoneLabel(item))}</span>
           <span class="item-signal ${status.state === "attention" ? "attention" : ""}"><i></i>${escapeHtml(status.label)}</span>
         </span>
         <span class="item-time">${escapeHtml(timeLabel(item.last_message_at))}</span>
@@ -134,7 +146,6 @@ function renderMessages(item) {
       }
       const incoming = message.direction === "IN";
       const botMessage = message.direction === "BOT";
-      const usage = botMessage ? message.raw?.openai_usage : null;
       const author = message.direction === "HUMAN" ? "Gonzalo" : "Atenci\u00f3n";
       const attachments = message.attachments || [];
       const media = attachments.map(attachment => attachment.expired || !attachment.url
@@ -150,12 +161,6 @@ function renderMessages(item) {
             ${media}
             <p>${escapeHtml(message.body)}</p>
             <div class="message-meta"><span>${escapeHtml(timeLabel(message.created_at))}</span>${incoming ? "" : '<i data-lucide="check-check"></i>'}</div>
-            ${usage?.requests ? `<div class="message-usage" title="Consumo OpenAI de esta respuesta">
-              <i data-lucide="circle-dollar-sign"></i>
-              <span>${escapeHtml(usd(usage.estimated_cost_usd))}</span>
-              <span>${escapeHtml(usage.requests)} llamada${Number(usage.requests) === 1 ? "" : "s"}</span>
-              <span>${escapeHtml(tokenCount(usage.total_tokens))} tokens</span>
-            </div>` : ""}
             ${botMessage ? `<div class="message-training-actions">
               <button type="button" data-correction-target="general" data-message-id="${escapeHtml(message.id)}"><i data-lucide="book-plus"></i><span>General</span></button>
               <button type="button" data-correction-target="skill" data-message-id="${escapeHtml(message.id)}"><i data-lucide="badge-plus"></i><span>Skill</span></button>
@@ -226,7 +231,7 @@ function renderConversation() {
   const confidence = percent(item.confidence);
   $("contactInitials").textContent = initials(item.display_name);
   $("contactName").textContent = item.display_name;
-  $("contactMeta").textContent = item.channel || "INTERNO";
+  $("contactMeta").textContent = phoneLabel(item);
   $("conversationState").textContent = item.status === "HUMAN" ? "Tomada" : "Bot";
   $("conversationState").className = `state ${hasFocus ? "" : "attention"}`;
   $("focusSku").textContent = products.length > 1
@@ -334,7 +339,6 @@ function renderSkills(item) {
 function renderContext(item) {
   const context = item.analysis?.product_context || {};
   const products = context.products || [];
-  const turnUsage = context.openai_usage || {};
   const usage = conversationUsage(item);
   const gauge = Math.max(0.01, Number(usage.chat_cost_gauge_usd || 1));
   const gaugePercent = Math.min(100, Math.round(
@@ -361,15 +365,6 @@ function renderContext(item) {
           <span><b>${escapeHtml(tokenCount(usage.cached_input_tokens))}</b> cach&eacute;</span>
           <span><b>${escapeHtml(tokenCount(usage.output_tokens))}</b> salida</span>
         </div>
-      </div>
-    </section>
-    <section class="spy-section">
-      <span class="section-label">Última respuesta</span>
-      <div class="context-list">
-        <div class="context-row"><div><span>Costo estimado</span></div><strong>${escapeHtml(usd(turnUsage.estimated_cost_usd))}</strong></div>
-        <div class="context-row"><div><span>Llamadas</span></div><strong>${escapeHtml(turnUsage.requests || 0)}</strong></div>
-        <div class="context-row"><div><span>Tokens totales</span></div><strong>${escapeHtml(tokenCount(turnUsage.total_tokens))}</strong></div>
-        <div class="context-row"><div><span>Razonamiento</span></div><strong>${escapeHtml(tokenCount(turnUsage.reasoning_tokens))}</strong></div>
       </div>
     </section>
     <section class="spy-section"><span class="section-label">Contexto recuperado</span><div class="context-list">
@@ -445,10 +440,16 @@ function openSettings() {
 
 async function loadConversations(preferredId = "") {
   const query = $("conversationSearch").value.trim();
-  const params = new URLSearchParams({ state: state.filter });
+  const params = new URLSearchParams({ state: "all" });
   if (query) params.set("q", query);
   const payload = await api(`/pia/conversations?${params}`);
-  state.conversations = payload.items || [];
+  const allItems = payload.items || [];
+  handleConversationAlerts(allItems);
+  state.conversations = allItems.filter(item => {
+    if (state.filter === "attention") return statusFor(item).state === "attention";
+    if (state.filter === "identified") return statusFor(item).state === "identified";
+    return true;
+  });
   const candidate = preferredId || state.selectedId;
   state.selectedId = state.conversations.some(item => item.id === candidate)
     ? candidate
@@ -458,6 +459,79 @@ async function loadConversations(preferredId = "") {
   else {
     state.selected = null;
     renderAll();
+  }
+}
+
+function soundContext() {
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return null;
+  if (!state.audioContext) state.audioContext = new AudioContextClass();
+  return state.audioContext;
+}
+
+async function unlockSound() {
+  const context = soundContext();
+  if (!context) return false;
+  if (context.state === "suspended") await context.resume();
+  state.soundUnlocked = context.state === "running";
+  return state.soundUnlocked;
+}
+
+async function playAlertSound() {
+  if (!await unlockSound()) return false;
+  const context = state.audioContext;
+  const start = context.currentTime;
+  [[0, 880], [0.18, 1175]].forEach(([offset, frequency]) => {
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    oscillator.type = "sine";
+    oscillator.frequency.value = frequency;
+    gain.gain.setValueAtTime(0.0001, start + offset);
+    gain.gain.exponentialRampToValueAtTime(0.16, start + offset + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + offset + 0.14);
+    oscillator.connect(gain);
+    gain.connect(context.destination);
+    oscillator.start(start + offset);
+    oscillator.stop(start + offset + 0.15);
+  });
+  return true;
+}
+
+function handleConversationAlerts(items) {
+  const nextSnapshots = new Map();
+  const now = Date.now();
+  let shouldSound = false;
+  for (const item of items) {
+    const current = {
+      status: String(item.status || "BOT").toUpperCase(),
+      lastDirection: String(item.last_direction || "").toUpperCase(),
+      lastMessageAt: new Date(item.last_message_at || 0).getTime() || 0
+    };
+    const previous = state.conversationSnapshots.get(item.id);
+    nextSnapshots.set(item.id, current);
+    if (!state.initialized || !previous || now < state.suppressAlertsUntil) continue;
+    const derivedToHuman = previous.status !== "HUMAN" && current.status === "HUMAN";
+    const newCustomerMessage = current.lastDirection === "IN"
+      && current.lastMessageAt > previous.lastMessageAt;
+    const idleForFiveMinutes = current.lastMessageAt - previous.lastMessageAt >= 5 * 60 * 1000;
+    if (derivedToHuman || (current.status === "HUMAN" && newCustomerMessage && idleForFiveMinutes)) {
+      shouldSound = true;
+    }
+  }
+  state.conversationSnapshots = nextSnapshots;
+  state.initialized = true;
+  if (shouldSound) playAlertSound().catch(() => {});
+}
+
+async function pollConversations() {
+  if (!state.token || state.polling || state.loading || document.hidden) return;
+  state.polling = true;
+  try {
+    await loadConversations(state.selectedId);
+  } catch (_) {
+    // The next interval retries without interrupting the operator.
+  } finally {
+    state.polling = false;
   }
 }
 
@@ -668,6 +742,7 @@ $("takeoverButton").addEventListener("click", async () => {
   const item = selectedConversation();
   if (!item) return;
   try {
+    state.suppressAlertsUntil = Date.now() + 15000;
     await api(`/pia/conversations/${encodeURIComponent(item.id)}/takeover`, {
       method: "POST", body: JSON.stringify({ operator: "Gonzalo" })
     });
@@ -726,6 +801,12 @@ $("composer").addEventListener("submit", async event => {
 $("messageInput").addEventListener("input", event => {
   event.target.style.height = "auto";
   event.target.style.height = `${Math.min(event.target.scrollHeight, 100)}px`;
+});
+$("messageInput").addEventListener("keydown", event => {
+  if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
+    event.preventDefault();
+    $("composer").requestSubmit();
+  }
 });
 
 $("pauseButton").addEventListener("click", async () => {
@@ -838,7 +919,10 @@ $("refreshButton").addEventListener("click", () => {
     .then(() => showToast("Vista actualizada"))
     .catch(error => showToast(error.message, true));
 });
-$("soundButton").addEventListener("click", () => showToast("Sonido de aviso probado"));
+$("soundButton").addEventListener("click", async () => {
+  const played = await playAlertSound();
+  showToast(played ? "Sonido de aviso probado" : "El navegador bloque\u00f3 el sonido", !played);
+});
 
 $("spyToggle").addEventListener("click", () => {
   const hidden = $("spyPanel").classList.toggle("hidden");
@@ -847,6 +931,12 @@ $("spyToggle").addEventListener("click", () => {
 });
 
 refreshIcons();
+document.addEventListener("pointerdown", () => unlockSound().catch(() => {}), { once: true });
+document.addEventListener("keydown", () => unlockSound().catch(() => {}), { once: true });
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) pollConversations();
+});
+window.setInterval(pollConversations, 5000);
 if (state.token) {
   refreshAll().catch(error => {
     showToast(error.message, true);
