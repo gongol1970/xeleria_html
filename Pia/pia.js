@@ -55,8 +55,8 @@ function selectedConversation() {
 
 function statusFor(item) {
   return item.current_stage === "sales"
-    ? { state: "identified", label: "SKU identificado" }
-    : { state: "attention", label: "Requiere contexto" };
+    ? { state: "identified", label: "Producto en foco" }
+    : { state: "attention", label: "Conversaci\u00f3n libre" };
 }
 
 function renderConversationList() {
@@ -86,7 +86,7 @@ function renderEmptyConversation() {
   $("contactName").textContent = "Sin conversaci\u00f3n";
   $("contactMeta").textContent = "Cre\u00e1 una prueba para comenzar";
   $("messages").innerHTML = '<div class="empty-list chat-empty">No hay una conversaci\u00f3n seleccionada.</div>';
-  $("focusSku").textContent = "Sin identificar";
+  $("focusSku").textContent = "Conversando";
   $("focusConfidence").textContent = "0%";
   $("confidenceFill").style.width = "0%";
   $("spyContent").innerHTML = '<div class="empty-list">El diagn\u00f3stico aparecer\u00e1 con el primer mensaje.</div>';
