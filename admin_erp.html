@@ -69,8 +69,9 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 .xeliTrainingMeta{display:grid;grid-template-columns:minmax(130px,.8fr) minmax(150px,1fr) minmax(180px,1fr);gap:12px}
 .xeliTrainingEditorFields{display:grid;gap:12px;margin-top:12px}.xeliTrainingEditorFields textarea{resize:vertical;line-height:1.45}.xeliTrainingEditorFields #xeliQuestionText{min-height:96px}.xeliTrainingEditorFields #xeliProposedAnswer{min-height:140px}.xeliTrainingEditorFields #xeliCorrection{min-height:104px}
 .xeliKnowledgeCard{background:linear-gradient(135deg,#fffdf8,#fbf4e5)}.xeliKnowledgeToolbar{display:grid;grid-template-columns:auto minmax(320px,1fr) auto;gap:18px;align-items:center;margin-top:18px}.xeliKnowledgeToolbar button{min-height:48px}.xeliKnowledgeFile{min-width:0}.xeliKnowledgeFile input{background:#fff;min-height:48px;padding:9px 12px}.xeliKnowledgeStatus:not(:empty){min-height:0;border:1px solid currentColor;border-radius:14px;padding:11px 14px;margin-top:14px;background:#fff;font-weight:800}.xeliKnowledgeStatus.oktxt:not(:empty){background:#ecfdf3;border-color:#b7ebc9}.xeliKnowledgeStatus.badtxt:not(:empty){background:#fef3f2;border-color:#fecaca}.xeliKnowledgeStatus.warntxt:not(:empty){background:#fff7e6;border-color:#f0cf83}
+.xeliConfigurationTable{min-width:2050px}.xeliConfigurationTable th,.xeliConfigurationTable td{vertical-align:top}.xeliConfigurationTable input,.xeliConfigurationTable select{min-width:145px}.xeliConfigurationTable .xeliSkuReadOnly{min-width:150px;font-weight:900}.xeliConfigurationTable .xeliTitleHelp{min-width:280px;max-width:360px;white-space:normal;color:var(--muted)}.xeliConfigurationTable .xeliWideInput{min-width:220px}.xeliInitialActions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px}.xeliInitialActions button{min-height:44px}.xeliInitialSummary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}.xeliInitialSummary>div{background:#fff;border:1px solid #eee2c8;border-radius:12px;padding:10px}.xeliConfigurationIntro{background:linear-gradient(135deg,#fffdf8,#fbf4e5);border-left:6px solid var(--brand2)}#configuracion.active{display:flex;flex-direction:column}#inventoryImportCard{order:10}#xeliInitialConfigurationCard{order:20}#correoSettingsCard{order:30}
 @media(max-width:1180px){.xeliTrainingWorkspace{grid-template-columns:1fr}.xeliQuestionList{max-height:360px}.xeliTrainingMeta{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:820px){.xeliTrainingWorkspace,.xeliTrainingMeta,.xeliKnowledgeToolbar{grid-template-columns:1fr}.xeliTrainingPaneHead{display:block}.xeliTrainingPaneHead .btnrow{margin-top:10px}.xeliTrainingActions{justify-content:stretch}.xeliTrainingActions button,.xeliKnowledgeToolbar button{width:100%}.xeliQuestionList{min-height:220px;max-height:340px}}
+@media(max-width:820px){.xeliTrainingWorkspace,.xeliTrainingMeta,.xeliKnowledgeToolbar,.xeliInitialSummary{grid-template-columns:1fr}.xeliTrainingPaneHead{display:block}.xeliTrainingPaneHead .btnrow{margin-top:10px}.xeliTrainingActions{justify-content:stretch}.xeliTrainingActions button,.xeliKnowledgeToolbar button{width:100%}.xeliQuestionList{min-height:220px;max-height:340px}}
 
 
 .globalAlertBell{display:none!important;position:relative;margin:12px auto 0;width:58px;height:58px;border-radius:18px;background:transparent;color:#f5c84b;border:0;font-size:42px;line-height:1;display:flex;align-items:center;justify-content:center;text-shadow:0 2px 0 rgba(0,0,0,.22);animation:bellPulse 1.5s ease-in-out infinite}.globalAlertBell:hover{background:rgba(220,197,143,.08)}.globalAlertBell.hidden{display:none!important}.globalAlertBell span{position:absolute;right:-7px;top:-5px;min-width:24px;height:24px;border-radius:999px;background:#e11d2e;color:#fff;font-size:14px;font-weight:950;display:flex;align-items:center;justify-content:center;padding:0 6px;text-shadow:none;border:2px solid #101010}.navBtn{position:relative}.navAlertBadge{position:absolute;right:10px;top:50%;transform:translateY(-50%);min-width:20px;height:20px;border-radius:999px;background:#e11d2e;color:#fff;font-size:12px;font-weight:950;display:none;align-items:center;justify-content:center;padding:0 6px}.navBtn.hasAlert{box-shadow:0 0 0 1px rgba(225,29,46,.35),0 0 18px rgba(225,29,46,.18)}.navBtn.hasAlert .navAlertBadge{display:flex}@keyframes bellPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
@@ -1005,7 +1006,8 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 <div class="navTitle">Tienda Nube</div><div class="sub"><button class="navBtn" data-view="tn-publicaciones">Publicaciones</button><button class="navBtn" data-view="tn-ventas">Ventas</button><button class="navBtn" data-view="tn-clientes">Clientes</button></div>
 
 <div class="navTitle">Local físico</div><div class="sub"><button class="navBtn" data-view="arca-manual">Emitir comprobante manual</button></div>
-<div class="navTitle">Gestión</div><div class="sub"><div class="navParent">Inventario</div><div class="sub2"><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="combos">Combos / Kits</button><button class="navBtn" data-view="full-inbound">Envío a Full</button><button class="navBtn" data-view="movimientos">Movimientos de stock</button></div><button class="navBtn" data-view="clientes">Clientes ML / TN</button><button class="navBtn" data-view="xeli-training">Entrenamiento Xeli</button><button class="navBtn" data-view="arca-reportes">ARCA reportes</button></div>
+<div class="navTitle">Gestión</div><div class="sub"><div class="navParent">Inventario</div><div class="sub2"><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="combos">Combos / Kits</button><button class="navBtn" data-view="full-inbound">Envío a Full</button><button class="navBtn" data-view="movimientos">Movimientos de stock</button></div><button class="navBtn" data-view="clientes">Clientes ML / TN</button><button class="navBtn" data-view="arca-reportes">ARCA reportes</button></div>
+<div class="navTitle">Inteligencia Artificial</div><div class="sub"><button class="navBtn" data-view="xeli-config">Configuración Xeli</button><button class="navBtn" data-view="xeli-training">Entrenamiento Xeli</button></div>
 <div class="navTitle">Sistema</div><div class="sub"><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="bitacora">Registro operativo</button><button class="navBtn" data-view="versiones">Versión</button></div>
 </nav></aside>
 <main>
@@ -1165,15 +1167,44 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 <section id="arca-reportes" class="view"><div class="card"><h3>ARCA · Reporte de facturación</h3><p>Comprobantes del ERP. Por defecto muestra el mes calendario anterior completo.</p><div class="grid"><div class="col-4"><label>Buscar</label><input id="arcaSearch" placeholder="SKU, factura, cliente, documento, canal..." oninput="renderArcaInvoices()"></div><div class="col-2"><label>Desde</label><input id="arcaDesde" type="date"></div><div class="col-2"><label>Hasta</label><input id="arcaHasta" type="date"></div><div class="col-2"><label>Tipo de comprobante</label><select id="arcaTipo"><option>Todos</option><option>A</option><option>B</option><option>C</option><option>E</option></select></div><div class="col-2"><label>Canal de venta</label><select id="arcaCanal"><option>Todos</option><option>TN</option><option>ML</option><option>MANUAL</option></select></div><div class="col-2"><label>Concepto</label><select id="arcaConcepto"><option>Todos</option><option>Productos</option><option>Servicios</option><option>Productos y Servicios</option></select></div><div class="col-2"><label>Límite visible</label><select id="arcaLimit"><option>20</option><option selected>100</option><option>200</option></select></div></div><div class="btnrow" style="margin-top:12px"><button onclick="loadArcaInvoices()">Buscar comprobantes</button><button class="secondary" onclick="downloadArcaExcel()">Descargar Excel completo</button></div><div id="arcaStatus" class="status"></div><div id="arcaTable" class="tableWrap" style="margin-top:12px"></div><pre id="arcaOut" class="hidden"></pre></div></section>
 <section id="arca-manual" class="view"><div class="card"><h3>ARCA · Emitir comprobante manual</h3><p>Flujo controlado: primero vista previa, después emisión real con CAE. Remitos y recibos quedan fuera de este módulo.</p><div class="grid"><div class="col-2"><label>Comprobante</label><select id="amTipo" onchange="arcaManualTypeChanged()"><option value="1">Factura A</option><option value="2">Nota de Débito A</option><option value="3">Nota de Crédito A</option><option value="6" selected>Factura B</option><option value="7">Nota de Débito B</option><option value="8">Nota de Crédito B</option><option value="11">Factura C</option><option value="12">Nota de Débito C</option><option value="13">Nota de Crédito C</option><option value="19" disabled>Factura de Exportación · WSFEX</option></select></div><div class="col-2"><label>Concepto</label><select id="amConcepto" onchange="arcaManualConceptChanged()"><option selected>Productos</option><option>Servicios</option><option>Productos y Servicios</option></select></div><div class="col-2"><label>Fecha</label><input id="amFecha" type="date"></div><div class="col-3"><label>Canal / referencia</label><input id="amSourceChannel" value="ARCA_MANUAL"></div><div class="col-3"><label>Operación opcional</label><input id="amSourceOrder" placeholder="Venta / referencia"></div><div id="amServiceDates" class="col-12 hidden"><div class="grid"><div class="col-4"><label>Servicio desde</label><input id="amServiceDesde" type="date"></div><div class="col-4"><label>Servicio hasta</label><input id="amServiceHasta" type="date"></div><div class="col-4"><label>Vencimiento de pago</label><input id="amVtoPago" type="date"></div></div></div><input id="amAssocInvoiceId" type="hidden"><input id="amAssocCbteTipo" type="hidden"><input id="amAssocPtoVta" type="hidden"><input id="amAssocCbteNro" type="hidden"><input id="amAssocInvoiceDate" type="hidden"><input id="amAssocCae" type="hidden"><div class="col-4"><label>Nombre / Razón social receptor *</label><input id="amCustomerName" placeholder="Consumidor Final / nombre real"></div><div class="col-2"><label>Doc. tipo</label><select id="amDocType"><option value="CF" selected>CF</option><option value="DNI">DNI</option><option value="CUIT">CUIT</option></select></div><div class="col-3"><label>Documento</label><div style="display:flex;gap:6px"><input id="amDocNumber" placeholder="DNI / CUIT" onblur="arcaLookupCustomerA5(false)" onkeydown="if(event.key==='Enter'){event.preventDefault();arcaLookupCustomerA5(true)}"><button type="button" class="secondary" style="padding:10px 11px" onclick="arcaLookupCustomerA5(true)">ARCA</button></div></div><div class="col-3"><label>Condición IVA</label><select id="amIvaCond"><option selected>Consumidor Final</option><option>Responsable Inscripto</option><option>Monotributo</option><option>Exento</option></select></div><div class="col-3"><label>Email receptor</label><input id="amEmail" type="email" placeholder="cliente@correo.com"></div><div class="col-6"><label>Domicilio receptor</label><input id="amAddress" placeholder="Opcional / si viene del comprador"></div><div class="col-3"><label>Localidad receptor *</label><input id="amLocalidad" placeholder="Consumidor Final manual: Ciudad Autónoma de Buenos Aires"></div></div><div class="dividerLine"></div><h3>Conceptos</h3><div id="arcaManualLines"></div><div class="btnrow" style="margin-top:10px"><button class="secondary" onclick="arcaManualAddLine()">Agregar línea</button><button class="secondary" onclick="arcaManualClear()">Limpiar</button></div><div class="dividerLine"></div><div class="grid"><div class="col-12"><label>Notas internas/observaciones</label><textarea id="amNotes" rows="2"></textarea></div></div><div style="height:18px"></div><div class="btnrow" style="justify-content:flex-end;align-items:center"><label style="display:flex;align-items:center;gap:10px;margin:0 16px 0 0;text-transform:none;letter-spacing:0;font-size:15px;font-weight:900;color:#111;background:#fff7ed;border:1px solid #f7c56b;border-radius:14px;padding:12px 14px"><input id="amModificaStock" type="checkbox" style="width:18px;height:18px;margin:0"> Modifica stock</label><select id="amStockReason" title="Motivo stock" style="width:170px"><option value="comprobante" selected>Comprobante</option><option value="devolucion">Devolución</option><option value="ajuste">Ajuste</option><option value="no aplica">No aplica</option></select><button class="secondary" onclick="cancelToPreviousView()">Cancelar</button><button class="secondary" onclick="arcaManualPreview()">Vista previa</button><button class="danger" onclick="arcaManualEmit()">Emitir comprobante real</button></div><div id="arcaManualStatus" class="status"></div><pre id="arcaManualOut" class="hidden"></pre></div></section>
 
+<section id="xeli-config" class="view">
+  <div class="card xeliConfigurationIntro">
+    <div class="controlHeader">
+      <div>
+        <h3>Inteligencia Artificial · Configuración Xeli</h3>
+        <p>Estas filas son las mismas Reglas SKU de la planilla. El SKU y el título de ayuda de Mercado Libre son de solo lectura; guardá cada corrección humana de forma explícita.</p>
+      </div>
+      <button class="secondary" onclick="loadXeliConfiguration(true)">Actualizar</button>
+    </div>
+    <div class="grid">
+      <div class="col-6"><label>Buscar SKU o título</label><input id="xeliConfigurationFilter" placeholder="Buscar..." oninput="renderXeliConfiguration()"></div>
+      <div class="col-6"><label>Estado</label><div id="xeliConfigurationStatus" class="status">Pendiente de consulta.</div></div>
+    </div>
+    <div id="xeliConfigurationTable" class="tableWrap" style="margin-top:14px"></div>
+  </div>
+  <div class="card xeliKnowledgeCard">
+    <h3>Instrucciones por Skill</h3>
+    <p>Es la misma hoja <strong>Skills</strong> de la planilla. Cada alta, cambio o baja requiere una acción humana explícita.</p>
+    <div class="grid">
+      <div class="col-3"><label>Skill ID</label><input id="xeliNewSkillId" placeholder="GENERAL"></div>
+      <div class="col-7"><label>Skill instrucción</label><input id="xeliNewSkillInstruction" placeholder="Nueva instrucción"></div>
+      <div class="col-2" style="display:flex;align-items:flex-end"><button class="primary" onclick="createXeliSkillInstruction()">Agregar instrucción</button></div>
+    </div>
+    <div id="xeliSkillInstructionsTable" class="tableWrap" style="margin-top:14px"></div>
+    <div id="xeliSkillInstructionsStatus" class="status"></div>
+  </div>
+  <div class="card xeliKnowledgeCard">
+    <h3>Planilla completa de Xeli</h3>
+    <p>La exportación y la interfaz usan las mismas tablas, columnas y validaciones. Al subir una planilla revisada se reemplaza atómicamente todo el conocimiento aplicable del tenant.</p>
+    <div class="xeliKnowledgeToolbar"><button class="primary" onclick="downloadXeliKnowledge()">Descargar planilla actual</button><div class="xeliKnowledgeFile"><input id="xeliKnowledgeFile" type="file" accept=".xlsx"></div><button class="primary" onclick="uploadXeliKnowledge()">Subir y reemplazar</button></div>
+    <div id="xeliKnowledgeStatus" class="status xeliKnowledgeStatus" role="status" aria-live="polite"></div>
+  </div>
+</section>
+
 <section id="xeli-training" class="view">
   <div class="card">
-    <h3>Gestión · Entrenamiento Xeli</h3>
+    <h3>Inteligencia Artificial · Entrenamiento Xeli</h3>
     <p>Entrenamiento tenantizado con preguntas reales. Xeli lee primero el Skill ID GENERAL, luego el Skill ID asignado al SKU y finalmente los datos vivos de la publicación.</p>
-    <div class="xeliModeConfig">
-      <div><label>SKU</label><select id="xeliModeSku" onchange="xeliModeSkuChanged()"><option value="">Cargando productos...</option></select></div>
-      <div><label>Modo de respuesta</label><select id="xeliModeValue"><option value="manual">Manual</option><option value="pre_respuesta">Pre-respuesta</option><option value="auto_aprobada">Auto-aprobada</option></select></div>
-      <button class="primary" onclick="saveXeliResponseMode()">Guardar modo</button>
-    </div>
     <div class="xeliTrainingWorkspace">
       <div class="xeliTrainingPane">
         <div class="xeliTrainingPaneHead">
@@ -1192,29 +1223,11 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
     </div>
     <div id="xeliTrainingStatus" class="status"></div>
   </div>
-  <div class="card xeliKnowledgeCard">
-    <h3>Conocimiento organizado por skills</h3>
-    <p>Cada fila tiene skill, tema, instrucción, prioridad y trazabilidad. No es una bolsa de campos ni usa la base de PIA.</p>
-    <div class="xeliKnowledgeToolbar"><button class="primary" onclick="downloadXeliKnowledge()">Bajar conocimiento</button><div class="xeliKnowledgeFile"><input id="xeliKnowledgeFile" type="file" accept=".xlsx"></div><button class="primary" onclick="uploadXeliKnowledge()">Subir conocimiento</button></div>
-    <div id="xeliKnowledgeStatus" class="status xeliKnowledgeStatus" role="status" aria-live="polite"></div>
-  </div>
 </section>
 
 <section id="fallas" class="view"><div class="card"><div class="controlHeader"><div><h3>Alertas de stock</h3><p>Son actualizaciones que un canal rechazó. Corregí el stock, reintentá con el valor actual o marcá la alerta como resuelta.</p></div><button class="secondary" onclick="loadSyncJobs(0,true)">Actualizar</button></div><div class="grid"><div class="col-2"><label>Cantidad visible</label><select id="jobsLimit" class="limitSelect" onchange="loadSyncJobs(0,true)"><option selected>20</option><option>50</option></select></div></div><div id="jobsStatus" class="status"></div><div id="jobsTable" class="tableWrap" style="margin-top:12px"></div><div id="jobsPager" class="btnrow jobsPager"></div></div></section>
 
 <section id="configuracion" class="view">
-  <div class="card connectionSettings">
-    <h3>Conexión XelerIA</h3>
-    <p>Conexión técnica del backoffice. El token no se muestra ni viaja en la URL.</p>
-    <div class="connGrid">
-      <div><label>API</label><input id="cfgApiUrl" value="https://api.xeleria.com.ar"></div>
-      <div><label>ADMIN_TOKEN</label><input id="cfgToken" type="password" placeholder="Token" autocomplete="off"></div>
-      <button class="primary" onclick="saveSettingsFromConfig()">Guardar</button><button class="secondary" onclick="cancelToPreviousView()">Cancelar</button>
-      <button class="secondary" onclick="health()">Probar</button>
-    </div>
-    <div id="connStatus" class="status"></div>
-  </div>
-
   <div class="card">
     <h3>Personalización</h3>
     <p>Marca, logo y preferencias generales del tenant. Se guardan en la base de XelerIA.</p>
@@ -1244,29 +1257,6 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
         <label>Sonido notificaciones</label>
         <select id="cfgNotificationSound" onchange="primeNotificationSoundFromSelect()"><option value="off">Desactivado</option><option value="single_bell_soft">Campana simple sutil</option><option value="single_bell_dry">Campana simple sonido seco</option><option value="double_bell">Campana doble</option><option value="double_bell_low">Campana doble grave</option><option value="double_bell_dry">Campana doble sonido seco</option><option value="triple_bell">Campana triple</option><option value="minimalist">Minimalista</option></select>
         <div class="btnrow" style="margin-top:8px"><button type="button" class="secondary" onclick="testNotificationSound()">Probar sonido</button></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card" id="correoSettingsCard">
-    <h3>Correo Argentino</h3>
-    <p>Servicio de cotización incluido en Xeli para responder preguntas. El CP de cada SKU define desde qué depósito sale.</p>
-    <div class="grid">
-      <div class="col-4">
-        <label>Estado del servicio</label>
-        <div id="correoSettingsStatus" class="serviceState"></div>
-      </div>
-      <div class="col-4">
-        <label>CP de origen predeterminado</label>
-        <input id="cfgCorreoOriginPostalCode" maxlength="8" autocomplete="postal-code" placeholder="Opcional; respaldo para SKUs sin CP">
-      </div>
-      <div class="col-4">
-        <label>Recargo sobre la cotización</label>
-        <select id="cfgShippingMarkupType" onchange="renderCorreoSettingsUi()"><option value="none">Sin recargo</option><option value="percent">Porcentaje</option><option value="fixed">Monto fijo</option></select>
-      </div>
-      <div class="col-4" id="cfgShippingMarkupValueBox">
-        <label id="cfgShippingMarkupValueLabel">Valor del recargo</label>
-        <input id="cfgShippingMarkupValue" type="number" min="0" max="10000000" step="0.01" value="0">
       </div>
     </div>
   </div>
@@ -1306,6 +1296,42 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
       <button class="primary" onclick="saveConfig()">Guardar toda la configuración</button><button class="secondary" onclick="cancelToPreviousView()">Cancelar</button>
     </div>
     <div id="cfgStatus" class="status"></div>
+  </div>
+
+  <div class="card xeliKnowledgeCard" id="xeliInitialConfigurationCard">
+    <h3>Inteligencia Artificial Xeli</h3>
+    <p>Generá por única vez una propuesta usando todos los SKU cargados. XelerIA consulta una publicación vigente por SKU y prepara Tags de título con OpenAI, pero no escribe conocimiento productivo hasta que descargás, revisás y subís la planilla.</p>
+    <div class="xeliInitialActions">
+      <button id="xeliInitialGenerateButton" class="primary" onclick="generateInitialXeliConfiguration(false)">Generar configuración inicial</button>
+      <button id="xeliInitialDownloadButton" class="secondary" onclick="downloadInitialXeliConfiguration()" disabled>Descargar propuesta</button>
+      <input id="xeliInitialKnowledgeFile" type="file" accept=".xlsx">
+      <button class="primary" onclick="uploadInitialXeliKnowledge()">Subir planilla revisada y reemplazar</button>
+    </div>
+    <div id="xeliInitialSummary" class="xeliInitialSummary hidden"></div>
+    <div id="xeliInitialStatus" class="status" role="status" aria-live="polite"></div>
+  </div>
+
+  <div class="card" id="correoSettingsCard">
+    <h3>Correo Argentino</h3>
+    <p>Servicio de cotización incluido en Xeli para responder preguntas. El CP de cada SKU define desde qué depósito sale.</p>
+    <div class="grid">
+      <div class="col-4">
+        <label>Estado del servicio</label>
+        <div id="correoSettingsStatus" class="serviceState"></div>
+      </div>
+      <div class="col-4">
+        <label>CP de origen predeterminado</label>
+        <input id="cfgCorreoOriginPostalCode" maxlength="8" autocomplete="postal-code" placeholder="Opcional; respaldo para SKUs sin CP">
+      </div>
+      <div class="col-4">
+        <label>Recargo sobre la cotización</label>
+        <select id="cfgShippingMarkupType" onchange="renderCorreoSettingsUi()"><option value="none">Sin recargo</option><option value="percent">Porcentaje</option><option value="fixed">Monto fijo</option></select>
+      </div>
+      <div class="col-4" id="cfgShippingMarkupValueBox">
+        <label id="cfgShippingMarkupValueLabel">Valor del recargo</label>
+        <input id="cfgShippingMarkupValue" type="number" min="0" max="10000000" step="0.01" value="0">
+      </div>
+    </div>
   </div>
 
 <div id="inventoryImportCard" class="card"><div class="btnrow"><div><h3>Carga general de inventario</h3></div></div><div class="importConnectorGrid"><div id="inventoryImportMLCard" class="importConnectorCard"><h4>Mercado Libre</h4><div class="importConnectorMeta">Estado: <span id="inventoryImportMLStatus" class="pill">revisando</span><span id="inventoryImportMLDot" class="dot">·</span><span id="inventoryImportMLAccount" class="importConnectorAccount">—</span></div><div class="importConnectorActions"><button id="inventoryImportMLButton" class="secondary" onclick="connectInventoryChannel('ML')">Conectar ML</button></div></div><div id="inventoryImportTNCard" class="importConnectorCard"><h4>Tienda Nube</h4><div class="importConnectorMeta">Estado: <span id="inventoryImportTNStatus" class="pill">revisando</span><span id="inventoryImportTNDot" class="dot">·</span><span id="inventoryImportTNAccount" class="importConnectorAccount">—</span></div><div class="importConnectorActions"><button id="inventoryImportTNButton" class="secondary" onclick="connectInventoryChannel('TN')">Conectar TN</button></div></div></div><div class="btnrow importImportActions"><button id="inventoryImportRunButton" class="primary" onclick="runInventoryImportRefresh(0)">Importar canales conectados</button></div><div id="inventoryImportStatus" class="status"></div><div id="inventoryImportSummary" class="status"></div><div id="inventoryImportErrors" class="status hidden"></div><div class="importReviewLegend importReviewLegendInline hidden"><span class="pill ok">Verde: SKU o publicación nueva / S-C cambiado</span><span class="pill bad">Rojo: falta en refresh confirmado</span><span class="pill warn">Amarillo: SKU faltante</span></div><div class="importReviewGrid hidden"><table><colgroup><col class="sku"><col class="tn"><col class="kind"><col class="ml"></colgroup><thead><tr><th>SKU</th><th>Tienda Nube</th><th title="Simple / Combo">S/C</th><th>Mercado Libre</th></tr></thead><tbody id="inventoryImportGridBody"></tbody></table></div><div id="inventoryImportPager" class="btnrow" style="margin-top:12px"></div></div>
@@ -1362,8 +1388,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.92.0-stock-truth';
-const FRONTEND_BUILD='admin-erp-v292-stock-truth';
+const FRONTEND_VERSION='2.93.0-xeli-configuration-governance';
+const FRONTEND_BUILD='admin-erp-v293-xeli-configuration-governance';
 const SALES_DB_POLL_INTERVAL_MS=60000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;let timers={};
 const XELERIA_MIN_SEARCH_CHARS=4;function isShortSearch(q){q=String(q||'').trim();return q.length>0&&q.length<XELERIA_MIN_SEARCH_CHARS}function minSearchMessage(){return 'Ingresá al menos '+XELERIA_MIN_SEARCH_CHARS+' caracteres para buscar.'}
@@ -1773,13 +1799,14 @@ function showView(id,options={}){
   if(id==='ml-clientes')loadCustomers('ML');
   if(id==='tn-clientes')loadCustomers('TN');
   if(id==='clientes')loadCustomers('ALL');
-  if(id==='xeli-training'){loadXeliTrainingQuestions(true);loadXeliResponseModes()}
+  if(id==='xeli-config')loadXeliConfiguration(false);
+  if(id==='xeli-training')loadXeliTrainingQuestions(true);
   if(id==='arca-reportes'){initArcaDates();loadArcaInvoices()}
   if(id==='arca-manual'){arcaManualInit()}
   if(id==='inventario')searchInventory(state.inventory.offset||0);
   if(id==='combos')loadCombos();
   if(id==='full-inbound')clearFullInboundView();
-  if(id==='configuracion')loadTenantConnectionStatus(false);
+  if(id==='configuracion'){loadTenantConnectionStatus(false);loadXeliConfiguration(false)}
   if(id==='notificaciones')loadNotifications(true);
   if(id==='bitacora')loadOpsLog(true);
   if(id==='versiones')loadVersionsPage(false);
@@ -3971,6 +3998,7 @@ const ML_QUICK_REPLIES_DEFAULT=[{label:'HAY STOCK',text:'Tenemos stock disponibl
 const XELI_DEFAULT_SETTINGS={greeting_enabled:true,greetings:{morning:'Buenos días',afternoon:'Buenas tardes',night:'Buenas noches'},signature_enabled:true,signature_text:'PLANETA CASA',quick_replies:ML_QUICK_REPLIES_DEFAULT};
 state.mlQuestions={offset:0,items:[],status:'UNANSWERED',activeIdx:0,settings:JSON.parse(JSON.stringify(XELI_DEFAULT_SETTINGS)),linkSearch:{}};
 state.xeliTraining={items:[],selected:-1,responseModes:[]};
+state.xeliConfiguration={items:[],skillInstructions:[],draftRows:[],initialGeneratedAt:null};
 
 function mlQQuickReplies(){return state.mlQuestions.settings.quick_replies||[]}
 function mlQSetActive(idx){state.mlQuestions.activeIdx=idx}
@@ -4037,6 +4065,125 @@ async function mlQTextInput(idx){mlQSetActive(idx);mlQUpdatePreview(idx);let ta=
 function mlQInsertLink(idx,pos){let cache=state.mlQuestions.linkSearch[idx],row=cache?.filtered?.[pos],ta=qs('mlQText_'+idx);if(!row||!ta)return;ta.value=ta.value.replace(/(?:^|\s)#[^\s#]*$/,m=>(m.startsWith(' ')?' ':'')+(row.link||''))+' ';qs('mlQLinks_'+idx).innerHTML='';delete state.mlQuestions.linkSearch[idx];ta.focus();mlQUpdatePreview(idx)}
 async function answerMLQuestion(idx){let q=state.mlQuestions.items[idx],raw=(qs('mlQText_'+idx)?.value||'').trim();if(!q?.id||!raw){alert('Escribí la respuesta.');return}let finalText=mlQCompose(idx);if(!confirm('Enviar esta respuesta a Mercado Libre?\n\n'+finalText))return;setBusy(true,'Respondiendo pregunta ML','Enviando respuesta...');try{let body={text:raw,greeting_enabled:!!qs('mlQGreeting_'+idx)?.checked,signature_enabled:!!qs('mlQSignature_'+idx)?.checked};let d=await fetchJson(`/admin/xeli/ml/questions/${encodeURIComponent(q.id)}/answer`,{method:'POST',body:JSON.stringify(body)});setStatus('mlQStatusBox','Respuesta enviada. Refrescando pendientes...',true);state.mlQuestions.status='UNANSWERED';await loadMLQuestions(0,false)}catch(e){setStatus('mlQStatusBox','Error respondiendo: '+errText(e),false)}finally{setBusy(false)}}
 function xeliAuthDownloadHeaders(){let h=xeleriaHeaders();delete h['Content-Type'];return h}
+function xeliConfigurationInput(field,value,wide=false){return `<input data-field="${field}" class="${wide?'xeliWideInput':''}" value="${esc(value||'')}">`}
+function renderXeliConfiguration(){
+  let el=qs('xeliConfigurationTable');if(!el)return;
+  let filter=(qs('xeliConfigurationFilter')?.value||'').trim().toLowerCase();
+  let rows=(state.xeliConfiguration.items||[]).filter(row=>!filter||`${row.sku||''} ${row.name||''} ${row.publication_title||''}`.toLowerCase().includes(filter));
+  if(!rows.length){el.innerHTML='<div class="dashEmpty">No hay SKU activos que coincidan con la búsqueda.</div>';return}
+  let body=rows.map(row=>{
+    let sku=String(row.sku||''),encoded=encodeURIComponent(sku),tags=(row.title_tags||[]).join(', ');
+    return `<tr data-xeli-sku="${esc(encoded)}"><td class="xeliSkuReadOnly">${esc(sku)}<div class="small">${esc(row.name||'')}</div></td><td class="xeliTitleHelp">${esc(row.publication_title||'Sin publicación ML vigente registrada')}</td><td>${xeliConfigurationInput('skill_id',row.skill_id)}</td><td>${xeliConfigurationInput('origin_postal_code',row.origin_postal_code)}</td><td>${xeliConfigurationInput('shipping_rule',row.shipping_rule,true)}</td><td>${xeliConfigurationInput('pickup',row.pickup,true)}</td><td>${xeliConfigurationInput('schedule',row.schedule,true)}</td><td>${xeliConfigurationInput('street_store',row.street_store,true)}</td><td>${xeliConfigurationInput('clarification',row.clarification,true)}</td><td>${xeliConfigurationInput('title_tags',tags,true)}</td><td><select data-field="response_mode"><option value="manual" ${row.response_mode==='manual'?'selected':''}>Manual</option><option value="pre_respuesta" ${row.response_mode==='pre_respuesta'?'selected':''}>Pre-respuesta</option><option value="auto_aprobada" ${row.response_mode==='auto_aprobada'?'selected':''}>Auto-aprobada</option></select></td><td><button class="primary" onclick="saveXeliConfigurationRow('${encoded}')">Guardar</button></td></tr>`;
+  }).join('');
+  el.innerHTML=`<table class="xeliConfigurationTable"><thead><tr><th>SKU</th><th>Título publicación ML</th><th>Skill</th><th>CP Origen</th><th>Envio</th><th>Retiro</th><th>Horario</th><th>Es local a la calle</th><th>Aclaración</th><th>Tags de título</th><th>Modo respuesta</th><th>Acción</th></tr></thead><tbody>${body}</tbody></table>`;
+}
+function renderXeliSkillInstructions(){
+  let el=qs('xeliSkillInstructionsTable');if(!el)return;
+  let rows=state.xeliConfiguration.skillInstructions||[];
+  if(!rows.length){el.innerHTML='<div class="dashEmpty">Todavía no hay instrucciones activas.</div>';return}
+  el.innerHTML=`<table><thead><tr><th>Skill ID</th><th>Skill instrucción</th><th>Acciones</th></tr></thead><tbody>${rows.map(row=>{let id=encodeURIComponent(String(row.id||''));return `<tr data-xeli-instruction="${esc(id)}"><td><input data-field="skill_id" value="${esc(row.skill_id||'')}"></td><td><textarea data-field="instruction" rows="2" style="min-width:520px">${esc(row.instruction||'')}</textarea></td><td><div class="btnrow"><button class="primary" onclick="saveXeliSkillInstruction('${id}')">Guardar</button><button class="secondary" onclick="deleteXeliSkillInstruction('${id}')">Quitar</button></div></td></tr>`}).join('')}</tbody></table>`;
+}
+async function loadXeliConfiguration(refresh=false){
+  if(qs('xeliConfigurationStatus'))setStatus('xeliConfigurationStatus',refresh?'Actualizando Reglas SKU...':'Cargando Reglas SKU...');
+  try{
+    let d=await fetchJson('/admin/xeli/configuration',{skipLastJson:true});
+    state.xeliConfiguration.items=d.items||[];
+    state.xeliConfiguration.skillInstructions=d.skill_instructions||[];
+    state.xeliConfiguration.initialGeneratedAt=d.initial_generated_at||null;
+    renderXeliConfiguration();
+    renderXeliSkillInstructions();
+    let note=`${d.total||0} SKU activos · ${d.created_empty_rows||0} filas vacías creadas en forma idempotente`;
+    if(d.initial_generated_at)note+=` · propuesta inicial generada ${new Date(d.initial_generated_at).toLocaleString()}`;
+    if(qs('xeliConfigurationStatus'))setStatus('xeliConfigurationStatus',note,true);
+    if(qs('xeliInitialStatus'))setStatus('xeliInitialStatus',d.initial_generated_at?'La propuesta inicial ya fue generada. Regenerar exige confirmación y tampoco sobrescribe conocimiento.':'Todavía no se generó la propuesta inicial.',d.initial_generated_at?true:null);
+  }catch(e){
+    if(qs('xeliConfigurationStatus'))setStatus('xeliConfigurationStatus','Error cargando configuración Xeli: '+errText(e),false);
+    if(qs('xeliInitialStatus'))setStatus('xeliInitialStatus','No se pudo leer el estado de Xeli: '+errText(e),false);
+  }
+}
+async function createXeliSkillInstruction(){
+  let skillId=(qs('xeliNewSkillId')?.value||'').trim(),instruction=(qs('xeliNewSkillInstruction')?.value||'').trim();
+  if(!skillId||!instruction){alert('Completá Skill ID e instrucción.');return}
+  setStatus('xeliSkillInstructionsStatus','Agregando instrucción...');
+  try{
+    await fetchJson('/admin/xeli/configuration/skills',{method:'POST',body:JSON.stringify({skill_id:skillId,instruction})});
+    qs('xeliNewSkillId').value='';qs('xeliNewSkillInstruction').value='';
+    await loadXeliConfiguration(true);
+    setStatus('xeliSkillInstructionsStatus','Instrucción agregada por acción humana explícita.',true);
+  }catch(e){setStatus('xeliSkillInstructionsStatus','Error agregando instrucción: '+errText(e),false)}
+}
+function xeliSkillInstructionRow(encodedId){return Array.from(document.querySelectorAll('tr[data-xeli-instruction]')).find(row=>row.dataset.xeliInstruction===encodedId)}
+async function saveXeliSkillInstruction(encodedId){
+  let row=xeliSkillInstructionRow(encodedId),id=decodeURIComponent(encodedId);if(!row)return;
+  let skillId=(row.querySelector('[data-field="skill_id"]')?.value||'').trim(),instruction=(row.querySelector('[data-field="instruction"]')?.value||'').trim();
+  if(!skillId||!instruction){alert('Skill ID e instrucción son obligatorios.');return}
+  setStatus('xeliSkillInstructionsStatus','Guardando instrucción...');
+  try{
+    await fetchJson('/admin/xeli/configuration/skills/'+encodeURIComponent(id),{method:'PUT',body:JSON.stringify({skill_id:skillId,instruction})});
+    await loadXeliConfiguration(true);
+    setStatus('xeliSkillInstructionsStatus','Instrucción actualizada.',true);
+  }catch(e){setStatus('xeliSkillInstructionsStatus','Error actualizando instrucción: '+errText(e),false)}
+}
+async function deleteXeliSkillInstruction(encodedId){
+  let id=decodeURIComponent(encodedId);if(!confirm('¿Quitar esta instrucción del conocimiento activo de Xeli?'))return;
+  setStatus('xeliSkillInstructionsStatus','Quitando instrucción...');
+  try{
+    await fetchJson('/admin/xeli/configuration/skills/'+encodeURIComponent(id),{method:'DELETE'});
+    await loadXeliConfiguration(true);
+    setStatus('xeliSkillInstructionsStatus','Instrucción quitada por acción humana explícita.',true);
+  }catch(e){setStatus('xeliSkillInstructionsStatus','Error quitando instrucción: '+errText(e),false)}
+}
+function xeliConfigurationRowElement(encodedSku){return Array.from(document.querySelectorAll('tr[data-xeli-sku]')).find(row=>row.dataset.xeliSku===encodedSku)}
+async function saveXeliConfigurationRow(encodedSku){
+  let row=xeliConfigurationRowElement(encodedSku),sku=decodeURIComponent(encodedSku);if(!row)return;
+  let value=field=>row.querySelector(`[data-field="${field}"]`)?.value||'';
+  let payload={skill_id:value('skill_id'),origin_postal_code:value('origin_postal_code')||null,shipping_rule:value('shipping_rule')||null,pickup:value('pickup')||null,schedule:value('schedule')||null,street_store:value('street_store')||null,clarification:value('clarification')||null,title_tags:value('title_tags').split(/[,;\n]+/).map(x=>x.trim()).filter(Boolean),response_mode:value('response_mode')||'manual'};
+  setStatus('xeliConfigurationStatus',`Guardando ${sku}...`);
+  try{
+    let d=await fetchJson('/admin/xeli/configuration/'+encodeURIComponent(sku),{method:'PUT',body:JSON.stringify(payload)});
+    let idx=(state.xeliConfiguration.items||[]).findIndex(item=>item.sku===sku);
+    if(idx>=0)state.xeliConfiguration.items[idx]={...state.xeliConfiguration.items[idx],...(d.item||{})};
+    renderXeliConfiguration();
+    setStatus('xeliConfigurationStatus',`${sku} guardado por corrección humana explícita.`,true);
+  }catch(e){setStatus('xeliConfigurationStatus',`Error guardando ${sku}: `+errText(e),false)}
+}
+function renderXeliInitialSummary(data){
+  let el=qs('xeliInitialSummary');if(!el)return;
+  el.classList.remove('hidden');
+  el.innerHTML=`<div><strong>${data.total||0}</strong><br><span class="small">SKU incluidos</span></div><div><strong>${data.titles_found||0}</strong><br><span class="small">títulos vigentes encontrados</span></div><div><strong>${data.tags_generated||0}</strong><br><span class="small">filas con Tags de título</span></div>`;
+}
+async function generateInitialXeliConfiguration(confirmRegenerate=false){
+  setBusy(true,'Generando configuración inicial Xeli','Consultando publicaciones vigentes y preparando Tags de título. El conocimiento productivo no se modifica.');
+  setStatus('xeliInitialStatus','Generando borrador; todavía no se escribe conocimiento productivo...');
+  try{
+    let d=await fetchJson('/admin/xeli/configuration/initial',{method:'POST',body:JSON.stringify({confirm_regenerate:!!confirmRegenerate})});
+    state.xeliConfiguration.draftRows=d.rows||[];
+    if(qs('xeliInitialDownloadButton'))qs('xeliInitialDownloadButton').disabled=!state.xeliConfiguration.draftRows.length;
+    renderXeliInitialSummary(d);
+    let warning=(d.warnings||[]).length?` · ${(d.warnings||[]).length} advertencias para revisar`:'';
+    setStatus('xeliInitialStatus',`Propuesta lista${warning}. No se modificó conocimiento productivo: descargala, revisala y subila.`,true);
+  }catch(e){
+    let detail=e?.detail;
+    if(e?.http_status===409&&detail?.requires_confirmation){
+      setBusy(false);
+      if(confirm(detail.message||'Ya existe configuración Xeli. ¿Querés generar otro borrador sin sobrescribir conocimiento?'))return await generateInitialXeliConfiguration(true);
+      setStatus('xeliInitialStatus','Regeneración cancelada. El conocimiento productivo no cambió.','warn');
+      return;
+    }
+    setStatus('xeliInitialStatus','Error generando la propuesta: '+errText(e),false);
+  }finally{setBusy(false)}
+}
+async function downloadInitialXeliConfiguration(){
+  let rows=state.xeliConfiguration.draftRows||[];if(!rows.length){alert('Primero generá la configuración inicial.');return}
+  setBusy(true,'Preparando planilla Xeli','Armando la propuesta para revisión...');
+  try{
+    let r=await xeliTransferFetch('/admin/xeli/configuration/initial.xlsx',{method:'POST',headers:xeleriaHeaders(),body:JSON.stringify({rows})});
+    if(!r.ok){let text=await r.text(),d;try{d=JSON.parse(text)}catch{d={detail:text}}throw d}
+    let blob=await r.blob();if(!blob.size)throw new Error('XelerIA devolvió un archivo vacío.');
+    let objectUrl=URL.createObjectURL(blob),a=document.createElement('a');a.href=objectUrl;a.download=r.headers.get('x-xeleria-filename')||'configuracion_inicial_xeli.xlsx';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(objectUrl),60000);
+    setStatus('xeliInitialStatus','Propuesta descargada. Revisala antes de subirla.',true);
+  }catch(e){setStatus('xeliInitialStatus','Error descargando la propuesta: '+errText(e),false)}finally{setBusy(false)}
+}
 function xeliTrainingQuestionHtml(q,idx){let item=q.item||{},answer=q.answer||{};return `<div class="xeliQuestionChoice ${idx===state.xeliTraining.selected?'active':''}" onclick="selectXeliTrainingQuestion(${idx})"><strong>${esc(item.title||q.item_id||'Publicación')}</strong><div class="small">${esc(q.text||'')}</div><div class="small mono">${esc(item.seller_sku||'Sin SKU')} · ${esc(q.status||'')}</div>${answer.text?`<div class="small">Respondida: ${esc(answer.text)}</div>`:''}</div>`}
 function renderXeliTrainingQuestions(){let el=qs('xeliQuestionList');if(!el)return;let items=state.xeliTraining.items||[];el.innerHTML=items.length?items.map(xeliTrainingQuestionHtml).join(''):'<div class="dashEmpty">Todavía no hay preguntas almacenadas.</div>'}
 async function loadXeliTrainingQuestions(refresh=false){setStatus('xeliTrainingStatus',refresh?'Buscando las últimas preguntas en Mercado Libre...':'Leyendo preguntas guardadas...');try{let d=await fetchJson(`/admin/xeli/training/questions?limit=50&refresh=${refresh?'true':'false'}`);state.xeliTraining.items=d.items||[];state.xeliTraining.selected=-1;renderXeliTrainingQuestions();setStatus('xeliTrainingStatus',`Listas ${d.total||0} preguntas para entrenar${d.warnings?.length?' · '+d.warnings.join(' · '):''}`,!d.warnings?.length)}catch(e){setStatus('xeliTrainingStatus','Error cargando preguntas: '+errText(e),false)}}
@@ -4072,7 +4219,26 @@ async function xeliTransferFetch(path,options={},attempts=2){let lastError=null;
 async function xeliDownload(path,filename){let r=await xeliTransferFetch(path,{headers:xeliAuthDownloadHeaders()});if(!r.ok){let t=await r.text(),d;try{d=JSON.parse(t)}catch{d={detail:t}}throw d}let blob=await r.blob();if(!blob.size)throw new Error('Xeleria devolvió un archivo vacío.');let objectUrl=URL.createObjectURL(blob),a=document.createElement('a');a.href=objectUrl;a.download=r.headers.get('x-xeleria-filename')||filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(objectUrl),60000)}
 async function downloadXeliQuestionsTxt(){try{await xeliDownload('/admin/xeli/training/questions.txt?limit=50&refresh=true','ultimas_preguntas_xeli.txt');setStatus('xeliTrainingStatus','TXT de preguntas descargado.',true)}catch(e){setStatus('xeliTrainingStatus','Error bajando preguntas: '+errText(e),false)}}
 async function downloadXeliKnowledge(){setBusy(true,'Preparando conocimiento Xeli','Armando la planilla por skills...');xeliKnowledgeNotice('Preparando la descarga...');try{await xeliDownload('/admin/xeli/knowledge.xlsx','conocimiento_xeli.xlsx');xeliKnowledgeNotice('Conocimiento Xeli descargado.',true,true)}catch(e){xeliKnowledgeNotice('Error bajando conocimiento: '+errText(e),false)}finally{setBusy(false)}}
-async function uploadXeliKnowledge(){let input=qs('xeliKnowledgeFile'),file=input?.files?.[0];if(!file){alert('Elegí un archivo .xlsx.');return}let fd=new FormData();fd.append('file',file);let h=xeleriaHeaders();delete h['Content-Type'];let uploaded=false;setBusy(true,'Subiendo conocimiento Xeli','Validando relaciones SKU y reglas por skill...');xeliKnowledgeNotice('Subiendo y validando la planilla...');try{let r=await xeliTransferFetch('/admin/xeli/knowledge.xlsx',{method:'POST',headers:h,body:fd});let text=await r.text(),d;try{d=JSON.parse(text)}catch{d={detail:text}}if(!r.ok||d.ok===false)throw d;uploaded=true;if(input)input.value='';xeliKnowledgeNotice(`Conocimiento importado · ${d.sku_rows||0} SKU · ${d.skill_instructions||0} reglas`,true,true)}catch(e){xeliKnowledgeNotice('Error subiendo conocimiento: '+errText(e),false)}finally{if(uploaded&&input)input.value='';setBusy(false)}}
+async function uploadXeliKnowledgeFrom(inputId,statusId){
+  let input=qs(inputId),file=input?.files?.[0];if(!file){alert('Elegí un archivo .xlsx.');return}
+  if(!confirm('Esta importación reemplaza atómicamente todo el conocimiento Xeli aplicable del tenant. ¿Continuar con la planilla revisada?'))return;
+  let fd=new FormData();fd.append('file',file);let h=xeleriaHeaders();delete h['Content-Type'];let uploaded=false;
+  setBusy(true,'Subiendo conocimiento Xeli','Validando la planilla completa antes del reemplazo atómico...');
+  setStatus(statusId,'Subiendo y validando la planilla...');
+  try{
+    let r=await xeliTransferFetch('/admin/xeli/knowledge.xlsx',{method:'POST',headers:h,body:fd}),text=await r.text(),d;
+    try{d=JSON.parse(text)}catch{d={detail:text}}
+    if(!r.ok||d.ok===false)throw d;
+    uploaded=true;if(input)input.value='';
+    setStatus(statusId,`Reemplazo completo confirmado · ${d.sku_rows||0} SKU · ${d.skill_instructions||0} reglas`,true);
+    state.xeliConfiguration.draftRows=[];
+    if(qs('xeliInitialDownloadButton'))qs('xeliInitialDownloadButton').disabled=true;
+    await loadXeliConfiguration(true);
+  }catch(e){setStatus(statusId,'Error subiendo conocimiento: '+errText(e),false)}
+  finally{if(uploaded&&input)input.value='';setBusy(false)}
+}
+async function uploadXeliKnowledge(){return uploadXeliKnowledgeFrom('xeliKnowledgeFile','xeliKnowledgeStatus')}
+async function uploadInitialXeliKnowledge(){return uploadXeliKnowledgeFrom('xeliInitialKnowledgeFile','xeliInitialStatus')}
 function inventoryToolBox(){let comboActive=qs('combos')&&qs('combos').classList.contains('active');return comboActive&&qs('comboTools')?qs('comboTools'):qs('inventoryTools')}
 function closeOpenKebabMenus(){document.querySelectorAll('details.kebabMenu[open]').forEach(d=>d.removeAttribute('open'))}
 function positionOpenKebabMenus(){document.querySelectorAll('details.kebabMenu[open]').forEach(d=>{let s=d.querySelector('summary');let p=d.querySelector('.kebabPanel');if(!s||!p)return;if(window.matchMedia('(max-width:720px)').matches){['left','top','bottom','visibility','display'].forEach(k=>p.style.removeProperty(k));return}let r=s.getBoundingClientRect();if(r.bottom<0||r.top>window.innerHeight){d.removeAttribute('open');return}p.style.visibility='hidden';p.style.display='grid';p.style.bottom='auto';let w=p.offsetWidth||220;let h=p.offsetHeight||180;let left=Math.min(Math.max(8,r.right-w),window.innerWidth-w-8);let below=r.bottom+6;let above=r.top-h-6;let top=below+h<=window.innerHeight-8?below:Math.max(8,above);p.style.left=left+'px';p.style.top=top+'px';p.style.visibility='visible';});}
