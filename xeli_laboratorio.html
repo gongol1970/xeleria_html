@@ -262,25 +262,19 @@
         || sessionStorage.getItem("xeleria_session_token")
         || "";
     }
-    function adminToken() {
-      return localStorage.getItem("xeleria_admin_token")
-        || localStorage.getItem("pc_erp_token")
-        || "";
-    }
     function headers() {
       const session = sessionToken();
-      const admin = adminToken();
       const output = { "content-type": "application/json", "x-xeleria-tenant": tenantId() };
       if (session) {
         output["x-session-token"] = session;
         output.Authorization = `Bearer ${session}`;
-      } else if (admin) {
-        output["x-admin-token"] = admin;
-        output.Authorization = `Bearer ${admin}`;
       }
       return output;
     }
     async function api(path, options = {}) {
+      if (!sessionToken()) {
+        throw new Error("Tu sesion de XelerIA no esta disponible. Volve a ingresar al panel.");
+      }
       const response = await fetch(`${API_BASE}${path}`, {
         ...options,
         headers: { ...headers(), ...(options.headers || {}) }
@@ -295,6 +289,9 @@
       return payload;
     }
     async function uploadApi(path, file) {
+      if (!sessionToken()) {
+        throw new Error("Tu sesion de XelerIA no esta disponible. Volve a ingresar al panel.");
+      }
       const form = new FormData();
       form.append("file", file);
       const requestHeaders = headers();
@@ -504,7 +501,7 @@
       });
     }
     async function loadStatus() {
-      if (!tenantId() || (!sessionToken() && !adminToken())) {
+      if (!tenantId() || !sessionToken()) {
         setStatus("error", "Ingresá primero a XelerIA");
         return;
       }
