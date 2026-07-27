@@ -1302,8 +1302,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
     <h3>Inteligencia Artificial Xeli</h3>
     <p>Generá por única vez una propuesta usando todos los SKU cargados. XelerIA consulta una publicación vigente por SKU y prepara Tags de título con OpenAI, pero no escribe conocimiento productivo hasta que descargás, revisás y subís la planilla.</p>
     <div class="xeliInitialActions">
-      <button id="xeliInitialGenerateButton" class="primary" onclick="generateInitialXeliConfiguration(false)">Generar configuración inicial</button>
-      <button id="xeliInitialDownloadButton" class="secondary" onclick="downloadInitialXeliConfiguration()" disabled>Descargar propuesta</button>
+      <button id="xeliInitialGenerateButton" class="primary" onclick="generateAndDownloadInitialXeliConfiguration(false)">Generar propuesta con IA y descargar</button>
       <input id="xeliInitialKnowledgeFile" type="file" accept=".xlsx">
       <button class="primary" onclick="uploadInitialXeliKnowledge()">Subir planilla revisada y reemplazar</button>
     </div>
@@ -1388,8 +1387,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.93.1-xeli-compact-configuration';
-const FRONTEND_BUILD='admin-erp-v2931-xeli-compact-configuration';
+const FRONTEND_VERSION='2.93.2-xeli-generate-and-download';
+const FRONTEND_BUILD='admin-erp-v2932-xeli-generate-and-download';
 const SALES_DB_POLL_INTERVAL_MS=60000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;let timers={};
 const XELERIA_MIN_SEARCH_CHARS=4;function isShortSearch(q){q=String(q||'').trim();return q.length>0&&q.length<XELERIA_MIN_SEARCH_CHARS}function minSearchMessage(){return 'Ingresá al menos '+XELERIA_MIN_SEARCH_CHARS+' caracteres para buscar.'}
@@ -4153,21 +4152,21 @@ function renderXeliInitialSummary(data){
   el.classList.remove('hidden');
   el.innerHTML=`<div><strong>${data.total||0}</strong><br><span class="small">SKU incluidos</span></div><div><strong>${data.titles_found||0}</strong><br><span class="small">títulos vigentes encontrados</span></div><div><strong>${data.tags_generated||0}</strong><br><span class="small">filas con Tags de título</span></div>`;
 }
-async function generateInitialXeliConfiguration(confirmRegenerate=false){
+async function generateAndDownloadInitialXeliConfiguration(confirmRegenerate=false){
   setBusy(true,'Generando configuración inicial Xeli','Consultando publicaciones vigentes y preparando Tags de título. El conocimiento productivo no se modifica.');
   setStatus('xeliInitialStatus','Generando borrador; todavía no se escribe conocimiento productivo...');
   try{
     let d=await fetchJson('/admin/xeli/configuration/initial',{method:'POST',body:JSON.stringify({confirm_regenerate:!!confirmRegenerate})});
     state.xeliConfiguration.draftRows=d.rows||[];
-    if(qs('xeliInitialDownloadButton'))qs('xeliInitialDownloadButton').disabled=!state.xeliConfiguration.draftRows.length;
     renderXeliInitialSummary(d);
     let warning=(d.warnings||[]).length?` · ${(d.warnings||[]).length} advertencias para revisar`:'';
-    setStatus('xeliInitialStatus',`Propuesta lista${warning}. No se modificó conocimiento productivo: descargala, revisala y subila.`,true);
+    setStatus('xeliInitialStatus',`Propuesta lista${warning}. Preparando la descarga; el conocimiento productivo no se modificó.`,true);
+    await downloadInitialXeliConfiguration();
   }catch(e){
     let detail=e?.detail;
     if(e?.http_status===409&&detail?.requires_confirmation){
       setBusy(false);
-      if(confirm(detail.message||'Ya existe configuración Xeli. ¿Querés generar otro borrador sin sobrescribir conocimiento?'))return await generateInitialXeliConfiguration(true);
+      if(confirm(detail.message||'Ya existe configuración Xeli. ¿Querés generar otro borrador sin sobrescribir conocimiento?'))return await generateAndDownloadInitialXeliConfiguration(true);
       setStatus('xeliInitialStatus','Regeneración cancelada. El conocimiento productivo no cambió.','warn');
       return;
     }
@@ -4233,7 +4232,6 @@ async function uploadXeliKnowledgeFrom(inputId,statusId){
     uploaded=true;if(input)input.value='';
     setStatus(statusId,`Reemplazo completo confirmado · ${d.sku_rows||0} SKU · ${d.skill_instructions||0} reglas`,true);
     state.xeliConfiguration.draftRows=[];
-    if(qs('xeliInitialDownloadButton'))qs('xeliInitialDownloadButton').disabled=true;
     await loadXeliConfiguration(true);
   }catch(e){setStatus(statusId,'Error subiendo conocimiento: '+errText(e),false)}
   finally{if(uploaded&&input)input.value='';setBusy(false)}
