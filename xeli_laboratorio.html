@@ -117,6 +117,24 @@
     .search-row { padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 12px; }
     .search-meta { display: block; margin-top: 4px; color: var(--muted); font-size: 11px; }
     .candidate-name { display: block; margin-top: 3px; color: var(--muted); }
+    .trace-list { display: grid; gap: 0; }
+    .trace-row {
+      position: relative; display: grid; grid-template-columns: 18px minmax(0, 1fr) auto;
+      gap: 8px; min-height: 44px; padding: 7px 0;
+    }
+    .trace-row:not(:last-child)::after {
+      content: ""; position: absolute; left: 7px; top: 25px; bottom: -7px;
+      width: 2px; background: #cfd6df;
+    }
+    .trace-dot {
+      width: 16px; height: 16px; display: grid; place-items: center; z-index: 1;
+      color: #fff; background: var(--green); border-radius: 50%; font-size: 9px; font-weight: 900;
+    }
+    .trace-row.review .trace-dot { background: #c97800; }
+    .trace-row.error .trace-dot { background: var(--red); }
+    .trace-label { font-size: 12px; font-weight: 800; }
+    .trace-detail { display: block; margin-top: 2px; color: var(--muted); font-size: 11px; }
+    .trace-time { color: var(--muted); font-size: 11px; font-weight: 800; white-space: nowrap; }
     details.section summary {
       cursor: pointer; color: var(--muted); font-size: 11px; font-weight: 850;
       text-transform: uppercase;
@@ -222,6 +240,10 @@
           <div class="metric"><dt>Producción</dt><dd>Sin cambios</dd></div>
         </dl>
 
+        <div id="traceSection" class="section" hidden>
+          <h3>Recorrido</h3>
+          <div id="trace" class="trace-list"></div>
+        </div>
         <div id="searchSection" class="section" hidden>
           <h3>Búsquedas SQL</h3>
           <div id="searches"></div>
@@ -386,7 +408,9 @@
       $("searches").replaceChildren();
       $("candidates").replaceChildren();
       $("validation").replaceChildren();
+      $("trace").replaceChildren();
       $("tags").replaceChildren();
+      $("traceSection").hidden = true;
       $("searchSection").hidden = true;
       $("candidateSection").hidden = true;
       $("validationSection").hidden = true;
@@ -414,6 +438,33 @@
         : payload.needs_human
           ? "Revisar"
           : "Listo";
+
+      const trace = Array.isArray(lab.trace) ? lab.trace : [];
+      $("trace").replaceChildren();
+      $("traceSection").hidden = trace.length === 0;
+      trace.forEach((step, index) => {
+        const row = document.createElement("div");
+        row.className = `trace-row ${step.status || ""}`;
+        const dot = document.createElement("span");
+        dot.className = "trace-dot";
+        dot.textContent = String(index + 1);
+        const content = document.createElement("div");
+        const label = document.createElement("div");
+        label.className = "trace-label";
+        label.textContent = step.label || step.step || "Paso";
+        content.appendChild(label);
+        if (step.detail) {
+          const detail = document.createElement("span");
+          detail.className = "trace-detail";
+          detail.textContent = step.detail;
+          content.appendChild(detail);
+        }
+        const duration = document.createElement("span");
+        duration.className = "trace-time";
+        duration.textContent = formatMs(step.duration_ms);
+        row.append(dot, content, duration);
+        $("trace").appendChild(row);
+      });
 
       const searches = payload.inventory_searches || [];
       $("searches").replaceChildren();
