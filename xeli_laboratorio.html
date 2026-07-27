@@ -217,7 +217,7 @@
           <div class="metric"><dt>Esfuerzo</dt><dd id="metricEffort">—</dd></div>
           <div class="metric"><dt>Skill</dt><dd id="metricSkill">—</dd></div>
           <div class="metric"><dt>SKU del subrubro</dt><dd id="metricScope">—</dd></div>
-          <div class="metric"><dt>Títulos del subrubro</dt><dd id="metricTags">—</dd></div>
+          <div class="metric"><dt>SKU con tags</dt><dd id="metricTags">—</dd></div>
           <div class="metric"><dt>Rondas IA</dt><dd id="metricRounds">—</dd></div>
           <div class="metric"><dt>Producción</dt><dd>Sin cambios</dd></div>
         </dl>
@@ -535,7 +535,7 @@
         const data = await uploadApi("/admin/xeli/lab/knowledge.xlsx", file);
         setSourceState(
           "knowledgeState",
-          `${data.sku_rows || 0} SKU · ${data.skill_instructions || 0} reglas · ${data.title_rows || 0} títulos`,
+          `${data.sku_rows || 0} SKU · ${data.skill_instructions || 0} reglas · ${data.tag_rows || 0} con tags`,
           "ok"
         );
       } catch (error) {
