@@ -27,7 +27,7 @@
     .status{min-height:20px;margin-top:10px;color:var(--green);font-size:12px;font-weight:700;white-space:pre-wrap}.status.bad{color:var(--bad)}.accessNote{margin:4px 0 0;color:#777e89;font-size:11px}
     .productScene{position:absolute;z-index:1;top:58px;right:max(-150px,calc((100vw - 1560px)/2));width:min(790px,54vw);height:calc(100% - 116px);pointer-events:none;filter:drop-shadow(0 28px 35px rgba(27,36,50,.17))}.productScene img{width:100%;height:100%;object-fit:cover;object-position:left top;border:1px solid #c8ced8;border-radius:8px;background:#fff;transform:rotate(-1.6deg)}.sceneXeli{position:absolute;right:30px;bottom:18px;width:220px;background:#2563eb;color:#fff;border-radius:6px;padding:12px 14px;box-shadow:0 14px 25px rgba(37,99,235,.28);transform:rotate(1.4deg)}.sceneXeli small{display:block;color:#cfe0ff;font-size:8px;text-transform:uppercase;font-weight:900}.sceneXeli strong{display:block;margin-top:5px;font-size:11px;line-height:1.35}
     .valueBand{background:#fff;padding:34px max(28px,calc((100vw - 1440px)/2)) 40px}.valueIntro{display:flex;align-items:flex-end;justify-content:space-between;gap:30px;margin-bottom:25px}.valueIntro h3{font-size:25px;margin:0}.valueIntro p{max-width:570px;margin:0;color:var(--muted);font-size:13px;line-height:1.5}.valueGrid{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.valueItem{padding:22px 22px 22px 0;border-right:1px solid var(--line)}.valueItem+.valueItem{padding-left:22px}.valueItem:last-child{border-right:0}.valueNumber{display:block;margin-bottom:10px;color:var(--blue);font-size:11px;font-weight:900}.valueItem strong{display:block;font-size:14px}.valueItem span:last-child{display:block;margin-top:6px;color:var(--muted);font-size:12px;line-height:1.45}
-    .siteFooter{display:flex;justify-content:space-between;gap:20px;padding:20px max(28px,calc((100vw - 1440px)/2));background:#111318;color:#9ca3af;font-size:11px}
+    .siteFooter{display:flex;justify-content:space-between;gap:20px;padding:20px max(28px,calc((100vw - 1440px)/2));background:#111318;color:#9ca3af;font-size:11px}.siteFooter nav{display:flex;gap:18px}.siteFooter a{color:#d5d9e0;text-decoration:none}.siteFooter a:hover{text-decoration:underline}
     @media(max-width:1080px){.brandClaim{display:none}.heroContent{width:min(680px,64vw)}.productScene{right:-260px;width:680px;opacity:.6}.productScene:after{content:"";position:absolute;inset:0;background:rgba(238,241,245,.34)}.accessGrid{grid-template-columns:1fr 1fr}.accessGrid .input{grid-column:1/-1}.valueGrid{grid-template-columns:1fr 1fr}.valueItem:nth-child(2){border-right:0}.valueItem:nth-child(-n+2){border-bottom:1px solid var(--line)}}
     @media(max-width:720px){.siteHeader{height:64px;padding:0 18px}.brand img{width:36px;height:36px}.brandName{font-size:21px}.privateBadge{font-size:10px}.hero{min-height:auto;padding:58px 18px 50px;display:block}.heroContent{width:100%}.productScene{display:none}h1{font-size:64px}h2{font-size:29px}.heroLead{font-size:14px}.accessGrid{grid-template-columns:1fr}.accessGrid .input{grid-column:auto}.btn{width:100%}.valueBand{padding:32px 18px}.valueIntro{display:block}.valueIntro p{margin-top:10px}.valueGrid{grid-template-columns:1fr}.valueItem,.valueItem+.valueItem{padding:18px 0;border-right:0;border-bottom:1px solid var(--line)}.valueItem:last-child{border-bottom:0}.siteFooter{display:block;padding:18px}.siteFooter span{display:block;margin-top:5px}}
   </style>
@@ -70,10 +70,10 @@
       </div>
     </section>
   </main>
-  <footer class="siteFooter"><span>© 2026 XelerIA</span><span>Operaciones inteligentes para e-commerce</span></footer>
+  <footer class="siteFooter"><span>© 2026 XelerIA</span><nav aria-label="Información legal"><a href="./privacidad.html">Privacidad</a><a href="./soporte.html">Soporte</a></nav></footer>
 <script>
 const API_BASE='https://api.xeleria.com.ar';
-const FRONTEND_VERSION='inicio-v28-subscription-gate';
+const FRONTEND_VERSION='inicio-v29-privacy-support';
 const VERSION_BAR=document.getElementById('xeleriaVersionBar');
 const params=new URLSearchParams(location.search);
 const NEXT_PAGE=params.get('next')||'admin_erp.html';
