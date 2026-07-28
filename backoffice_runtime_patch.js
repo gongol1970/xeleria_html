@@ -2,7 +2,7 @@
   const DEFAULT_API = 'https://api.xeleria.com.ar';
   const DEFAULT_TENANT = '00000000-0000-0000-0000-000000000001';
   const LAST_KEY = 'xeleria_last_json';
-  const TOKEN_KEY = 'xeleria_admin_token';
+  const SESSION_KEY = 'xeleria_session_token';
   const TENANT_KEY = 'xeleria_tenant_id';
 
   function pretty(v){ try{return JSON.stringify(v,null,2)}catch(e){return String(v)} }
@@ -12,11 +12,14 @@
   function cleanOuterUrl(){
     try{
       const u = new URL(location.href);
-      const t = u.searchParams.get('token') || u.searchParams.get('admin_token') || u.searchParams.get('ADMIN_TOKEN');
       const tenant = u.searchParams.get('tenant_id') || u.searchParams.get('tenant');
-      if(t){ localStorage.setItem(TOKEN_KEY,t); u.searchParams.delete('token'); u.searchParams.delete('admin_token'); u.searchParams.delete('ADMIN_TOKEN'); }
+      const hadLegacyAccess = u.searchParams.has('token') || u.searchParams.has('admin_token');
+      u.searchParams.delete('token');
+      u.searchParams.delete('admin_token');
+      localStorage.removeItem('xeleria_admin_token');
+      localStorage.removeItem('pc_erp_token');
       if(tenant){ localStorage.setItem(TENANT_KEY,tenant); }
-      if(t) history.replaceState({},'',u.toString());
+      if(hadLegacyAccess) history.replaceState({},'',u.toString());
     }catch(e){}
   }
   cleanOuterUrl();
@@ -31,10 +34,7 @@
   }
 
   function token(doc){
-    const byDoc = doc ? (doc.getElementById('cfgToken') || doc.getElementById('token')) : null;
-    const val = byDoc && byDoc.value ? byDoc.value.trim() : '';
-    if(val) localStorage.setItem(TOKEN_KEY,val);
-    return val || localStorage.getItem(TOKEN_KEY) || '';
+    return localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY) || '';
   }
 
   function apiBase(doc){
@@ -46,7 +46,10 @@
   function headers(doc, extra={}){
     const h = {'Content-Type':'application/json','x-xeleria-tenant':tenantId(), ...(extra||{})};
     const t = token(doc);
-    if(t) h['x-admin-token'] = t;
+    if(t){
+      h['x-session-token'] = t;
+      h['Authorization'] = 'Bearer ' + t;
+    }
     return h;
   }
 
@@ -62,19 +65,10 @@
   function hideToken(doc){
     const input = doc.getElementById('cfgToken') || doc.getElementById('token');
     if(!input) return;
-    input.type = 'password';
-    input.autocomplete = 'off';
-    input.style.display = 'none';
     const labels = Array.from(doc.querySelectorAll('label'));
-    const lab = labels.find(l => (l.getAttribute('for') === input.id) || /ADMIN_TOKEN|TOKEN/i.test(l.textContent||''));
-    if(lab) lab.style.display = 'none';
-    if(!doc.getElementById('xeTokenNote')){
-      const note = doc.createElement('div');
-      note.id = 'xeTokenNote';
-      note.className = 'xe-token-note';
-      note.textContent = 'Token guardado localmente. No se muestra ni viaja en la URL.';
-      input.insertAdjacentElement('afterend', note);
-    }
+    const lab = labels.find(l => (l.getAttribute('for') === input.id) || /TOKEN/i.test(l.textContent||''));
+    if(lab) lab.remove();
+    input.remove();
   }
 
   function patchText(doc){

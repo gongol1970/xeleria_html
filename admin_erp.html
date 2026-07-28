@@ -1012,7 +1012,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 <div class="navTitle">Sistema</div><div class="sub"><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="bitacora">Registro operativo</button><button class="navBtn" data-view="versiones">Versión</button></div>
 </nav></aside>
 <main>
-<div class="topbar"><div><h2 id="pageTitle">Inicio</h2><div class="crumb" id="pageCrumb">Panel operativo</div></div><div class="tokenBox"><div><label>API</label><input id="apiUrl" value="https://api.xeleria.com.ar"></div><div><label>ADMIN_TOKEN</label><input id="token" type="password" placeholder="Token"></div><button class="primary" onclick="saveSettings()">Guardar</button><button class="secondary" onclick="health()">Probar</button></div></div>
+<div class="topbar"><div><h2 id="pageTitle">Inicio</h2><div class="crumb" id="pageCrumb">Panel operativo</div></div></div>
 <section id="inicio" class="view active">
   <div class="dashHero">
     <div class="dashStatusLine">
@@ -1388,7 +1388,7 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.94.2-tn-webhook-verified';
+const FRONTEND_VERSION='2.94.3-session-security-boundary';
 const FRONTEND_BUILD='admin-erp-v2933-live-sales-reconciliation';
 const SALES_DB_POLL_INTERVAL_MS=60000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;let timers={};
@@ -1525,7 +1525,7 @@ function startAlertPolling(){
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')loadNotifications(false)});
 window.addEventListener('focus',()=>loadNotifications(false));
 
-function qs(id){return document.getElementById(id)}function fieldVal(id){let el=qs(id);return el?el.value:''}function apiBase(){return(fieldVal('cfgApiUrl')||fieldVal('apiUrl')||state.api).replace(/\/$/,'').replace(/\/api$/,'')}function token(){return (fieldVal('cfgToken')||fieldVal('token')||state.token||localStorage.getItem('pc_erp_token')||localStorage.getItem('xeleria_admin_token')||'').trim()}function sessionToken(){return (localStorage.getItem('xeleria_session_token')||sessionStorage.getItem('xeleria_session_token')||'').trim()}function tenantId(){let qp=new URLSearchParams(location.search);let fromUrl=qp.get('tenant_id')||qp.get('tenant')||'';if(fromUrl){localStorage.setItem('xeleria_tenant_id',fromUrl);localStorage.setItem('xeleria_last_tenant_id',fromUrl)}let saved=localStorage.getItem('xeleria_tenant_id')||localStorage.getItem('xeleria_last_tenant_id')||'';if(saved&&saved!=='00000000-0000-0000-0000-000000000001'){localStorage.setItem('xeleria_last_tenant_id',saved);return saved}try{let last=JSON.parse(localStorage.getItem('xeleria_last_json')||'{}');let ids=[last.tenant_id,last.response&&last.response.tenant_id];let res=(last.response&&last.response.results)||[];for(let r of res){ids.push(r&&r.tenant_id);ids.push(r&&r.json&&r.json.tenant_id)}let good=ids.find(x=>String(x||'').match(/^[0-9a-f-]{36}$/i)&&String(x)!=='00000000-0000-0000-0000-000000000001');if(good){localStorage.setItem('xeleria_tenant_id',String(good));localStorage.setItem('xeleria_last_tenant_id',String(good));return String(good)}}catch(e){}return fromUrl||saved||'00000000-0000-0000-0000-000000000001'}function url(path){let sep=path.includes('?')?'&':'?';return `${apiBase()}${path}${sep}tenant_id=${encodeURIComponent(tenantId())}`}function xeleriaHeaders(extra={}){let h={'Content-Type':'application/json','x-xeleria-tenant':tenantId(),...(extra||{})};let st=sessionToken();let t=token();if(st){h['x-session-token']=st;h['Authorization']='Bearer '+st}if(t){h['x-admin-token']=t;if(!st)h['Authorization']='Bearer '+t}return h}function cleanTokenFromUrl(){try{let u=new URL(location.href);let t=u.searchParams.get('token')||u.searchParams.get('admin_token')||u.searchParams.get('ADMIN_TOKEN');if(t){localStorage.setItem('pc_erp_token',t);localStorage.setItem('xeleria_admin_token',t);u.searchParams.delete('token');u.searchParams.delete('admin_token');u.searchParams.delete('ADMIN_TOKEN');history.replaceState({},'',u.toString())}}catch(e){}}
+function qs(id){return document.getElementById(id)}function fieldVal(id){let el=qs(id);return el?el.value:''}function apiBase(){return(fieldVal('cfgApiUrl')||fieldVal('apiUrl')||state.api).replace(/\/$/,'').replace(/\/api$/,'')}function token(){return ''}function sessionToken(){return (localStorage.getItem('xeleria_session_token')||sessionStorage.getItem('xeleria_session_token')||'').trim()}function tenantId(){let qp=new URLSearchParams(location.search);let fromUrl=qp.get('tenant_id')||qp.get('tenant')||'';if(fromUrl){localStorage.setItem('xeleria_tenant_id',fromUrl);localStorage.setItem('xeleria_last_tenant_id',fromUrl)}let saved=localStorage.getItem('xeleria_tenant_id')||localStorage.getItem('xeleria_last_tenant_id')||'';if(saved&&saved!=='00000000-0000-0000-0000-000000000001'){localStorage.setItem('xeleria_last_tenant_id',saved);return saved}try{let last=JSON.parse(localStorage.getItem('xeleria_last_json')||'{}');let ids=[last.tenant_id,last.response&&last.response.tenant_id];let res=(last.response&&last.response.results)||[];for(let r of res){ids.push(r&&r.tenant_id);ids.push(r&&r.json&&r.json.tenant_id)}let good=ids.find(x=>String(x||'').match(/^[0-9a-f-]{36}$/i)&&String(x)!=='00000000-0000-0000-0000-000000000001');if(good){localStorage.setItem('xeleria_tenant_id',String(good));localStorage.setItem('xeleria_last_tenant_id',String(good));return String(good)}}catch(e){}return fromUrl||saved||'00000000-0000-0000-0000-000000000001'}function url(path){let sep=path.includes('?')?'&':'?';return `${apiBase()}${path}${sep}tenant_id=${encodeURIComponent(tenantId())}`}function xeleriaHeaders(extra={}){let h={'Content-Type':'application/json','x-xeleria-tenant':tenantId(),...(extra||{})};let st=sessionToken();if(st){h['x-session-token']=st;h['Authorization']='Bearer '+st}return h}function cleanTokenFromUrl(){try{let u=new URL(location.href);['token','admin_token'].forEach(k=>u.searchParams.delete(k));localStorage.removeItem('pc_erp_token');localStorage.removeItem('xeleria_admin_token');history.replaceState({},'',u.toString())}catch(e){}}
 
 async function logoutXeleria(){
   let st=sessionToken();
@@ -1663,7 +1663,7 @@ function globalActivityBegin(){globalActivityCount+=1;let el=qs('erpActivity');i
 function globalActivityEnd(){globalActivityCount=Math.max(0,globalActivityCount-1);if(globalActivityCount===0){let el=qs('erpActivity');if(el)el.classList.remove('active')}}
 const xeleriaNativeFetch=window.fetch.bind(window);
 window.fetch=async function(...args){globalActivityBegin();try{return await xeleriaNativeFetch(...args)}finally{globalActivityEnd()}};
-function syncConnectionFields(){['apiUrl','cfgApiUrl'].forEach(id=>{let el=qs(id);if(el)el.value=state.api});['token','cfgToken'].forEach(id=>{let el=qs(id);if(el)el.value=state.token})}function saveSettings(){state.api=apiBase();state.token=token().trim();localStorage.setItem('pc_erp_api',state.api);localStorage.setItem('pc_erp_token',state.token);localStorage.setItem('xeleria_admin_token',state.token);syncConnectionFields();setStatus('homeStatus','Guardado.',true);setStatus('connStatus',state.token?'Guardado.':'Guardado, pero ADMIN_TOKEN quedó vacío.',!!state.token);syncLinks()}function saveSettingsFromConfig(){saveSettings()}function loadSettings(){state.api=localStorage.getItem('pc_erp_api')||localStorage.getItem('xeleria_api_url')||state.api;state.token=localStorage.getItem('pc_erp_token')||localStorage.getItem('xeleria_admin_token')||'';syncConnectionFields();loadViewPrefs();loadConfig();syncLinks()}function syncLinks(){
+function syncConnectionFields(){['apiUrl','cfgApiUrl'].forEach(id=>{let el=qs(id);if(el)el.value=state.api})}function saveSettings(){state.api=apiBase();state.token='';localStorage.setItem('pc_erp_api',state.api);localStorage.removeItem('pc_erp_token');localStorage.removeItem('xeleria_admin_token');syncConnectionFields();setStatus('homeStatus','Guardado.',true);syncLinks()}function saveSettingsFromConfig(){saveSettings()}function loadSettings(){state.api=localStorage.getItem('pc_erp_api')||localStorage.getItem('xeleria_api_url')||state.api;state.token='';localStorage.removeItem('pc_erp_token');localStorage.removeItem('xeleria_admin_token');syncConnectionFields();loadViewPrefs();loadConfig();syncLinks()}function syncLinks(){
   var d=qs('downloadCsv');
   if(d){
     d.href='#';
@@ -1830,8 +1830,8 @@ function errText(e){
 function saveLastArcaError(e,ctx={}){
   try{localStorage.setItem('hubiax_last_arca_error',JSON.stringify({at:new Date().toISOString(),ctx,error:e},null,2))}catch{}
 }
-function redactSensitivePath(path){try{let raw=String(path||'');let base='https://xeleria.local';let u=new URL(raw,base);['token','admin_token','ADMIN_TOKEN','session_token'].forEach(k=>{if(u.searchParams.has(k))u.searchParams.set(k,'***')});let out=u.pathname+(u.search||'');return raw.startsWith('http')?u.toString():out}catch(e){return String(path||'').replace(/([?&](?:token|admin_token|ADMIN_TOKEN|session_token)=)[^&]+/g,'$1***')}}
-function scrubSensitiveJson(value){try{if(Array.isArray(value))return value.map(scrubSensitiveJson);if(value&&typeof value==='object'){let out={};Object.keys(value).forEach(k=>{let v=value[k];if(['token','admin_token','ADMIN_TOKEN','session_token','authorization'].includes(String(k)))out[k]='***';else if(k==='path')out[k]=redactSensitivePath(v);else out[k]=scrubSensitiveJson(v)});return out}if(typeof value==='string'&&/[?&](token|admin_token|ADMIN_TOKEN|session_token)=/.test(value))return redactSensitivePath(value);return value}catch(e){return value}}
+function redactSensitivePath(path){try{let raw=String(path||'');let base='https://xeleria.local';let u=new URL(raw,base);['token','admin_token','session_token'].forEach(k=>{if(u.searchParams.has(k))u.searchParams.set(k,'***')});let out=u.pathname+(u.search||'');return raw.startsWith('http')?u.toString():out}catch(e){return String(path||'').replace(/([?&](?:token|admin_token|session_token)=)[^&]+/g,'$1***')}}
+function scrubSensitiveJson(value){try{if(Array.isArray(value))return value.map(scrubSensitiveJson);if(value&&typeof value==='object'){let out={};Object.keys(value).forEach(k=>{let v=value[k];if(['token','admin_token','session_token','authorization'].includes(String(k)))out[k]='***';else if(k==='path')out[k]=redactSensitivePath(v);else out[k]=scrubSensitiveJson(v)});return out}if(typeof value==='string'&&/[?&](token|admin_token|session_token)=/.test(value))return redactSensitivePath(value);return value}catch(e){return value}}
 function saveLastJson(payload){try{let clean=scrubSensitiveJson({...payload,at:new Date().toISOString()});localStorage.setItem('xeleria_last_json',JSON.stringify(clean,null,2))}catch(e){}}
 function renderLastJsonPanel(){let raw=localStorage.getItem('xeleria_last_json')||'';let out=qs('lastJsonText');if(out)out.value=raw||'Todavía no hay JSON guardado.';setStatus('lastJsonStatus',raw?'JSON cargado.':'Todavía no hay JSON guardado.',!!raw)}
 function showLastJson(){showView('configuracion')}
@@ -1844,12 +1844,11 @@ function appendDiagCommand(cmd){let el=qs('diagScript');if(!el)return;let cur=St
 function clearDiagScript(){let s=qs('diagScript');let b=qs('diagBody');if(s)s.value='';if(b)b.value='';renderDiagVars();setStatus('lastJsonStatus','Script limpio.','warn')}
 function maskDiagValue(v){let s=String(v||'');if(!s)return 'vacío';if(s.length<=10)return 'presente · '+s.length+' chars';return 'presente · '+s.length+' chars · '+s.slice(0,4)+'…'+s.slice(-4)}
 function diagVariablesText(){
-  let api=apiBase();let ten=tenantId();let st=sessionToken();let adm=token();
+  let api=apiBase();let ten=tenantId();let st=sessionToken();
   let lines=[];
   lines.push('$API    = "'+api+'"');
   lines.push('$TENANT = "'+ten+'"');
   lines.push('$TOKEN  = '+maskDiagValue(st));
-  lines.push('$ADMIN  = '+maskDiagValue(adm));
   lines.push('$H      = @{ "x-session-token" = $TOKEN; "x-xeleria-tenant" = $TENANT }');
   lines.push('$MLH    = headers ML guardados por XelerIA para este tenant');
   lines.push('$TNH    = headers TN guardados por XelerIA para este tenant');
@@ -5030,8 +5029,8 @@ async function inventoryImportBootstrapGridButton(){
   // Si no hay staging/filas, no mostrar nada. No ensuciar la UI con mensajes falsos.
   try{
     if(state.inventoryImportRunning||state.inventoryImportSaving||state.inventoryImportGridLoaded)return;
-    let t=token(),st=sessionToken();
-    if(!st&&!t)return;
+    let st=sessionToken();
+    if(!st)return;
     let d=await fetchJson('/admin/inventory/import-jobs/grid?limit=500&offset=0');
     let total=Number(d.total||0);
     let rows=Array.isArray(d.rows)?d.rows:[];
@@ -5241,8 +5240,8 @@ async function pollInventoryImportSaveJob(jobId){
 }
 async function saveInventoryImportBatch(){
   if(state.inventoryImportSaving)return;
-  let st=sessionToken(),t=token();
-  if(!st&&!t){setStatus('inventoryImportStatus','Sesión XelerIA vacía. Entrá nuevamente desde inicio.html.',false);return}
+  let st=sessionToken();
+  if(!st){setStatus('inventoryImportStatus','Sesión XelerIA vacía. Entrá nuevamente desde inicio.html.',false);return}
   if(!state.inventoryImportGridLoaded){setStatus('inventoryImportStatus','Primero cargá la grilla importada.',false);return}
   if(await inventoryImportActiveJobIsRunning()){setStatus('inventoryImportStatus',state.inventoryImportSaving?INVENTORY_SAVE_RUNNING_MESSAGE:INVENTORY_IMPORT_RUNNING_MESSAGE,'warn');return}
   let batchId=state.inventoryImportCurrentBatchId||state.inventoryImportActiveBatchId||'';
@@ -5320,9 +5319,9 @@ async function inventoryImportWaitForJob(jobId,batchId){
 }
 
 async function runInventoryImportRefresh(offset=0){
-  let t=token(),st=sessionToken();
+  let st=sessionToken();
   if(state.inventoryImportRunning){setStatus('inventoryImportStatus',INVENTORY_IMPORT_RUNNING_MESSAGE,true);return}
-  if(!st&&!t){setStatus('inventoryImportStatus','Sesión XelerIA vacía. Entrá nuevamente desde inicio.html.',false);saveLastJson({ok:false,path:'/admin/inventory/import-jobs/start',detail:'sesión/admin token vacío en frontend',tenant_id:tenantId()});return}
+  if(!st){setStatus('inventoryImportStatus','Sesión XelerIA vacía. Entrá nuevamente desde inicio.html.',false);saveLastJson({ok:false,path:'/admin/inventory/import-jobs/start',detail:'sesión vacía en frontend',tenant_id:tenantId()});return}
   if(await inventoryImportActiveJobIsRunning()){if(!state.inventoryImportSaving)setInventoryImportRunBusy(true);setStatus('inventoryImportStatus',state.inventoryImportSaving?INVENTORY_SAVE_RUNNING_MESSAGE:INVENTORY_IMPORT_RUNNING_MESSAGE,true);return}
   let channels=inventoryImportSelectedChannels();
   if(!channels.length){setStatus('inventoryImportStatus','No hay canales conectados para importar.',false);return}
@@ -5367,8 +5366,8 @@ async function runInventoryImportRefresh(offset=0){
 
 
 async function loadInventoryImportGrid(offset=0,opts={}){
-  let limit=500,t=token(),st=sessionToken();
-  if(!st&&!t){setStatus('inventoryImportStatus','Sesión XelerIA vacía. Entrá nuevamente desde inicio.html.',false);saveLastJson({ok:false,path:'/admin/inventory/import-grid',detail:'sesión/admin token vacío en frontend',tenant_id:tenantId()});return}
+  let limit=500,st=sessionToken();
+  if(!st){setStatus('inventoryImportStatus','Sesión XelerIA vacía. Entrá nuevamente desde inicio.html.',false);saveLastJson({ok:false,path:'/admin/inventory/import-grid',detail:'sesión vacía en frontend',tenant_id:tenantId()});return}
   inventoryImportClearSummary();
   if(state.inventoryImportSaving){
     setStatus('inventoryImportStatus',INVENTORY_SAVE_RUNNING_MESSAGE,true);

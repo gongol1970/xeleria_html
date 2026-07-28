@@ -541,7 +541,7 @@ Backend / seguridad:
 
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
-- `ADMIN_TOKEN`
+- autenticacion tecnica heredada, ya retirada
 
 Tienda Nube:
 
