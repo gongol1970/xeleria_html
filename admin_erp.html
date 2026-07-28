@@ -1300,7 +1300,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 
   <div class="card xeliKnowledgeCard" id="xeliInitialConfigurationCard">
     <h3>Inteligencia Artificial Xeli</h3>
-    <p>Generá por única vez una propuesta usando todos los SKU cargados. XelerIA consulta una publicación vigente por SKU y prepara Tags de título con OpenAI, pero no escribe conocimiento productivo hasta que descargás, revisás y subís la planilla.</p>
+    <p>Generá por única vez una propuesta usando todos los SKU cargados. XelerIA toma de su base una publicación ML activa por SKU y prepara Tags de título con OpenAI, pero no escribe conocimiento productivo hasta que descargás, revisás y subís la planilla.</p>
     <div class="xeliInitialActions">
       <button id="xeliInitialGenerateButton" class="primary" onclick="generateAndDownloadInitialXeliConfiguration(false)">Generar propuesta con IA y descargar</button>
       <input id="xeliInitialKnowledgeFile" type="file" accept=".xlsx">
@@ -1387,7 +1387,7 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.93.4-xeli-readable-sticky-sku';
+const FRONTEND_VERSION='2.93.5-xeli-db-backed-titles';
 const FRONTEND_BUILD='admin-erp-v2933-live-sales-reconciliation';
 const SALES_DB_POLL_INTERVAL_MS=60000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;let timers={};
@@ -4171,10 +4171,10 @@ async function saveXeliConfigurationRow(encodedSku){
 function renderXeliInitialSummary(data){
   let el=qs('xeliInitialSummary');if(!el)return;
   el.classList.remove('hidden');
-  el.innerHTML=`<div><strong>${data.total||0}</strong><br><span class="small">SKU incluidos</span></div><div><strong>${data.titles_found||0}</strong><br><span class="small">títulos vigentes encontrados</span></div><div><strong>${data.tags_generated||0}</strong><br><span class="small">filas con Tags de título</span></div>`;
+  el.innerHTML=`<div><strong>${data.total||0}</strong><br><span class="small">SKU incluidos</span></div><div><strong>${data.titles_found||0}</strong><br><span class="small">títulos ML activos guardados</span></div><div><strong>${data.tags_generated||0}</strong><br><span class="small">filas con Tags de título</span></div>`;
 }
 async function generateAndDownloadInitialXeliConfiguration(confirmRegenerate=false){
-  setBusy(true,'Generando configuración inicial Xeli','Consultando publicaciones vigentes y preparando Tags de título. El conocimiento productivo no se modifica.');
+  setBusy(true,'Generando configuración inicial Xeli','Leyendo publicaciones ya importadas y preparando Tags de título. El conocimiento productivo no se modifica.');
   setStatus('xeliInitialStatus','Generando borrador; todavía no se escribe conocimiento productivo...');
   try{
     let d=await fetchJson('/admin/xeli/configuration/initial',{method:'POST',body:JSON.stringify({confirm_regenerate:!!confirmRegenerate})});
