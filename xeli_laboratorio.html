@@ -70,6 +70,11 @@
       display: grid; grid-template-columns: minmax(180px, .7fr) minmax(220px, 1fr);
       gap: 12px; padding-bottom: 20px; border-bottom: 1px solid var(--line);
     }
+    .lab-controls {
+      grid-column: 1 / -1; display: grid;
+      grid-template-columns: minmax(180px, 1fr) minmax(160px, .8fr) minmax(150px, .7fr);
+      gap: 12px;
+    }
     .question-field { grid-column: 1 / -1; }
     label {
       display: block; margin-bottom: 6px; color: #4b5563; font-size: 12px;
@@ -156,6 +161,7 @@
       .topbar { padding-inline: 14px; }
       main { width: calc(100% - 20px); margin-top: 16px; }
       .form-grid { grid-template-columns: 1fr; }
+      .lab-controls { grid-column: 1; grid-template-columns: 1fr; }
       .sources { grid-template-columns: 1fr; }
       .question-field, .actions { grid-column: 1; }
       .primary { width: 100%; }
@@ -212,6 +218,32 @@
             <label for="itemId">Item Mercado Libre</label>
             <input id="itemId" autocomplete="off" required placeholder="MLA1672565459">
           </div>
+          <div class="lab-controls">
+            <div>
+              <label for="labModel">Modelo</label>
+              <select id="labModel">
+                <option value="gpt-5-mini">GPT-5 mini</option>
+                <option value="gpt-5.1">GPT-5.1</option>
+                <option value="gpt-5-nano">GPT-5 nano</option>
+              </select>
+            </div>
+            <div>
+              <label for="labEffort">Razonamiento</label>
+              <select id="labEffort">
+                <option value="none">Ninguno</option>
+                <option value="minimal">Mínimo</option>
+                <option value="low" selected>Bajo</option>
+                <option value="medium">Medio</option>
+                <option value="high">Alto</option>
+                <option value="xhigh">Máximo</option>
+              </select>
+            </div>
+            <div>
+              <label for="labRounds">Máximo de rondas</label>
+              <input id="labRounds" type="number" min="0" max="100" step="1" value="0">
+              <span class="source-state">0 = sin límite</span>
+            </div>
+          </div>
           <div class="question-field">
             <label for="question">Pregunta</label>
             <textarea id="question" required maxlength="4000" placeholder="Tenés punta para taco de 12mm?"></textarea>
@@ -237,6 +269,7 @@
           <div class="metric"><dt>SKU del subrubro</dt><dd id="metricScope">—</dd></div>
           <div class="metric"><dt>SKU con tags</dt><dd id="metricTags">—</dd></div>
           <div class="metric"><dt>Rondas IA</dt><dd id="metricRounds">—</dd></div>
+          <div class="metric"><dt>Tope elegido</dt><dd id="metricRoundLimit">Sin límite</dd></div>
           <div class="metric"><dt>Producción</dt><dd>Sin cambios</dd></div>
         </dl>
 
@@ -423,6 +456,10 @@
       $("metricScope").textContent = "—";
       $("metricTags").textContent = "—";
       $("metricRounds").textContent = "—";
+      const chosenRoundLimit = Math.max(0, Number($("labRounds").value || 0));
+      $("metricRoundLimit").textContent = chosenRoundLimit > 0
+        ? String(chosenRoundLimit)
+        : "Sin límite";
     }
     function renderDiagnostics(payload) {
       const lab = payload.lab || {};
@@ -433,6 +470,10 @@
       $("metricScope").textContent = Number(lab.skill_scope_skus || 0).toLocaleString("es-AR");
       $("metricTags").textContent = Number(lab.title_tag_rows || 0).toLocaleString("es-AR");
       $("metricRounds").textContent = Number(lab.openai_rounds || 0) || "—";
+      const roundLimit = Math.max(0, Number(lab.round_limit || 0));
+      $("metricRoundLimit").textContent = roundLimit > 0
+        ? String(roundLimit)
+        : "Sin límite";
       $("metricState").textContent = payload.outside_current_skill
         ? "Manual"
         : payload.needs_human
@@ -558,7 +599,23 @@
       }
       try {
         const data = await api("/admin/xeli/lab/status");
-        setStatus("ok", `${data.model} · ${data.reasoning_effort}`);
+        const modelOptions = Array.from($("labModel").options);
+        const effortOptions = Array.from($("labEffort").options);
+        if (modelOptions.some((option) => option.value === data.model)) {
+          $("labModel").value = data.model;
+        }
+        if (effortOptions.some((option) => option.value === data.reasoning_effort)) {
+          $("labEffort").value = data.reasoning_effort;
+        }
+        const roundLimit = Math.max(0, Number(data.round_limit || 0));
+        $("labRounds").value = String(roundLimit);
+        $("metricRoundLimit").textContent = roundLimit > 0
+          ? String(roundLimit)
+          : "Sin límite";
+        setStatus(
+          "ok",
+          `${data.model} · ${data.reasoning_effort} · ${roundLimit > 0 ? `máx. ${roundLimit}` : "sin límite"}`
+        );
         $("metricModel").textContent = data.model || "—";
         $("metricEffort").textContent = data.reasoning_effort || "—";
         if (data.knowledge_loaded) {
@@ -615,7 +672,11 @@
       const question = $("question").value.trim();
       const sku = $("sku").value.trim();
       const itemId = $("itemId").value.trim();
+      const labModel = $("labModel").value;
+      const labEffort = $("labEffort").value;
+      const labRounds = Math.max(0, Math.min(100, Number($("labRounds").value || 0)));
       if (!question || !sku || !itemId) return;
+      $("labRounds").value = String(labRounds);
       resetRunView();
       addBubble("user", question);
       const pending = addBubble("assistant", "", true);
@@ -624,12 +685,23 @@
       try {
         const payload = await api("/admin/xeli/lab/preanswer", {
           method: "POST",
-          body: JSON.stringify({ question_text: question, sku, item_id: itemId })
+          body: JSON.stringify({
+            question_text: question,
+            sku,
+            item_id: itemId,
+            lab_model: labModel,
+            lab_reasoning_effort: labEffort,
+            lab_round_limit: labRounds
+          })
         });
         pending.className = "";
         pending.textContent = payload.response || "Sin respuesta";
         renderDiagnostics(payload);
-        setStatus("ok", `${payload.lab?.model || "modelo"} · ${payload.lab?.reasoning_effort || "—"}`);
+        const usedRoundLimit = Math.max(0, Number(payload.lab?.round_limit || 0));
+        setStatus(
+          "ok",
+          `${payload.lab?.model || "modelo"} · ${payload.lab?.reasoning_effort || "—"} · ${usedRoundLimit > 0 ? `máx. ${usedRoundLimit}` : "sin límite"}`
+        );
       } catch (error) {
         pending.className = "error-text";
         pending.textContent = error.message;
@@ -646,6 +718,12 @@
         event.preventDefault();
         $("labForm").requestSubmit();
       }
+    });
+    $("labRounds").addEventListener("input", () => {
+      const roundLimit = Math.max(0, Number($("labRounds").value || 0));
+      $("metricRoundLimit").textContent = roundLimit > 0
+        ? String(roundLimit)
+        : "Sin límite";
     });
     lucide.createIcons();
     loadStatus();
