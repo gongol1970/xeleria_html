@@ -1124,12 +1124,18 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
   <div class="col-small"><label>&nbsp;</label><button onclick="searchInventory(0,true)">Filtrar</button></div>
   <div class="col-12"><div class="btnrow" style="margin-top:4px">
     <button class="primary" onclick="toggleInventoryTool('product')">Agregar producto</button>
+    <button type="button" class="secondary" onclick="previewInventoryReconciliation()">Resincronizar título y stock</button>
     <button type="button" class="secondary" id="downloadCsv" onclick="downloadInventoryCsv()">Bajar planilla inventario XLSX</button>
     <input type="file" id="csvFile" accept=".xlsx,.csv" style="max-width:340px">
     <button class="secondary" onclick="uploadCsv()">Subir planilla inventario</button>
   </div></div>
 </div>
 <div id="inventoryTools" class="hidden" style="margin-top:12px"></div>
+<div id="inventoryReconcilePanel" class="card hidden" style="margin-top:12px">
+  <div class="btnrow"><div><h3 style="margin:0">Diferencias de título y stock</h3><p>Datos traídos ahora de ML y TN, comparados con XelerIA. Elegí cuál de las tres fuentes debe prevalecer. No revisa pagos, cancelaciones ni envíos.</p></div><button class="secondary" onclick="closeInventoryReconciliation()">Cerrar</button></div>
+  <div id="inventoryReconcileStatus" class="status"></div>
+  <div id="inventoryReconcileResults" class="tableWrap" style="margin-top:12px"></div>
+</div>
 <div id="invStatus" class="status"></div><div id="invResults" class="tableWrap inventoryWrap" style="margin-top:12px"></div><div id="invPager" class="btnrow inventoryPager"></div><pre id="uploadOut" class="hidden"></pre></div></section>
 <section id="movimientos" class="view"><div class="card"><h3>Gestión · Movimientos de stock</h3><p>Registro completo: ventas ML/TN, comprobantes manuales, notas de crédito, ajustes, importaciones y recálculos de combos.</p><div class="grid"><div class="col-5"><label>SKU opcional</label><input id="movSku" placeholder="Ej: LCBOLABCA60"></div><div class="col-3"><label>Límite</label><input id="movLimit" type="number" value="100" min="1" max="500"></div><div class="col-4"><label>&nbsp;</label><div class="btnrow"><button onclick="loadMovements()">Buscar movimientos</button><button class="secondary" onclick="clearMovSku()">Todos</button></div></div></div><div id="movStatus" class="status"></div><div id="movTable" class="tableWrap" style="margin-top:12px"></div></div></section>
 
@@ -1165,7 +1171,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
   </div>
 </section>
 <section id="full-inbound" class="view"><div class="card"><h3>Gestión · Inventario · Envío a Full</h3><p>Detecta el PDF de preparación de Mercado Libre Full y descuenta del stock las unidades que salen hacia bodega.</p><div class="grid"><div class="col-6"><label>PDF instrucciones ML Full</label><input id="fullInboundPdf" type="file" accept="application/pdf"></div><div class="col-6"><label>&nbsp;</label><div class="btnrow"><button onclick="previewFullInboundPdf()">Detectar PDF</button><button class="primary" onclick="applyFullInboundPdf(false)">Descontar stock</button><button class="secondary" onclick="applyFullInboundPdf(true)">Simular</button></div></div></div><div id="fullInboundStatus" class="status"></div><div id="fullInboundResult" class="tableWrap" style="margin-top:12px"></div><pre id="fullInboundOut" class="hidden"></pre></div></section>
-<section id="arca-reportes" class="view"><div class="card"><h3>ARCA · Reporte de facturación</h3><p>Comprobantes del ERP. Por defecto muestra el mes calendario anterior completo.</p><div class="grid"><div class="col-4"><label>Buscar</label><input id="arcaSearch" placeholder="SKU, factura, cliente, documento, canal..." oninput="renderArcaInvoices()"></div><div class="col-2"><label>Desde</label><input id="arcaDesde" type="date"></div><div class="col-2"><label>Hasta</label><input id="arcaHasta" type="date"></div><div class="col-2"><label>Tipo de comprobante</label><select id="arcaTipo"><option>Todos</option><option>A</option><option>B</option><option>C</option><option>E</option></select></div><div class="col-2"><label>Canal de venta</label><select id="arcaCanal"><option>Todos</option><option>TN</option><option>ML</option><option>MANUAL</option></select></div><div class="col-2"><label>Concepto</label><select id="arcaConcepto"><option>Todos</option><option>Productos</option><option>Servicios</option><option>Productos y Servicios</option></select></div><div class="col-2"><label>Límite visible</label><select id="arcaLimit"><option>20</option><option selected>100</option><option>200</option></select></div></div><div class="btnrow" style="margin-top:12px"><button onclick="loadArcaInvoices()">Buscar comprobantes</button><button class="secondary" onclick="downloadArcaExcel()">Descargar Excel completo</button></div><div id="arcaStatus" class="status"></div><div id="arcaTable" class="tableWrap" style="margin-top:12px"></div><pre id="arcaOut" class="hidden"></pre></div></section>
+<section id="arca-reportes" class="view"><div class="card"><h3>ARCA · Reporte de facturación</h3><p>Comprobantes del ERP. Por defecto muestra el mes calendario anterior completo.</p><div class="grid"><div class="col-4"><label>Buscar</label><input id="arcaSearch" placeholder="SKU, factura, cliente, documento, canal..." oninput="renderArcaInvoices()"></div><div class="col-2"><label>Desde</label><input id="arcaDesde" type="date"></div><div class="col-2"><label>Hasta</label><input id="arcaHasta" type="date"></div><div class="col-2"><label>Tipo de comprobante</label><select id="arcaTipo"><option>Todos</option><option>A</option><option>B</option><option>C</option><option>E</option></select></div><div class="col-2"><label>Canal de venta</label><select id="arcaCanal"><option>Todos</option><option>TN</option><option>ML</option><option>MANUAL</option></select></div><div class="col-2"><label>Concepto</label><select id="arcaConcepto"><option>Todos</option><option>Productos</option><option>Servicios</option><option>Productos y Servicios</option></select></div><div class="col-2"><label>Límite visible</label><select id="arcaLimit"><option>20</option><option selected>100</option><option>200</option></select></div></div><div class="btnrow" style="margin-top:12px"><button onclick="loadArcaInvoices()">Buscar comprobantes</button><button class="secondary" onclick="downloadArcaExcel()">Descargar Excel completo</button><button class="secondary" onclick="downloadArcaIvaSimple()">Descargar TXT IVA Simple</button></div><div id="arcaStatus" class="status"></div><div id="arcaTable" class="tableWrap" style="margin-top:12px"></div><pre id="arcaOut" class="hidden"></pre></div></section>
 <section id="arca-manual" class="view"><div class="card"><h3>ARCA · Emitir comprobante manual</h3><p>Flujo controlado: primero vista previa, después emisión real con CAE. Remitos y recibos quedan fuera de este módulo.</p><div class="grid"><div class="col-2"><label>Comprobante</label><select id="amTipo" onchange="arcaManualTypeChanged()"><option value="1">Factura A</option><option value="2">Nota de Débito A</option><option value="3">Nota de Crédito A</option><option value="6" selected>Factura B</option><option value="7">Nota de Débito B</option><option value="8">Nota de Crédito B</option><option value="11">Factura C</option><option value="12">Nota de Débito C</option><option value="13">Nota de Crédito C</option><option value="19" disabled>Factura de Exportación · WSFEX</option></select></div><div class="col-2"><label>Concepto</label><select id="amConcepto" onchange="arcaManualConceptChanged()"><option selected>Productos</option><option>Servicios</option><option>Productos y Servicios</option></select></div><div class="col-2"><label>Fecha</label><input id="amFecha" type="date"></div><div class="col-3"><label>Canal / referencia</label><input id="amSourceChannel" value="ARCA_MANUAL"></div><div class="col-3"><label>Operación opcional</label><input id="amSourceOrder" placeholder="Venta / referencia"></div><div id="amServiceDates" class="col-12 hidden"><div class="grid"><div class="col-4"><label>Servicio desde</label><input id="amServiceDesde" type="date"></div><div class="col-4"><label>Servicio hasta</label><input id="amServiceHasta" type="date"></div><div class="col-4"><label>Vencimiento de pago</label><input id="amVtoPago" type="date"></div></div></div><input id="amAssocInvoiceId" type="hidden"><input id="amAssocCbteTipo" type="hidden"><input id="amAssocPtoVta" type="hidden"><input id="amAssocCbteNro" type="hidden"><input id="amAssocInvoiceDate" type="hidden"><input id="amAssocCae" type="hidden"><div class="col-4"><label>Nombre / Razón social receptor *</label><input id="amCustomerName" placeholder="Consumidor Final / nombre real"></div><div class="col-2"><label>Doc. tipo</label><select id="amDocType"><option value="CF" selected>CF</option><option value="DNI">DNI</option><option value="CUIT">CUIT</option></select></div><div class="col-3"><label>Documento</label><div style="display:flex;gap:6px"><input id="amDocNumber" placeholder="DNI / CUIT" onblur="arcaLookupCustomerA5(false)" onkeydown="if(event.key==='Enter'){event.preventDefault();arcaLookupCustomerA5(true)}"><button type="button" class="secondary" style="padding:10px 11px" onclick="arcaLookupCustomerA5(true)">ARCA</button></div></div><div class="col-3"><label>Condición IVA</label><select id="amIvaCond"><option selected>Consumidor Final</option><option>Responsable Inscripto</option><option>Monotributo</option><option>Exento</option></select></div><div class="col-3"><label>Email receptor</label><input id="amEmail" type="email" placeholder="cliente@correo.com"></div><div class="col-6"><label>Domicilio receptor</label><input id="amAddress" placeholder="Opcional / si viene del comprador"></div><div class="col-3"><label>Localidad receptor *</label><input id="amLocalidad" placeholder="Consumidor Final manual: Ciudad Autónoma de Buenos Aires"></div></div><div class="dividerLine"></div><h3>Conceptos</h3><div id="arcaManualLines"></div><div class="btnrow" style="margin-top:10px"><button class="secondary" onclick="arcaManualAddLine()">Agregar línea</button><button class="secondary" onclick="arcaManualClear()">Limpiar</button></div><div class="dividerLine"></div><div class="grid"><div class="col-12"><label>Notas internas/observaciones</label><textarea id="amNotes" rows="2"></textarea></div></div><div style="height:18px"></div><div class="btnrow" style="justify-content:flex-end;align-items:center"><label style="display:flex;align-items:center;gap:10px;margin:0 16px 0 0;text-transform:none;letter-spacing:0;font-size:15px;font-weight:900;color:#111;background:#fff7ed;border:1px solid #f7c56b;border-radius:14px;padding:12px 14px"><input id="amModificaStock" type="checkbox" style="width:18px;height:18px;margin:0"> Modifica stock</label><select id="amStockReason" title="Motivo stock" style="width:170px"><option value="comprobante" selected>Comprobante</option><option value="devolucion">Devolución</option><option value="ajuste">Ajuste</option><option value="no aplica">No aplica</option></select><button class="secondary" onclick="cancelToPreviousView()">Cancelar</button><button class="secondary" onclick="arcaManualPreview()">Vista previa</button><button class="danger" onclick="arcaManualEmit()">Emitir comprobante real</button></div><div id="arcaManualStatus" class="status"></div><pre id="arcaManualOut" class="hidden"></pre></div></section>
 
 <section id="xeli-config" class="view">
@@ -1313,7 +1319,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 
   <div class="card" id="correoSettingsCard">
     <h3>Correo Argentino</h3>
-    <p>Servicio de cotización incluido en Xeli para responder preguntas. El CP de cada SKU define desde qué depósito sale.</p>
+    <p>La integración técnica de XelerIA cotiza envíos. Conectá además la cuenta MiCorreo del comercio para exportar ventas ML “a coordinar” y consultar su seguimiento.</p>
     <div class="grid">
       <div class="col-4">
         <label>Estado del servicio</label>
@@ -1322,6 +1328,14 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
       <div class="col-4">
         <label>CP de origen predeterminado</label>
         <input id="cfgCorreoOriginPostalCode" maxlength="8" autocomplete="postal-code" placeholder="Opcional; respaldo para SKUs sin CP">
+      </div>
+      <div class="col-4">
+        <label>Email de MiCorreo *</label>
+        <input id="cfgCorreoAccountEmail" type="email" autocomplete="username" placeholder="cuenta@comercio.com">
+      </div>
+      <div class="col-4">
+        <label>Contraseña de MiCorreo *</label>
+        <input id="cfgCorreoAccountPassword" type="password" autocomplete="new-password" placeholder="Dejá vacío para conservar la guardada">
       </div>
       <div class="col-4">
         <label>Recargo sobre la cotización</label>
@@ -1388,8 +1402,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.94.3-session-security-boundary';
-const FRONTEND_BUILD='admin-erp-v2933-live-sales-reconciliation';
+const FRONTEND_VERSION='2.95.0-tester-operations';
+const FRONTEND_BUILD='admin-erp-v2950-tester-operations';
 const SALES_DB_POLL_INTERVAL_MS=60000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;let timers={};
 const XELERIA_MIN_SEARCH_CHARS=4;function isShortSearch(q){q=String(q||'').trim();return q.length>0&&q.length<XELERIA_MIN_SEARCH_CHARS}function minSearchMessage(){return 'Ingresá al menos '+XELERIA_MIN_SEARCH_CHARS+' caracteres para buscar.'}
@@ -2938,6 +2952,64 @@ function tnDeliveredButton(o,ch){
   let label=String(orderNumber(o,ch)||oid).replace(/'/g,'');
   return `<br><button class="secondary smallBtn" onclick="markTnMotoDelivered('${esc(oid)}','${esc(label)}')">Entregado</button>`;
 }
+function correoOrderId(o){
+  let children=Array.isArray(o.child_order_ids)?o.child_order_ids.filter(Boolean):[];
+  return String(children.length===1?children[0]:(o.external_order_id||''));
+}
+function correoActionHtml(o,ch,logistic){
+  if(ch!=='ML'||!['A coordinar','Sin envío'].includes(logistic))return'';
+  let oid=correoOrderId(o);if(!oid)return'';
+  let correo=(o.correo_argentino&&typeof o.correo_argentino==='object')?o.correo_argentino:{};
+  if(correo.delivered_at)return`<span class="shippingAction delivered">Entregado por Correo Argentino</span>`;
+  if(correo.exported_at){
+    let tracking=correo.tracking_number?`<span class="small">Seguimiento: ${esc(correo.tracking_number)} · ${esc(correo.last_status||'en curso')}</span>`:`<button class="secondary smallBtn" onclick="linkCorreoTracking('${esc(oid)}')">Vincular seguimiento</button>`;
+    return`<span class="shippingAction other">Orden exportada a MiCorreo</span>${tracking}`;
+  }
+  return`<button class="secondary smallBtn" style="margin-top:6px" onclick="exportMlOrderToCorreo('${esc(oid)}')">Exportar a Correo Argentino</button>`;
+}
+async function exportMlOrderToCorreo(orderId){
+  setBusy(true,'Preparando exportación','Verificando que sea una venta ML a coordinar y reuniendo los datos...');
+  setStatus('mlVentasStatus','Preparando orden para MiCorreo...');
+  try{
+    let prepared=await fetchJson(`/admin/ml/orders/${encodeURIComponent(orderId)}/correo/prepare`);
+    if(prepared.already_exported){setStatus('mlVentasStatus','Orden exportada a MiCorreo.',true);await loadRecent('ML',state.sales.ML.offset||0,{refreshShipping:false});return}
+    let draft={...(prepared.draft||{})};
+    let labels={
+      recipient_name:'Nombre del destinatario *',recipient_email:'Email del destinatario *',
+      street_name:'Calle *',street_number:'Altura *',city:'Ciudad *',
+      province_code:'Código de provincia (una letra) *',postal_code:'Código postal *',
+      weight:'Peso total en gramos *',height:'Alto en cm *',width:'Ancho en cm *',
+      length:'Largo en cm *',declared_value:'Valor declarado *'
+    };
+    for(let field of (prepared.missing_fields||[])){
+      let value=prompt(labels[field]||field,String(draft[field]??''));
+      if(value===null){setStatus('mlVentasStatus','Exportación cancelada.');return}
+      draft[field]=['weight','height','width','length','declared_value'].includes(field)?Number(String(value).replace(',','.')):String(value).trim();
+    }
+    let required=Object.keys(labels);
+    let missing=required.filter(field=>draft[field]===null||draft[field]===undefined||draft[field]===''||draft[field]===0||Number.isNaN(draft[field]));
+    if(missing.length){setStatus('mlVentasStatus','Faltan datos obligatorios: '+missing.map(f=>labels[f]).join(', '),false);return}
+    if(!confirm(`Exportar la venta ${orderId} a MiCorreo?\n\nDestinatario: ${draft.recipient_name}\nDomicilio: ${draft.street_name} ${draft.street_number}, ${draft.city}\nPaquete: ${draft.weight} g · ${draft.height} × ${draft.width} × ${draft.length} cm\n\nLuego el comercio paga e imprime la etiqueta en MiCorreo.`))return;
+    let result=await fetchJson(`/admin/ml/orders/${encodeURIComponent(orderId)}/correo/export`,{method:'POST',body:JSON.stringify(draft)});
+    let extra=result.tracking_link_required?' Falta vincular el número de seguimiento después de pagarlo en MiCorreo.':'';
+    setStatus('mlVentasStatus',(result.message||'Orden exportada a MiCorreo.')+extra,true);
+    await loadRecent('ML',state.sales.ML.offset||0,{refreshShipping:false});
+  }catch(e){setStatus('mlVentasStatus','No pude exportar a MiCorreo: '+errText(e),false)}
+  finally{setBusy(false)}
+}
+async function linkCorreoTracking(orderId){
+  let shippingId=prompt('Pegá el número de seguimiento que muestra MiCorreo *','');
+  if(shippingId===null)return;
+  shippingId=String(shippingId||'').trim();
+  if(!shippingId){setStatus('mlVentasStatus','El número de seguimiento es obligatorio.',false);return}
+  setBusy(true,'Vinculando seguimiento','Validando el número con Correo Argentino...');
+  try{
+    let d=await fetchJson(`/admin/ml/orders/${encodeURIComponent(orderId)}/correo/link-tracking`,{method:'POST',body:JSON.stringify({shipping_id:shippingId})});
+    setStatus('mlVentasStatus',d.message||'Seguimiento vinculado.',true);
+    await loadRecent('ML',state.sales.ML.offset||0,{refreshShipping:false});
+  }catch(e){setStatus('mlVentasStatus','No pude vincular el seguimiento: '+errText(e),false)}
+  finally{setBusy(false)}
+}
 async function markTnMotoDelivered(orderId,label){
   if(!confirm(`Marcar ${label||orderId} como ENTREGADO?\n\nPrimero intento reflejarlo en Tienda Nube. Si TN lo rechaza, igual queda cerrado en el ERP y se guarda el error.`))return;
   setBusy(true,'Marcando entregado','Intentando marcar entregado en Tienda Nube y cerrando ERP...');
@@ -2964,13 +3036,15 @@ function orderCard(o,ch){
   let stateCls=shippingStateClass(logState);
   let stateHtml=logState?`<span class="shippingAction ${stateCls}">${esc(logState)}</span>`:'';
   let manualDeliveredHtml=tnDeliveredButton(o,ch);
-  let showAction=!!(act&&String(act).trim().toLowerCase()!==String(logState||'').trim().toLowerCase());
+  let correoHtml=correoActionHtml(o,ch,logistic);
+  let correoState=(o.correo_argentino&&typeof o.correo_argentino==='object')?o.correo_argentino:{};
+  let showAction=!!(act&&!correoState.exported_at&&String(act).trim().toLowerCase()!==String(logState||'').trim().toLowerCase());
   let actionHtml=showAction?`<span class="logisticsAction">${esc(act)}</span>`:'';
   let totalSub=o.total_products&&Number(o.total_products)!==Number(o.total)?`<br><span class="small">Productos: ${money(o.total_products)}</span>`:'';
   let logisticClass=logistic==='FULL'?'ship-full':logistic==='FLEX'?'ship-flex':(logistic==='A coordinar'||logistic==='Sin envío')?'ship-coord':'ship-ml';
   let needsVisualAction=saleNeedsVisualAction(o,ch);
   let saleDate=o.display_created_at||o.sale_at||o.ml_date_closed||o.ml_date_created||o.tn_paid_at||o.tn_created_at||o.created_at;
-  return `<div class="orderCard ${needsVisualAction?'actionSale':''}"><div class="orderHead"><div><strong>${esc(orderNumber(o,ch))}</strong>${sub?`<br><span class="small">${sub}</span>`:''}<br><span class="small">${dateAR(saleDate)}</span></div><div>${channelCustomerHtml(o,ch)}</div><div class="orderLogisticsBlock"><span class="pill ${logisticClass} shippingPill">${esc(logistic)}</span><br><span class="orderPayStatus">${esc(orderStatusLabel(o,ch))}</span>${stateHtml}${manualDeliveredHtml}${actionHtml}</div><div class="orderAmountBlock"><strong>${money(o.total)}</strong>${totalSub}<br><span class="small">${countLabel(lines.length)}</span></div><div class="orderInvoiceBlock">${invoiceButton(o,ch)}</div></div><div class="orderLines">${display}</div></div>`
+  return `<div class="orderCard ${needsVisualAction?'actionSale':''}"><div class="orderHead"><div><strong>${esc(orderNumber(o,ch))}</strong>${sub?`<br><span class="small">${sub}</span>`:''}<br><span class="small">${dateAR(saleDate)}</span></div><div>${channelCustomerHtml(o,ch)}</div><div class="orderLogisticsBlock"><span class="pill ${logisticClass} shippingPill">${esc(logistic)}</span><br><span class="orderPayStatus">${esc(orderStatusLabel(o,ch))}</span>${stateHtml}${manualDeliveredHtml}${actionHtml}${correoHtml}</div><div class="orderAmountBlock"><strong>${money(o.total)}</strong>${totalSub}<br><span class="small">${countLabel(lines.length)}</span></div><div class="orderInvoiceBlock">${invoiceButton(o,ch)}</div></div><div class="orderLines">${display}</div></div>`
 }
 
 
@@ -3018,13 +3092,24 @@ async function refreshVisibleShipping(ch,items,opts={}){
       body:JSON.stringify({order_ids:ids}),
       skipLastJson:!manual
     });
+    let correoRefresh=null,correoError='';
+    if(ch==='ML'){
+      try{
+        correoRefresh=await fetchJson('/admin/ml/orders/correo/refresh-visible',{
+          method:'POST',
+          body:JSON.stringify({order_ids:ids}),
+          skipLastJson:true
+        });
+      }catch(correoExc){correoError=errText(correoExc)}
+    }
     let errors=Number(d.errors_count||0),done=Number(d.refreshed_count||0),issued=Number(d.invoice_issued_count||0),queued=Number(d.invoice_queued_count||0),checked=Number(d.invoice_checked_count||0),skippedInvoices=Number(d.invoice_skipped_count||0);
     let invoiceText=queued?`, ${queued} factura${queued===1?'':'s'} enviada${queued===1?'':'s'} a emitir`:(issued?`, ${issued} factura${issued===1?'':'s'} emitida${issued===1?'':'s'}`:((checked||skippedInvoices)?', sin facturas nuevas':''));
-    let summary=`Actualización ${ch}: ${done} estados${invoiceText}${errors?`, ${errors} errores`:''}`;
+    let correoText=correoRefresh?(correoRefresh.refreshed_count?`, Correo: ${Number(correoRefresh.refreshed_count||0)} revisados / ${Number(correoRefresh.delivered_count||0)} entregados`:((correoRefresh.skipped_count||0)?`, Correo: ${Number(correoRefresh.skipped_count||0)} sin seguimiento vinculado`:'')):(correoError?`, Correo no pudo actualizar: ${correoError}`:'');
+    let summary=`Actualización ${ch}: ${done} estados${invoiceText}${errors?`, ${errors} errores`:''}${correoText}`;
     if(opts.reload!==false&&seq===salesState.refreshSeq&&salesViewIsActive(ch)){
       await loadRecent(ch,salesState.offset||0,{refreshShipping:false,skipShippingRefresh:true});
     }
-    if(seq===salesState.refreshSeq)setStatus(sid,summary,errors?false:true);
+    if(seq===salesState.refreshSeq)setStatus(sid,summary,(errors||correoError)?false:true);
     if(queued&&salesViewIsActive(ch)){
       setTimeout(()=>loadRecent(ch,salesState.offset||0,{refreshShipping:false,background:true}),3500);
     }
@@ -3213,6 +3298,43 @@ function saleNeedsAction(o,ch){
   if(ch==='TN'&&String(logistic).toLowerCase().includes('retiro'))return 'Coordinar retiro';
   if(logistic==='Mercado Envíos')return 'Pendiente de colecta o Punto de entrega';
   return 'Requiere acción';
+}
+function closeInventoryReconciliation(){
+  qs('inventoryReconcilePanel')?.classList.add('hidden');
+}
+function inventoryReconcileSourceCell(row,sourceName){
+  let source=(row.sources||{})[sourceName];
+  if(!source)return'<span class="muted">No conectado / sin publicación</span>';
+  let title=source.title==null?'—':source.title;
+  let stock=source.stock==null?'—':source.stock;
+  let problem=(source.errors||[])[0]||(source.ambiguous?'Hay varias publicaciones con valores distintos':'');
+  return `<div><strong>${esc(title)}</strong><div class="small">Stock: ${esc(stock)}${source.listings?` · ${esc(source.listings)} publicación(es)`:''}</div>${problem?`<div class="small" style="color:var(--bad)">${esc(problem)}</div>`:''}<button class="secondary" style="margin-top:7px" ${source.selectable?'':"disabled"} onclick="applyInventoryReconciliation('${esc(row.sku)}','${sourceName}','${esc(row.fingerprint)}')">Usar ${sourceName==='XELERIA'?'XelerIA':sourceName}</button></div>`;
+}
+function renderInventoryReconciliation(){
+  let rows=state.inventoryReconcileItems||[];
+  let box=qs('inventoryReconcileResults');if(!box)return;
+  box.innerHTML=`<table><thead><tr><th>SKU</th><th>Traído de ML</th><th>Traído de TN</th><th>En XelerIA</th></tr></thead><tbody>${rows.map(row=>`<tr><td><strong class="mono">${esc(row.sku)}</strong>${row.has_difference?'':`<div class="small">Sin diferencia aplicable; revisar advertencia.</div>`}</td><td>${inventoryReconcileSourceCell(row,'ML')}</td><td>${inventoryReconcileSourceCell(row,'TN')}</td><td>${inventoryReconcileSourceCell(row,'XELERIA')}</td></tr>`).join('')||'<tr><td colspan="4" class="muted" style="text-align:center">Título y stock coinciden en las plataformas disponibles.</td></tr>'}</tbody></table>`;
+}
+async function previewInventoryReconciliation(){
+  qs('inventoryReconcilePanel')?.classList.remove('hidden');
+  setStatus('inventoryReconcileStatus','Consultando únicamente título y stock en ML y TN...');
+  try{
+    let d=await fetchJson('/admin/inventory/reconcile-title-stock/preview?limit=100',{method:'POST'});
+    state.inventoryReconcileItems=d.items||[];renderInventoryReconciliation();
+    let msg=`Revisados: ${Number(d.checked_skus||0)} SKU · diferencias: ${Number(d.differences||0)}`;
+    if((d.errors||[]).length)msg+=` · ${d.errors.length} publicación(es) no pudieron leerse`;
+    setStatus('inventoryReconcileStatus',msg,(d.errors||[]).length?'warn':true);
+  }catch(e){setStatus('inventoryReconcileStatus','No pude comparar: '+friendlyInventoryError(e),false)}
+}
+async function applyInventoryReconciliation(sku,source,fingerprint){
+  if(!confirm(`Usar título y stock de ${source==='XELERIA'?'XelerIA':source} para ${sku} y sincronizarlos en las tres plataformas?`))return;
+  setStatus('inventoryReconcileStatus',`Aplicando ${source} para ${sku}...`);
+  try{
+    let d=await fetchJson('/admin/inventory/reconcile-title-stock/apply',{method:'POST',body:JSON.stringify({sku,source,fingerprint})});
+    setStatus('inventoryReconcileStatus',d.message||`${sku} resincronizado.`,true);
+    await previewInventoryReconciliation();
+    await searchInventory(state.inventory.offset||0,false);
+  }catch(e){setStatus('inventoryReconcileStatus','No pude resincronizar: '+friendlyInventoryError(e),false)}
 }
 async function searchInventory(offset=0,savePref=false){
   let q=qs('invSearch').value.trim();
@@ -3698,6 +3820,18 @@ async function downloadArcaExcel(){
     document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(objectUrl),60000);
     setStatus('arcaStatus','Excel descargado con Neto, IVA, Total y jurisdicción discriminados.',true);
   }catch(e){setStatus('arcaStatus','No pude descargar el Excel: '+errText(e),false);showPre('arcaOut',e)}
+}
+async function downloadArcaIvaSimple(){
+  initArcaDates();setStatus('arcaStatus','Generando TXT oficiales de ventas para IVA Simple...');
+  try{
+    let r=await fetch(url('/admin/arca/facturas/export_iva_simple?'+arcaReportQueryBase()),{headers:xeleriaHeaders()});
+    if(!r.ok){let txt=await r.text();let data;try{data=JSON.parse(txt)}catch{data={detail:txt}};throw data}
+    let blob=await r.blob();let objectUrl=URL.createObjectURL(blob);let a=document.createElement('a');
+    let period=(qs('arcaDesde')?.value||'periodo').slice(0,7).replace('-','_');
+    a.href=objectUrl;a.download=`iva_simple_ventas_${period}.zip`;
+    document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(objectUrl),60000);
+    setStatus('arcaStatus','ZIP descargado: comprobantes y alícuotas en TXT ANSI, listo para importar en ARCA.',true);
+  }catch(e){setStatus('arcaStatus','No pude generar los TXT: '+errText(e),false);showPre('arcaOut',e)}
 }
 
 function arcaTipoNotaDesdeOriginal(orig,kind){
@@ -4810,10 +4944,13 @@ function personalizationPayload(){
     default_invoice_concept:cfgGet('cfgConcepto')||'Productos',
     notification_sound:sound,
     correo_origin_postal_code:cfgGet('cfgCorreoOriginPostalCode').trim().toUpperCase()||null,
+    correo_account_email:cfgGet('cfgCorreoAccountEmail').trim()||null,
     shipping_markup_type:markupType,
     shipping_markup_value:markupValue,
     settings:{notification_sound:sound}
   };
+  let correoPassword=cfgGet('cfgCorreoAccountPassword');
+  if(correoPassword)payload.correo_account_password=correoPassword;
   if(state.configLogoTouched||logoData){
     payload.logo_png_500_base64=logoData;
   }
@@ -4851,9 +4988,10 @@ function renderCorreoSettingsUi(settingsArg=null){
   if(label)label.textContent=type==='percent'?'Porcentaje de recargo *':'Monto fijo de recargo *';
   let status=qs('correoSettingsStatus');
   if(status){
-    let configured=!!(s.correo_service_configured||s.correo_credentials_configured);
-    status.textContent=configured?'Disponible para Xeli':'No disponible';
-    status.className='serviceState '+(configured?'ok':'bad');
+    let service=!!(s.correo_service_configured||s.correo_credentials_configured);
+    let account=!!s.correo_account_configured;
+    status.textContent=service?(account?'MiCorreo configurado · exportación disponible':'Cotización disponible · falta configurar MiCorreo'):'Servicio técnico no disponible';
+    status.className='serviceState '+(service&&account?'ok':'bad');
   }
 }
 
@@ -4863,6 +5001,10 @@ function validateCorreoSettings(){
   let type=cfgGet('cfgShippingMarkupType')||'none';
   let value=Number(cfgGet('cfgShippingMarkupValue')||0);
   if(type!=='none'&&(!Number.isFinite(value)||value<0))return'Ingresá un recargo de envío válido.';
+  let email=cfgGet('cfgCorreoAccountEmail').trim(),password=cfgGet('cfgCorreoAccountPassword');
+  if(email&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))return'Ingresá un email válido de la cuenta MiCorreo.';
+  if(password&&!email)return'El email de MiCorreo es obligatorio cuando cargás la contraseña.';
+  if(email&&!password&&!state.tenantSettings?.correo_account_configured)return'La contraseña de MiCorreo es obligatoria para conectar la cuenta.';
   return'';
 }
 async function startArcaOnboarding(){
@@ -4945,6 +5087,8 @@ async function loadConfig(){
     let sound=normalizeNotificationSound(s.notification_sound||(s.raw_settings&&s.raw_settings.notification_sound)||'off');
     cfgSet('cfgNotificationSound',sound);
     cfgSet('cfgCorreoOriginPostalCode',s.correo_origin_postal_code||'');
+    cfgSet('cfgCorreoAccountEmail',s.correo_account_email||'');
+    cfgSet('cfgCorreoAccountPassword','');
     cfgSet('cfgShippingMarkupType',s.shipping_markup_type||'none');
     cfgSet('cfgShippingMarkupValue',s.shipping_markup_value||0);
     state.notificationSound=sound;
