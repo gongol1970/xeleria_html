@@ -140,6 +140,27 @@
     .trace-label { font-size: 12px; font-weight: 800; }
     .trace-detail { display: block; margin-top: 2px; color: var(--muted); font-size: 11px; }
     .trace-time { color: var(--muted); font-size: 11px; font-weight: 800; white-space: nowrap; }
+    .trace-content { min-width: 0; }
+    .trace-inspection {
+      margin-top: 7px; border: 1px solid #d8dee7; border-radius: 5px;
+      background: var(--white);
+    }
+    .trace-inspection summary {
+      padding: 7px 9px; cursor: pointer; color: var(--green);
+      font-size: 11px; font-weight: 850;
+    }
+    .trace-inspection[open] summary { border-bottom: 1px solid #e3e7ed; }
+    .trace-data-block { padding: 8px 9px; border-bottom: 1px solid #edf0f4; }
+    .trace-data-block:last-child { border-bottom: 0; }
+    .trace-data-label {
+      display: block; margin-bottom: 5px; color: #4b5563;
+      font-size: 10px; font-weight: 900; text-transform: uppercase;
+    }
+    .trace-data-value {
+      margin: 0; color: #243041; font: 11px/1.42 ui-monospace, SFMono-Regular, Consolas, monospace;
+      white-space: pre-wrap; overflow-wrap: anywhere;
+    }
+    .section-help { margin: -3px 0 8px; color: var(--muted); font-size: 11px; line-height: 1.4; }
     details.section summary {
       cursor: pointer; color: var(--muted); font-size: 11px; font-weight: 850;
       text-transform: uppercase;
@@ -275,6 +296,7 @@
 
         <div id="traceSection" class="section" hidden>
           <h3>Recorrido</h3>
+          <p class="section-help">Abrí cada paso para ver decisiones, datos y rechazos concretos.</p>
           <div id="trace" class="trace-list"></div>
         </div>
         <div id="searchSection" class="section" hidden>
@@ -461,6 +483,47 @@
         ? String(chosenRoundLimit)
         : "Sin límite";
     }
+    const traceDataLabels = {
+      origin: "Publicación leída",
+      context: "Contexto cargado",
+      tool_requests: "Pedido de la IA",
+      tool: "Herramienta",
+      tool_arguments: "Parámetros enviados",
+      normalized_search: "Búsqueda interpretada por XelerIA",
+      scope: "Alcance de la búsqueda",
+      candidates: "Candidatos devueltos",
+      verified_from_database: "Evidencia entregada a la IA",
+      model_answer: "Borrador que devolvió la IA",
+      validation_errors: "Problemas encontrados por el validador",
+      next_action: "Decisión posterior",
+      repair_instruction: "Corrección enviada a la ronda siguiente",
+      result: "Resultado de la herramienta"
+    };
+    function appendTraceInspection(content, data) {
+      if (!data || typeof data !== "object") return;
+      const entries = Object.entries(data).filter(([, value]) => value != null);
+      if (!entries.length) return;
+      const details = document.createElement("details");
+      details.className = "trace-inspection";
+      const summary = document.createElement("summary");
+      summary.textContent = "Ver qué hizo";
+      details.appendChild(summary);
+      entries.forEach(([key, value]) => {
+        const block = document.createElement("div");
+        block.className = "trace-data-block";
+        const label = document.createElement("span");
+        label.className = "trace-data-label";
+        label.textContent = traceDataLabels[key] || key.replaceAll("_", " ");
+        const rendered = document.createElement("pre");
+        rendered.className = "trace-data-value";
+        rendered.textContent = typeof value === "string"
+          ? value
+          : JSON.stringify(value, null, 2);
+        block.append(label, rendered);
+        details.appendChild(block);
+      });
+      content.appendChild(details);
+    }
     function renderDiagnostics(payload) {
       const lab = payload.lab || {};
       $("metricTotal").textContent = formatMs(lab.total_ms);
@@ -490,6 +553,7 @@
         dot.className = "trace-dot";
         dot.textContent = String(index + 1);
         const content = document.createElement("div");
+        content.className = "trace-content";
         const label = document.createElement("div");
         label.className = "trace-label";
         label.textContent = step.label || step.step || "Paso";
@@ -500,6 +564,7 @@
           detail.textContent = step.detail;
           content.appendChild(detail);
         }
+        appendTraceInspection(content, step.data);
         const duration = document.createElement("span");
         duration.className = "trace-time";
         duration.textContent = formatMs(step.duration_ms);
