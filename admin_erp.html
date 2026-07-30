@@ -1409,8 +1409,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.96.0-cross-publisher-simple';
-const FRONTEND_BUILD='admin-erp-v2951-tester-regressions';
+const FRONTEND_VERSION='2.96.1-manual-customer-lookup';
+const FRONTEND_BUILD='admin-erp-v2961-manual-customer-lookup';
 const SALES_DB_POLL_INTERVAL_MS=60000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
 const XELERIA_MIN_SEARCH_CHARS=4;function isShortSearch(q){q=String(q||'').trim();return q.length>0&&q.length<XELERIA_MIN_SEARCH_CHARS}function minSearchMessage(){return 'Ingresá al menos '+XELERIA_MIN_SEARCH_CHARS+' caracteres para buscar.'}
@@ -4158,10 +4158,18 @@ function arcaFillManualCustomer(c){
 }
 async function arcaLookupLocalCustomer(doc){
   let digits=onlyDigits(doc);
-  if(!digits||digits.length<7)return null;
+  if(!digits||digits.length<8)return null;
   let d=await fetchJson('/admin/customers/recent?limit=10&q='+encodeURIComponent(digits));
   let items=d.items||[];
-  return items.find(c=>onlyDigits(c.doc_number)===digits)||items[0]||null;
+  let sameDocument=(stored)=>{
+    let candidate=onlyDigits(stored);
+    if(candidate===digits)return true;
+    if(digits.length===11&&candidate.length===8)return digits.slice(2,10)===candidate;
+    if(digits.length===8&&candidate.length===11)return candidate.slice(2,10)===digits;
+    return false;
+  };
+  let exact=items.filter(c=>sameDocument(c.doc_number));
+  return exact.find(c=>String(c.email||'').trim())||exact[0]||null;
 }
 async function arcaLookupCustomerA5(force){
   let doc=(qs('amDocNumber')&&qs('amDocNumber').value||'').trim();
