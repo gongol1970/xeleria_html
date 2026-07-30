@@ -1007,7 +1007,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 <div class="navTitle">Tienda Nube</div><div class="sub"><button class="navBtn" data-view="tn-publicaciones">Publicaciones</button><button class="navBtn" data-view="tn-ventas">Ventas</button><button class="navBtn" data-view="tn-clientes">Clientes</button></div>
 
 <div class="navTitle">Local físico</div><div class="sub"><button class="navBtn" data-view="arca-manual">Emitir comprobante manual</button></div>
-<div class="navTitle">Gestión</div><div class="sub"><div class="navParent">Inventario</div><div class="sub2"><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="combos">Combos / Kits</button><button class="navBtn" data-view="full-inbound">Envío a Full</button><button class="navBtn" data-view="movimientos">Movimientos de stock</button></div><button class="navBtn" data-view="clientes">Clientes ML / TN</button><button class="navBtn" data-view="arca-reportes">ARCA reportes</button></div>
+<div class="navTitle">Gestión</div><div class="sub"><div class="navParent">Inventario</div><div class="sub2"><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" type="button" onclick="openInventoryReconciliation()">Resincronizar ML / TN / XelerIA</button><button class="navBtn" data-view="combos">Combos / Kits</button><button class="navBtn" data-view="full-inbound">Envío a Full</button><button class="navBtn" data-view="movimientos">Movimientos de stock</button></div><button class="navBtn" data-view="clientes">Clientes ML / TN</button><button class="navBtn" data-view="arca-reportes">ARCA reportes</button></div>
 <div class="navTitle">Inteligencia Artificial</div><div class="sub"><button class="navBtn" data-view="xeli-config">Configuración Xeli</button><button class="navBtn" data-view="xeli-training">Entrenamiento Xeli</button></div>
 <div class="navTitle">Sistema</div><div class="sub"><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="bitacora">Registro operativo</button><button class="navBtn" data-view="versiones">Versión</button></div>
 </nav></aside>
@@ -1172,7 +1172,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 </section>
 <section id="full-inbound" class="view"><div class="card"><h3>Gestión · Inventario · Envío a Full</h3><p>Detecta el PDF de preparación de Mercado Libre Full y descuenta del stock las unidades que salen hacia bodega.</p><div class="grid"><div class="col-6"><label>PDF instrucciones ML Full</label><input id="fullInboundPdf" type="file" accept="application/pdf"></div><div class="col-6"><label>&nbsp;</label><div class="btnrow"><button onclick="previewFullInboundPdf()">Detectar PDF</button><button class="primary" onclick="applyFullInboundPdf(false)">Descontar stock</button><button class="secondary" onclick="applyFullInboundPdf(true)">Simular</button></div></div></div><div id="fullInboundStatus" class="status"></div><div id="fullInboundResult" class="tableWrap" style="margin-top:12px"></div><pre id="fullInboundOut" class="hidden"></pre></div></section>
 <section id="arca-reportes" class="view"><div class="card"><h3>ARCA · Reporte de facturación</h3><p>Comprobantes del ERP. Por defecto muestra el mes calendario anterior completo.</p><div class="grid"><div class="col-4"><label>Buscar</label><input id="arcaSearch" placeholder="SKU, factura, cliente, documento, canal..." oninput="renderArcaInvoices()"></div><div class="col-2"><label>Desde</label><input id="arcaDesde" type="date"></div><div class="col-2"><label>Hasta</label><input id="arcaHasta" type="date"></div><div class="col-2"><label>Tipo de comprobante</label><select id="arcaTipo"><option>Todos</option><option>A</option><option>B</option><option>C</option><option>E</option></select></div><div class="col-2"><label>Canal de venta</label><select id="arcaCanal"><option>Todos</option><option>TN</option><option>ML</option><option>MANUAL</option></select></div><div class="col-2"><label>Concepto</label><select id="arcaConcepto"><option>Todos</option><option>Productos</option><option>Servicios</option><option>Productos y Servicios</option></select></div><div class="col-2"><label>Límite visible</label><select id="arcaLimit"><option>20</option><option selected>100</option><option>200</option></select></div></div><div class="btnrow" style="margin-top:12px"><button onclick="loadArcaInvoices()">Buscar comprobantes</button><button class="secondary" onclick="downloadArcaExcel()">Descargar Excel completo</button><button class="secondary" onclick="downloadArcaIvaSimple()">Descargar TXT IVA Simple</button></div><div id="arcaStatus" class="status"></div><div id="arcaTable" class="tableWrap" style="margin-top:12px"></div><pre id="arcaOut" class="hidden"></pre></div></section>
-<section id="arca-manual" class="view"><div class="card"><h3>ARCA · Emitir comprobante manual</h3><p>Flujo controlado: primero vista previa, después emisión real con CAE. Remitos y recibos quedan fuera de este módulo.</p><div class="grid"><div class="col-2"><label>Comprobante</label><select id="amTipo" onchange="arcaManualTypeChanged()"><option value="1">Factura A</option><option value="2">Nota de Débito A</option><option value="3">Nota de Crédito A</option><option value="6" selected>Factura B</option><option value="7">Nota de Débito B</option><option value="8">Nota de Crédito B</option><option value="11">Factura C</option><option value="12">Nota de Débito C</option><option value="13">Nota de Crédito C</option><option value="19" disabled>Factura de Exportación · WSFEX</option></select></div><div class="col-2"><label>Concepto</label><select id="amConcepto" onchange="arcaManualConceptChanged()"><option selected>Productos</option><option>Servicios</option><option>Productos y Servicios</option></select></div><div class="col-2"><label>Fecha</label><input id="amFecha" type="date"></div><div class="col-3"><label>Canal / referencia</label><input id="amSourceChannel" value="ARCA_MANUAL"></div><div class="col-3"><label>Operación opcional</label><input id="amSourceOrder" placeholder="Venta / referencia"></div><div id="amServiceDates" class="col-12 hidden"><div class="grid"><div class="col-4"><label>Servicio desde</label><input id="amServiceDesde" type="date"></div><div class="col-4"><label>Servicio hasta</label><input id="amServiceHasta" type="date"></div><div class="col-4"><label>Vencimiento de pago</label><input id="amVtoPago" type="date"></div></div></div><input id="amAssocInvoiceId" type="hidden"><input id="amAssocCbteTipo" type="hidden"><input id="amAssocPtoVta" type="hidden"><input id="amAssocCbteNro" type="hidden"><input id="amAssocInvoiceDate" type="hidden"><input id="amAssocCae" type="hidden"><div class="col-4"><label>Nombre / Razón social receptor *</label><input id="amCustomerName" placeholder="Consumidor Final / nombre real"></div><div class="col-2"><label>Doc. tipo</label><select id="amDocType"><option value="CF" selected>CF</option><option value="DNI">DNI</option><option value="CUIT">CUIT</option></select></div><div class="col-3"><label>Documento</label><div style="display:flex;gap:6px"><input id="amDocNumber" placeholder="DNI / CUIT" onblur="arcaLookupCustomerA5(false)" onkeydown="if(event.key==='Enter'){event.preventDefault();arcaLookupCustomerA5(true)}"><button type="button" class="secondary" style="padding:10px 11px" onclick="arcaLookupCustomerA5(true)">ARCA</button></div></div><div class="col-3"><label>Condición IVA</label><select id="amIvaCond"><option selected>Consumidor Final</option><option>Responsable Inscripto</option><option>Monotributo</option><option>Exento</option></select></div><div class="col-3"><label>Email receptor</label><input id="amEmail" type="email" placeholder="cliente@correo.com"></div><div class="col-6"><label>Domicilio receptor</label><input id="amAddress" placeholder="Opcional / si viene del comprador"></div><div class="col-3"><label>Localidad receptor *</label><input id="amLocalidad" placeholder="Consumidor Final manual: Ciudad Autónoma de Buenos Aires"></div></div><div class="dividerLine"></div><h3>Conceptos</h3><div id="arcaManualLines"></div><div class="btnrow" style="margin-top:10px"><button class="secondary" onclick="arcaManualAddLine()">Agregar línea</button><button class="secondary" onclick="arcaManualClear()">Limpiar</button></div><div class="dividerLine"></div><div class="grid"><div class="col-12"><label>Notas internas/observaciones</label><textarea id="amNotes" rows="2"></textarea></div></div><div style="height:18px"></div><div class="btnrow" style="justify-content:flex-end;align-items:center"><label style="display:flex;align-items:center;gap:10px;margin:0 16px 0 0;text-transform:none;letter-spacing:0;font-size:15px;font-weight:900;color:#111;background:#fff7ed;border:1px solid #f7c56b;border-radius:14px;padding:12px 14px"><input id="amModificaStock" type="checkbox" style="width:18px;height:18px;margin:0"> Modifica stock</label><select id="amStockReason" title="Motivo stock" style="width:170px"><option value="comprobante" selected>Comprobante</option><option value="devolucion">Devolución</option><option value="ajuste">Ajuste</option><option value="no aplica">No aplica</option></select><button class="secondary" onclick="cancelToPreviousView()">Cancelar</button><button class="secondary" onclick="arcaManualPreview()">Vista previa</button><button class="danger" onclick="arcaManualEmit()">Emitir comprobante real</button></div><div id="arcaManualStatus" class="status"></div><pre id="arcaManualOut" class="hidden"></pre></div></section>
+<section id="arca-manual" class="view"><div class="card"><h3>ARCA · Emitir comprobante manual</h3><p>Flujo controlado: primero vista previa, después emisión real con CAE. Remitos y recibos quedan fuera de este módulo.</p><div class="grid"><div class="col-2"><label>Comprobante</label><select id="amTipo" onchange="arcaManualTypeChanged()"><option value="1">Factura A</option><option value="2">Nota de Débito A</option><option value="3">Nota de Crédito A</option><option value="6" selected>Factura B</option><option value="7">Nota de Débito B</option><option value="8">Nota de Crédito B</option><option value="11">Factura C</option><option value="12">Nota de Débito C</option><option value="13">Nota de Crédito C</option><option value="19" disabled>Factura de Exportación · WSFEX</option></select></div><div class="col-2"><label>Concepto</label><select id="amConcepto" onchange="arcaManualConceptChanged()"><option selected>Productos</option><option>Servicios</option><option>Productos y Servicios</option></select></div><div class="col-2"><label>Fecha</label><input id="amFecha" type="date"></div><div class="col-3"><label>Canal / referencia</label><input id="amSourceChannel" value="ARCA_MANUAL"></div><div class="col-3"><label>Operación opcional</label><input id="amSourceOrder" placeholder="Venta / referencia"></div><div id="amServiceDates" class="col-12 hidden"><div class="grid"><div class="col-4"><label>Servicio desde</label><input id="amServiceDesde" type="date"></div><div class="col-4"><label>Servicio hasta</label><input id="amServiceHasta" type="date"></div><div class="col-4"><label>Vencimiento de pago</label><input id="amVtoPago" type="date"></div></div></div><input id="amAssocInvoiceId" type="hidden"><input id="amAssocCbteTipo" type="hidden"><input id="amAssocPtoVta" type="hidden"><input id="amAssocCbteNro" type="hidden"><input id="amAssocInvoiceDate" type="hidden"><input id="amAssocCae" type="hidden"><div class="col-4"><label>Nombre / Razón social receptor *</label><input id="amCustomerName" placeholder="Consumidor Final / nombre real"></div><div class="col-2"><label>Doc. tipo</label><select id="amDocType"><option value="CF" selected>CF</option><option value="DNI">DNI</option><option value="CUIT">CUIT</option></select></div><div class="col-3"><label>Documento</label><div style="display:flex;gap:6px"><input id="amDocNumber" placeholder="DNI / CUIT" onblur="arcaLookupCustomerA5(false)" onkeydown="if(event.key==='Enter'){event.preventDefault();arcaLookupCustomerA5(true)}"><button type="button" class="secondary" style="padding:10px 11px" onclick="arcaLookupCustomerA5(true)">ARCA</button></div></div><div class="col-3"><label>Condición IVA</label><select id="amIvaCond"><option selected>Consumidor Final</option><option>Responsable Inscripto</option><option>Monotributo</option><option>Exento</option></select></div><div class="col-3"><label>Email receptor</label><input id="amEmail" type="email" placeholder="cliente@correo.com"></div><div class="col-6"><label>Domicilio receptor</label><input id="amAddress" placeholder="Opcional / si viene del comprador"></div><div class="col-3"><label>Localidad receptor *</label><input id="amLocalidad" placeholder="Consumidor Final manual: Ciudad Autónoma de Buenos Aires"></div></div><div class="dividerLine"></div><h3>Conceptos</h3><div id="arcaManualLines"></div><div class="btnrow" style="margin-top:10px"><button class="secondary" onclick="arcaManualAddLine()">Agregar línea</button><button class="secondary" onclick="arcaManualClear()">Limpiar</button></div><div class="dividerLine"></div><div class="grid"><div class="col-12"><label>Notas internas/observaciones</label><textarea id="amNotes" rows="2"></textarea></div></div><div style="height:18px"></div><div class="btnrow" style="justify-content:flex-end;align-items:center"><label style="display:flex;align-items:center;gap:10px;margin:0 16px 0 0;text-transform:none;letter-spacing:0;font-size:15px;font-weight:900;color:#111;background:#fff7ed;border:1px solid #f7c56b;border-radius:14px;padding:12px 14px"><input id="amModificaStock" type="checkbox" style="width:18px;height:18px;margin:0"> Modifica stock</label><select id="amStockReason" title="Motivo stock" style="width:170px"><option value="comprobante" selected>Comprobante</option><option value="devolucion">Devolución</option><option value="ajuste">Ajuste</option><option value="no aplica">No aplica</option></select><button class="secondary" onclick="cancelArcaManual()">Cancelar</button><button class="secondary" onclick="arcaManualPreview()">Vista previa</button><button class="danger" onclick="arcaManualEmit()">Emitir comprobante real</button></div><div id="arcaManualStatus" class="status"></div><pre id="arcaManualOut" class="hidden"></pre></div></section>
 
 <section id="xeli-config" class="view">
   <div class="card xeliConfigurationIntro">
@@ -1334,8 +1334,9 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
         <input id="cfgCorreoAccountEmail" type="email" autocomplete="username" placeholder="cuenta@comercio.com">
       </div>
       <div class="col-4">
-        <label>Contraseña de MiCorreo *</label>
-        <input id="cfgCorreoAccountPassword" type="password" autocomplete="new-password" placeholder="Dejá vacío para conservar la guardada">
+        <label>Contraseña de MiCorreo (sólo para vincular) *</label>
+        <input id="cfgCorreoAccountPassword" type="password" autocomplete="new-password" placeholder="Se usa una vez y no se guarda">
+        <div class="small" style="margin-top:6px">Es la clave de MiCorreo, no la de Tiendanube. Correo Argentino la exige una sola vez para identificar la cuenta; XelerIA conserva únicamente el identificador.</div>
       </div>
       <div class="col-4">
         <label>Recargo sobre la cotización</label>
@@ -1344,6 +1345,10 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
       <div class="col-4" id="cfgShippingMarkupValueBox">
         <label id="cfgShippingMarkupValueLabel">Valor del recargo</label>
         <input id="cfgShippingMarkupValue" type="number" min="0" max="10000000" step="0.01" value="0">
+      </div>
+      <div class="col-4">
+        <label>Redondear importe de envío</label>
+        <select id="cfgShippingRoundingStep"><option value="0">Sin redondeo</option><option value="100">$ 100</option><option value="500" selected>$ 500</option><option value="1000">$ 1.000</option><option value="5000">$ 5.000</option></select>
       </div>
     </div>
   </div>
@@ -1402,8 +1407,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.95.0-tester-operations';
-const FRONTEND_BUILD='admin-erp-v2950-tester-operations';
+const FRONTEND_VERSION='2.95.1-tester-regressions';
+const FRONTEND_BUILD='admin-erp-v2951-tester-regressions';
 const SALES_DB_POLL_INTERVAL_MS=60000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;let timers={};
 const XELERIA_MIN_SEARCH_CHARS=4;function isShortSearch(q){q=String(q||'').trim();return q.length>0&&q.length<XELERIA_MIN_SEARCH_CHARS}function minSearchMessage(){return 'Ingresá al menos '+XELERIA_MIN_SEARCH_CHARS+' caracteres para buscar.'}
@@ -1816,7 +1821,10 @@ function showView(id,options={}){
   if(id==='xeli-config')loadXeliConfiguration(false);
   if(id==='xeli-training')loadXeliTrainingQuestions(true);
   if(id==='arca-reportes'){initArcaDates();loadArcaInvoices()}
-  if(id==='arca-manual'){arcaManualInit()}
+  if(id==='arca-manual'){
+    if(options.preserveManualDraft)arcaManualInit();
+    else arcaManualClear();
+  }
   if(id==='inventario')searchInventory(state.inventory.offset||0);
   if(id==='combos')loadCombos();
   if(id==='full-inbound')clearFullInboundView();
@@ -3302,6 +3310,12 @@ function saleNeedsAction(o,ch){
 function closeInventoryReconciliation(){
   qs('inventoryReconcilePanel')?.classList.add('hidden');
 }
+async function openInventoryReconciliation(){
+  showView('inventario');
+  closeMobileMenu();
+  await previewInventoryReconciliation();
+  qs('inventoryReconcilePanel')?.scrollIntoView({behavior:'smooth',block:'start'});
+}
 function inventoryReconcileSourceCell(row,sourceName){
   let source=(row.sources||{})[sourceName];
   if(!source)return'<span class="muted">No conectado / sin publicación</span>';
@@ -3861,7 +3875,7 @@ async function arcaStartNoteFromInvoice(invoiceId,kind){
     if(qs('amServiceHasta'))qs('amServiceHasta').value=servicePeriod.service_date_to||'';
     if(qs('amVtoPago'))qs('amVtoPago').value=servicePeriod.payment_due_date||'';
     arcaManualConceptChanged();
-    qs('amFecha').value=new Date().toISOString().slice(0,10);
+    qs('amFecha').value=arcaManualToday();
     qs('amSourceChannel').value='ARCA_MANUAL';
     qs('amSourceOrder').value=`${kind}-${inv.source_channel||''}-${inv.source_order_number||inv.source_order_id||invoiceId}-${Date.now()}`;
     qs('amCustomerName').value=inv.customer_name||inv.source_customer_name||'Consumidor Final';
@@ -3892,7 +3906,7 @@ async function arcaStartNoteFromInvoice(invoiceId,kind){
       unit_price_gross:arcaLineUnitGross(l),
       iva_pct:l.iva_pct||21
     }));
-    showView('arca-manual');
+    showView('arca-manual',{preserveManualDraft:true});
     setStatus('arcaManualStatus',`${kind==='NC'?'Nota de Crédito':'Nota de Débito'} preparada desde ${arcaTypeShort(inv)} ${nro}. Revisá/importes y emití.`,true);
   }catch(e){setStatus('arcaStatus','No pude preparar NC/ND: '+(e.message||JSON.stringify(e)),false)}
 }
@@ -4002,6 +4016,9 @@ function arcaManualTypeChanged(){
     if(isC)input.value='0';else if(Number(input.value||0)===0)input.value='21';
   });
 }
+function arcaManualToday(){
+  return new Intl.DateTimeFormat('en-CA',{timeZone:'America/Argentina/Buenos_Aires'}).format(new Date());
+}
 function arcaManualInit(){
   if(qs('arcaManualLines') && !qs('arcaManualLines').children.length){
     if(!qs('amCustomerName').value)qs('amCustomerName').value='Consumidor Final';
@@ -4096,6 +4113,10 @@ async function arcaLookupCustomerA5(force){
 }
 function arcaManualClear(){hideManualPreviewBox();
   ['amSourceOrder','amCustomerName','amDocNumber','amEmail','amAddress','amNotes','amAssocInvoiceId','amAssocCbteTipo','amAssocPtoVta','amAssocCbteNro','amAssocInvoiceDate','amAssocCae'].forEach(id=>{if(qs(id))qs(id).value=''})
+  if(qs('amTipo'))qs('amTipo').value='6';
+  if(qs('amConcepto'))qs('amConcepto').value='Productos';
+  if(qs('amFecha'))qs('amFecha').value=arcaManualToday();
+  if(qs('amSourceChannel'))qs('amSourceChannel').value='ARCA_MANUAL';
   if(qs('amCustomerName'))qs('amCustomerName').value='Consumidor Final';
   if(qs('amDocType'))qs('amDocType').value='CF';
   if(qs('amIvaCond'))qs('amIvaCond').value='Consumidor Final';
@@ -4106,6 +4127,10 @@ function arcaManualClear(){hideManualPreviewBox();
   ['amServiceDesde','amServiceHasta','amVtoPago'].forEach(id=>{if(qs(id))qs(id).value=''});
   arcaManualConceptChanged();
   qs('arcaManualLines').innerHTML='';arcaManualAddLine();setStatus('arcaManualStatus','');qs('arcaManualOut').classList.add('hidden');
+}
+function cancelArcaManual(){
+  arcaManualClear();
+  cancelToPreviousView();
 }
 function arcaManualBody(dryRun=true,confirmar=false){
   let lines=[...document.querySelectorAll('#arcaManualLines .arcaLine')].map(r=>({
@@ -4947,6 +4972,7 @@ function personalizationPayload(){
     correo_account_email:cfgGet('cfgCorreoAccountEmail').trim()||null,
     shipping_markup_type:markupType,
     shipping_markup_value:markupValue,
+    shipping_rounding_step:Number(cfgGet('cfgShippingRoundingStep')||500),
     settings:{notification_sound:sound}
   };
   let correoPassword=cfgGet('cfgCorreoAccountPassword');
@@ -4964,6 +4990,7 @@ async function saveConfig(){
     if(correoError){setStatus('cfgStatus',correoError,false);return}
     let d=await fetchJson('/admin/tenant/settings',{method:'PUT',body:JSON.stringify(personalizationPayload())});
     state.tenantSettings=d.settings||{};
+    cfgSet('cfgCorreoAccountPassword','');
     state.configLogoTouched=false;
     state.notificationSound=normalizeNotificationSound(cfgGet('cfgNotificationSound')||'off');
     preloadNotificationSound(state.notificationSound);
@@ -5001,6 +5028,8 @@ function validateCorreoSettings(){
   let type=cfgGet('cfgShippingMarkupType')||'none';
   let value=Number(cfgGet('cfgShippingMarkupValue')||0);
   if(type!=='none'&&(!Number.isFinite(value)||value<0))return'Ingresá un recargo de envío válido.';
+  let rounding=Number(cfgGet('cfgShippingRoundingStep')||500);
+  if(![0,100,500,1000,5000].includes(rounding))return'Elegí un rango de redondeo válido.';
   let email=cfgGet('cfgCorreoAccountEmail').trim(),password=cfgGet('cfgCorreoAccountPassword');
   if(email&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))return'Ingresá un email válido de la cuenta MiCorreo.';
   if(password&&!email)return'El email de MiCorreo es obligatorio cuando cargás la contraseña.';
@@ -5091,6 +5120,7 @@ async function loadConfig(){
     cfgSet('cfgCorreoAccountPassword','');
     cfgSet('cfgShippingMarkupType',s.shipping_markup_type||'none');
     cfgSet('cfgShippingMarkupValue',s.shipping_markup_value||0);
+    cfgSet('cfgShippingRoundingStep',String(s.shipping_rounding_step??500));
     state.notificationSound=sound;
     preloadNotificationSound(sound);
     if(s.logo_png_500_base64){localStorage.setItem('xeleria_company_logo_data',s.logo_png_500_base64)}
