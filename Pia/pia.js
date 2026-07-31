@@ -54,6 +54,13 @@ const phoneLabel = item => {
 const ars = value => Number.isFinite(Number(value))
   ? `$${Number(value).toLocaleString("es-AR", { maximumFractionDigits: 0 })}`
   : String(value ?? "");
+const fileSize = value => {
+  const bytes = Number(value || 0);
+  if (!Number.isFinite(bytes) || bytes <= 0) return "";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
 
 function messagesSignature(messages) {
   return JSON.stringify((messages || []).map(message => ({
@@ -88,12 +95,15 @@ function refreshAttachmentSources(container, messages) {
     });
   }
   container.querySelectorAll("[data-attachment-key]").forEach(media => {
-    media.dataset.latestUrl = latestUrls.get(media.dataset.attachmentKey) || "";
+    const url = latestUrls.get(media.dataset.attachmentKey) || "";
+    media.dataset.latestUrl = url;
+    if (media.tagName === "A" && url) media.href = url;
   });
 }
 
 function bindAttachmentFallbacks(container) {
   container.querySelectorAll("[data-attachment-key]").forEach(media => {
+    if (!("src" in media)) return;
     media.addEventListener("error", () => {
       const latestUrl = media.dataset.latestUrl || "";
       if (!latestUrl || media.dataset.retryUrl === latestUrl || media.src === latestUrl) return;
@@ -101,6 +111,26 @@ function bindAttachmentFallbacks(container) {
       media.src = latestUrl;
     });
   });
+}
+
+function renderAttachment(message, attachment, index) {
+  if (attachment.expired || !attachment.url) {
+    return `<div class="message-attachment expired-attachment"><i data-lucide="timer-off"></i><span>Adjunto eliminado a los 3 días</span></div>`;
+  }
+  const key = escapeHtml(attachmentKey(message.id, attachment, index));
+  const url = escapeHtml(attachment.url);
+  const filename = escapeHtml(attachment.filename || "Adjunto");
+  if (attachment.kind === "image") {
+    return `<figure class="message-attachment"><a href="${url}" target="_blank" rel="noopener"><img data-attachment-key="${key}" data-latest-url="${url}" src="${url}" alt="${filename}" loading="lazy"></a><figcaption>${filename}</figcaption></figure>`;
+  }
+  if (attachment.kind === "audio") {
+    return `<div class="message-attachment audio-attachment"><audio data-attachment-key="${key}" data-latest-url="${url}" controls preload="metadata" src="${url}"></audio><span>${filename}</span></div>`;
+  }
+  if (attachment.kind === "video") {
+    return `<figure class="message-attachment video-attachment"><video data-attachment-key="${key}" data-latest-url="${url}" controls preload="metadata" src="${url}"></video><figcaption>${filename}</figcaption></figure>`;
+  }
+  const size = fileSize(attachment.size_bytes);
+  return `<a class="message-attachment document-attachment" data-attachment-key="${key}" data-latest-url="${url}" href="${url}" target="_blank" rel="noopener" download="${filename}"><i data-lucide="file-down"></i><span><strong>${filename}</strong>${size ? `<small>${escapeHtml(size)}</small>` : ""}</span></a>`;
 }
 
 function selectionInside(element) {
@@ -240,12 +270,9 @@ function renderMessages(item) {
       const botMessage = message.direction === "BOT";
       const author = message.direction === "HUMAN" ? "Gonzalo" : "Atenci\u00f3n";
       const attachments = message.attachments || [];
-      const media = attachments.map((attachment, index) => attachment.expired || !attachment.url
-        ? `<div class="message-attachment expired-attachment"><i data-lucide="timer-off"></i><span>Adjunto eliminado a los 3 d\u00edas</span></div>`
-        : attachment.kind === "image"
-          ? `<figure class="message-attachment"><img data-attachment-key="${escapeHtml(attachmentKey(message.id, attachment, index))}" data-latest-url="${escapeHtml(attachment.url)}" src="${escapeHtml(attachment.url)}" alt="Imagen enviada por el comprador" loading="lazy"><figcaption>${escapeHtml(attachment.filename || "Imagen")}</figcaption></figure>`
-          : `<div class="message-attachment audio-attachment"><audio data-attachment-key="${escapeHtml(attachmentKey(message.id, attachment, index))}" data-latest-url="${escapeHtml(attachment.url)}" controls preload="metadata" src="${escapeHtml(attachment.url)}"></audio><span>${escapeHtml(attachment.filename || "Audio")}</span></div>`
-      ).join("");
+      const media = attachments.map((attachment, index) => (
+        renderAttachment(message, attachment, index)
+      )).join("");
       return `
         <div class="message-row ${incoming ? "" : "outgoing"}">
           <div class="message">
@@ -775,8 +802,15 @@ $("customerMessageForm").addEventListener("submit", async event => {
 });
 
 let pendingAttachment = null;
+let pendingAttachmentMode = "customer";
 $("attachmentButton").addEventListener("click", () => {
-  if (!selectedConversation()) return showToast("Primero seleccion\u00e1 una conversaci\u00f3n", true);
+  const item = selectedConversation();
+  if (!item) return showToast("Primero seleccion\u00e1 una conversaci\u00f3n", true);
+  const whatsapp = String(item.channel || "").toUpperCase() === "WHATSAPP";
+  if (whatsapp && item.status !== "HUMAN") {
+    return showToast("Primero tom\u00e1 la conversaci\u00f3n para enviar archivos", true);
+  }
+  pendingAttachmentMode = item.status === "HUMAN" ? "human" : "customer";
   $("attachmentFile").click();
 });
 $("attachmentFile").addEventListener("change", event => {
@@ -787,10 +821,21 @@ $("attachmentFile").addEventListener("change", event => {
   preview.innerHTML = "";
   const url = URL.createObjectURL(pendingAttachment);
   preview.dataset.url = url;
+  $("attachmentDialogTitle").textContent = pendingAttachmentMode === "human"
+    ? "Enviar archivo al cliente"
+    : "Adjunto del comprador";
+  $("attachmentSubmitButton").textContent = pendingAttachmentMode === "human"
+    ? "Enviar"
+    : "Procesar";
   if (pendingAttachment.type.startsWith("image/")) {
     preview.innerHTML = `<img src="${escapeHtml(url)}" alt="Vista previa del adjunto">`;
-  } else {
+  } else if (pendingAttachment.type.startsWith("audio/")) {
     preview.innerHTML = `<audio controls src="${escapeHtml(url)}"></audio>`;
+  } else if (pendingAttachment.type.startsWith("video/")) {
+    preview.innerHTML = `<video controls src="${escapeHtml(url)}"></video>`;
+  } else {
+    preview.innerHTML = `<div class="file-preview"><i data-lucide="file"></i><strong>${escapeHtml(pendingAttachment.name)}</strong><span>${escapeHtml(fileSize(pendingAttachment.size))}</span></div>`;
+    refreshIcons();
   }
   $("attachmentDialog").showModal();
 });
@@ -802,6 +847,7 @@ function resetAttachment() {
   $("attachmentCaption").value = "";
   $("attachmentFile").value = "";
   pendingAttachment = null;
+  pendingAttachmentMode = "customer";
 }
 $("cancelAttachment").addEventListener("click", () => {
   $("attachmentDialog").close();
@@ -846,18 +892,24 @@ $("attachmentForm").addEventListener("submit", async event => {
   event.preventDefault();
   const item = selectedConversation();
   if (!item || !pendingAttachment) return;
+  const mode = pendingAttachmentMode;
   const form = new FormData();
   form.append("file", pendingAttachment);
   form.append("caption", $("attachmentCaption").value.trim());
+  if (mode === "human") form.append("operator", "Gonzalo");
   setBusy(true);
   try {
-    const payload = await api(`/pia/conversations/${encodeURIComponent(item.id)}/attachments`, {
+    const endpoint = mode === "human"
+      ? "human-attachments"
+      : "attachments";
+    const payload = await api(`/pia/conversations/${encodeURIComponent(item.id)}/${endpoint}`, {
       method: "POST", body: form
     });
     $("attachmentDialog").close();
     resetAttachment();
     await loadConversations(item.id);
-    showToast(payload.ok ? "Adjunto procesado" : payload.error || "Adjunto guardado sin respuesta", !payload.ok);
+    const success = mode === "human" ? "Archivo enviado" : "Adjunto procesado";
+    showToast(payload.ok ? success : payload.error || "No se pudo completar el adjunto", !payload.ok);
   } catch (error) {
     showToast(error.message, true);
   } finally {

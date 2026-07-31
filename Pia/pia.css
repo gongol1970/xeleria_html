@@ -721,6 +721,50 @@ h2 {
   height: 36px;
 }
 
+.video-attachment video {
+  display: block;
+  width: min(360px, 65vw);
+  max-height: 360px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #111;
+}
+
+.document-attachment {
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  min-width: min(330px, 65vw);
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #fff;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.document-attachment:hover {
+  border-color: var(--teal);
+  background: var(--teal-soft);
+}
+
+.document-attachment svg {
+  width: 26px;
+  height: 26px;
+  color: var(--teal);
+}
+
+.document-attachment strong,
+.document-attachment small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.document-attachment small {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
 .expired-attachment {
   grid-template-columns: 18px minmax(0, 1fr);
   align-items: center;
@@ -1467,6 +1511,36 @@ body.is-busy button {
 
 .attachment-preview audio {
   width: calc(100% - 24px);
+}
+
+.attachment-preview video {
+  display: block;
+  max-width: 100%;
+  max-height: 250px;
+}
+
+.file-preview {
+  display: grid;
+  justify-items: center;
+  gap: 7px;
+  padding: 18px;
+  text-align: center;
+}
+
+.file-preview svg {
+  width: 34px;
+  height: 34px;
+  color: var(--teal);
+}
+
+.file-preview strong {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.file-preview span {
+  color: var(--muted);
+  font-size: 11px;
 }
 
 .attachment-filename {
