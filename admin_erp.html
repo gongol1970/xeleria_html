@@ -1425,8 +1425,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.96.5-cross-publisher-editor';
-const FRONTEND_BUILD='admin-erp-v2965-cross-publisher-editor';
+const FRONTEND_VERSION='2.96.6-inventory-import-retry';
+const FRONTEND_BUILD='admin-erp-v2966-inventory-import-retry';
 const SALES_DB_POLL_INTERVAL_MS=60000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
 const XELERIA_MIN_SEARCH_CHARS=4;function isShortSearch(q){q=String(q||'').trim();return q.length>0&&q.length<XELERIA_MIN_SEARCH_CHARS}function minSearchMessage(){return 'Ingresá al menos '+XELERIA_MIN_SEARCH_CHARS+' caracteres para buscar.'}
@@ -5561,6 +5561,7 @@ async function retryInventoryImportErrors(jobId,fromBitacora=false){
   setStatus(statusId,'Reintentando importación fallida...',true);
   try{
     let d=await fetchJson(`/admin/inventory/import-jobs/${encodeURIComponent(jobId)}/retry-import-errors`,{method:'POST',body:JSON.stringify({})});
+    if(d.restarted){setInventoryImportStartedUi(d,d.job||{});setStatus(statusId,d.message||'La importación se reinició completa.',true);loadNotifications(false).catch(e=>console.debug('notifications after import restart',e));loadOpsLog(false).catch(e=>console.debug('ops log after import restart',e));return;}
     let remaining=Number(d.remaining_errors||0), repaired=Number(d.repaired||0), added=Number(d.saved_added||0);
     let msg=remaining?`Reintento parcial. Reparadas: ${repaired}. Filas agregadas: ${added}. Quedan ${remaining} en registro.`:`Errores de importación reparados. Filas agregadas: ${added}.`;
     setStatus(statusId,msg,remaining?'warn':true);
