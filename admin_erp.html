@@ -1425,7 +1425,7 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.96.12-cross-publisher-live-validation';
+const FRONTEND_VERSION='2.96.13-product-listing-refresh';
 const FRONTEND_BUILD='admin-erp-v29610-recover-save-grid';
 const SALES_DB_POLL_INTERVAL_MS=60000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
@@ -3656,7 +3656,17 @@ function openFloatingActionMenu(ev,items){
 }
 document.addEventListener('click',e=>{if(!e.target.closest('.floatingKebabPanel')&&!e.target.closest('.productKebabButton')&&!e.target.closest('.comboKebabButton')&&!e.target.closest('.comboLineKebabButton'))document.querySelectorAll('.floatingKebabPanel').forEach(x=>x.remove())},true);
 window.addEventListener('scroll',()=>document.querySelectorAll('.floatingKebabPanel').forEach(x=>x.remove()),true);
-function openProductActionMenu(ev,idx){openFloatingActionMenu(ev,[{label:'Modificar',onclick:`renderEditProductTool(${idx})`},{label:'Eliminar',cls:'danger',onclick:`deleteInventoryItem(${idx})`}])}
+async function refreshInventoryProduct(idx){
+  let item=(state.inventoryItems||[])[idx];if(!item)return;let sku=String(item.sku||'').trim();if(!sku)return;
+  setStatus('invStatus',`Refrescando publicaciones ML y TN de ${sku}...`);let rowStatus=qs(`rowStatus_${idx}`);if(rowStatus)rowStatus.textContent='Refrescando...';
+  try{
+    let d=await fetchJson(`/admin/v2/inventory/products/${encodeURIComponent(sku)}/refresh-listings`,{method:'POST',body:'{}'});
+    await searchInventory(state.inventory.offset||0,false);
+    let errors=Array.isArray(d.errors)?d.errors:[],message=`${sku}: ${Number(d.refreshed_count||0)} publicación(es) actualizadas desde ML/TN.`;
+    if(errors.length)setStatus('invStatus',message+' No se pudo leer '+errors.map(e=>e.marketplace||'?').join(', ')+'.','warn');else setStatus('invStatus',message,true)
+  }catch(e){setStatus('invStatus','No pude refrescar las publicaciones: '+friendlyInventoryError(e),false);if(rowStatus)rowStatus.textContent='Error al refrescar'}
+}
+function openProductActionMenu(ev,idx){openFloatingActionMenu(ev,[{label:'Modificar',onclick:`renderEditProductTool(${idx})`},{label:'Refrescar',onclick:`refreshInventoryProduct(${idx})`},{label:'Eliminar',cls:'danger',onclick:`deleteInventoryItem(${idx})`}])}
 function inventoryActionsCell(i,idx){return `<button type="button" class="productKebabButton" title="Más acciones" onclick="openProductActionMenu(event,${idx})">⋮</button>`}
 function renderProductPublicationsDetail(i){
   let arr=Array.isArray(i.listings)?i.listings:[];
