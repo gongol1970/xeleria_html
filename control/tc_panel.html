@@ -170,7 +170,7 @@
     function currentMonth(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`}
     function currentDate(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
     function fmtSelectedDate(value){if(!/^\d{4}-\d{2}-\d{2}$/.test(String(value||'')))return '—';const [year,month,day]=value.split('-');return `${day}/${month}/${year}`}
-    function fmtTime(value){if(!value)return 'N/A';const d=new Date(value);if(Number.isNaN(d.getTime()))return 'N/A';return new Intl.DateTimeFormat('es-AR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}).format(d)}
+    function fmtTime(value){if(!value)return 'N/A';const d=new Date(value);if(Number.isNaN(d.getTime()))return 'N/A';return new Intl.DateTimeFormat('es-AR',{hour:'2-digit',minute:'2-digit',second:'2-digit',timeZone:'America/Argentina/Buenos_Aires'}).format(d)}
     function fmtUsd(value){const amount=Number(value||0);return `USD ${amount.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:6})}`}
     function fmtMonth(value){if(!/^\d{4}-\d{2}$/.test(String(value||'')))return 'este mes';const [year,month]=value.split('-').map(Number);return new Intl.DateTimeFormat('es-AR',{month:'short',year:'numeric'}).format(new Date(year,month-1,1))}
     function usageHtml(user){
