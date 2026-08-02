@@ -1425,8 +1425,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.96.9-stable-import-grid';
-const FRONTEND_BUILD='admin-erp-v2969-stable-import-grid';
+const FRONTEND_VERSION='2.96.10-recover-save-grid';
+const FRONTEND_BUILD='admin-erp-v29610-recover-save-grid';
 const SALES_DB_POLL_INTERVAL_MS=60000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
 const XELERIA_MIN_SEARCH_CHARS=4;function isShortSearch(q){q=String(q||'').trim();return q.length>0&&q.length<XELERIA_MIN_SEARCH_CHARS}function minSearchMessage(){return 'Ingresá al menos '+XELERIA_MIN_SEARCH_CHARS+' caracteres para buscar.'}
@@ -5673,6 +5673,11 @@ async function saveInventoryImportBatch(){
     document.querySelectorAll('#inventoryImportGridBody input[type="radio"]').forEach(inp=>inp.disabled=false);
     setInventoryImportSaveBusy(false);
     setStatus('inventoryImportStatus','Error iniciando guardado: '+errText(e),false);
+    inventoryImportSetGridVisible(true);
+    loadInventoryImportGrid(0,{force:true,fromSaveError:true}).catch(err=>{
+      console.debug('grid recovery after save start error',err);
+      inventoryImportSetGridVisible(true);
+    });
     renderLastJsonPanel&&renderLastJsonPanel();
   }
 }
@@ -5807,7 +5812,7 @@ async function loadInventoryImportGrid(offset=0,opts={}){
 cleanTokenFromUrl();
 loadSettings();if(typeof loadMLQuestionSettings==='function')loadMLQuestionSettings();renderMLQuickButtons();
 let migrationAuditRequested=new URLSearchParams(location.search).get('migration_audit')==='1';
-showView(migrationAuditRequested?'versiones':'inicio',{skipHistory:true});health();handleOauthReturn();updateVersionBar();startAlertPolling();if(migrationAuditRequested)loadMigrationAudit();/* V15: no se llama automáticamente a import-jobs/grid al iniciar para evitar 404 legacy en consola. La grilla se carga sólo durante/tras una importación real. */
+showView(migrationAuditRequested?'versiones':'inicio',{skipHistory:true});health();handleOauthReturn();updateVersionBar();startAlertPolling();inventoryImportBootstrapGridButton();if(migrationAuditRequested)loadMigrationAudit();/* Recuperación única al iniciar: muestra staging pendiente sin activar polling periódico. */
 </script>
 </body>
 </html>
