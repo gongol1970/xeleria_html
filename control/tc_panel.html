@@ -51,6 +51,7 @@
     .status.offline{color:var(--muted);background:#f0ede8}.status.expired{color:var(--red);background:var(--red-bg)}
     .empty{padding:32px;text-align:center;color:var(--muted)}
     .admin-tools{display:grid;grid-template-columns:minmax(230px,1fr) 155px auto;gap:12px;width:min(760px,100%)}
+    .session-log-tools{width:min(220px,100%)}
     .field{display:grid;gap:6px}.field label{font-size:12px;text-transform:uppercase;font-weight:800;color:var(--muted)}
     .field input,.field textarea{width:100%;border:1px solid #cfc6b8;background:#fff;padding:11px 12px;border-radius:6px;color:var(--ink);outline:none}
     .field input:focus,.field textarea:focus{border-color:var(--gold-dark);box-shadow:0 0 0 3px rgba(215,183,96,.2)}
@@ -111,6 +112,18 @@
 
     <section class="section">
       <div class="section-head">
+        <div><h2>Bitácora diaria de conexiones</h2><p>Muestra cada inicio de sesión. La desconexión sólo aparece si el usuario pulsó Salir; en cualquier otro caso figura N/A.</p></div>
+        <div class="field session-log-tools"><label for="usageDate">Día</label><input id="usageDate" type="date"></div>
+      </div>
+      <div id="sessionLogMeta" class="results-meta">Cargando conexiones…</div>
+      <div class="table-scroll">
+        <table><thead><tr><th style="width:42%">Usuario</th><th style="width:18%">Fecha</th><th style="width:20%">Conexión</th><th style="width:20%">Desconexión</th></tr></thead><tbody id="sessionLogRows"></tbody></table>
+        <div id="sessionLogEmpty" class="empty hidden">No hay conexiones registradas para ese día.</div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
         <div><h2>Administrar suscripciones</h2><p>Buscá un comercio, controlá su acceso y agregale meses.</p></div>
         <div class="admin-tools"><div class="field"><label for="search">Buscar usuario</label><input id="search" type="search" placeholder="Nombre del comercio"></div><div class="field"><label for="usageMonth">Mes de IA</label><input id="usageMonth" type="month"></div><button id="clearSearch" class="button" type="button">Limpiar</button></div>
       </div>
@@ -140,7 +153,7 @@
     const $=id=>document.getElementById(id);
     const api='https://api.xeleria.com.ar/control';
     const key=()=>sessionStorage.getItem('xeleria_owner_key')||'';
-    let users=[],selectedUser=null,refreshTimer=null,aiMonth='';
+    let users=[],selectedUser=null,refreshTimer=null,aiMonth='',sessionLog=[];
 
     async function call(path,options={}){
       const headers={...(options.headers||{}),Authorization:`Bearer ${key()}`};
@@ -155,6 +168,9 @@
       return new Intl.DateTimeFormat('es-AR',withTime?{dateStyle:'short',timeStyle:'short'}:{dateStyle:'medium'}).format(d);
     }
     function currentMonth(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`}
+    function currentDate(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+    function fmtSelectedDate(value){if(!/^\d{4}-\d{2}-\d{2}$/.test(String(value||'')))return '—';const [year,month,day]=value.split('-');return `${day}/${month}/${year}`}
+    function fmtTime(value){if(!value)return 'N/A';const d=new Date(value);if(Number.isNaN(d.getTime()))return 'N/A';return new Intl.DateTimeFormat('es-AR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}).format(d)}
     function fmtUsd(value){const amount=Number(value||0);return `USD ${amount.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:6})}`}
     function fmtMonth(value){if(!/^\d{4}-\d{2}$/.test(String(value||'')))return 'este mes';const [year,month]=value.split('-').map(Number);return new Intl.DateTimeFormat('es-AR',{month:'short',year:'numeric'}).format(new Date(year,month-1,1))}
     function usageHtml(user){
@@ -172,6 +188,16 @@
       $('connectedRows').innerHTML=items.map(user=>`<tr><td>${rowIdentity(user)}</td><td><span class="status online">En línea</span></td><td>${fmt(user.onboarding_at)}</td><td>${fmt(user.subscription_ends_at)}</td><td>${usageHtml(user)}</td><td>${fmt(user.last_seen_at,true)}</td></tr>`).join('');
       $('connectedEmpty').classList.toggle('hidden',items.length>0);
       $('connectedRows').parentElement.classList.toggle('hidden',items.length===0);
+    }
+    function renderSessionLog(items,dateLabel){
+      sessionLog=items;
+      $('sessionLogMeta').textContent=`${items.length} conexión${items.length===1?'':'es'} · ${fmtSelectedDate(dateLabel)}`;
+      $('sessionLogRows').innerHTML=items.map(entry=>`<tr><td>${rowIdentity(entry)}</td><td>${fmtSelectedDate(dateLabel)}</td><td><strong>${fmtTime(entry.connected_at)}</strong></td><td>${entry.disconnected_at?fmtTime(entry.disconnected_at):escapeHtml(entry.disconnect_label||'N/A')}</td></tr>`).join('');
+      $('sessionLogEmpty').classList.toggle('hidden',items.length>0);
+      $('sessionLogRows').parentElement.classList.toggle('hidden',items.length===0);
+    }
+    function renderSessionLogError(message){
+      sessionLog=[];$('sessionLogRows').innerHTML='';$('sessionLogRows').parentElement.classList.add('hidden');$('sessionLogEmpty').classList.remove('hidden');$('sessionLogEmpty').textContent=`No pude cargar la bitácora: ${message}`;$('sessionLogMeta').textContent='Bitácora no disponible';
     }
     function filteredUsers(){const q=$('search').value.trim().toLocaleLowerCase('es');return q?users.filter(user=>String(user.name||'').toLocaleLowerCase('es').includes(q)):users}
     function renderUsers(){
@@ -193,6 +219,12 @@
         $('connectedLabel').textContent=`Actividad de los últimos ${data.connected_window_minutes} minutos`;
         $('checkedAt').textContent=`Actualizado ${fmt(data.checked_at,true)}`;
         renderConnected(data.connected||[]);renderUsers();
+        const requestedDate=$('usageDate').value||currentDate();
+        try{
+          const logData=await call(`/session-log?date=${encodeURIComponent(requestedDate)}`);
+          $('sessionLogEmpty').textContent='No hay conexiones registradas para ese día.';
+          renderSessionLog(logData.sessions||[],logData.date||requestedDate);
+        }catch(logError){renderSessionLogError(logError.message)}
       }catch(error){if(String(error.message).toLowerCase().includes('clave'))logout();else showFlash(error.message,true)}
       finally{$('refresh').disabled=false}
     }
@@ -226,10 +258,11 @@
     function logout(){sessionStorage.removeItem('xeleria_owner_key');clearInterval(refreshTimer);$('login').classList.remove('hidden');$('key').value='';$('key').focus()}
 
     $('loginForm').addEventListener('submit',async event=>{event.preventDefault();try{await login($('key').value)}catch(error){sessionStorage.removeItem('xeleria_owner_key');$('loginError').textContent=error.message;$('loginError').style.display='block'}});
-    $('refresh').addEventListener('click',load);$('logout').addEventListener('click',logout);$('search').addEventListener('input',renderUsers);$('usageMonth').addEventListener('change',load);$('clearSearch').addEventListener('click',()=>{$('search').value='';renderUsers();$('search').focus()});
+    $('refresh').addEventListener('click',load);$('logout').addEventListener('click',logout);$('search').addEventListener('input',renderUsers);$('usageMonth').addEventListener('change',load);$('usageDate').addEventListener('change',load);$('clearSearch').addEventListener('click',()=>{$('search').value='';renderUsers();$('search').focus()});
     $('closeDialog').addEventListener('click',()=>$('subscriptionDialog').close());$('cancelDialog').addEventListener('click',()=>$('subscriptionDialog').close());$('toggleAccess').addEventListener('click',toggleAccess);$('minusMonth').addEventListener('click',()=>adjustMonths(-1));$('plusMonth').addEventListener('click',()=>adjustMonths(1));$('giftForm').addEventListener('submit',submitGift);
     document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&key())load()});
     $('usageMonth').value=currentMonth();
+    $('usageDate').value=currentDate();
     if(key())login(key()).catch(logout);
   </script>
 </body>
