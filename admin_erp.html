@@ -1008,7 +1008,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 <div class="navTitle">Tienda Nube</div><div class="sub"><button class="navBtn" data-view="tn-publicaciones">Publicaciones</button><button class="navBtn" data-view="tn-ventas">Ventas</button><button class="navBtn" data-view="tn-clientes">Clientes</button></div>
 
 <div class="navTitle">Local físico</div><div class="sub"><button class="navBtn" data-view="arca-manual">Emitir comprobante manual</button></div>
-<div class="navTitle">Gestión</div><div class="sub"><div class="navParent">Inventario</div><div class="sub2"><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" type="button" onclick="openInventoryReconciliation()">Resincronizar ML / TN / XelerIA</button><button class="navBtn" data-view="publicador-cruzado">Publicador cruzado ML / TN</button><button class="navBtn" data-view="combos">Combos / Kits</button><button class="navBtn" data-view="full-inbound">Envío a Full</button><button class="navBtn" data-view="movimientos">Movimientos de stock</button></div><button class="navBtn" data-view="clientes">Clientes ML / TN</button><button class="navBtn" data-view="arca-reportes">ARCA reportes</button></div>
+<div class="navTitle">Gestión</div><div class="sub"><div class="navParent">Inventario</div><div class="sub2"><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="publicador-cruzado">Publicador cruzado ML / TN</button><button class="navBtn" data-view="combos">Combos / Kits</button><button class="navBtn" data-view="full-inbound">Envío a Full</button><button class="navBtn" data-view="movimientos">Movimientos de stock</button></div><button class="navBtn" data-view="clientes">Clientes ML / TN</button><button class="navBtn" data-view="arca-reportes">ARCA reportes</button></div>
 <div class="navTitle">Inteligencia Artificial</div><div class="sub"><button class="navBtn" data-view="xeli-config">Configuración Xeli</button><button class="navBtn" data-view="xeli-training">Entrenamiento Xeli</button></div>
 <div class="navTitle">Sistema</div><div class="sub"><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="bitacora">Registro operativo</button><button class="navBtn" data-view="versiones">Versión</button></div>
 </nav></aside>
@@ -1425,10 +1425,10 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.96.13-product-listing-refresh';
+const FRONTEND_VERSION='2.96.14-import-grid-gtin';
 const FRONTEND_BUILD='admin-erp-v29610-recover-save-grid';
 const SALES_DB_POLL_INTERVAL_MS=60000;
-let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
+let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
 const XELERIA_MIN_SEARCH_CHARS=4;function isShortSearch(q){q=String(q||'').trim();return q.length>0&&q.length<XELERIA_MIN_SEARCH_CHARS}function minSearchMessage(){return 'Ingresá al menos '+XELERIA_MIN_SEARCH_CHARS+' caracteres para buscar.'}
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
 const INVENTORY_IMPORT_RUNNING_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
@@ -2146,6 +2146,7 @@ function maybePlayNotificationSound(prev,next){
 }
 function inventoryImportNotificationIsFinal(n){let t=notificationType(n);return t.includes('inventory_import_finished')||t.includes('inventory_import_failed')||t.includes('inventory_import_saved')}
 function inventoryImportHandleNotificationCompletion(){
+  if(Date.now()<Number(state.inventoryImportIgnoreCompletionsUntil||0))return;
   let items=(notificationGroups().inventory_import||[]);
   let activeJob=String(state.inventoryImportActiveJobId||'').trim();
   let activeBatch=String(state.inventoryImportActiveBatchId||'').trim();
@@ -3358,6 +3359,8 @@ function crossSplitNumberUnit(value,defaultUnit){
 function crossRenderMlAttributes(){
   let box=qs('crossMlAttributes'),cat=crossMlCategory();if(!box||!cat){if(box)box.innerHTML='';return}
   let predicted={};(cat.predicted_attributes||[]).forEach(row=>predicted[String(row.id||'')]=row);
+  let requiredIds=new Set((cat.required_attributes||[]).map(row=>String(row.id||''))),hasGtinPair=requiredIds.has('GTIN')&&requiredIds.has('EMPTY_GTIN_REASON');
+  let predictedGtin=predicted.GTIN||{},predictedReason=predicted.EMPTY_GTIN_REASON||{},predictedGtinValue=String(predictedGtin.value_id||predictedGtin.value_name||'').trim(),predictedReasonValue=String(predictedReason.value_id||predictedReason.value_name||'').trim(),noGtinInitially=hasGtinPair&&!predictedGtinValue&&!!predictedReasonValue;
   box.innerHTML=(cat.required_attributes||[]).filter(row=>!row.auto_from_inventory).map(row=>{
     let pre=predicted[String(row.id||'')]||{},values=[...(row.values||[])],valueId=String(pre.value_id||''),valueName=String(pre.value_name||''),valueType=String(row.value_type||'string').toLowerCase();
     if(!valueName&&valueId){let known=values.find(v=>String(v.id||'')===valueId);valueName=String(known?.name||'')}
@@ -3365,13 +3368,21 @@ function crossRenderMlAttributes(){
     if(isBrand&&!values.some(v=>/^GEN[ÉE]RIC[AO]$/i.test(String(v.name||''))))values.unshift({id:'',name:'Genérica'});
     let allowsFree=valueType!=='list'||isBrand||isMaterial,listId='crossMlValues_'+String(row.id||'').replace(/[^A-Za-z0-9_-]/g,'_'),maxLength=Number(row.value_max_length||0),maxAttr=maxLength>0?` maxlength="${maxLength}"`:'';
     let control='';
-    if(valueType==='number_unit'){
+    if(String(row.id||'')==='GTIN'&&hasGtinPair){
+      control=`<input id="crossMlGtinInput" class="crossMlAttribute" data-attr-id="GTIN" value="${esc(valueName)}" placeholder="Ej.: 887276246529" ${noGtinInitially?'disabled':''}><label class="inlineCheck"><input id="crossMlNoGtin" type="checkbox" onchange="crossToggleGtin()" ${noGtinInitially?'checked':''}> Mi producto no lo tiene</label>`
+    }else if(valueType==='number_unit'){
       let units=[...(row.allowed_units||[])],split=crossSplitNumberUnit(valueName,row.default_unit||''),unitOptions=units.map(unit=>`<option value="${esc(unit.name||unit.id||'')}" ${String(unit.name||unit.id||'')===String(split.unit||'')?'selected':''}>${esc(unit.name||unit.id)}</option>`).join('');
       control=`<div class="crossValueUnit"><input class="crossMlAttribute" data-attr-id="${esc(row.id)}" type="number" step="any" value="${esc(split.number)}" placeholder="Valor"><select class="crossMlUnit" data-attr-id="${esc(row.id)}" aria-label="Unidad de ${esc(row.name||row.id)}">${unitOptions}</select></div><div class="small">Ingresá la medida con su unidad: cm para estas medidas; en peso usá kg o g según corresponda.</div>`
-    }else if(values.length&&!allowsFree){control=`<select class="crossMlAttribute" data-attr-id="${esc(row.id)}"><option value="">Elegir...</option>${values.map(v=>`<option value="${esc(v.id||'')}" data-name="${esc(v.name||'')}" ${String(v.id||'')===valueId?'selected':''}>${esc(v.name||v.id)}</option>`).join('')}</select>`}
+    }else if(values.length&&!allowsFree){control=`<select class="crossMlAttribute" data-attr-id="${esc(row.id)}" ${String(row.id||'')==='EMPTY_GTIN_REASON'&&hasGtinPair&&!noGtinInitially?'disabled':''}><option value="">Elegir...</option>${values.map(v=>`<option value="${esc(v.id||'')}" data-name="${esc(v.name||'')}" ${String(v.id||'')===valueId?'selected':''}>${esc(v.name||v.id)}</option>`).join('')}</select>`}
     else{control=`<input class="crossMlAttribute" data-attr-id="${esc(row.id)}" value="${esc(valueName)}" placeholder="Escribí o elegí un valor"${values.length?` list="${esc(listId)}"`:''}${maxAttr}>${values.length?`<datalist id="${esc(listId)}">${values.map(v=>`<option value="${esc(v.name||v.id)}"></option>`).join('')}</datalist>`:''}`}
     return `<div><label>${esc(crossMlAttributeLabel(row))} *</label>${control}</div>`
-  }).join('')||'<div class="small">La categoría no informó atributos obligatorios adicionales.</div>'
+  }).join('')||'<div class="small">La categoría no informó atributos obligatorios adicionales.</div>';
+  crossToggleGtin(false)
+}
+function crossToggleGtin(clearOpposite=true){
+  let checkbox=qs('crossMlNoGtin'),gtin=qs('crossMlGtinInput'),reason=document.querySelector('.crossMlAttribute[data-attr-id="EMPTY_GTIN_REASON"]');if(!checkbox||!gtin||!reason)return;
+  let noGtin=checkbox.checked;gtin.disabled=noGtin;reason.disabled=!noGtin;
+  if(clearOpposite){if(noGtin)gtin.value='';else reason.value=''}
 }
 function crossRenderDraft(){
   let p=state.crossPublisher.preview||{},d=p.draft||{},target=p.target_marketplace||'',categories='';
@@ -3389,7 +3400,7 @@ function crossRenderDraft(){
   if(target==='ML'){crossRenderMlAttributes();crossUpdateTitleCounter()}
 }
 function crossMlAttributePayload(){
-  return[...document.querySelectorAll('.crossMlAttribute')].map(el=>{let row={id:el.dataset.attrId};if(el.tagName==='SELECT'){let opt=el.options[el.selectedIndex];row.value_id=el.value;row.value_name=opt?.dataset.name||opt?.textContent||''}else{let definition=crossMlAttributeDefinition(row.id),unit=document.querySelector(`.crossMlUnit[data-attr-id="${CSS.escape(row.id)}"]`)?.value||'';row.value_name=[el.value.trim(),unit].filter(Boolean).join(' ');let known=(definition?.values||[]).find(value=>String(value.name||'').trim().toLocaleLowerCase()===row.value_name.toLocaleLowerCase());if(known?.id)row.value_id=known.id}return row}).filter(row=>row.value_id||row.value_name)
+  return[...document.querySelectorAll('.crossMlAttribute')].filter(el=>!el.disabled).map(el=>{let row={id:el.dataset.attrId};if(el.tagName==='SELECT'){let opt=el.options[el.selectedIndex];row.value_id=el.value;row.value_name=opt?.dataset.name||opt?.textContent||''}else{let definition=crossMlAttributeDefinition(row.id),unit=document.querySelector(`.crossMlUnit[data-attr-id="${CSS.escape(row.id)}"]`)?.value||'';row.value_name=[el.value.trim(),unit].filter(Boolean).join(' ');let known=(definition?.values||[]).find(value=>String(value.name||'').trim().toLocaleLowerCase()===row.value_name.toLocaleLowerCase());if(known?.id)row.value_id=known.id}return row}).filter(row=>row.value_id||row.value_name)
 }
 function crossPublishErrorText(e){
   let detail=e?.detail?.detail||e?.detail||e?.response?.detail||e?.response||{},causes=detail?.causes||detail?.response?.cause||[];let messages=(Array.isArray(causes)?causes:[]).map(c=>typeof c==='string'?c:c?.message||c?.code).filter(Boolean);return messages.length?messages.join(' · '):errText(e)
@@ -5561,7 +5572,7 @@ function inventoryImportSaveDoneStatus(st){return ['saved','saved_with_errors','
 function inventoryImportSaveFailedStatus(st){return ['save_failed','failed','error'].includes(String(st||'').toLowerCase())}
 function inventoryImportSaveNeutralStatus(st){return ['completed','cancelled'].includes(String(st||'').toLowerCase())}
 function inventoryImportGridIsClosedPayload(d={}){if(d&&d.needs_reconciliation)return false;let b=(d&&d.batch)||{};let j=(d&&d.job)||{};let st=String(b.status||j.status||d.status||'').toLowerCase();return !!(b.closed_at||b.confirmed_at||['confirmed','confirmed_with_errors','saved','saved_with_errors','closed'].includes(st))}
-function inventoryImportAfterSaved(msg='Grilla guardada correctamente.'){inventoryImportClearGridPoll();state.inventoryImportSaveNoticeActive=false;state.inventoryImportSaving=false;state.inventoryImportGridLoaded=false;state.inventoryImportCanViewGrid=false;state.inventoryImportActiveJobId='';state.inventoryImportSaveJobId='';state.inventoryImportCurrentBatchId='';state.inventoryImportActiveBatchId='';state.inventoryImportItemTypes={};setInventoryImportSaveBusy(false);inventoryImportCloseGrid(msg);if(qs('inventoryImportPager'))qs('inventoryImportPager').innerHTML='';searchInventory(0,false).catch(e=>console.debug('inventory refresh after save',e))}
+function inventoryImportAfterSaved(msg='Grilla guardada correctamente.'){inventoryImportClearGridPoll();state.inventoryImportIgnoreCompletionsUntil=Date.now()+15000;state.inventoryImportSaveNoticeActive=false;state.inventoryImportSaving=false;state.inventoryImportGridLoaded=false;state.inventoryImportCanViewGrid=false;state.inventoryImportActiveJobId='';state.inventoryImportSaveJobId='';state.inventoryImportCurrentBatchId='';state.inventoryImportActiveBatchId='';state.inventoryImportItemTypes={};setInventoryImportSaveBusy(false);renderInventoryImportGrid([]);inventoryImportCloseGrid(msg);if(qs('inventoryImportPager'))qs('inventoryImportPager').innerHTML='';searchInventory(0,false).catch(e=>console.debug('inventory refresh after save',e))}
 function inventoryImportSaveObservationSummary(job={}){
   let errs=Array.isArray(job.item_errors)?job.item_errors:[];
   let count=Number(job.error_count||errs.length||0);
@@ -5751,6 +5762,7 @@ async function runInventoryImportRefresh(offset=0){
   if(await inventoryImportActiveJobIsRunning()){if(!state.inventoryImportSaving)setInventoryImportRunBusy(true);setStatus('inventoryImportStatus',state.inventoryImportSaving?INVENTORY_SAVE_RUNNING_MESSAGE:INVENTORY_IMPORT_RUNNING_MESSAGE,true);return}
   let channels=inventoryImportSelectedChannels();
   if(!channels.length){setStatus('inventoryImportStatus','No hay canales conectados para importar.',false);return}
+  state.inventoryImportIgnoreCompletionsUntil=0;
   state.inventoryImportActiveJobId='';
   state.inventoryImportActiveBatchId='';
   state.inventoryImportCurrentBatchId='';
