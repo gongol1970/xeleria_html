@@ -1425,8 +1425,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.96.14-import-grid-gtin';
-const FRONTEND_BUILD='admin-erp-v29610-recover-save-grid';
+const FRONTEND_VERSION='2.96.15-current-import-stock-save';
+const FRONTEND_BUILD='admin-erp-v29615-current-import-stock-save';
 const SALES_DB_POLL_INTERVAL_MS=60000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
 const XELERIA_MIN_SEARCH_CHARS=4;function isShortSearch(q){q=String(q||'').trim();return q.length>0&&q.length<XELERIA_MIN_SEARCH_CHARS}function minSearchMessage(){return 'Ingresá al menos '+XELERIA_MIN_SEARCH_CHARS+' caracteres para buscar.'}
@@ -2150,10 +2150,17 @@ function inventoryImportHandleNotificationCompletion(){
   let items=(notificationGroups().inventory_import||[]);
   let activeJob=String(state.inventoryImportActiveJobId||'').trim();
   let activeBatch=String(state.inventoryImportActiveBatchId||'').trim();
-  let n=items.find(x=>inventoryImportNotificationIsFinal(x)&&(!activeJob||String((x.payload||{}).job_id||'')===activeJob));
+  if(!state.inventoryImportRunning&&!activeJob&&!activeBatch)return;
+  let n=items.find(x=>{
+    if(!inventoryImportNotificationIsFinal(x))return false;
+    let payload=x.payload||{};
+    if(activeJob&&String(payload.job_id||'')!==activeJob)return false;
+    if(activeBatch&&String(payload.batch_id||'')!==activeBatch)return false;
+    return true;
+  });
   if(!n)return;
   let payload=n.payload||{};
-  if(state.inventoryImportCompletionLoading||(!state.inventoryImportRunning&&!activeJob&&!activeBatch))return;
+  if(state.inventoryImportCompletionLoading)return;
   state.inventoryImportCompletionLoading=true;
   if(payload.batch_id)state.inventoryImportActiveBatchId=payload.batch_id;
   state.inventoryImportActiveJobId='';
@@ -4911,14 +4918,21 @@ async function saveInventoryProductAll(idx){
       await fetchJson('/admin/inventory/change-item-type/session',{method:'POST',body:JSON.stringify({sku:item.sku,item_type:'simple',confirm_remove_components:true})});
       item.item_type='single';
     }
+    let syncDeferred=!!d.sync_background||!!((d.sync_run||{}).deferred);
+    let queuedJobs=((d.sync_job_summary||{}).job_ids||[]).length;
     let jobCount=(d.sync_jobs||[]).filter(j=>j&&j.ok!==false).length;
     let syncErrors=Number((d.sync_run||{}).errors||0)+((d.sync_job_summary||{}).errors||[]).length;
     applyInventoryProductSaveResultToOpenEditor(idx,item,d);
-    invToolStatus(syncErrors?`Cambios guardados · stock ${d.new_stock??''} · sincronización pendiente (${syncErrors}).`:`Cambios guardados OK · stock ${d.new_stock??''} · canales confirmados ${jobCount}. Cerrando editor...`,syncErrors?'warn':true);
+    if(syncDeferred){
+      invToolStatus(`Cambios guardados OK · stock ${d.new_stock??''} · sincronización ML/TN iniciada (${queuedJobs}). Cerrando editor...`,true);
+    }else{
+      invToolStatus(syncErrors?`Cambios guardados · stock ${d.new_stock??''} · sincronización pendiente (${syncErrors}).`:`Cambios guardados OK · stock ${d.new_stock??''} · canales confirmados ${jobCount}. Cerrando editor...`,syncErrors?'warn':true);
+    }
     await searchInventory(state.inventory.offset||0,true);
     let box=inventoryToolBox();
     if(box){box.classList.add('hidden');box.innerHTML='';}
-    setStatus('invStatus',syncErrors?`Cambios guardados para ${item.sku}; ML/TN quedó pendiente y se reintentará automáticamente.`:`Cambios guardados y confirmados en ML/TN para ${item.sku}${convertingToSimple?' · ahora es Simple':''}.`,syncErrors?'warn':true);
+    if(syncDeferred)setStatus('invStatus',`Cambios guardados para ${item.sku}; la sincronización ML/TN ya fue iniciada.`,true);
+    else setStatus('invStatus',syncErrors?`Cambios guardados para ${item.sku}; ML/TN quedó pendiente y se reintentará automáticamente.`:`Cambios guardados y confirmados en ML/TN para ${item.sku}${convertingToSimple?' · ahora es Simple':''}.`,syncErrors?'warn':true);
   }catch(e){
     invToolStatus('Error guardando cambios: '+friendlyInventoryError(e),false);
   }
