@@ -1448,9 +1448,11 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.1-dashboard-quiet-status';
-const FRONTEND_BUILD='admin-erp-v2971-dashboard-quiet-status';
+const FRONTEND_VERSION='2.97.2-sales-early-db';
+const FRONTEND_BUILD='admin-erp-v2972-sales-early-db';
 const SALES_DB_POLL_INTERVAL_MS=60000;
+const SALES_DB_LOAD_MAX_MS=15000;
+const SALES_LIVE_REFRESH_MAX_MS=30000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
 const XELERIA_MIN_SEARCH_CHARS=4;function isShortSearch(q){q=String(q||'').trim();return q.length>0&&q.length<XELERIA_MIN_SEARCH_CHARS}function minSearchMessage(){return 'Ingresá al menos '+XELERIA_MIN_SEARCH_CHARS+' caracteres para buscar.'}
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
@@ -1989,11 +1991,14 @@ function rememberTenantIdFromPayload(data){
 }
 // ====== FIN MODULO SISTEMA / POWERSHELL INTERNO ======
 async function fetchJson(path,opt={}){
-  globalActivityBegin();
+  let trackActivity=opt.trackActivity!==false;
+  let fetchOpt={...opt};
+  delete fetchOpt.trackActivity;
+  if(trackActivity)globalActivityBegin();
   try{
     let r,txt='',data=null;
     try{
-      r=await fetch(url(path),{...opt,headers:xeleriaHeaders(opt.headers||{})});
+      r=await fetch(url(path),{...fetchOpt,headers:xeleriaHeaders(fetchOpt.headers||{})});
       txt=await r.text();
       try{data=JSON.parse(txt)}catch{data={ok:r.ok,text:txt}}
       rememberTenantIdFromPayload(data);
@@ -2028,7 +2033,7 @@ async function fetchJson(path,opt={}){
     }
     return data;
   }finally{
-    globalActivityEnd();
+    if(trackActivity)globalActivityEnd();
   }
 }
 
@@ -3196,13 +3201,15 @@ function startSalesDbPolling(ch){
 async function refreshVisibleShipping(ch,items,opts={}){
   let lc=String(ch||'').toLowerCase(),sid=lc+'VentasStatus';
   if(!['ml','tn'].includes(lc))return null;
+  let manual=!!opts.manual;
+  let requestOpt={method:'POST',skipLastJson:!manual,trackActivity:manual};
   let claimsRefresh=null,claimsError='';
   if(ch==='ML'){
     try{
-      claimsRefresh=await fetchJson('/admin/ml/claims/refresh?max_claims=200',{
-        method:'POST',
+      claimsRefresh=await fetchJsonWithTimeout('/admin/ml/claims/refresh?max_claims=200',{
+        ...requestOpt,
         skipLastJson:true
-      });
+      },SALES_LIVE_REFRESH_MAX_MS,'La actualización de reclamos ML');
     }catch(claimExc){claimsError=errText(claimExc)}
   }
   let ids=salesVisibleOrderIds(ch,items);
@@ -3216,22 +3223,21 @@ async function refreshVisibleShipping(ch,items,opts={}){
   }
   let salesState=state.sales[ch];
   let seq=++salesState.refreshSeq;
-  let manual=!!opts.manual;
   setStatus(sid,`Mostrando ventas guardadas · actualizando ${ids.length} pendientes visibles...`);
   try{
-    let d=await fetchJson(`/admin/${lc}/orders/refresh-visible-shipping`,{
-      method:'POST',
+    let d=await fetchJsonWithTimeout(`/admin/${lc}/orders/refresh-visible-shipping`,{
+      ...requestOpt,
       body:JSON.stringify({order_ids:ids}),
       skipLastJson:!manual
-    });
+    },SALES_LIVE_REFRESH_MAX_MS,`La actualización logística ${ch}`);
     let correoRefresh=null,correoError='';
     if(ch==='ML'){
       try{
-        correoRefresh=await fetchJson('/admin/ml/orders/correo/refresh-visible',{
-          method:'POST',
+        correoRefresh=await fetchJsonWithTimeout('/admin/ml/orders/correo/refresh-visible',{
+          ...requestOpt,
           body:JSON.stringify({order_ids:ids}),
           skipLastJson:true
-        });
+        },SALES_LIVE_REFRESH_MAX_MS,'La actualización de Correo');
       }catch(correoExc){correoError=errText(correoExc)}
     }
     let errors=Number(d.errors_count||0),done=Number(d.refreshed_count||0),issued=Number(d.invoice_issued_count||0),queued=Number(d.invoice_queued_count||0),checked=Number(d.invoice_checked_count||0),skippedInvoices=Number(d.invoice_skipped_count||0);
@@ -3268,10 +3274,24 @@ async function refreshShippingPending(ch,opts={}){
 }
 async function enterSalesView(ch){
   let lc=ch.toLowerCase(),sid=lc+'VentasStatus';
+  let label=ch==='ML'?'Mercado Libre':'Tienda Nube';
+  let salesState=state.sales[ch];
+  let enterSeq=(salesState.enterSeq||0)+1;
+  salesState.enterSeq=enterSeq;
   let liveVerified=false,refreshWarning='';
-  setStatus(sid,'Actualizando '+(ch==='ML'?'Mercado Libre':'Tienda Nube')+'...');
+  salesState.freshnessWarning='';
+  await loadRecent(ch,salesState.offset||0,{
+    refreshShipping:false,
+    freshnessWarning:`Mostrando ventas guardadas mientras se verifica ${label}.`
+  });
+  if(enterSeq!==salesState.enterSeq||!salesViewIsActive(ch))return;
+  startSalesDbPolling(ch);
   try{
-    let refresh=await fetchJson(`/admin/${lc}/orders/refresh-section?limit=${encodeURIComponent(salesLimit(ch))}`,{method:'POST',skipLastJson:true});
+    let refresh=await fetchJsonWithTimeout(`/admin/${lc}/orders/refresh-section?limit=${encodeURIComponent(salesLimit(ch))}`,{
+      method:'POST',
+      skipLastJson:true,
+      trackActivity:false
+    },SALES_LIVE_REFRESH_MAX_MS,`La verificación de ${label}`);
     let step=refresh?.steps?.[lc+'_orders'];
     let result=step?.result;
     let failedItem=(result?.items||step?.items||[]).find(item=>item?.action==='error'&&item?.error);
@@ -3283,18 +3303,18 @@ async function enterSalesView(ch){
     liveVerified=true;
   }catch(e){
     console.warn('enterSalesView '+ch,e);
-    refreshWarning='No se pudo verificar '+(ch==='ML'?'Mercado Libre':'Tienda Nube')+' ahora. Se muestran datos guardados; no uses esta lista para afirmar que una compra no existe. '+errText(e);
+    refreshWarning='No se pudo verificar '+label+' ahora. Se muestran datos guardados; no uses esta lista para afirmar que una compra no existe. '+errText(e);
   }
-  state.sales[ch].freshnessWarning=refreshWarning;
-  await loadRecent(ch,state.sales[ch].offset||0,{refreshShipping:false,liveVerified,freshnessWarning:refreshWarning});
+  if(enterSeq!==salesState.enterSeq||!salesViewIsActive(ch))return;
+  salesState.freshnessWarning=refreshWarning;
+  await loadRecent(ch,salesState.offset||0,{refreshShipping:false,liveVerified,freshnessWarning:refreshWarning});
+  if(enterSeq!==salesState.enterSeq||!salesViewIsActive(ch))return;
   if(!liveVerified){
-    if(salesViewIsActive(ch))startSalesDbPolling(ch);
     return;
   }
-  if(salesViewIsActive(ch)&&(state.sales[ch].items||[]).length){
-    await refreshVisibleShipping(ch,state.sales[ch].items,{manual:false,reload:true});
+  if((salesState.items||[]).length){
+    await refreshVisibleShipping(ch,salesState.items,{manual:false,reload:true});
   }
-  if(salesViewIsActive(ch))startSalesDbPolling(ch);
 }
 function pagerHtml(ch,d){
   let limit=Number(d.limit||salesLimit(ch)||20),offset=Number(d.offset||0),items=d.items||[],total=Number(d.total||0);
@@ -3319,7 +3339,7 @@ async function loadRecent(ch,offset=0,opts={}){
   try{
     let path=`/admin/${lc}/orders/recent?limit=${encodeURIComponent(lim)}&offset=${encodeURIComponent(offset)}&exclude_tests=true&q=${encodeURIComponent(q)}&include_total=${q?'true':'false'}`;
     if(cursor)path+=`&cursor=${encodeURIComponent(cursor)}`;
-    let d=await fetchJson(path,{skipLastJson:true});
+    let d=await fetchJsonWithTimeout(path,{skipLastJson:true},SALES_DB_LOAD_MAX_MS,`La lectura de ventas ${ch}`);
     if(loadSeq!==salesState.loadSeq)return d;
     let arr=(d.items||[]).filter(x=>!x.channel||String(x.channel).toUpperCase()===ch);
     salesState.items=arr;
