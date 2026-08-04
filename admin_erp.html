@@ -1448,11 +1448,10 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.3-live-first-nonblocking';
-const FRONTEND_BUILD='admin-erp-v2973-live-first-nonblocking';
+const FRONTEND_VERSION='2.97.4-live-open-sales-durable-jobs';
+const FRONTEND_BUILD='admin-erp-v2974-live-open-sales-durable-jobs';
 const SALES_DB_POLL_INTERVAL_MS=60000;
 const SALES_DB_LOAD_MAX_MS=15000;
-const SALES_LIVE_REFRESH_MAX_MS=30000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
 const XELERIA_MIN_SEARCH_CHARS=4;function isShortSearch(q){q=String(q||'').trim();return q.length>0&&q.length<XELERIA_MIN_SEARCH_CHARS}function minSearchMessage(){return 'Ingresá al menos '+XELERIA_MIN_SEARCH_CHARS+' caracteres para buscar.'}
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
@@ -2539,9 +2538,8 @@ function dashChannelBox(obj,ch){return (obj&&obj.channels&&obj.channels[ch])?obj
 function dashInvChannelBox(obj,ch){return (obj&&obj.channels&&obj.channels[ch])?obj.channels[ch]:{count:0,total_amount:0,items:[]}}
 function dashMiniItem(it){let num=it.sale_number||it.external_order_id||'';let ch=it.channel||'';let cust=it.customer_name||'Sin nombre';let amt=dashMoney(it.total);return `<div class="dashItem"><div><span class="pill ${ch==='ML'?'info':'ok'}">${esc(ch)}</span></div><div><strong>${esc(num)}</strong><br><span class="small">${esc(cust)} · ${dateAR(it.created_at)}</span></div><div><strong>${amt}</strong></div></div>`}
 function dashShippingRows(p){let rows=[];let chs=p.channels||{};Object.keys(chs).forEach(ch=>{let types=chs[ch].types||{};Object.keys(types).forEach(t=>{rows.push({channel:ch,type:t,count:types[t].count||0,total:types[t].total_amount||0})})});rows.sort((a,b)=>a.channel.localeCompare(b.channel)||b.count-a.count);if(!rows.length)return '<div class="dashEmpty">Sin pendientes de envío en la ventana actual.</div>';return `<table class="dashTable"><thead><tr><th>Canal</th><th>Tipo de envío</th><th>Cantidad</th><th>Importe</th></tr></thead><tbody>${rows.map(r=>`<tr><td><span class="pill ${r.channel==='ML'?'info':'ok'}">${esc(r.channel)}</span></td><td><strong>${esc(r.type)}</strong></td><td>${esc(r.count)}</td><td>${dashMoney(r.total)}</td></tr>`).join('')}</tbody></table>`}
-const DASHBOARD_REFRESH_MAX_MS=30000;
 const DASHBOARD_SUMMARY_MAX_MS=15000;
-async function fetchJsonWithTimeout(path,opt={},timeoutMs=30000,label='La consulta'){
+async function fetchJsonWithTimeout(path,opt={},timeoutMs=15000,label='La consulta'){
   let controller=new AbortController();
   let timer=setTimeout(()=>controller.abort(),Math.max(1,Number(timeoutMs)||1));
   try{
@@ -2557,26 +2555,25 @@ async function refreshShippingForDashboard(force=false){
   if(loadDashboard._refreshingShipping)return {attempted:false,pending:true,errors:[],updated:false};
   if(!force&&loadDashboard._lastShippingRefreshAt && now-loadDashboard._lastShippingRefreshAt<45000)return {attempted:false,pending:false,errors:[],updated:false};
   loadDashboard._refreshingShipping=true;
-  let deadline=Date.now()+DASHBOARD_REFRESH_MAX_MS;
   let errors=[],updated=false;
   try{
     let channels=[
-      {channel:'ML',section:'/admin/ml/orders/refresh-section?limit=20',shipping:'/admin/ml/orders/refresh_shipping_pending?limit=80&days=30&scan_limit=300'},
-      {channel:'TN',section:'/admin/tn/orders/refresh-section?limit=20',shipping:'/admin/tn/orders/refresh_shipping_pending?limit=80&days=30&scan_limit=300'}
+      {channel:'ML',section:'/admin/ml/orders/refresh-section?limit=20'},
+      {channel:'TN',section:'/admin/tn/orders/refresh-section?limit=20'}
     ];
     let [sectionResults,claimsResult]=await Promise.all([
-      Promise.allSettled(channels.map(x=>fetchJsonWithTimeout(x.section,{method:'POST',skipLastJson:true},deadline-Date.now(),`Actualización ${x.channel}`))),
-      Promise.allSettled([fetchJsonWithTimeout('/admin/ml/claims/refresh?max_claims=200',{method:'POST',skipLastJson:true,trackActivity:false},deadline-Date.now(),'Reclamos ML')])
+      Promise.allSettled(channels.map(x=>fetchJson(x.section,{method:'POST',skipLastJson:true}))),
+      Promise.allSettled([fetchJson('/admin/ml/claims/refresh?max_claims=200',{method:'POST',skipLastJson:true,trackActivity:false})])
     ]);
     if(claimsResult[0]?.status==='fulfilled')updated=true;
     else errors.push({channel:'ML',stage:'reclamos',reason:claimsResult[0]?.reason});
-    let ready=[];
-    sectionResults.forEach((r,idx)=>{if(r.status==='fulfilled'){ready.push(channels[idx]);updated=true}else errors.push({channel:channels[idx].channel,stage:'ventas',reason:r.reason})});
-    let remaining=deadline-Date.now();
-    if(ready.length&&remaining>0){
-      let shippingResults=await Promise.allSettled(ready.map(x=>fetchJsonWithTimeout(x.shipping,{method:'POST',skipLastJson:true},remaining,`Envíos ${x.channel}`)));
-      shippingResults.forEach((r,idx)=>{if(r.status==='fulfilled')updated=true;else errors.push({channel:ready[idx].channel,stage:'envíos',reason:r.reason})});
-    }else if(ready.length)ready.forEach(x=>errors.push({channel:x.channel,stage:'envíos',reason:{timeout:true,message:'No quedó tiempo para refrescar envíos.'}}));
+    sectionResults.forEach((r,idx)=>{
+      let channel=channels[idx].channel,lc=channel.toLowerCase();
+      let capture=r.value?.steps?.[lc+'_orders'],openSales=r.value?.steps?.[lc+'_open_sales'];
+      let failed=r.status!=='fulfilled'||r.value?.skipped||!capture||capture.ok===false||!openSales||openSales.ok===false;
+      if(failed)errors.push({channel,stage:'ventas abiertas',reason:r.reason||openSales?.error||capture?.error||r.value?.reason});
+      else updated=true;
+    });
     if(errors.length)console.warn('Dashboard refresh parcial',errors);
     loadDashboard._lastShippingRefreshAt=Date.now();
   }catch(e){
@@ -3205,10 +3202,10 @@ async function refreshVisibleShipping(ch,items,opts={}){
   let claimsRefresh=opts.claimsRefresh||null,claimsError='';
   if(ch==='ML'&&!opts.skipClaims){
     try{
-      claimsRefresh=await fetchJsonWithTimeout('/admin/ml/claims/refresh?max_claims=200',{
+      claimsRefresh=await fetchJson('/admin/ml/claims/refresh?max_claims=200',{
         ...requestOpt,
         skipLastJson:true
-      },SALES_LIVE_REFRESH_MAX_MS,'La actualización de reclamos ML');
+      });
     }catch(claimExc){claimsError=errText(claimExc)}
   }
   let ids=salesVisibleOrderIds(ch,items);
@@ -3224,19 +3221,19 @@ async function refreshVisibleShipping(ch,items,opts={}){
   let seq=++salesState.refreshSeq;
   setStatus(sid,`Mostrando ventas guardadas · actualizando ${ids.length} pendientes visibles...`);
   try{
-    let d=await fetchJsonWithTimeout(`/admin/${lc}/orders/refresh-visible-shipping`,{
+    let d=await fetchJson(`/admin/${lc}/orders/refresh-visible-shipping`,{
       ...requestOpt,
       body:JSON.stringify({order_ids:ids}),
       skipLastJson:!manual
-    },SALES_LIVE_REFRESH_MAX_MS,`La actualización logística ${ch}`);
+    });
     let correoRefresh=null,correoError='';
     if(ch==='ML'){
       try{
-        correoRefresh=await fetchJsonWithTimeout('/admin/ml/orders/correo/refresh-visible',{
+        correoRefresh=await fetchJson('/admin/ml/orders/correo/refresh-visible',{
           ...requestOpt,
           body:JSON.stringify({order_ids:ids}),
           skipLastJson:true
-        },SALES_LIVE_REFRESH_MAX_MS,'La actualización de Correo');
+        });
       }catch(correoExc){correoError=errText(correoExc)}
     }
     let errors=Number(d.errors_count||0),done=Number(d.refreshed_count||0),issued=Number(d.invoice_issued_count||0),queued=Number(d.invoice_queued_count||0),checked=Number(d.invoice_checked_count||0),skippedInvoices=Number(d.invoice_skipped_count||0);
@@ -3282,20 +3279,22 @@ async function enterSalesView(ch){
   setStatus(sid,'Actualizando '+label+'...');
   let claimsResult=null,claimsWarning='';
   let claimsPromise=ch==='ML'
-    ? fetchJsonWithTimeout('/admin/ml/claims/refresh?max_claims=200',{method:'POST',skipLastJson:true,trackActivity:false},SALES_LIVE_REFRESH_MAX_MS,'La actualización de reclamos ML')
+    ? fetchJson('/admin/ml/claims/refresh?max_claims=200',{method:'POST',skipLastJson:true,trackActivity:false})
     : Promise.resolve(null);
   try{
-    let refresh=await fetchJsonWithTimeout(`/admin/${lc}/orders/refresh-section?limit=${encodeURIComponent(salesLimit(ch))}`,{
+    let refresh=await fetchJson(`/admin/${lc}/orders/refresh-section?limit=${encodeURIComponent(salesLimit(ch))}`,{
       method:'POST',
       skipLastJson:true,
       trackActivity:false
-    },SALES_LIVE_REFRESH_MAX_MS,`La verificación de ${label}`);
+    });
     let step=refresh?.steps?.[lc+'_orders'];
     let result=step?.result;
+    let openStep=refresh?.steps?.[lc+'_open_sales'];
+    let openResult=openStep?.result;
     let failedItem=(result?.items||step?.items||[]).find(item=>item?.action==='error'&&item?.error);
-    if(refresh?.skipped||!step||step.ok===false||result?.ok===false||step.guarded||Number(step.errors||result?.errors||0)>0){
+    if(refresh?.skipped||!step||step.ok===false||result?.ok===false||step.guarded||Number(step.errors||result?.errors||0)>0||!openStep||openStep.ok===false||openResult?.ok===false||Number(openStep.errors||openResult?.errors_count||0)>0){
       let itemReason=failedItem?.error?(failedItem?.tn_number?`Venta #${failedItem.tn_number}: ${failedItem.error}`:failedItem.error):'';
-      let reason=step?.reason||result?.reason||refresh?.reason||step?.error||result?.error||itemReason||'la verificación no terminó correctamente';
+      let reason=openStep?.reason||openResult?.reason||openStep?.error||step?.reason||result?.reason||refresh?.reason||step?.error||result?.error||itemReason||'la verificación no terminó correctamente';
       throw new Error(reason);
     }
     liveVerified=true;
@@ -3313,10 +3312,10 @@ async function enterSalesView(ch){
     if(claimsResult)setStatus(sid,`Reclamos ML actualizados: ${Number(claimsResult.open_count||0)} abiertos. ${refreshWarning}`,false);
     return;
   }
-  if((salesState.items||[]).length){
-    await refreshVisibleShipping(ch,salesState.items,{manual:false,reload:true,skipClaims:true,claimsRefresh:claimsResult});
-  }else if(claimsResult){
+  if(claimsResult){
     setStatus(sid,`Actualización ML completa · reclamos: ${Number(claimsResult.open_count||0)} abiertos.`,true);
+  }else{
+    setStatus(sid,`Actualización ${ch} completa.`,true);
   }
 }
 function pagerHtml(ch,d){
