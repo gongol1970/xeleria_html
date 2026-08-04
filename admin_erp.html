@@ -1448,8 +1448,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.2-sales-early-db';
-const FRONTEND_BUILD='admin-erp-v2972-sales-early-db';
+const FRONTEND_VERSION='2.97.3-live-first-nonblocking';
+const FRONTEND_BUILD='admin-erp-v2973-live-first-nonblocking';
 const SALES_DB_POLL_INTERVAL_MS=60000;
 const SALES_DB_LOAD_MAX_MS=15000;
 const SALES_LIVE_REFRESH_MAX_MS=30000;
@@ -2564,7 +2564,12 @@ async function refreshShippingForDashboard(force=false){
       {channel:'ML',section:'/admin/ml/orders/refresh-section?limit=20',shipping:'/admin/ml/orders/refresh_shipping_pending?limit=80&days=30&scan_limit=300'},
       {channel:'TN',section:'/admin/tn/orders/refresh-section?limit=20',shipping:'/admin/tn/orders/refresh_shipping_pending?limit=80&days=30&scan_limit=300'}
     ];
-    let sectionResults=await Promise.allSettled(channels.map(x=>fetchJsonWithTimeout(x.section,{method:'POST',skipLastJson:true},deadline-Date.now(),`Actualización ${x.channel}`)));
+    let [sectionResults,claimsResult]=await Promise.all([
+      Promise.allSettled(channels.map(x=>fetchJsonWithTimeout(x.section,{method:'POST',skipLastJson:true},deadline-Date.now(),`Actualización ${x.channel}`))),
+      Promise.allSettled([fetchJsonWithTimeout('/admin/ml/claims/refresh?max_claims=200',{method:'POST',skipLastJson:true,trackActivity:false},deadline-Date.now(),'Reclamos ML')])
+    ]);
+    if(claimsResult[0]?.status==='fulfilled')updated=true;
+    else errors.push({channel:'ML',stage:'reclamos',reason:claimsResult[0]?.reason});
     let ready=[];
     sectionResults.forEach((r,idx)=>{if(r.status==='fulfilled'){ready.push(channels[idx]);updated=true}else errors.push({channel:channels[idx].channel,stage:'ventas',reason:r.reason})});
     let remaining=deadline-Date.now();
@@ -2634,9 +2639,10 @@ function dashFailureRows(f){
 async function loadDashboard(force=false){
   if(loadDashboard.loading)return;
   loadDashboard.loading=true;
-  setDashboardStatus('Cargando datos confirmados del dashboard...');
-  let refreshPromise=refreshShippingForDashboard(force),refreshResult=null,generatedAt='';
+  setDashboardStatus('Actualizando Mercado Libre y Tienda Nube...');
+  let refreshResult=null,generatedAt='';
   try{
+    refreshResult=await refreshShippingForDashboard(force);
     state.dashboardJobs=state.dashboardJobs||{offset:0,limit:5};
     let d=await fetchJsonWithTimeout(`/admin/dashboard/summary?invoice_hours=168&shipping_days=14&sync_jobs_limit=${encodeURIComponent(state.dashboardJobs.limit||5)}&sync_jobs_offset=${encodeURIComponent(state.dashboardJobs.offset||0)}`,{},DASHBOARD_SUMMARY_MAX_MS,'El resumen del dashboard');
     let v=d.version||'?';
@@ -2675,21 +2681,14 @@ async function loadDashboard(force=false){
     if(qs('stMl'))qs('stMl').textContent=poll.ml_auto_poll_enabled?'ON':'OFF';
     if(qs('stWa'))qs('stWa').textContent=poll.whatsapp_admin_configurado?'OK':'NO';
     generatedAt=dateAR(d.generated_at);
-    setDashboardStatus('Datos confirmados cargados · actualizando ML/TN...');
-    refreshResult=await refreshPromise;
     let channels=dashboardRefreshErrorChannels(refreshResult);
-    if(channels.length)setDashboardStatus('Mostrando datos confirmados. La actualización de ML/TN continuará automáticamente.');
+    if(channels.length)setDashboardStatus('Dashboard cargado con los datos disponibles; no respondieron: '+channels.join(', ')+'.',false);
     else setDashboardStatus('Dashboard actualizado · '+generatedAt,true);
   }catch(e){
     console.error('loadDashboard',e);
     setDashboardStatus('Error dashboard: '+(e.message||JSON.stringify(e)),false);
-    try{refreshResult=await refreshPromise}catch(_e){}
   }finally{
     loadDashboard.loading=false;
-    if(refreshResult?.updated&&!refreshResult?.errors?.length&&!loadDashboard._refreshReloadQueued){
-      loadDashboard._refreshReloadQueued=true;
-      setTimeout(()=>{loadDashboard._refreshReloadQueued=false;loadDashboard(false)},0);
-    }
   }
 }
 function logisticLabel(o,ch){
@@ -3203,8 +3202,8 @@ async function refreshVisibleShipping(ch,items,opts={}){
   if(!['ml','tn'].includes(lc))return null;
   let manual=!!opts.manual;
   let requestOpt={method:'POST',skipLastJson:!manual,trackActivity:manual};
-  let claimsRefresh=null,claimsError='';
-  if(ch==='ML'){
+  let claimsRefresh=opts.claimsRefresh||null,claimsError='';
+  if(ch==='ML'&&!opts.skipClaims){
     try{
       claimsRefresh=await fetchJsonWithTimeout('/admin/ml/claims/refresh?max_claims=200',{
         ...requestOpt,
@@ -3280,12 +3279,11 @@ async function enterSalesView(ch){
   salesState.enterSeq=enterSeq;
   let liveVerified=false,refreshWarning='';
   salesState.freshnessWarning='';
-  await loadRecent(ch,salesState.offset||0,{
-    refreshShipping:false,
-    freshnessWarning:`Mostrando ventas guardadas mientras se verifica ${label}.`
-  });
-  if(enterSeq!==salesState.enterSeq||!salesViewIsActive(ch))return;
-  startSalesDbPolling(ch);
+  setStatus(sid,'Actualizando '+label+'...');
+  let claimsResult=null,claimsWarning='';
+  let claimsPromise=ch==='ML'
+    ? fetchJsonWithTimeout('/admin/ml/claims/refresh?max_claims=200',{method:'POST',skipLastJson:true,trackActivity:false},SALES_LIVE_REFRESH_MAX_MS,'La actualización de reclamos ML')
+    : Promise.resolve(null);
   try{
     let refresh=await fetchJsonWithTimeout(`/admin/${lc}/orders/refresh-section?limit=${encodeURIComponent(salesLimit(ch))}`,{
       method:'POST',
@@ -3305,15 +3303,20 @@ async function enterSalesView(ch){
     console.warn('enterSalesView '+ch,e);
     refreshWarning='No se pudo verificar '+label+' ahora. Se muestran datos guardados; no uses esta lista para afirmar que una compra no existe. '+errText(e);
   }
+  try{claimsResult=await claimsPromise}catch(e){claimsWarning='No se pudieron actualizar los reclamos ML: '+errText(e)}
   if(enterSeq!==salesState.enterSeq||!salesViewIsActive(ch))return;
-  salesState.freshnessWarning=refreshWarning;
-  await loadRecent(ch,salesState.offset||0,{refreshShipping:false,liveVerified,freshnessWarning:refreshWarning});
+  salesState.freshnessWarning=[refreshWarning,claimsWarning].filter(Boolean).join(' ');
+  await loadRecent(ch,salesState.offset||0,{refreshShipping:false,liveVerified,freshnessWarning:salesState.freshnessWarning});
   if(enterSeq!==salesState.enterSeq||!salesViewIsActive(ch))return;
+  startSalesDbPolling(ch);
   if(!liveVerified){
+    if(claimsResult)setStatus(sid,`Reclamos ML actualizados: ${Number(claimsResult.open_count||0)} abiertos. ${refreshWarning}`,false);
     return;
   }
   if((salesState.items||[]).length){
-    await refreshVisibleShipping(ch,salesState.items,{manual:false,reload:true});
+    await refreshVisibleShipping(ch,salesState.items,{manual:false,reload:true,skipClaims:true,claimsRefresh:claimsResult});
+  }else if(claimsResult){
+    setStatus(sid,`Actualización ML completa · reclamos: ${Number(claimsResult.open_count||0)} abiertos.`,true);
   }
 }
 function pagerHtml(ch,d){
