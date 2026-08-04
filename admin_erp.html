@@ -1358,7 +1358,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
     <div id="xeliInitialStatus" class="status" role="status" aria-live="polite"></div>
   </div>
 
-  <div class="card" id="correoSettingsCard">
+  <div class="card hidden" id="correoSettingsCard" aria-hidden="true">
     <h3>Correo Argentino</h3>
     <p>La integración técnica de XelerIA cotiza envíos. Conectá además la cuenta MiCorreo del comercio para exportar ventas ML “a coordinar” y consultar su seguimiento.</p>
     <div class="grid">
@@ -1448,8 +1448,9 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.4-live-open-sales-durable-jobs';
-const FRONTEND_BUILD='admin-erp-v2974-live-open-sales-durable-jobs';
+const FRONTEND_VERSION='2.97.5-claims-source-sale-dates';
+const FRONTEND_BUILD='admin-erp-v2975-claims-source-sale-dates';
+const CORREO_ARGENTINO_OAUTH_ENABLED=false;
 const SALES_DB_POLL_INTERVAL_MS=60000;
 const SALES_DB_LOAD_MAX_MS=15000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
@@ -3064,6 +3065,7 @@ function correoOrderId(o){
   return String(children.length===1?children[0]:(o.external_order_id||''));
 }
 function correoActionHtml(o,ch,logistic){
+  if(!CORREO_ARGENTINO_OAUTH_ENABLED)return'';
   if(ch!=='ML'||!['A coordinar','Sin envío'].includes(logistic))return'';
   let oid=correoOrderId(o);if(!oid)return'';
   let correo=(o.correo_argentino&&typeof o.correo_argentino==='object')?o.correo_argentino:{};
@@ -3147,25 +3149,31 @@ function orderCard(o,ch){
   let lines=linesForOrder(o);
   let display=lines.map(l=>`<div class="lineItem"><div><strong>${esc(l.sku)}</strong></div><div>${esc(l.name||'')}</div><div>Cant: <strong>${esc(l.quantity)}</strong></div><div>${l.unit_price!==''?money(l.unit_price):''}</div><div>${l.prev!==undefined?`Stock ${esc(l.prev)} → ${esc(l.next)}`:(l.subtotal?money(l.subtotal):'')}</div></div>`).join('')||'<div class="muted">Sin líneas visibles todavía.</div>';
   let sub=subOrderText(o,ch);
-  let logistic=logisticLabel(o,ch);
+  let hasClaim=ch==='ML'&&o.ml_claim_open===true;
+  let logistic=hasClaim?'RECLAMO':logisticLabel(o,ch);
   let logState=shippingStateLabel(o,ch);
-  let act=saleNeedsAction(o,ch);
+  let act=hasClaim?'':saleNeedsAction(o,ch);
   let stateCls=shippingStateClass(logState);
-  let stateHtml=logState?`<span class="shippingAction ${stateCls}">${esc(logState)}</span>`:'';
+  let stateHtml=!hasClaim&&logState?`<span class="shippingAction ${stateCls}">${esc(logState)}</span>`:'';
   let manualDeliveredHtml=tnDeliveredButton(o,ch);
-  let correoHtml=correoActionHtml(o,ch,logistic);
+  let correoHtml=hasClaim?'':correoActionHtml(o,ch,logistic);
   let correoState=(o.correo_argentino&&typeof o.correo_argentino==='object')?o.correo_argentino:{};
   let showAction=!!(act&&!correoState.exported_at&&String(act).trim().toLowerCase()!==String(logState||'').trim().toLowerCase());
   let actionHtml=showAction?`<span class="logisticsAction">${esc(act)}</span>`:'';
   let totalSub=o.total_products&&Number(o.total_products)!==Number(o.total)?`<br><span class="small">Productos: ${money(o.total_products)}</span>`:'';
-  let logisticClass=logistic==='FULL'?'ship-full':logistic==='FLEX'?'ship-flex':(logistic==='A coordinar'||logistic==='Sin envío')?'ship-coord':'ship-ml';
+  let logisticClass=hasClaim?'bad':logistic==='FULL'?'ship-full':logistic==='FLEX'?'ship-flex':(logistic==='A coordinar'||logistic==='Sin envío')?'ship-coord':'ship-ml';
   let needsVisualAction=saleNeedsVisualAction(o,ch);
-  let saleDate=o.display_created_at||o.sale_at||o.ml_date_closed||o.ml_date_created||o.tn_paid_at||o.tn_created_at||o.created_at;
-  return `<div class="orderCard ${needsVisualAction?'actionSale':''} ${o.ml_claim_open?'mlClaimOpen':''}">${mlClaimHtml(o,ch)}<div class="orderHead"><div><strong>${esc(orderNumber(o,ch))}</strong>${sub?`<br><span class="small">${sub}</span>`:''}<br><span class="small">${dateAR(saleDate)}</span></div><div>${channelCustomerHtml(o,ch)}</div><div class="orderLogisticsBlock"><span class="pill ${logisticClass} shippingPill">${esc(logistic)}</span><br><span class="orderPayStatus">${esc(orderStatusLabel(o,ch))}</span>${stateHtml}${manualDeliveredHtml}${actionHtml}${correoHtml}</div><div class="orderAmountBlock"><strong>${money(o.total)}</strong>${totalSub}<br><span class="small">${countLabel(lines.length)}</span></div><div class="orderInvoiceBlock">${invoiceButton(o,ch)}</div></div><div class="orderLines">${display}</div></div>`
+  let saleDate=o.display_created_at||o.sale_at||o.ml_date_created||o.tn_created_at||o.ml_date_closed||o.tn_paid_at;
+  let saleDateLabel=saleDate?dateAR(saleDate):'Fecha de venta pendiente';
+  return `<div class="orderCard ${needsVisualAction?'actionSale':''} ${o.ml_claim_open?'mlClaimOpen':''}">${mlClaimHtml(o,ch)}<div class="orderHead"><div><strong>${esc(orderNumber(o,ch))}</strong>${sub?`<br><span class="small">${sub}</span>`:''}<br><span class="small">${esc(saleDateLabel)}</span></div><div>${channelCustomerHtml(o,ch)}</div><div class="orderLogisticsBlock"><span class="pill ${logisticClass} shippingPill">${esc(logistic)}</span><br><span class="orderPayStatus">${esc(orderStatusLabel(o,ch))}</span>${stateHtml}${manualDeliveredHtml}${actionHtml}${correoHtml}</div><div class="orderAmountBlock"><strong>${money(o.total)}</strong>${totalSub}<br><span class="small">${countLabel(lines.length)}</span></div><div class="orderInvoiceBlock">${invoiceButton(o,ch)}</div></div><div class="orderLines">${display}</div></div>`
 }
 
 
-function ordersTable(items,channel){if(!items||!items.length)return '<div class="card"><p>No hay ventas capturadas.</p></div>';return items.map(o=>orderCard(o,channel)).join('')}
+function prioritizeOpenClaims(items,channel){
+  if(channel!=='ML')return [...(items||[])];
+  return (items||[]).map((item,index)=>({item,index})).sort((a,b)=>Number(!!b.item.ml_claim_open)-Number(!!a.item.ml_claim_open)||a.index-b.index).map(entry=>entry.item);
+}
+function ordersTable(items,channel){if(!items||!items.length)return '<div class="card"><p>No hay ventas capturadas.</p></div>';return prioritizeOpenClaims(items,channel).map(o=>orderCard(o,channel)).join('')}
 function salesLimit(ch){let el=qs(ch.toLowerCase()+'VentasLimit');return Number(el?.value||20)}
 function salesSearch(ch){let el=qs(ch.toLowerCase()+'VentasSearch');return (el?.value||'').trim()}
 function debouncedSales(ch){clearTimeout(timers['sales_'+ch]);timers['sales_'+ch]=setTimeout(()=>{let q=salesSearch(ch);let lc=ch.toLowerCase();if(isShortSearch(q)){if(qs(lc+'VentasTable'))qs(lc+'VentasTable').innerHTML='<div class="card"><p>'+esc(minSearchMessage())+'</p></div>';if(qs(lc+'VentasPager'))qs(lc+'VentasPager').innerHTML='';setStatus(lc+'VentasStatus',minSearchMessage(),'warn');return}loadRecent(ch,0)},350)}
@@ -3227,7 +3235,7 @@ async function refreshVisibleShipping(ch,items,opts={}){
       skipLastJson:!manual
     });
     let correoRefresh=null,correoError='';
-    if(ch==='ML'){
+    if(ch==='ML'&&CORREO_ARGENTINO_OAUTH_ENABLED){
       try{
         correoRefresh=await fetchJson('/admin/ml/orders/correo/refresh-visible',{
           ...requestOpt,
