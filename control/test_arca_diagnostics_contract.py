@@ -21,6 +21,14 @@ class ArcaDiagnosticsContract(unittest.TestCase):
         self.assertIn("let reviewedRejection=diagnostic.response_kind==='explicit_rejection'", HTML)
         self.assertIn("No reintentar: requiere consulta o revisión previa.", HTML)
 
+    def test_operational_pending_invoice_launches_safe_manual_invoicing(self):
+        self.assertIn("kind==='issue_invoice'&&a.channel&&a.order_id", HTML)
+        self.assertIn("issueInvoiceFromSale('${jsq(String(a.channel))}','${jsq(String(a.order_id))}')", HTML)
+        self.assertIn("label:'Facturar manualmente'", HTML)
+        self.assertIn("status==='not_attempted'||x.response_kind==='explicit_rejection'", HTML)
+        self.assertIn("label:'Revisar facturación'", HTML)
+        self.assertNotIn("label:'Abrir Facturación'", HTML)
+
     def test_manual_quantity_uses_integer_arrows(self):
         self.assertIn('class="amQty" type="number" min="1" step="1"', HTML)
         self.assertNotIn('class="amQty" type="number" step="0.01"', HTML)
