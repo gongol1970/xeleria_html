@@ -1439,8 +1439,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.9-arca-manual-refresh';
-const FRONTEND_BUILD='admin-erp-v2979-arca-manual-refresh';
+const FRONTEND_VERSION='2.97.10-arca-copyable-error';
+const FRONTEND_BUILD='admin-erp-v29710-arca-copyable-error';
 const CORREO_ARGENTINO_OAUTH_ENABLED=false;
 const SALES_DB_POLL_INTERVAL_MS=60000;
 const SALES_DB_LOAD_MAX_MS=15000;
@@ -4191,6 +4191,9 @@ async function createInvoiceDraft(ch,orderId){
 
   }catch(e){setStatus(ch.toLowerCase()+'VentasStatus','Error creando borrador: '+(e.message||JSON.stringify(e)),false);console.error('createInvoiceDraft',e)}
 }
+function showCopyableInvoiceError(errorMsg){
+  window.prompt('No se pudo emitir la factura. Podés copiar el detalle con Ctrl+C:',String(errorMsg||''));
+}
 async function issueInvoiceFromSale(ch,orderId,opts={}){
   hideArcaMonitor();
   if(!orderId){alert('No encontré ID de orden para emitir.');return}
@@ -4225,7 +4228,7 @@ async function issueInvoiceFromSale(ch,orderId,opts={}){
     if(typeof errorMsg!=='string')errorMsg=JSON.stringify(errorMsg);
     setArcaAndSalesStatus(ch,'Error emitiendo: '+errorMsg,false);
     console.error('issueInvoiceFromSale',e);
-    alert(`No se pudo emitir la factura.\n\n${errorMsg}`);
+    showCopyableInvoiceError(errorMsg);
     await loadOpsLog(false);
   }finally{
     setBusy(false);

@@ -35,7 +35,9 @@ class ArcaDiagnosticsContract(unittest.TestCase):
 
     def test_manual_invoice_error_refreshes_visible_persisted_diagnostic(self):
         self.assertIn("detail.arca_padron_error||detail.error", HTML)
-        self.assertIn("alert(`No se pudo emitir la factura.", HTML)
+        self.assertIn("function showCopyableInvoiceError(errorMsg)", HTML)
+        self.assertIn("Podés copiar el detalle con Ctrl+C", HTML)
+        self.assertIn("showCopyableInvoiceError(errorMsg);", HTML)
         self.assertIn("await loadOpsLog(false);", HTML)
 
     def test_successful_manual_invoice_reloads_page_after_cleanup(self):
