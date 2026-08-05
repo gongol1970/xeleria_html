@@ -35,12 +35,13 @@ class MlClaimDisplayContract(unittest.TestCase):
         self.assertNotIn("o.created_at", sale_date_line)
         self.assertIn("Fecha de venta pendiente", body)
 
-    def test_correo_argentino_ui_stays_hidden_until_oauth_exists(self):
+    def test_correo_keeps_pricing_settings_without_login_or_export_action(self):
         self.assertIn("const CORREO_ARGENTINO_OAUTH_ENABLED=false", HTML)
-        self.assertRegex(
-            HTML,
-            r'<div class="card hidden" id="correoSettingsCard" aria-hidden="true">',
-        )
+        self.assertIn('<div class="card" id="correoSettingsCard">', HTML)
+        self.assertIn('id="cfgShippingMarkupValue"', HTML)
+        self.assertIn('id="cfgShippingRoundingStep"', HTML)
+        self.assertNotIn('id="cfgCorreoAccountEmail"', HTML)
+        self.assertNotIn('id="cfgCorreoAccountPassword"', HTML)
         self.assertIn(
             "if(!CORREO_ARGENTINO_OAUTH_ENABLED)return''",
             function_body("correoActionHtml"),

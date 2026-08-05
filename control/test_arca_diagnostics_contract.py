@@ -1,0 +1,35 @@
+from pathlib import Path
+import unittest
+
+
+HTML = (Path(__file__).resolve().parents[1] / "admin_erp.html").read_text(encoding="utf-8")
+
+
+class ArcaDiagnosticsContract(unittest.TestCase):
+    def test_sale_warning_exposes_arca_code_message_stage_and_time(self):
+        self.assertIn("normalizeArcaDiagnosticErrors", HTML)
+        self.assertIn("Código ${esc(x.code||'-')}", HTML)
+        self.assertIn("Etapa: '+diagnostic.stage", HTML)
+        self.assertIn("Hora: '+dateAR(diagnostic.at)", HTML)
+
+    def test_operational_log_carries_arca_observations(self):
+        self.assertIn("function opsLogArcaDetailHtml", HTML)
+        self.assertIn("arca_errors:Array.isArray(x.arca_errors)?x.arca_errors:[]", HTML)
+        self.assertIn("expected_cbte_nro:x.expected_cbte_nro", HTML)
+
+    def test_ambiguous_or_technical_error_has_no_blind_invoice_button(self):
+        self.assertIn("let reviewedRejection=diagnostic.response_kind==='explicit_rejection'", HTML)
+        self.assertIn("No reintentar: requiere consulta o revisión previa.", HTML)
+
+    def test_manual_quantity_uses_integer_arrows(self):
+        self.assertIn('class="amQty" type="number" min="1" step="1"', HTML)
+        self.assertNotIn('class="amQty" type="number" step="0.01"', HTML)
+
+    def test_questions_have_visible_persisted_signature_without_example(self):
+        self.assertIn('id="mlSignatureTextMain"', HTML)
+        self.assertIn('>Guardar firma</button>', HTML)
+        self.assertNotIn('placeholder="Nombre del comercio"', HTML)
+
+
+if __name__ == "__main__":
+    unittest.main()
