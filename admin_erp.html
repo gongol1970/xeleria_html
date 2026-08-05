@@ -1439,8 +1439,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.8-ops-direct-fiscal-errors';
-const FRONTEND_BUILD='admin-erp-v2975-claims-source-sale-dates';
+const FRONTEND_VERSION='2.97.9-arca-manual-refresh';
+const FRONTEND_BUILD='admin-erp-v2979-arca-manual-refresh';
 const CORREO_ARGENTINO_OAUTH_ENABLED=false;
 const SALES_DB_POLL_INTERVAL_MS=60000;
 const SALES_DB_LOAD_MAX_MS=15000;
@@ -2937,7 +2937,7 @@ const AUTO_INVOICE_REASON_LABELS={
   already_queued:'La factura ya estaba esperando en la cola de emisión.'
 };
 function normalizeArcaDiagnosticErrors(value){let items=Array.isArray(value)?value:[];return items.map(x=>{if(!x||typeof x!=='object')return null;let code=x.Code??x.code??x.Codigo??x.codigo,message=x.Msg||x.msg||x.Message||x.message||x.Descripcion||x.descripcion;if(code===undefined&&!message)return null;return{code:code===undefined?'':String(code),message:String(message||'')}}).filter(Boolean)}
-function invoiceDiagnostic(o={}){let raw=o.raw_data||o.raw||o.rawData||{},error=raw&&typeof raw.arca_auto_invoice_last_error==='object'?raw.arca_auto_invoice_last_error:null,result=raw&&typeof raw.arca_auto_invoice_last_result==='object'?raw.arca_auto_invoice_last_result:null;if(error){let detail=error.detail&&typeof error.detail==='object'?error.detail:{},arcaErrors=normalizeArcaDiagnosticErrors(detail.arca_errors),codes=new Set(arcaErrors.map(x=>x.code)),stage=error.stage||detail.stage||'auto_invoice',ambiguous=!!(error.ambiguous||detail.ambiguous),recovery=raw.arca_recovery_pending&&typeof raw.arca_recovery_pending==='object',resultado=String(detail.resultado||'').toUpperCase(),responseKind=recovery?'authorized_unlinked':((ambiguous||stage==='request_cae')?'ambiguous_communication':((stage==='arca_rejected'||resultado==='R')?'explicit_rejection':'technical_error')),invalidCodes=['708','819','823','824','825','826','10239','10240','10241','10242','10243','10245','10246','1402','1420'],classification=responseKind==='authorized_unlinked'?'authorized_unlinked':(responseKind==='ambiguous_communication'?'ambiguous_request':(responseKind==='explicit_rejection'&&invalidCodes.some(x=>codes.has(x))?'invalid_fiscal_data':responseKind)),expected=detail.expected_cbte_nro||((detail.arca_errors||[]).find(x=>x&&x.CbteDesde)||{}).CbteDesde||'',reason=(arcaErrors[0]&&arcaErrors[0].message)||detail.error||detail.message||detail.instruction||'El intento de facturación falló sin más detalle.';return{attempted:true,status:'error',reason:String(reason),stage,at:error.at||'',classification,response_kind:responseKind,resultado,arca_errors:arcaErrors,expected_cbte_nro:expected,automatic_retry_allowed:false}}if(result){let code=String(result.reason||''),reason=result.error||AUTO_INVOICE_REASON_LABELS[code]||(!result.ok?'El intento terminó sin emitir una factura.':'El intento terminó correctamente.');if(typeof reason!=='string')reason='El intento terminó sin emitir una factura.';return{attempted:true,status:result.skipped?'skipped':(result.ok?'ok':'error'),reason,stage:'auto_invoice',at:result.at||'',arca_errors:[],automatic_retry_allowed:false}}return{attempted:false,status:'not_attempted',reason:'No hay un intento de facturación registrado para esta venta.',stage:'',at:'',arca_errors:[],automatic_retry_allowed:true}}
+function invoiceDiagnostic(o={}){let raw=o.raw_data||o.raw||o.rawData||{},error=raw&&typeof raw.arca_auto_invoice_last_error==='object'?raw.arca_auto_invoice_last_error:null,result=raw&&typeof raw.arca_auto_invoice_last_result==='object'?raw.arca_auto_invoice_last_result:null;if(error){let detail=error.detail&&typeof error.detail==='object'?error.detail:{},arcaErrors=normalizeArcaDiagnosticErrors(detail.arca_errors),codes=new Set(arcaErrors.map(x=>x.code)),stage=error.stage||detail.stage||'auto_invoice',ambiguous=!!(error.ambiguous||detail.ambiguous),recovery=raw.arca_recovery_pending&&typeof raw.arca_recovery_pending==='object',resultado=String(detail.resultado||'').toUpperCase(),responseKind=recovery?'authorized_unlinked':((ambiguous||stage==='request_cae')?'ambiguous_communication':((stage==='arca_rejected'||resultado==='R')?'explicit_rejection':'technical_error')),invalidCodes=['708','819','823','824','825','826','10239','10240','10241','10242','10243','10245','10246','1402','1420'],classification=responseKind==='authorized_unlinked'?'authorized_unlinked':(responseKind==='ambiguous_communication'?'ambiguous_request':(responseKind==='explicit_rejection'&&invalidCodes.some(x=>codes.has(x))?'invalid_fiscal_data':responseKind)),expected=detail.expected_cbte_nro||((detail.arca_errors||[]).find(x=>x&&x.CbteDesde)||{}).CbteDesde||'',reason=(arcaErrors[0]&&arcaErrors[0].message)||detail.arca_padron_error||detail.error||detail.message||detail.instruction||'El intento de facturación falló sin más detalle.';return{attempted:true,status:'error',reason:String(reason),stage,at:error.at||'',classification,response_kind:responseKind,resultado,arca_errors:arcaErrors,expected_cbte_nro:expected,automatic_retry_allowed:false}}if(result){let code=String(result.reason||''),reason=result.error||AUTO_INVOICE_REASON_LABELS[code]||(!result.ok?'El intento terminó sin emitir una factura.':'El intento terminó correctamente.');if(typeof reason!=='string')reason='El intento terminó sin emitir una factura.';return{attempted:true,status:result.skipped?'skipped':(result.ok?'ok':'error'),reason,stage:'auto_invoice',at:result.at||'',arca_errors:[],automatic_retry_allowed:false}}return{attempted:false,status:'not_attempted',reason:'No hay un intento de facturación registrado para esta venta.',stage:'',at:'',arca_errors:[],automatic_retry_allowed:true}}
 function invoiceDiagnosticHtml(diagnostic={}){let title=diagnostic.attempted?'Último intento':'Sin intento registrado',meta=[diagnostic.classification?('Clasificación: '+diagnostic.classification):'',diagnostic.resultado?('Resultado: '+diagnostic.resultado):'',diagnostic.stage?('Etapa: '+diagnostic.stage):'',diagnostic.at?('Hora: '+dateAR(diagnostic.at)):'',diagnostic.expected_cbte_nro?('Comprobante esperado: '+diagnostic.expected_cbte_nro):''].filter(Boolean).join(' · '),errors=(diagnostic.arca_errors||[]).map(x=>`<span class="small"><strong>Código ${esc(x.code||'-')}</strong> · ${esc(x.message||'Sin mensaje')}</span>`).join('');return `<div class="invoiceActionDiagnostic ${diagnostic.status==='error'?'error':''}"><strong>${esc(title)}</strong><span>${esc(diagnostic.reason||'')}</span>${meta?`<span class="small">${esc(meta)}</span>`:''}${errors}</div>`}
 function invoiceButton(o,ch){
   // Estados visuales de facturación:
@@ -4198,6 +4198,7 @@ async function issueInvoiceFromSale(ch,orderId,opts={}){
   if(!ok)return;
   setArcaAndSalesStatus(ch,'Emitiendo comprobante real en ARCA. Esperá a que termine, no vuelvas a hacer clic...',null);
   setBusy(true,'Facturando en ARCA','Emitiendo CAE, generando PDF y despachando según canal. Esto puede tardar unos segundos.');
+  let refreshAfterSuccess=false;
   try{
     let d=await fetchJson(`/admin/arca/orders/${encodeURIComponent(ch)}/${encodeURIComponent(orderId)}/issue`,{method:'POST',body:JSON.stringify({concept:'Productos'})});
     let inv=d.invoice||{};
@@ -4218,14 +4219,17 @@ async function issueInvoiceFromSale(ch,orderId,opts={}){
     await loadArcaInvoices();
     await loadRecent(ch,state.sales[ch]?.offset||0);
     alert(`Factura emitida correctamente.\n\nComprobante: ${number}\nCAE: ${inv.cae||'-'}${channelUploadMsg?'\n\n'+channelUploadMsg:''}`);
+    refreshAfterSuccess=true;
   }catch(e){
     let errorMsg=e?.message||e?.detail||JSON.stringify(e);
     if(typeof errorMsg!=='string')errorMsg=JSON.stringify(errorMsg);
     setArcaAndSalesStatus(ch,'Error emitiendo: '+errorMsg,false);
     console.error('issueInvoiceFromSale',e);
     alert(`No se pudo emitir la factura.\n\n${errorMsg}`);
+    await loadOpsLog(false);
   }finally{
     setBusy(false);
+    if(refreshAfterSuccess)window.location.reload();
   }
 }
 

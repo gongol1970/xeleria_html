@@ -33,6 +33,16 @@ class ArcaDiagnosticsContract(unittest.TestCase):
     def test_operational_log_has_no_xeli_interpret_button(self):
         self.assertNotIn('>Interpretar con Xeli</button>', HTML)
 
+    def test_manual_invoice_error_refreshes_visible_persisted_diagnostic(self):
+        self.assertIn("detail.arca_padron_error||detail.error", HTML)
+        self.assertIn("alert(`No se pudo emitir la factura.", HTML)
+        self.assertIn("await loadOpsLog(false);", HTML)
+
+    def test_successful_manual_invoice_reloads_page_after_cleanup(self):
+        self.assertIn("let refreshAfterSuccess=false;", HTML)
+        self.assertIn("refreshAfterSuccess=true;", HTML)
+        self.assertIn("if(refreshAfterSuccess)window.location.reload();", HTML)
+
     def test_manual_quantity_uses_integer_arrows(self):
         self.assertIn('class="amQty" type="number" min="1" step="1"', HTML)
         self.assertNotIn('class="amQty" type="number" step="0.01"', HTML)
