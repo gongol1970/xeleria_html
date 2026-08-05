@@ -25,9 +25,13 @@ class ArcaDiagnosticsContract(unittest.TestCase):
         self.assertIn("kind==='issue_invoice'&&a.channel&&a.order_id", HTML)
         self.assertIn("issueInvoiceFromSale('${jsq(String(a.channel))}','${jsq(String(a.order_id))}')", HTML)
         self.assertIn("label:'Facturar manualmente'", HTML)
-        self.assertIn("status==='not_attempted'||x.response_kind==='explicit_rejection'", HTML)
+        self.assertIn("status==='not_attempted'||x.response_kind==='explicit_rejection'||preRequestFailure", HTML)
+        self.assertIn("['build_payload','resolve_customer_from_arca']", HTML)
         self.assertIn("label:'Revisar facturación'", HTML)
         self.assertNotIn("label:'Abrir Facturación'", HTML)
+
+    def test_operational_log_has_no_xeli_interpret_button(self):
+        self.assertNotIn('>Interpretar con Xeli</button>', HTML)
 
     def test_manual_quantity_uses_integer_arrows(self):
         self.assertIn('class="amQty" type="number" min="1" step="1"', HTML)
