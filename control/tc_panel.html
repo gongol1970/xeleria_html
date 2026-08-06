@@ -254,13 +254,12 @@
         $('subscriptionDialog').close();showFlash(data.message||'Acceso actualizado.');await load();
       }catch(error){showFlash(error.message,true)}finally{button.disabled=false}
     }
-    async function login(value){sessionStorage.setItem('xeleria_owner_key',value);await call('/session');$('login').classList.add('hidden');$('loginError').style.display='none';await load();clearInterval(refreshTimer);refreshTimer=setInterval(load,30000)}
+    async function login(value){sessionStorage.setItem('xeleria_owner_key',value);await call('/session');$('login').classList.add('hidden');$('loginError').style.display='none';await load()}
     function logout(){sessionStorage.removeItem('xeleria_owner_key');clearInterval(refreshTimer);$('login').classList.remove('hidden');$('key').value='';$('key').focus()}
 
     $('loginForm').addEventListener('submit',async event=>{event.preventDefault();try{await login($('key').value)}catch(error){sessionStorage.removeItem('xeleria_owner_key');$('loginError').textContent=error.message;$('loginError').style.display='block'}});
     $('refresh').addEventListener('click',load);$('logout').addEventListener('click',logout);$('search').addEventListener('input',renderUsers);$('usageMonth').addEventListener('change',load);$('usageDate').addEventListener('change',load);$('clearSearch').addEventListener('click',()=>{$('search').value='';renderUsers();$('search').focus()});
     $('closeDialog').addEventListener('click',()=>$('subscriptionDialog').close());$('cancelDialog').addEventListener('click',()=>$('subscriptionDialog').close());$('toggleAccess').addEventListener('click',toggleAccess);$('minusMonth').addEventListener('click',()=>adjustMonths(-1));$('plusMonth').addEventListener('click',()=>adjustMonths(1));$('giftForm').addEventListener('submit',submitGift);
-    document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&key())load()});
     $('usageMonth').value=currentMonth();
     $('usageDate').value=currentDate();
     if(key())login(key()).catch(logout);

@@ -18,7 +18,6 @@ const state = {
   },
   loading: false,
   correction: null,
-  polling: false,
   initialized: false,
   conversationSnapshots: new Map(),
   audioContext: null,
@@ -677,18 +676,6 @@ function handleConversationAlerts(items) {
   if (shouldSound) playAlertSound().catch(() => {});
 }
 
-async function pollConversations() {
-  if (!state.token || state.polling || state.loading || document.hidden) return;
-  state.polling = true;
-  try {
-    await loadConversations(state.selectedId);
-  } catch (_) {
-    // The next interval retries without interrupting the operator.
-  } finally {
-    state.polling = false;
-  }
-}
-
 async function selectConversation(id, redrawList = true) {
   state.selectedId = id;
   const payload = await api(`/pia/conversations/${encodeURIComponent(id)}`);
@@ -1112,10 +1099,6 @@ $("spyToggle").addEventListener("click", () => {
 refreshIcons();
 document.addEventListener("pointerdown", () => unlockSound().catch(() => {}), { once: true });
 document.addEventListener("keydown", () => unlockSound().catch(() => {}), { once: true });
-document.addEventListener("visibilitychange", () => {
-  if (!document.hidden) pollConversations();
-});
-window.setInterval(pollConversations, 5000);
 if (state.token) {
   refreshAll().catch(error => {
     showToast(error.message, true);

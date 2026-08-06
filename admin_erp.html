@@ -1439,10 +1439,9 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.13-tn-sales-combo-cleanup';
-const FRONTEND_BUILD='admin-erp-v29713-tn-sales-combo-cleanup';
+const FRONTEND_VERSION='2.97.14-tenant-hibernation';
+const FRONTEND_BUILD='admin-erp-v29714-tenant-hibernation';
 const CORREO_ARGENTINO_OAUTH_ENABLED=false;
-const SALES_DB_POLL_INTERVAL_MS=60000;
 const SALES_DB_LOAD_MAX_MS=15000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
 const XELERIA_MIN_SEARCH_CHARS=4;function isShortSearch(q){q=String(q||'').trim();return q.length>0&&q.length<XELERIA_MIN_SEARCH_CHARS}function minSearchMessage(){return 'Ingresá al menos '+XELERIA_MIN_SEARCH_CHARS+' caracteres para buscar.'}
@@ -1573,12 +1572,54 @@ console.info('XelerIA tenant', tenantId());
 function startAlertPolling(){
   if(timers.alertPolling&&timers.alertPolling!=='disabled')clearInterval(timers.alertPolling);
   loadNotifications(false);
-  timers.alertPolling=setInterval(()=>loadNotifications(false),20000);
+  timers.alertPolling='disabled';
 }
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')loadNotifications(false)});
-window.addEventListener('focus',()=>loadNotifications(false));
 
 function qs(id){return document.getElementById(id)}function fieldVal(id){let el=qs(id);return el?el.value:''}function apiBase(){return(fieldVal('cfgApiUrl')||fieldVal('apiUrl')||state.api).replace(/\/$/,'').replace(/\/api$/,'')}function token(){return ''}function sessionToken(){return (localStorage.getItem('xeleria_session_token')||sessionStorage.getItem('xeleria_session_token')||'').trim()}function tenantId(){let qp=new URLSearchParams(location.search);let fromUrl=qp.get('tenant_id')||qp.get('tenant')||'';if(fromUrl){localStorage.setItem('xeleria_tenant_id',fromUrl);localStorage.setItem('xeleria_last_tenant_id',fromUrl)}let saved=localStorage.getItem('xeleria_tenant_id')||localStorage.getItem('xeleria_last_tenant_id')||'';if(saved&&saved!=='00000000-0000-0000-0000-000000000001'){localStorage.setItem('xeleria_last_tenant_id',saved);return saved}try{let last=JSON.parse(localStorage.getItem('xeleria_last_json')||'{}');let ids=[last.tenant_id,last.response&&last.response.tenant_id];let res=(last.response&&last.response.results)||[];for(let r of res){ids.push(r&&r.tenant_id);ids.push(r&&r.json&&r.json.tenant_id)}let good=ids.find(x=>String(x||'').match(/^[0-9a-f-]{36}$/i)&&String(x)!=='00000000-0000-0000-0000-000000000001');if(good){localStorage.setItem('xeleria_tenant_id',String(good));localStorage.setItem('xeleria_last_tenant_id',String(good));return String(good)}}catch(e){}return fromUrl||saved||'00000000-0000-0000-0000-000000000001'}function url(path){let sep=path.includes('?')?'&':'?';return `${apiBase()}${path}${sep}tenant_id=${encodeURIComponent(tenantId())}`}function xeleriaHeaders(extra={}){let h={'Content-Type':'application/json','x-xeleria-tenant':tenantId(),...(extra||{})};let st=sessionToken();if(st){h['x-session-token']=st;h['Authorization']='Bearer '+st}return h}function cleanTokenFromUrl(){try{let u=new URL(location.href);['token','admin_token'].forEach(k=>u.searchParams.delete(k));localStorage.removeItem('pc_erp_token');localStorage.removeItem('xeleria_admin_token');history.replaceState({},'',u.toString())}catch(e){}}
+
+const HUMAN_IDLE_MS=10*60*1000;
+const HUMAN_ACTIVITY_PING_MS=60*1000;
+let humanIdleTimer=null,humanActivityPingAt=0,humanActivityPingBusy=false,humanSessionClosing=false;
+function clearLocalSession(){
+  try{
+    ['xeleria_session_token','xeleria_session_expires_at','xeleria_last_json','xeleria_admin_token','pc_erp_token'].forEach(k=>localStorage.removeItem(k));
+    sessionStorage.removeItem('xeleria_session_token');
+  }catch(e){}
+}
+async function closeSessionForHumanInactivity(){
+  if(humanSessionClosing)return;
+  humanSessionClosing=true;
+  let st=sessionToken();
+  try{
+    if(st)await fetch(apiBase()+'/auth/logout',{method:'POST',headers:xeleriaHeaders(),body:JSON.stringify({session_token:st}),keepalive:true});
+  }catch(e){}
+  clearLocalSession();
+  redirectToInicio('');
+}
+function armHumanIdleTimer(){
+  if(humanIdleTimer)clearTimeout(humanIdleTimer);
+  humanIdleTimer=setTimeout(closeSessionForHumanInactivity,HUMAN_IDLE_MS);
+}
+async function registerHumanActivity(force=false){
+  if(humanSessionClosing)return;
+  armHumanIdleTimer();
+  let now=Date.now();
+  if(!sessionToken()||humanActivityPingBusy||(!force&&now-humanActivityPingAt<HUMAN_ACTIVITY_PING_MS))return;
+  humanActivityPingBusy=true;
+  humanActivityPingAt=now;
+  try{
+    let response=await fetch(apiBase()+'/auth/activity',{method:'POST',headers:xeleriaHeaders(),body:'{}'});
+    let data={};try{data=await response.json()}catch(e){}
+    if(response.status===401){clearLocalSession();redirectToInicio('');return}
+    if(response.ok&&data.expires_at)localStorage.setItem('xeleria_session_expires_at',data.expires_at);
+  }catch(e){console.debug('human activity heartbeat',e)}finally{humanActivityPingBusy=false}
+}
+function startHumanInactivityGuard(){
+  ['pointerdown','pointermove','keydown','touchstart','scroll'].forEach(eventName=>document.addEventListener(eventName,()=>registerHumanActivity(false),{passive:true}));
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)registerHumanActivity(true)});
+  window.addEventListener('focus',()=>registerHumanActivity(true));
+  registerHumanActivity(true);
+}
 
 async function logoutXeleria(){
   let st=sessionToken();
@@ -1589,8 +1630,7 @@ async function logoutXeleria(){
     }
   }catch(e){console.debug('logoutXeleria backend',e)}
   try{
-    ['xeleria_session_token','xeleria_last_json','xeleria_admin_token','pc_erp_token'].forEach(k=>localStorage.removeItem(k));
-    ['xeleria_session_token'].forEach(k=>sessionStorage.removeItem(k));
+    clearLocalSession();
   }catch(e){}
   try{updateVersionBar('sesión cerrada')}catch(e){}
   window.location.href='inicio.html?reason=logout&next=admin_erp.html';
@@ -1823,7 +1863,6 @@ function showView(id,options={}){
     if(!options.skipHistory)xeleriaPreviousView=xeleriaCurrentView;
     xeleriaCurrentView=id;
   }
-  stopSalesDbPolling();
   if(id!=='configuracion')clearInventoryImportTransientSaveUi();
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   let view=qs(id); if(view)view.classList.add('active');
@@ -3172,14 +3211,6 @@ function salesVisibleOrderIds(ch,items){
   return ids;
 }
 function salesViewIsActive(ch){return document.querySelector('.view.active')?.id===String(ch||'').toLowerCase()+'-ventas'}
-function stopSalesDbPolling(){if(timers.salesDbPoll){clearInterval(timers.salesDbPoll);delete timers.salesDbPoll}}
-function startSalesDbPolling(ch){
-  stopSalesDbPolling();
-  timers.salesDbPoll=setInterval(()=>{
-    if(document.hidden||!salesViewIsActive(ch))return;
-    loadRecent(ch,state.sales[ch]?.offset||0,{refreshShipping:false,background:true});
-  },SALES_DB_POLL_INTERVAL_MS);
-}
 async function refreshVisibleShipping(ch,items,opts={}){
   let lc=String(ch||'').toLowerCase(),sid=lc+'VentasStatus';
   if(!['ml','tn'].includes(lc))return null;
@@ -3294,7 +3325,6 @@ async function enterSalesView(ch){
   salesState.freshnessWarning=[refreshWarning,claimsWarning].filter(Boolean).join(' ');
   await loadRecent(ch,salesState.offset||0,{refreshShipping:false,liveVerified,freshnessWarning:salesState.freshnessWarning});
   if(enterSeq!==salesState.enterSeq||!salesViewIsActive(ch))return;
-  startSalesDbPolling(ch);
   if(!liveVerified){
     if(claimsResult)setStatus(sid,`Reclamos ML actualizados: ${Number(claimsResult.open_count||0)} abiertos. ${refreshWarning}`,false);
     return;
@@ -5937,7 +5967,7 @@ async function loadInventoryImportGrid(offset=0,opts={}){
 cleanTokenFromUrl();
 loadSettings();if(typeof loadMLQuestionSettings==='function')loadMLQuestionSettings();renderMLQuickButtons();
 let migrationAuditRequested=new URLSearchParams(location.search).get('migration_audit')==='1';
-showView(migrationAuditRequested?'versiones':'inicio',{skipHistory:true});health();handleOauthReturn();updateVersionBar();startAlertPolling();inventoryImportBootstrapGridButton();if(migrationAuditRequested)loadMigrationAudit();/* Recuperación única al iniciar: muestra staging pendiente sin activar polling periódico. */
+startHumanInactivityGuard();showView(migrationAuditRequested?'versiones':'inicio',{skipHistory:true});health();handleOauthReturn();updateVersionBar();startAlertPolling();inventoryImportBootstrapGridButton();if(migrationAuditRequested)loadMigrationAudit();/* Recuperación única al iniciar: muestra staging pendiente sin activar polling periódico. */
 </script>
 </body>
 </html>

@@ -13,6 +13,7 @@
 </head>
 <body>
   <h1>XelerIA · Diagnóstico de versiones</h1>
+  <button id="refresh" type="button">Actualizar</button>
   <p>Página temporal para verificar qué código está realmente deployado.</p>
   <div class="card"><b>Resumen</b><pre id="summary">consultando…</pre></div>
   <div class="card"><b>/health</b><pre id="rootHealth">consultando…</pre></div>
@@ -48,7 +49,7 @@
       bar.textContent = line;
     }
     load();
-    setInterval(load, 15000);
+    document.getElementById('refresh').addEventListener('click', load);
   </script>
 </body>
 </html>
