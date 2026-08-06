@@ -1439,8 +1439,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.10-arca-copyable-error';
-const FRONTEND_BUILD='admin-erp-v29710-arca-copyable-error';
+const FRONTEND_VERSION='2.97.11-onboarding-no-tenant-url';
+const FRONTEND_BUILD='admin-erp-v29711-onboarding-no-tenant-url';
 const CORREO_ARGENTINO_OAUTH_ENABLED=false;
 const SALES_DB_POLL_INTERVAL_MS=60000;
 const SALES_DB_LOAD_MAX_MS=15000;
@@ -2349,16 +2349,11 @@ function cleanOauthParamsFromUrl(){
 function redirectToInicio(reason='no_channel_connected'){
   try{
     let next=(location.pathname.split('/').pop()||'admin_erp.html')+location.search;
-    let currentTenant=tenantId();
     let p=new URLSearchParams({next:next,reason:reason});
-    if(currentTenant&&currentTenant!=='00000000-0000-0000-0000-000000000001')p.set('tenant_id',currentTenant);
-    setStatus('inventoryImportStatus','Sin canal conectado. Redirigiendo al login inicial...',false);
     updateVersionBar('redirigiendo a inicio');
     window.location.href='inicio.html?'+p.toString();
   }catch(e){
-    let currentTenant=tenantId();
-    let tenantParam=currentTenant&&currentTenant!=='00000000-0000-0000-0000-000000000001'?'&tenant_id='+encodeURIComponent(currentTenant):'';
-    window.location.href='inicio.html?next=admin_erp.html&reason='+encodeURIComponent(reason)+tenantParam;
+    window.location.href='inicio.html?next=admin_erp.html&reason='+encodeURIComponent(reason);
   }
 }
 function authExpiredError(e){
@@ -2378,8 +2373,9 @@ function gateIfNoConnectedChannels(ml,tn,source='connections'){
     return true;
   }
 
-  setTimeout(()=>redirectToInicio('no_channel_connected_'+source),350);
-  return true;
+  setStatus('inventoryImportStatus','Conectá Mercado Libre o Tienda Nube para comenzar.','warn');
+  updateVersionBar('sin canal conectado');
+  return false;
 }
 function tenantConnectionFallbackFromSettings(s={},reasonText=''){
   let mlConnected=boolishTrue(s.ml_connected)||boolishTrue(s.mercadolibre_connected)||boolishTrue(s.ml_ok);
