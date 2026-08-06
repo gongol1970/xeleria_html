@@ -17,6 +17,19 @@ def function_body(name: str) -> str:
     return HTML[start:next_function]
 
 
+def sync_function_body(name: str) -> str:
+    match = re.search(rf"function {re.escape(name)}\([^)]*\)\{{", HTML)
+    if not match:
+        raise AssertionError(f"No se encontró {name}")
+    start = match.start()
+    next_function = HTML.find("\nfunction ", match.end())
+    if next_function < 0:
+        next_function = HTML.find("\nasync function ", match.end())
+    if next_function < 0:
+        next_function = len(HTML)
+    return HTML[start:next_function]
+
+
 class SalesNonBlockingContract(unittest.TestCase):
     def test_live_channel_refresh_finishes_before_saved_sales_are_read(self):
         body = function_body("enterSalesView")
@@ -56,6 +69,33 @@ class SalesNonBlockingContract(unittest.TestCase):
         body = function_body("refreshShippingForDashboard")
         self.assertNotIn("fetchJsonWithTimeout", body)
         self.assertNotIn("refresh_shipping_pending", body)
+
+    def test_manual_visible_refresh_does_not_ask_for_confirmation(self):
+        body = function_body("refreshShippingPending")
+        self.assertNotIn("confirm(", body)
+
+    def test_successful_visible_refresh_clears_previous_channel_warning(self):
+        body = function_body("refreshVisibleShipping")
+        self.assertIn("salesState.freshnessWarning=''", body)
+
+    def test_background_poll_does_not_repaint_visible_status(self):
+        body = function_body("loadRecent")
+        self.assertIn("if(!opts.background){", body)
+        self.assertIn("if(!opts.background)setStatus(sid,'Error: '+msg,false)", body)
+
+    def test_tn_contact_shipping_copy_is_rendered_as_a_coordinar(self):
+        body = sync_function_body("tnLogisticLabel")
+        logistic_body = sync_function_body("logisticLabel")
+        self.assertIn("normalized.includes('contact')", body)
+        self.assertIn("normalized.includes('coordinar')", body)
+        self.assertIn("return 'A coordinar'", body)
+        self.assertIn("return tnLogisticLabel(opt,st)", logistic_body)
+
+    def test_combo_save_error_keeps_human_and_technical_detail_copyable(self):
+        body = sync_function_body("comboFriendlyComboError")
+        self.assertIn("detail.message", body)
+        self.assertIn("Código: ", body)
+        self.assertIn("Detalle: ", body)
 
 
 if __name__ == "__main__":

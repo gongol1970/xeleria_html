@@ -1439,8 +1439,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.12-silent-session-expiry';
-const FRONTEND_BUILD='admin-erp-v29712-silent-session-expiry';
+const FRONTEND_VERSION='2.97.13-tn-sales-combo-cleanup';
+const FRONTEND_BUILD='admin-erp-v29713-tn-sales-combo-cleanup';
 const CORREO_ARGENTINO_OAUTH_ENABLED=false;
 const SALES_DB_POLL_INTERVAL_MS=60000;
 const SALES_DB_LOAD_MAX_MS=15000;
@@ -2677,13 +2677,21 @@ async function loadDashboard(force=false){
     loadDashboard.loading=false;
   }
 }
+function tnLogisticLabel(value,status){
+  let raw=String(value||status||'').trim();
+  if(!raw)return 'A coordinar';
+  let normalized=raw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  if(normalized.includes('contact')||normalized.includes('coordinar')||normalized.includes('acordar'))return 'A coordinar';
+  if(normalized.includes('correo argentino'))return 'Correo Argentino';
+  if(normalized.includes('moto'))return 'Moto';
+  if(normalized.includes('retiro')||normalized.includes('pickup'))return 'Retiro';
+  return raw;
+}
 function logisticLabel(o,ch){
   if(ch==='TN'){
     let opt=o.shipping_option||o.tn_shipping_option||'';
     let st=o.tn_shipping_status||'';
-    if(opt)return opt;
-    if(st)return st;
-    return 'A coordinar';
+    return tnLogisticLabel(opt,st);
   }
   let explicitType=String(o.ml_shipping_ui_type||o.shipping_type||o.ml_shipping_type||'').trim();
   if(explicitType){
@@ -3222,7 +3230,10 @@ async function refreshVisibleShipping(ch,items,opts={}){
     if(opts.reload!==false&&seq===salesState.refreshSeq&&salesViewIsActive(ch)){
       await loadRecent(ch,salesState.offset||0,{refreshShipping:false,skipShippingRefresh:true});
     }
-    if(seq===salesState.refreshSeq)setStatus(sid,summary,(errors||correoError||claimsError)?false:true);
+    if(seq===salesState.refreshSeq){
+      if(!errors&&!correoError&&!claimsError)salesState.freshnessWarning='';
+      setStatus(sid,summary,(errors||correoError||claimsError)?false:true);
+    }
     if(queued&&salesViewIsActive(ch)){
       setTimeout(()=>loadRecent(ch,salesState.offset||0,{refreshShipping:false,background:true}),3500);
     }
@@ -3238,8 +3249,6 @@ async function refreshVisibleShipping(ch,items,opts={}){
   }
 }
 async function refreshShippingPending(ch,opts={}){
-  let label=ch==='ML'?'Mercado Libre':'Tienda Nube';
-  if(!opts.silent&&!confirm(`Actualizar los estados de las ventas visibles de ${label}?\n\nSólo se consultará esta página.`))return null;
   let items=state.sales[ch]?.items||[];
   if(!items.length){await loadRecent(ch,0,{refreshShipping:true});return null}
   if(!opts.silent)setBusy(true,'Actualizando ventas '+ch,'Consultando únicamente la página visible...');
@@ -3331,17 +3340,19 @@ async function loadRecent(ch,offset=0,opts={}){
     let statusText=totalKnown?`OK: ${d.total} ventas${q?' filtradas':''}`:`OK: mostrando ${arr.length} ventas`;
     if(opts.background)statusText+=` · base actualizada ${new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}`;
     if(opts.liveVerified)statusText+=` · ${ch==='ML'?'Mercado Libre':'Tienda Nube'} verificada ahora`;
-    let activeFreshnessWarning=String(opts.freshnessWarning||salesState.freshnessWarning||'').trim();
-    if(activeFreshnessWarning){
-      setStatus(sid,activeFreshnessWarning+' '+statusText,false);
-    }else{
-      setStatus(sid,statusText,true);
+    if(!opts.background){
+      let activeFreshnessWarning=String(opts.freshnessWarning||salesState.freshnessWarning||'').trim();
+      if(activeFreshnessWarning){
+        setStatus(sid,activeFreshnessWarning+' '+statusText,false);
+      }else{
+        setStatus(sid,statusText,true);
+      }
     }
     if(opts.refreshShipping&&!opts.skipShippingRefresh&&arr.length)refreshVisibleShipping(ch,arr,{reload:true});
     return d;
   }catch(e){
     let msg=(e&&e.message)?e.message:(e?.detail?e.detail:JSON.stringify(e));
-    setStatus(sid,'Error: '+msg,false);
+    if(!opts.background)setStatus(sid,'Error: '+msg,false);
     console.error('loadRecent '+ch,e);
     return null;
   }finally{
@@ -3871,6 +3882,13 @@ function comboRenderComponents(key){
 }
 function comboAddBlankComponent(key){let f=comboForm(key);f.components.push({sku:'',name:'',quantity:1,price:'',stock:''});comboRenderComponents(key);let idx=f.components.length-1;setTimeout(()=>qs(`comboCompSku_${key}_${idx}`)?.focus(),30)}
 function comboFriendlyComboError(e){
+  let detail=(e&&e.detail&&typeof e.detail==='object')?e.detail:null;
+  if(detail&&detail.message){
+    let extras=[];
+    if(detail.code)extras.push('Código: '+detail.code);
+    if(detail.technical_detail)extras.push('Detalle: '+detail.technical_detail);
+    return String(detail.message)+(extras.length?' · '+extras.join(' · '):'');
+  }
   let raw=errText(e);
   let plain=String(raw||'');
   if(plain.includes('Componentes inexistentes')||plain.includes('missing_skus')){
@@ -3992,9 +4010,9 @@ async function comboSaveForm(key,mode){
       state.comboExpanded='';
       delete state.comboForms[key];
     }
-    setStatus('comboStatus',converting?'SKU convertido a Combo OK. Refrescando vista...':'Combo guardado OK. Refrescando vista en segundo plano...',true);
+    setStatus('comboStatus','');
     loadCombos(state.comboPage?.offset||0).catch(e=>{
-      setStatus('comboStatus','Combo guardado OK, pero el refresco quedó lento. Podés actualizar manualmente.', 'warn');
+      setStatus('comboStatus','El combo se guardó, pero la lista no se pudo actualizar.', 'warn');
     });
   }catch(e){
     if(st){st.className='status badtxt';st.innerHTML='<span class="comboFriendlyError">'+esc(comboFriendlyComboError(e))+'</span>'}
