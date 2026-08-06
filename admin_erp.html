@@ -1439,8 +1439,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.14-tenant-hibernation';
-const FRONTEND_BUILD='admin-erp-v29714-tenant-hibernation';
+const FRONTEND_VERSION='2.97.15-xeleria-only-versions';
+const FRONTEND_BUILD='admin-erp-v29715-xeleria-only-versions';
 const CORREO_ARGENTINO_OAUTH_ENABLED=false;
 const SALES_DB_LOAD_MAX_MS=15000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
@@ -1816,6 +1816,10 @@ function normalizeModuleVersionValue(v){
   if(v.ok===false)return 'err:'+(v.error||'no');
   try{return JSON.stringify(v)}catch{return String(v)}
 }
+const PRIVATE_VERSION_MODULES=new Set(['pia','puro']);
+function isVisibleXeleriaVersionModule(name){
+  return !PRIVATE_VERSION_MODULES.has(String(name||'').toLowerCase().replace(/\.py$/,''));
+}
 function renderVersionsPage(){
   let d=state.debugVersions||{};
   let versions={...(d.versions||{}),...((d.health&&d.health.module_versions)||{})};
@@ -1833,11 +1837,11 @@ function renderVersionsPage(){
 
   let modMap={};
   Object.keys(versions||{}).forEach(k=>{
-    if(!['xeleria_app','app_v2'].includes(k))modMap[k]=versions[k];
+    if(!['xeleria_app','app_v2'].includes(k)&&isVisibleXeleriaVersionModule(k))modMap[k]=versions[k];
   });
   Object.keys(modules||{}).forEach(k=>{
     let primary=String(k||'').toLowerCase().replace(/\.py$/,'');
-    if(!['xeleria_app','app_v2'].includes(primary))modMap[k]=normalizeModuleVersionValue(modules[k]);
+    if(!['xeleria_app','app_v2'].includes(primary)&&isVisibleXeleriaVersionModule(primary))modMap[k]=normalizeModuleVersionValue(modules[k]);
   });
   if(inv&&inv.version)modMap['xeleria_inventory_admin_core']=inv.version;
   delete modMap.xeleria_app;
