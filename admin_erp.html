@@ -1439,8 +1439,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.11-onboarding-no-tenant-url';
-const FRONTEND_BUILD='admin-erp-v29711-onboarding-no-tenant-url';
+const FRONTEND_VERSION='2.97.12-silent-session-expiry';
+const FRONTEND_BUILD='admin-erp-v29712-silent-session-expiry';
 const CORREO_ARGENTINO_OAUTH_ENABLED=false;
 const SALES_DB_POLL_INTERVAL_MS=60000;
 const SALES_DB_LOAD_MAX_MS=15000;
@@ -2016,8 +2016,7 @@ async function fetchJson(path,opt={}){
           setTimeout(()=>redirectToInicio('subscription_expired'),700);
         }else if(authExpiredError(out)){
           try{localStorage.removeItem('xeleria_session_token');sessionStorage.removeItem('xeleria_session_token');}catch(_e){}
-          setBusy(true,'Sesión expirada','Volviendo al inicio...');
-          setTimeout(()=>redirectToInicio('session_expired'),250);
+          setTimeout(()=>redirectToInicio(''),0);
         }
       }catch(_authRedirectError){}
       throw out;
@@ -2346,14 +2345,15 @@ function cleanOauthParamsFromUrl(){
   }catch(e){}
 }
 // ====== MODULO CONEXIONES ML/TN ======
-function redirectToInicio(reason='no_channel_connected'){
+function redirectToInicio(reason=''){
   try{
     let next=(location.pathname.split('/').pop()||'admin_erp.html')+location.search;
-    let p=new URLSearchParams({next:next,reason:reason});
+    let p=new URLSearchParams({next:next});
+    if(reason)p.set('reason',reason);
     updateVersionBar('redirigiendo a inicio');
     window.location.href='inicio.html?'+p.toString();
   }catch(e){
-    window.location.href='inicio.html?next=admin_erp.html&reason='+encodeURIComponent(reason);
+    window.location.href='inicio.html?next=admin_erp.html'+(reason?'&reason='+encodeURIComponent(reason):'');
   }
 }
 function authExpiredError(e){
@@ -2444,8 +2444,8 @@ async function loadTenantConnectionStatus(force=true){
     if(authExpiredError(e)){
       setImportChannelCard('ML',false,'',{});
       setImportChannelCard('TN',false,'',{});
-      setStatus('inventoryImportStatus','Sesión inválida o expirada. Volviendo al inicio...',false);
-      setTimeout(()=>redirectToInicio('session_invalid'),350);
+      try{localStorage.removeItem('xeleria_session_token');sessionStorage.removeItem('xeleria_session_token');}catch(_e){}
+      setTimeout(()=>redirectToInicio(''),0);
       return null;
     }
     let fb=await loadTenantConnectionFallback(e);

@@ -10,7 +10,13 @@
 <body>
   <script>
     (function () {
-      var destination = './admin_erp.html' + (location.search || '') + (location.hash || '');
+      var activeSession = (
+        localStorage.getItem('xeleria_session_token') ||
+        sessionStorage.getItem('xeleria_session_token') ||
+        ''
+      ).trim();
+      var destination = (activeSession ? './admin_erp.html' : './inicio.html') +
+        (location.search || '') + (location.hash || '');
       location.replace(destination);
     })();
   </script>
