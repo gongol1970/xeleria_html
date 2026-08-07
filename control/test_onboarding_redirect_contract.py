@@ -35,6 +35,16 @@ class OnboardingRedirectContract(unittest.TestCase):
         self.assertIn("new URLSearchParams({next:next})", body)
         self.assertIn("if(reason)p.set('reason',reason)", body)
 
+    def test_api_urls_keep_tenant_identity_out_of_the_query_string(self):
+        self.assertIn("function url(path){return `${apiBase()}${path}`}", HTML)
+        self.assertNotIn("tenant_id=${encodeURIComponent(tenantId())}", HTML)
+
+    def test_legacy_tenant_query_is_removed_and_never_used_as_identity(self):
+        self.assertIn("'tenant_id','tenant'", HTML)
+        tenant_function = function_body("tenantId")
+        self.assertNotIn("location.search", tenant_function)
+        self.assertNotIn("URLSearchParams", tenant_function)
+
     def test_root_without_session_opens_clean_login_directly(self):
         self.assertIn("localStorage.getItem('xeleria_session_token')", INDEX_HTML)
         self.assertIn("sessionStorage.getItem('xeleria_session_token')", INDEX_HTML)

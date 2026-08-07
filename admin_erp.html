@@ -1439,8 +1439,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.15-xeleria-only-versions';
-const FRONTEND_BUILD='admin-erp-v29715-xeleria-only-versions';
+const FRONTEND_VERSION='2.97.16-tenantless-visible-urls';
+const FRONTEND_BUILD='admin-erp-v29716-tenantless-visible-urls';
 const CORREO_ARGENTINO_OAUTH_ENABLED=false;
 const SALES_DB_LOAD_MAX_MS=15000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
@@ -1568,14 +1568,13 @@ async function pollAlerts(){
   // Evita 500/CORS falsos en consola sin tocar importación, Guardar ni conectores.
   return {ok:true, disabled:true};
 }
-console.info('XelerIA tenant', tenantId());
 function startAlertPolling(){
   if(timers.alertPolling&&timers.alertPolling!=='disabled')clearInterval(timers.alertPolling);
   loadNotifications(false);
   timers.alertPolling='disabled';
 }
 
-function qs(id){return document.getElementById(id)}function fieldVal(id){let el=qs(id);return el?el.value:''}function apiBase(){return(fieldVal('cfgApiUrl')||fieldVal('apiUrl')||state.api).replace(/\/$/,'').replace(/\/api$/,'')}function token(){return ''}function sessionToken(){return (localStorage.getItem('xeleria_session_token')||sessionStorage.getItem('xeleria_session_token')||'').trim()}function tenantId(){let qp=new URLSearchParams(location.search);let fromUrl=qp.get('tenant_id')||qp.get('tenant')||'';if(fromUrl){localStorage.setItem('xeleria_tenant_id',fromUrl);localStorage.setItem('xeleria_last_tenant_id',fromUrl)}let saved=localStorage.getItem('xeleria_tenant_id')||localStorage.getItem('xeleria_last_tenant_id')||'';if(saved&&saved!=='00000000-0000-0000-0000-000000000001'){localStorage.setItem('xeleria_last_tenant_id',saved);return saved}try{let last=JSON.parse(localStorage.getItem('xeleria_last_json')||'{}');let ids=[last.tenant_id,last.response&&last.response.tenant_id];let res=(last.response&&last.response.results)||[];for(let r of res){ids.push(r&&r.tenant_id);ids.push(r&&r.json&&r.json.tenant_id)}let good=ids.find(x=>String(x||'').match(/^[0-9a-f-]{36}$/i)&&String(x)!=='00000000-0000-0000-0000-000000000001');if(good){localStorage.setItem('xeleria_tenant_id',String(good));localStorage.setItem('xeleria_last_tenant_id',String(good));return String(good)}}catch(e){}return fromUrl||saved||'00000000-0000-0000-0000-000000000001'}function url(path){let sep=path.includes('?')?'&':'?';return `${apiBase()}${path}${sep}tenant_id=${encodeURIComponent(tenantId())}`}function xeleriaHeaders(extra={}){let h={'Content-Type':'application/json','x-xeleria-tenant':tenantId(),...(extra||{})};let st=sessionToken();if(st){h['x-session-token']=st;h['Authorization']='Bearer '+st}return h}function cleanTokenFromUrl(){try{let u=new URL(location.href);['token','admin_token'].forEach(k=>u.searchParams.delete(k));localStorage.removeItem('pc_erp_token');localStorage.removeItem('xeleria_admin_token');history.replaceState({},'',u.toString())}catch(e){}}
+function qs(id){return document.getElementById(id)}function fieldVal(id){let el=qs(id);return el?el.value:''}function apiBase(){return(fieldVal('cfgApiUrl')||fieldVal('apiUrl')||state.api).replace(/\/$/,'').replace(/\/api$/,'')}function token(){return ''}function sessionToken(){return (localStorage.getItem('xeleria_session_token')||sessionStorage.getItem('xeleria_session_token')||'').trim()}function tenantId(){let saved=localStorage.getItem('xeleria_tenant_id')||localStorage.getItem('xeleria_last_tenant_id')||'';if(saved&&saved!=='00000000-0000-0000-0000-000000000001'){localStorage.setItem('xeleria_last_tenant_id',saved);return saved}try{let last=JSON.parse(localStorage.getItem('xeleria_last_json')||'{}');let ids=[last.tenant_id,last.response&&last.response.tenant_id];let res=(last.response&&last.response.results)||[];for(let r of res){ids.push(r&&r.tenant_id);ids.push(r&&r.json&&r.json.tenant_id)}let good=ids.find(x=>String(x||'').match(/^[0-9a-f-]{36}$/i)&&String(x)!=='00000000-0000-0000-0000-000000000001');if(good){localStorage.setItem('xeleria_tenant_id',String(good));localStorage.setItem('xeleria_last_tenant_id',String(good));return String(good)}}catch(e){}return saved||'00000000-0000-0000-0000-000000000001'}function url(path){return `${apiBase()}${path}`}function xeleriaHeaders(extra={}){let h={'Content-Type':'application/json','x-xeleria-tenant':tenantId(),...(extra||{})};let st=sessionToken();if(st){h['x-session-token']=st;h['Authorization']='Bearer '+st}return h}function cleanTokenFromUrl(){try{let u=new URL(location.href);['token','admin_token','tenant_id','tenant'].forEach(k=>u.searchParams.delete(k));localStorage.removeItem('pc_erp_token');localStorage.removeItem('xeleria_admin_token');history.replaceState({},'',u.toString())}catch(e){}}
 
 const HUMAN_IDLE_MS=10*60*1000;
 const HUMAN_ACTIVITY_PING_MS=60*1000;
@@ -2390,7 +2389,7 @@ function cleanOauthParamsFromUrl(){
 // ====== MODULO CONEXIONES ML/TN ======
 function redirectToInicio(reason=''){
   try{
-    let next=(location.pathname.split('/').pop()||'admin_erp.html')+location.search;
+    let next=(location.pathname.split('/').pop()||'admin_erp.html');
     let p=new URLSearchParams({next:next});
     if(reason)p.set('reason',reason);
     updateVersionBar('redirigiendo a inicio');
