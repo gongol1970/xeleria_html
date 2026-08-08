@@ -1439,8 +1439,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.16-tenantless-visible-urls';
-const FRONTEND_BUILD='admin-erp-v29716-tenantless-visible-urls';
+const FRONTEND_VERSION='2.97.17-arca-fiscal-incidents';
+const FRONTEND_BUILD='admin-erp-v29717-arca-fiscal-incidents';
 const CORREO_ARGENTINO_OAUTH_ENABLED=false;
 const SALES_DB_LOAD_MAX_MS=15000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
@@ -1896,7 +1896,11 @@ function showView(id,options={}){
   if(id==='clientes')loadCustomers('ALL');
   if(id==='xeli-config')loadXeliConfiguration(false);
   if(id==='xeli-training')loadXeliTrainingQuestions(true);
-  if(id==='arca-reportes'){initArcaDates();loadArcaInvoices()}
+  if(id==='arca-reportes'){
+    ensureArcaReportTabs();initArcaDates();initArcaIncidentDates();
+    let active=state.arcaReportTab||'invoices';showArcaReportTab(active,false);
+    if(active==='incidents')loadArcaIncidents();else loadArcaInvoices();
+  }
   if(id==='arca-manual'){
     if(options.preserveManualDraft)arcaManualInit();
     else arcaManualClear();
@@ -4066,7 +4070,37 @@ function movementRef(m){let ref=String(m.referencia||m.reference_id||'');if(!ref
 function movementTechDetails(m){return ''}
 function renderMovementsTable(rows){return `<table><thead><tr><th>Fecha</th><th>Origen</th><th>SKU</th><th>Movimiento</th><th>Cantidad</th><th>Stock anterior</th><th>Stock nuevo</th><th>Referencia</th><th>Detalle</th></tr></thead><tbody>${rows.map(m=>`<tr><td>${esc(m.fecha||dateAR(m.created_at))}</td><td>${movementOrigin(m)}</td><td><strong class="mono">${esc(m.sku||'')}</strong></td><td><strong>${movementKind(m)}</strong></td><td><strong class="${movementQtyClass(m)}">${esc(m.cantidad_label??m.cantidad??m.quantity??'')}</strong></td><td>${esc(m.stock_anterior??m.previous_stock??'')}</td><td><strong>${esc(m.stock_nuevo??m.new_stock??'')}</strong></td><td>${movementRef(m)}</td><td>${esc(m.detalle||m.notes||'')}${movementTechDetails(m)}</td></tr>`).join('')||'<tr><td colspan="9" class="muted" style="text-align:center">Sin movimientos.</td></tr>'}</tbody></table>`}
 async function loadMovements(){let sku=qs('movSku')?.value.trim()||'';let lim=Number(qs('movLimit')?.value||100);setStatus('movStatus','Cargando movimientos de stock...');try{let d=await fetchJson(`/admin/stock/movements/session?limit=${encodeURIComponent(lim)}${sku?'&sku='+encodeURIComponent(sku):''}`);let rows=d.items||[];qs('movTable').innerHTML=renderMovementsTable(rows);let total=Number(d.total||rows.length||0);setStatus('movStatus',`OK: ${rows.length} movimiento(s) mostrado(s)${total!==rows.length?` de ${total}`:''}`,true)}catch(e){setStatus('movStatus','Error movimientos: '+errText(e),false);showPre('movTable',e)}}function clearMovSku(){qs('movSku').value='';loadMovements()}
+function ensureArcaReportTabs(){
+  let section=qs('arca-reportes'),card=section?.querySelector('.card');
+  if(!card||qs('arcaInvoicesPanel'))return;
+  let original=[...card.childNodes],tabs=document.createElement('div'),invoices=document.createElement('div'),incidents=document.createElement('div');
+  tabs.id='arcaReportTabs';tabs.className='btnrow';tabs.style.marginBottom='16px';
+  tabs.innerHTML=`<button id="arcaInvoicesTab" onclick="showArcaReportTab('invoices')">Comprobantes emitidos</button><button id="arcaIncidentsTab" class="secondary" onclick="showArcaReportTab('incidents')">Incidencias fiscales</button>`;
+  invoices.id='arcaInvoicesPanel';original.forEach(node=>invoices.appendChild(node));
+  incidents.id='arcaIncidentsPanel';incidents.className='hidden';
+  incidents.innerHTML=`
+    <h3>ARCA · Incidencias fiscales</h3>
+    <p>Operaciones con un intento fiscal pendiente de resolver y sin comprobante emitido. El expediente es para revisión del contador; no integra el TXT oficial de IVA Simple ni habilita una reemisión.</p>
+    <div class="grid">
+      <div class="col-4"><label>Buscar</label><input id="arcaIncSearch" placeholder="Venta, cliente, CUIT/DNI, jurisdicción, error..." oninput="renderArcaIncidents()"></div>
+      <div class="col-2"><label>Desde</label><input id="arcaIncDesde" type="date"></div>
+      <div class="col-2"><label>Hasta</label><input id="arcaIncHasta" type="date"></div>
+      <div class="col-2"><label>Canal</label><select id="arcaIncCanal"><option>Todos</option><option>ML</option><option>TN</option></select></div>
+      <div class="col-2"><label>Límite visible</label><select id="arcaIncLimit"><option>20</option><option selected>100</option><option>200</option></select></div>
+    </div>
+    <div class="btnrow" style="margin-top:12px"><button onclick="loadArcaIncidents()">Buscar incidencias</button><button class="secondary" onclick="downloadArcaIncidentsExcel()">Descargar expediente Excel</button></div>
+    <div id="arcaIncStatus" class="status"></div><div id="arcaIncTable" class="tableWrap" style="margin-top:12px"></div><pre id="arcaIncOut" class="hidden"></pre>`;
+  card.append(tabs,invoices,incidents);
+}
+function showArcaReportTab(kind,load=true){
+  ensureArcaReportTabs();let incidents=kind==='incidents';state.arcaReportTab=incidents?'incidents':'invoices';
+  qs('arcaInvoicesPanel')?.classList.toggle('hidden',incidents);qs('arcaIncidentsPanel')?.classList.toggle('hidden',!incidents);
+  if(qs('arcaInvoicesTab'))qs('arcaInvoicesTab').className=incidents?'secondary':'';
+  if(qs('arcaIncidentsTab'))qs('arcaIncidentsTab').className=incidents?'':'secondary';
+  if(load){if(incidents){initArcaIncidentDates();loadArcaIncidents()}else{initArcaDates();loadArcaInvoices()}}
+}
 function prevMonthRange(){let d=new Date();let firstPrev=new Date(d.getFullYear(),d.getMonth()-1,1);let fmt=x=>x.toISOString().slice(0,10);return{from:fmt(firstPrev),to:fmt(d)}}function initArcaDates(){let r=prevMonthRange();if(qs('arcaDesde')&&!qs('arcaDesde').value)qs('arcaDesde').value=r.from;if(qs('arcaHasta')&&!qs('arcaHasta').value)qs('arcaHasta').value=r.to}
+function initArcaIncidentDates(){let r=prevMonthRange();if(qs('arcaIncDesde')&&!qs('arcaIncDesde').value)qs('arcaIncDesde').value=r.from;if(qs('arcaIncHasta')&&!qs('arcaIncHasta').value)qs('arcaIncHasta').value=r.to}
 function arcaTypeLabel(r){let n=Number(r.cbte_tipo||0);return r.cbte_tipo_label||({1:'Factura A',2:'Nota de Débito A',3:'Nota de Crédito A',6:'Factura B',7:'Nota de Débito B',8:'Nota de Crédito B',11:'Factura C',12:'Nota de Débito C',13:'Nota de Crédito C',19:'Factura de Exportación'}[n]||'Comprobante')}
 function arcaTypeShort(r){let t=arcaTypeLabel(r).toUpperCase();let l=t.includes(' A')?'A':(t.includes(' B')?'B':(t.includes(' C')?'C':(t.includes('EXPORT')?'E':'')));if(t.includes('CRED'))return 'NC '+l;if(t.includes('DEB'))return 'ND '+l;if(t.includes('FACT'))return 'FACTURA '+l;return t}
 function arcaChannelLabel(r){let ch=String(r.source_channel_display||r.source_channel||'');let up=ch.toUpperCase().replace(/[\s-]/g,'_');return (up==='ARCA_MANUAL'||up==='MANUAL'||up==='ARCA')?'MANUAL':ch}
@@ -4150,6 +4184,34 @@ async function downloadArcaIvaSimple(){
     document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(objectUrl),60000);
     setStatus('arcaStatus','ZIP descargado: comprobantes y alícuotas en TXT ANSI, listo para importar en ARCA.',true);
   }catch(e){setStatus('arcaStatus','No pude generar los TXT: '+errText(e),false);showPre('arcaOut',e)}
+}
+
+function arcaIncidentQueryBase(){let p=`date_from=${encodeURIComponent(qs('arcaIncDesde')?.value||'')}&date_to=${encodeURIComponent(qs('arcaIncHasta')?.value||'')}`;let canal=qs('arcaIncCanal')?.value||'Todos';if(canal!=='Todos')p+=`&channel=${encodeURIComponent(canal)}`;return p}
+function arcaIncidentDoc(r){return [r.customer_doc_type||'',r.customer_doc_number||''].filter(Boolean).join(' ')||'-'}
+function arcaIncidentTaxText(r){let rows=r.iva_breakdown||[];if(!rows.length)return r.importe_iva===null||r.importe_iva===undefined?'Sin discriminación respaldada':money(r.importe_iva);return rows.map(x=>`${Number(x.alicuota||0).toLocaleString('es-AR')}%: ${money(x.iva)}`).join(' · ')}
+function arcaIncidentSearchText(r){let parts=[r.attempted_at,r.sale_date,r.channel,r.sale_number,r.source_order_id,r.source_order_api_id,r.source_pack_id,r.source_shipping_id,r.customer_name,r.customer_doc_type,r.customer_doc_number,r.customer_iva_condition,r.customer_email,r.customer_phone,r.customer_address,r.customer_city,r.customer_province,r.customer_jurisdiction,r.customer_zip,r.cbte_tipo_label,r.cbte_letra,r.pto_vta,r.expected_cbte_nro,r.importe_neto,r.importe_iva,r.importe_total,r.operation_id,r.stage,r.classification,r.response_kind,r.resultado,r.arca_error_text,r.arca_padron_error,r.follow_up_status];return normalizar(parts.filter(v=>v!==null&&v!==undefined).join(' '))}
+function arcaIncidentDetails(r){
+  let tax=(r.iva_breakdown||[]).map(x=>`<li>IVA ${esc(x.alicuota)}% · Neto ${money(x.neto)} · IVA ${money(x.iva)} · Total ${money(x.total)}</li>`).join('')||'<li>La venta no conserva una discriminación por alícuota suficiente.</li>';
+  let contact=[r.customer_address,r.customer_city,r.customer_zip,r.customer_jurisdiction].filter(Boolean).map(esc).join(' · ');
+  let ids=(r.source_order_ids||[]).map(esc).join(', ');
+  return `<details><summary>Ver expediente</summary><div class="small" style="min-width:280px;max-width:520px;line-height:1.55"><strong>Contacto</strong><br>${esc(r.customer_email||'-')} · ${esc(r.customer_phone||'-')}<br>${contact||'-'}<br><br><strong>Importes</strong><ul style="margin:4px 0 8px 18px;padding:0">${tax}</ul><span>${esc(r.amounts_source_label||'')}</span><br><br><strong>Trazabilidad</strong><br>Operación ${esc(r.operation_id||'-')} · etapa ${esc(r.stage||'-')} · resultado ${esc(r.resultado||'-')}<br>Ordenes: ${ids||esc(r.source_order_api_id||'-')}<br>${esc(r.arca_error_text||r.arca_padron_error||'-')}<br><br><strong>CAE</strong><br>${esc(r.cae_status||'No obtenido')}</div></details>`;
+}
+function renderArcaIncidents(){
+  let rows=state.arcaIncidentRows||[],q=normalizar(qs('arcaIncSearch')?.value||'');if(q)rows=rows.filter(r=>arcaIncidentSearchText(r).includes(q));
+  if(qs('arcaIncTable'))qs('arcaIncTable').innerHTML=`<table><thead><tr><th>Intento</th><th>Venta</th><th>Nombre / Razón social</th><th>CUIT / DNI</th><th>Jurisdicción</th><th>Neto</th><th>IVA</th><th>Total</th><th>Rechazo ARCA</th><th>Seguimiento</th><th>Detalle</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(String(r.attempted_at||'').replace('T',' ').slice(0,19)||'-')}</td><td><strong>${esc(r.channel||'')}</strong><br>${esc(r.sale_number||r.source_order_api_id||'-')}</td><td><strong>${esc(r.customer_name||'-')}</strong><br><span class="small">${esc(r.customer_iva_condition||'')}</span></td><td>${esc(arcaIncidentDoc(r))}</td><td>${esc(r.customer_jurisdiction||'-')}</td><td>${r.importe_neto===null||r.importe_neto===undefined?'-':money(r.importe_neto)}</td><td>${arcaIncidentTaxText(r)}</td><td><strong>${r.importe_total===null||r.importe_total===undefined?'-':money(r.importe_total)}</strong></td><td>${esc(r.arca_error_text||r.arca_padron_error||'-')}</td><td>${esc(r.follow_up_status||'-')}</td><td>${arcaIncidentDetails(r)}</td></tr>`).join('')||'<tr><td colspan="11" class="muted" style="text-align:center">Sin incidencias fiscales abiertas para ese filtro.</td></tr>'}</tbody></table>`;
+  setStatus('arcaIncStatus',`${rows.length}${q?' filtradas de '+(state.arcaIncidentRows||[]).length:''} incidencias sin comprobante emitido.`,true);
+}
+async function loadArcaIncidents(){
+  initArcaIncidentDates();setStatus('arcaIncStatus','Consultando incidencias fiscales...');
+  try{let lim=Number(qs('arcaIncLimit')?.value||100),d=await fetchJson(`/admin/arca/incidencias?limit=${lim}&${arcaIncidentQueryBase()}`);state.arcaIncidentRows=d.items||[];renderArcaIncidents()}
+  catch(e){setStatus('arcaIncStatus','No pude cargar las incidencias: '+errText(e),false);showPre('arcaIncOut',e)}
+}
+async function downloadArcaIncidentsExcel(){
+  initArcaIncidentDates();setStatus('arcaIncStatus','Generando expediente para el contador...');
+  try{
+    let r=await fetch(url('/admin/arca/incidencias/export_excel?'+arcaIncidentQueryBase()),{headers:xeleriaHeaders()});if(!r.ok){let txt=await r.text();let data;try{data=JSON.parse(txt)}catch{data={detail:txt}};throw data}
+    let blob=await r.blob(),objectUrl=URL.createObjectURL(blob),a=document.createElement('a');a.href=objectUrl;a.download=`incidencias_fiscales_arca_${qs('arcaIncDesde')?.value||'desde'}_a_${qs('arcaIncHasta')?.value||'hasta'}.xlsx`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(objectUrl),60000);setStatus('arcaIncStatus','Expediente descargado con identidad, importes, IVA, jurisdicción y trazabilidad ARCA.',true)
+  }catch(e){setStatus('arcaIncStatus','No pude descargar el expediente: '+errText(e),false);showPre('arcaIncOut',e)}
 }
 
 function arcaTipoNotaDesdeOriginal(orig,kind){
