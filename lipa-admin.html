@@ -24,7 +24,7 @@
 <body>
   <main>
     <h1>Excel de Lipa</h1>
-    <p>Descargá el archivo, editá brokers, propiedades o el saludo por horario y volvé a subirlo.</p>
+    <p>Descargá el archivo, editá brokers, propiedades, skills o el saludo por horario y volvé a subirlo.</p>
     <label for="token">Clave de administración</label>
     <input id="token" type="password" autocomplete="current-password">
     <div class="actions">
@@ -37,7 +37,7 @@
       <button class="secondary" id="openDemo" type="button">Abrir la demo</button>
     </div>
     <div id="status" role="status"></div>
-    <small>La hoja Configuración cambia únicamente el saludo inicial. No limita la conversación de Lipa.</small>
+    <small>La hoja Skills gobierna el foco y las instrucciones comerciales. Configuración conserva solamente los saludos por horario.</small>
   </main>
   <script>
     const API = location.hostname === "localhost" || location.hostname === "127.0.0.1"
@@ -68,7 +68,7 @@
       const file = $("workbook").files[0];
       if (!token()) return status("Ingresá la clave.", true);
       if (!file) return status("Elegí el Excel modificado.", true);
-      if (!confirm("Esto reemplaza completamente brokers, propiedades y configuración de Lipa. ¿Continuar?")) return;
+      if (!confirm("Esto reemplaza completamente brokers, propiedades, skills, asignaciones y configuración de Lipa. ¿Continuar?")) return;
       $("upload").disabled = true;
       status("Subiendo y validando…");
       try {
@@ -79,7 +79,7 @@
         });
         const payload = await response.json();
         if (!response.ok || !payload.ok) throw new Error(payload.detail || "No se pudo importar el Excel.");
-        status(`Listo: ${payload.skus} propiedades y ${payload.brokers} brokers.`);
+        status(`Listo: ${payload.skus} propiedades, ${payload.brokers} brokers y ${payload.skills} skills.`);
       } catch (error) { status(error.message, true); }
       finally { $("upload").disabled = false; }
     });

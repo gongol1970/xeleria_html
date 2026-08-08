@@ -203,7 +203,7 @@
     const API_BASE = location.hostname === "localhost" || location.hostname === "127.0.0.1"
       ? "http://127.0.0.1:8000"
       : "https://api.xeleria.com.ar";
-    const state = { catalog: [], messages: [], busy: false };
+    const state = { catalog: [], messages: [], activeSkillIds: [], busy: false };
     const $ = (id) => document.getElementById(id);
     const messagesEl = $("messages");
     const inputEl = $("input");
@@ -306,13 +306,19 @@
         const response = await fetch(`${API_BASE}/lipa/chat`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ messages: state.messages.slice(-12), focused_sku: selectEl.value || null })
+          body: JSON.stringify({
+            messages: state.messages.slice(-12),
+            focused_sku: selectEl.value || null,
+            active_skill_ids: state.activeSkillIds
+          })
         });
         const payload = await response.json();
         if (!response.ok || !payload.ok) throw new Error(payload.detail || "Lipa no pudo responder");
         typing.remove();
         const bubble = await typeAnswer(payload.message);
         state.messages.push({ role: "assistant", content: payload.message });
+        state.activeSkillIds = payload.active_skill_ids || state.activeSkillIds;
+        if (payload.active_skills?.length) $("statusText").textContent = `Foco: ${payload.active_skills.join(" + ")}`;
         if (payload.type === "handoff") addHandoff(bubble, payload);
       } catch (error) {
         typing.remove();
