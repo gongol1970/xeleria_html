@@ -113,6 +113,10 @@
     .agent span { display: flex; align-items: center; gap: 6px; margin-top: 3px; color: var(--muted); font-size: 12px; }
     .online { width: 7px; height: 7px; border-radius: 50%; background: #45b46e; }
     .badge { padding: 8px 11px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); background: var(--white); font-size: 11px; font-weight: 700; }
+    .head-actions { display: flex; align-items: center; gap: 8px; }
+    .new-chat { padding: 8px 11px; border: 1px solid var(--line); border-radius: 999px; color: var(--green); background: var(--white); font-size: 11px; font-weight: 800; }
+    .new-chat:hover { border-color: var(--green); }
+    .new-chat:disabled { cursor: wait; opacity: .5; }
     .messages { overflow-y: auto; padding: 28px 26px 16px; scroll-behavior: smooth; }
     .message { display: flex; margin-bottom: 17px; }
     .message.user { justify-content: flex-end; }
@@ -180,7 +184,10 @@
           <span class="avatar">L</span>
           <div><strong>Lipa</strong><span><i class="online"></i><span id="statusText">Preparando catálogo…</span></span></div>
         </div>
-        <span class="badge">Impulsada por GPT-5 mini</span>
+        <div class="head-actions">
+          <button class="new-chat" id="newChat" type="button">Nueva conversación</button>
+          <span class="badge">Impulsada por GPT-5 mini</span>
+        </div>
       </header>
 
       <div class="messages" id="messages" aria-live="polite"></div>
@@ -203,12 +210,13 @@
     const API_BASE = location.hostname === "localhost" || location.hostname === "127.0.0.1"
       ? "http://127.0.0.1:8000"
       : "https://api.xeleria.com.ar";
-    const state = { catalog: [], messages: [], activeSkillIds: [], busy: false };
+    const state = { catalog: [], messages: [], busy: false };
     const $ = (id) => document.getElementById(id);
     const messagesEl = $("messages");
     const inputEl = $("input");
     const sendEl = $("send");
     const selectEl = $("propertySelect");
+    const newChatEl = $("newChat");
 
     function scrollBottom() { messagesEl.scrollTop = messagesEl.scrollHeight; }
 
@@ -298,6 +306,7 @@
       if (!clean || state.busy) return;
       state.busy = true;
       sendEl.disabled = true;
+      newChatEl.disabled = true;
       inputEl.value = "";
       addBubble("user", clean);
       state.messages.push({ role: "user", content: clean });
@@ -307,9 +316,8 @@
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            messages: state.messages.slice(-12),
-            focused_sku: selectEl.value || null,
-            active_skill_ids: state.activeSkillIds
+            messages: state.messages.slice(-20),
+            focused_sku: selectEl.value || null
           })
         });
         const payload = await response.json();
@@ -317,8 +325,6 @@
         typing.remove();
         const bubble = await typeAnswer(payload.message);
         state.messages.push({ role: "assistant", content: payload.message });
-        state.activeSkillIds = payload.active_skill_ids || state.activeSkillIds;
-        if (payload.active_skills?.length) $("statusText").textContent = `Foco: ${payload.active_skills.join(" + ")}`;
         if (payload.type === "handoff") addHandoff(bubble, payload);
       } catch (error) {
         typing.remove();
@@ -326,8 +332,19 @@
       } finally {
         state.busy = false;
         sendEl.disabled = false;
+        newChatEl.disabled = false;
         inputEl.focus();
       }
+    }
+
+    function newConversation() {
+      if (state.busy) return;
+      state.messages = [];
+      messagesEl.replaceChildren();
+      selectEl.value = "";
+      inputEl.value = "";
+      inputEl.style.height = "auto";
+      inputEl.focus();
     }
 
     $("composer").addEventListener("submit", (event) => { event.preventDefault(); sendMessage(inputEl.value); });
@@ -339,6 +356,7 @@
       inputEl.style.height = `${Math.min(inputEl.scrollHeight, 130)}px`;
     });
     document.querySelectorAll(".chip").forEach(button => button.addEventListener("click", () => sendMessage(button.textContent)));
+    newChatEl.addEventListener("click", newConversation);
     loadCatalog();
   </script>
 </body>
