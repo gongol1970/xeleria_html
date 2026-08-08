@@ -184,7 +184,7 @@
       </header>
 
       <div class="messages" id="messages" aria-live="polite">
-        <div class="message assistant"><div class="bubble">¡Hola! Soy Lipa. Conozco las propiedades de esta mini demo y podés preguntarme con total naturalidad. ¿Qué estás buscando?</div></div>
+        <div class="message assistant"><div class="bubble" id="initialGreeting">¡Hola! Soy Lipa. Conozco las propiedades de esta mini demo y podés preguntarme con total naturalidad. ¿Qué estás buscando?</div></div>
       </div>
 
       <div class="suggestions" id="suggestions">
@@ -282,6 +282,7 @@
         const payload = await response.json();
         if (!response.ok || !payload.ok) throw new Error(payload.detail || "No se pudo cargar");
         state.catalog = payload.items || [];
+        if (payload.greeting) $("initialGreeting").textContent = payload.greeting;
         $("propertyCount").textContent = String(state.catalog.length);
         for (const item of state.catalog) {
           const option = document.createElement("option");
