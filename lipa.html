@@ -104,6 +104,8 @@
     .stat { padding: 14px; border: 1px solid rgba(255,255,255,.12); border-radius: 14px; background: rgba(255,255,255,.06); }
     .stat strong { display: block; color: var(--lime); font-size: 22px; }
     .stat span { color: rgba(255,255,255,.62); font-size: 11px; }
+    .admin-link { position: relative; z-index: 1; display: inline-flex; margin-top: 16px; padding: 10px 14px; border: 1px solid rgba(255,255,255,.2); border-radius: 999px; color: #fff; text-decoration: none; font-size: 12px; font-weight: 800; background: rgba(255,255,255,.08); }
+    .admin-link:hover { border-color: var(--lime); color: var(--lime); }
     .demo-note { position: absolute; z-index: 1; left: 28px; right: 28px; bottom: 26px; color: rgba(255,255,255,.55); font-size: 11px; line-height: 1.45; }
     .chat { min-width: 0; display: grid; grid-template-rows: auto 1fr auto auto; min-height: 720px; }
     .chat-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 22px 26px; border-bottom: 1px solid var(--line); }
@@ -175,6 +177,7 @@
         <div class="stat"><strong id="propertyCount">15</strong><span>propiedades</span></div>
         <div class="stat"><strong>3</strong><span>brokers demo</span></div>
       </div>
+      <a class="admin-link" href="lipa-admin.html">Administrar Excel</a>
       <p class="demo-note">Los nombres y contactos de los brokers son ficticios. Esta página demuestra la experiencia conversacional posible.</p>
     </aside>
 

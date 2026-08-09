@@ -24,7 +24,7 @@
 <body>
   <main>
     <h1>Excel de Lipa</h1>
-    <p>Descargá el archivo, editá brokers, propiedades, skills o el saludo por horario y volvé a subirlo.</p>
+    <p>Descargá el archivo, editá brokers, propiedades, skills o el saludo por horario y volvé a subirlo. Podés repetir un ID en varias filas para sumar instrucciones al mismo skill.</p>
     <label for="token">Clave de administración</label>
     <input id="token" type="password" autocomplete="current-password">
     <div class="actions">
@@ -33,7 +33,7 @@
     <label for="workbook">Excel modificado</label>
     <input id="workbook" type="file" accept=".xlsx">
     <div class="actions">
-      <button id="upload" type="button">Reemplazar datos</button>
+      <button id="upload" type="button">Subir Excel</button>
       <button class="secondary" id="openDemo" type="button">Abrir la demo</button>
     </div>
     <div id="status" role="status"></div>
@@ -57,7 +57,7 @@
         if (!response.ok) throw new Error("No se pudo descargar. Revisá la clave.");
         const link = document.createElement("a");
         link.href = URL.createObjectURL(await response.blob());
-        link.download = "catalogo_lipa.xlsx";
+        link.download = "catalogo_lipa_con_skills.xlsx";
         link.click();
         URL.revokeObjectURL(link.href);
         status("Excel descargado.");
