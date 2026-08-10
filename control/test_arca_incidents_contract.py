@@ -7,7 +7,7 @@ HTML = (Path(__file__).resolve().parents[1] / "admin_erp.html").read_text(encodi
 
 class ArcaIncidentsContractTest(unittest.TestCase):
     def test_version_and_separate_tab_are_present(self):
-        self.assertIn("2.97.17-arca-fiscal-incidents", HTML)
+        self.assertIn("2.97.18-cancelled-sale-actions", HTML)
         self.assertIn("Incidencias fiscales", HTML)
         self.assertIn("showArcaReportTab('incidents')", HTML)
 

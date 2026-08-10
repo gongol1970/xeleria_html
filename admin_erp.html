@@ -1018,6 +1018,9 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 .invoiceActionDiagnostic .small{color:var(--muted)}
 
 .crossSourceGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-top:12px}.crossSourceCard{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:14px;border:1px solid var(--line);border-radius:12px;background:#fff}.crossDraft{margin-top:16px;padding:16px;border:1px solid #d7c28c;border-radius:14px;background:#fffaf0;max-width:100%;overflow:hidden}.crossDraftGrid{grid-template-columns:repeat(12,minmax(0,1fr));align-items:start}.crossDraftGrid>*{min-width:0}.crossTitleField{grid-column:span 8}.crossSkuField{grid-column:span 4}.crossPriceField,.crossStockField{grid-column:span 2}.crossPackageSection{grid-column:span 8;min-width:0}.crossPackageGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.crossPackageGrid>div{min-width:0}.crossPackageGrid label{font-size:11px}.crossDescriptionField,.crossImagesField,.crossCategoriesField,.crossAttributesField,.crossConfirmField{grid-column:1/-1;min-width:0}.crossImages{min-height:110px}.crossFieldHead{display:flex;align-items:center;justify-content:space-between;gap:10px}.crossCounter{font-size:12px;font-weight:800;color:var(--muted);white-space:nowrap}.crossCounter.limit{color:var(--bad)}.crossCategoryBox{max-height:280px;overflow:auto;padding:10px;border:1px solid var(--line);border-radius:10px;background:#fff}.crossCategoryRow{display:flex;align-items:flex-start;gap:9px;padding:7px 4px;border-bottom:1px solid #eee}.crossCategoryRow:last-child{border-bottom:0}.crossCategoryRow input{width:auto;margin-top:2px}.crossMlSetupGrid{display:grid;grid-template-columns:minmax(0,2fr) minmax(150px,.72fr) minmax(135px,.58fr);gap:14px;align-items:start}.crossMlSetupGrid>div,.crossAttributeGrid>div{display:flex;flex-direction:column;min-width:0}.crossMlSetupGrid label,.crossAttributeGrid label{min-height:36px;display:flex;align-items:flex-end}.crossAttributeGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.crossValueUnit{display:grid!important;grid-template-columns:minmax(0,1fr) 90px;gap:8px}.crossAttributeHint{margin:0 0 10px}.crossNotice{padding:12px;border-radius:10px;background:#eef5ff;border:1px solid #bed4ff;color:#234b87;font-size:12px;line-height:1.45}.crossDanger{background:#fff0ed;border-color:#f1b8ad;color:#8d2c1e}.crossResult{margin-top:12px;padding:14px;border-radius:12px;background:#ecfdf3;border:1px solid #a7e0be}#publicador-cruzado>.card>.crossNotice+.grid{width:100%;grid-template-columns:280px minmax(360px,1fr) 170px}#publicador-cruzado>.card>.crossNotice+.grid>.col-2,#publicador-cruzado>.card>.crossNotice+.grid>.col-3,#publicador-cruzado>.card>.crossNotice+.grid>.col-7{grid-column:auto}@media(max-width:1050px){#publicador-cruzado>.card>.crossNotice+.grid{grid-template-columns:1fr}#publicador-cruzado>.card>.crossNotice+.grid>*{grid-column:1/-1!important}.crossDraftGrid>*{grid-column:1/-1!important}.crossPackageGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.crossMlSetupGrid,.crossAttributeGrid{grid-template-columns:1fr}}@media(max-width:620px){.crossPackageGrid{grid-template-columns:1fr}}
+.cancelledSaleActions{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+.cancelledSaleActions button{min-height:0;padding:6px 9px;font-size:11px}
+.cancelledSaleRestored{display:block;margin-top:5px;color:var(--ok);font-size:11px;font-weight:900}
 </style>
 <!-- UI_ALERTS_INVENTORY_FILTERS_FRONTEND_1_39 -->
 </head>
@@ -1439,8 +1442,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.17-arca-fiscal-incidents';
-const FRONTEND_BUILD='admin-erp-v29717-arca-fiscal-incidents';
+const FRONTEND_VERSION='2.97.18-cancelled-sale-actions';
+const FRONTEND_BUILD='admin-erp-v29718-cancelled-sale-actions';
 const CORREO_ARGENTINO_OAUTH_ENABLED=false;
 const SALES_DB_LOAD_MAX_MS=15000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
@@ -1689,17 +1692,16 @@ function saleItemForInvoiceAction(ch,orderId){
 function issuedInvoiceActionsHtml(ch,invoiceId,oid,label,o={}){
   let channel=String(ch||'').toUpperCase();
   let actions=`<button type="button" onclick="closeInvoiceAction(this);viewIssuedInvoice('${jsq(invoiceId)}')">Ver factura</button>`;
+  actions+=`<button type="button" onclick="closeInvoiceAction(this);arcaStartNoteFromInvoice('${jsq(invoiceId)}','NC')">Nota de Cr&eacute;dito</button>`;
   if(channel==='TN'){
     let email=invoiceCustomerEmail(o);
     let name=invoiceCustomerName(o);
-    actions+=`<button type="button" onclick="closeInvoiceAction(this);arcaStartNoteFromInvoice('${jsq(invoiceId)}','NC')">Nota de Cr&eacute;dito</button>`;
     actions+=`<button type="button" onclick="closeInvoiceAction(this);sendTnInvoiceByMail('${jsq(invoiceId)}','${jsq(oid)}','${jsq(name)}','${jsq(email)}','${jsq(label)}')">Enviar por Correo</button>`;
   }
   return actions;
 }
 function enhanceIssuedInvoiceActionPanel(wrap,panel){
   let channel=String(wrap?.dataset?.invoiceChannel||'').toUpperCase();
-  if(channel!=='TN')return;
   let invoiceId=String(wrap?.dataset?.invoiceId||'').trim();
   if(!invoiceId)return;
   let oid=String(wrap?.dataset?.invoiceOrder||'');
@@ -3169,6 +3171,83 @@ function mlClaimHtml(o,ch){
   return `<div class="mlClaimStrip"><div class="mlClaimMain"><span class="pill bad">RECLAMO ABIERTO</span><span class="mlClaimTitle">${esc(stateLabel)}</span><span class="mlClaimDetail">${esc(problem)}${esc(due)}${esc(reputation)}</span></div><a class="btn mlClaimLink" target="_blank" rel="noopener" href="${esc(link)}">Abrir en Mercado Libre</a></div>`;
 }
 
+function cancelledSaleRestoreState(o){
+  let movements=Array.isArray(o?.stock_movements)?o.stock_movements:[];
+  let byKey=new Map();
+  for(let movement of movements){
+    let referenceId=String(movement.reference_id||'').trim();
+    let sku=String(movement.sku||'').trim();
+    if(!referenceId||!sku)continue;
+    let key=referenceId+'|'+sku;
+    let entry=byKey.get(key)||{reference_id:referenceId,sku,sold:0,restored:0};
+    let type=String(movement.movement_type||'').trim().toLowerCase();
+    let referenceType=String(movement.reference_type||'').trim().toLowerCase();
+    let quantity=Number(movement.quantity||0);
+    if(type==='sale'&&referenceType==='order'&&quantity<0)entry.sold+=Math.abs(quantity);
+    if(type==='sale_cancellation_restore'&&referenceType==='order_cancellation'&&quantity>0)entry.restored+=quantity;
+    byKey.set(key,entry);
+  }
+  let lines=[];
+  for(let entry of byKey.values()){
+    let pending=Math.max(0,entry.sold-entry.restored);
+    if(entry.sold>0)lines.push({...entry,pending});
+  }
+  return {
+    sold:lines.reduce((sum,line)=>sum+line.sold,0),
+    restored:lines.reduce((sum,line)=>sum+line.restored,0),
+    pending:lines.reduce((sum,line)=>sum+line.pending,0),
+    lines
+  };
+}
+function saleExternalOrderIds(o,ch){
+  let ids=Array.isArray(o?.child_order_ids)?o.child_order_ids:[];
+  if(!ids.length)ids=[ch==='ML'?(o?.ml_order_id||o?.external_order_id):(o?.tn_order_id||o?.external_order_id)];
+  return [...new Set(ids.map(value=>String(value||'').trim()).filter(Boolean))];
+}
+function cancelledSaleActionsHtml(o,ch,shippingLabel){
+  if(!String(shippingLabel||'').toLowerCase().includes('cancelado'))return '';
+  let actions=[];
+  let invoiceId=String(o.invoice_id||o.arca_invoice_id||'').trim();
+  let invoiceStatus=String(o.invoice_status||o.arca_status||'').toLowerCase();
+  let invoiceIssued=!!(o.invoice_cae||o.cae||o.arca_cae)||invoiceStatus==='issued';
+  if(invoiceIssued&&invoiceId){
+    actions.push(`<button type="button" class="secondary" onclick="arcaStartNoteFromInvoice('${jsq(invoiceId)}','NC')">Nota de Cr&eacute;dito</button>`);
+  }
+  let restore=cancelledSaleRestoreState(o);
+  let orderIds=saleExternalOrderIds(o,ch);
+  if(restore.pending>0&&orderIds.length){
+    let encoded=encodeURIComponent(JSON.stringify(orderIds));
+    actions.push(`<button type="button" class="secondary" onclick="restoreCancelledSaleStock('${jsq(ch)}','${jsq(encoded)}')">Restaurar stock</button>`);
+  }
+  let restored=restore.sold>0&&restore.pending===0?'<span class="cancelledSaleRestored">Stock restaurado</span>':'';
+  return (actions.length?`<div class="cancelledSaleActions">${actions.join('')}</div>`:'')+restored;
+}
+async function restoreCancelledSaleStock(ch,encodedOrderIds){
+  let channel=String(ch||'').toUpperCase();
+  let orderIds=[];
+  try{orderIds=JSON.parse(decodeURIComponent(String(encodedOrderIds||'')))}catch(_e){}
+  orderIds=Array.isArray(orderIds)?orderIds.map(value=>String(value||'').trim()).filter(Boolean):[];
+  if(!orderIds.length){setStatus(channel.toLowerCase()+'VentasStatus','No encontr\u00e9 las \u00f3rdenes de la venta.',false);return}
+  let item=(state.sales?.[channel]?.items||[]).find(row=>saleExternalOrderIds(row,channel).some(id=>orderIds.includes(id)))||{};
+  let restore=cancelledSaleRestoreState(item);
+  let detail=restore.lines.filter(line=>line.pending>0).map(line=>`${line.sku} x${line.pending}`).join(', ');
+  let ok=confirm(`\u00bfRestaurar el stock descontado por esta venta cancelada?\n\n${detail||'Se usar\u00e1n los movimientos reales de la venta.'}\n\nUs\u00e1 esta opci\u00f3n solamente si la mercader\u00eda no fue despachada.`);
+  if(!ok)return;
+  let statusId=channel.toLowerCase()+'VentasStatus';
+  setStatus(statusId,'Restaurando el stock de la venta cancelada...');
+  try{
+    let d=await fetchJson(`/admin/${channel.toLowerCase()}/orders/restore-cancelled-stock`,{
+      method:'POST',
+      body:JSON.stringify({order_ids:orderIds,confirmar:true})
+    });
+    let restoredCount=Number(d.restored_count||0);
+    setStatus(statusId,restoredCount?`Stock restaurado: ${restoredCount} movimiento${restoredCount===1?'':'s'} auditado${restoredCount===1?'':'s'}.`:'El stock de esta venta ya estaba restaurado.',true);
+    await loadRecent(channel,state.sales[channel]?.offset||0,{refreshShipping:false});
+  }catch(e){
+    setStatus(statusId,'No se pudo restaurar el stock: '+errText(e),false);
+  }
+}
+
 function orderCard(o,ch){
   let lines=linesForOrder(o);
   let display=lines.map(l=>`<div class="lineItem"><div><strong>${esc(l.sku)}</strong></div><div>${esc(l.name||'')}</div><div>Cant: <strong>${esc(l.quantity)}</strong></div><div>${l.unit_price!==''?money(l.unit_price):''}</div><div>${l.prev!==undefined?`Stock ${esc(l.prev)} → ${esc(l.next)}`:(l.subtotal?money(l.subtotal):'')}</div></div>`).join('')||'<div class="muted">Sin líneas visibles todavía.</div>';
@@ -3184,12 +3263,13 @@ function orderCard(o,ch){
   let correoState=(o.correo_argentino&&typeof o.correo_argentino==='object')?o.correo_argentino:{};
   let showAction=!!(act&&!correoState.exported_at&&String(act).trim().toLowerCase()!==String(logState||'').trim().toLowerCase());
   let actionHtml=showAction?`<span class="logisticsAction">${esc(act)}</span>`:'';
+  let cancelledActions=hasClaim?'':cancelledSaleActionsHtml(o,ch,logState);
   let totalSub=o.total_products&&Number(o.total_products)!==Number(o.total)?`<br><span class="small">Productos: ${money(o.total_products)}</span>`:'';
   let logisticClass=hasClaim?'bad':logistic==='FULL'?'ship-full':logistic==='FLEX'?'ship-flex':(logistic==='A coordinar'||logistic==='Sin envío')?'ship-coord':'ship-ml';
   let needsVisualAction=saleNeedsVisualAction(o,ch);
   let saleDate=o.display_created_at||o.sale_at||o.ml_date_created||o.tn_created_at||o.ml_date_closed||o.tn_paid_at;
   let saleDateLabel=saleDate?dateAR(saleDate):'Fecha de venta pendiente';
-  return `<div class="orderCard ${needsVisualAction?'actionSale':''} ${o.ml_claim_open?'mlClaimOpen':''}">${mlClaimHtml(o,ch)}<div class="orderHead"><div><strong>${esc(orderNumber(o,ch))}</strong>${sub?`<br><span class="small">${sub}</span>`:''}<br><span class="small">${esc(saleDateLabel)}</span></div><div>${channelCustomerHtml(o,ch)}</div><div class="orderLogisticsBlock"><span class="pill ${logisticClass} shippingPill">${esc(logistic)}</span><br><span class="orderPayStatus">${esc(orderStatusLabel(o,ch))}</span>${stateHtml}${manualDeliveredHtml}${actionHtml}${correoHtml}</div><div class="orderAmountBlock"><strong>${money(o.total)}</strong>${totalSub}<br><span class="small">${countLabel(lines.length)}</span></div><div class="orderInvoiceBlock">${invoiceButton(o,ch)}</div></div><div class="orderLines">${display}</div></div>`
+  return `<div class="orderCard ${needsVisualAction?'actionSale':''} ${o.ml_claim_open?'mlClaimOpen':''}">${mlClaimHtml(o,ch)}<div class="orderHead"><div><strong>${esc(orderNumber(o,ch))}</strong>${sub?`<br><span class="small">${sub}</span>`:''}<br><span class="small">${esc(saleDateLabel)}</span></div><div>${channelCustomerHtml(o,ch)}</div><div class="orderLogisticsBlock"><span class="pill ${logisticClass} shippingPill">${esc(logistic)}</span><br><span class="orderPayStatus">${esc(orderStatusLabel(o,ch))}</span>${stateHtml}${manualDeliveredHtml}${actionHtml}${correoHtml}${cancelledActions}</div><div class="orderAmountBlock"><strong>${money(o.total)}</strong>${totalSub}<br><span class="small">${countLabel(lines.length)}</span></div><div class="orderInvoiceBlock">${invoiceButton(o,ch)}</div></div><div class="orderLines">${display}</div></div>`
 }
 
 
