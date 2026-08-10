@@ -1363,12 +1363,17 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
   </div>
 
   <div class="card" id="correoSettingsCard">
-    <h3>Correo Argentino</h3>
-    <p>Ajustes comerciales para la cotización de envíos.</p>
+    <h3>Correo Argentino / MiCorreo</h3>
+    <p>Configuración del comercio para cotizar y exportar órdenes a MiCorreo.</p>
     <div class="grid">
       <div class="col-4">
         <label>Estado del servicio</label>
         <div id="correoSettingsStatus" class="serviceState"></div>
+      </div>
+      <div class="col-4">
+        <label for="cfgCorreoCustomerId">Número de cuenta MiCorreo (customerId)</label>
+        <input id="cfgCorreoCustomerId" inputmode="numeric" pattern="[0-9]*" maxlength="32" autocomplete="off" placeholder="Ej.: 0090000025">
+        <div class="small" style="margin-top:6px">Es el único dato de acceso de MiCorreo que guarda este comercio. No cargues email, contraseña ni token: XelerIA gestiona el acceso técnico en forma segura.</div>
       </div>
       <div class="col-4">
         <label>CP de origen predeterminado</label>
@@ -1443,9 +1448,9 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.20-sales-shipping-restore';
-const FRONTEND_BUILD='admin-erp-v29720-sales-shipping-restore';
-const CORREO_ARGENTINO_OAUTH_ENABLED=false;
+const FRONTEND_VERSION='2.97.21-micorreo-customer-id';
+const FRONTEND_BUILD='admin-erp-v29721-micorreo-customer-id';
+const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
 const XELERIA_MIN_SEARCH_CHARS=4;function isShortSearch(q){q=String(q||'').trim();return q.length>0&&q.length<XELERIA_MIN_SEARCH_CHARS}function minSearchMessage(){return 'Ingresá al menos '+XELERIA_MIN_SEARCH_CHARS+' caracteres para buscar.'}
@@ -3101,7 +3106,7 @@ function correoOrderId(o){
   return String(children.length===1?children[0]:(o.external_order_id||''));
 }
 function correoActionHtml(o,ch,logistic){
-  if(!CORREO_ARGENTINO_OAUTH_ENABLED)return'';
+  if(!MICORREO_ORDER_EXPORT_ENABLED||!state.tenantSettings?.correo_service_configured)return'';
   if(ch!=='ML'||!['A coordinar','Sin envío'].includes(logistic))return'';
   let oid=correoOrderId(o);if(!oid)return'';
   let correo=(o.correo_argentino&&typeof o.correo_argentino==='object')?o.correo_argentino:{};
@@ -3358,7 +3363,7 @@ async function refreshVisibleShipping(ch,items,opts={}){
       skipLastJson:!manual
     });
     let correoRefresh=null,correoError='';
-    if(ch==='ML'&&CORREO_ARGENTINO_OAUTH_ENABLED){
+    if(ch==='ML'&&MICORREO_ORDER_EXPORT_ENABLED&&state.tenantSettings?.correo_service_configured){
       try{
         correoRefresh=await fetchJson('/admin/ml/orders/correo/refresh-visible',{
           ...requestOpt,
@@ -5567,6 +5572,7 @@ function personalizationPayload(){
   let auto=wantsArca&&connected&&cfgGet('cfgAutoInvoice')==='true';
   let markupType=cfgGet('cfgShippingMarkupType')||'none';
   let markupValue=markupType==='none'?0:Number(cfgGet('cfgShippingMarkupValue')||0);
+  let correoCustomerId=cfgGet('cfgCorreoCustomerId').trim();
   let payload={
     display_name:cfgGet('cfgNombreFantasia'),
     logo_url:logoUrl,
@@ -5577,6 +5583,8 @@ function personalizationPayload(){
     auto_invoice_tn:auto,
     default_invoice_concept:cfgGet('cfgConcepto')||'Productos',
     notification_sound:sound,
+    correo_enabled:!!correoCustomerId,
+    correo_customer_id:correoCustomerId||null,
     correo_origin_postal_code:cfgGet('cfgCorreoOriginPostalCode').trim().toUpperCase()||null,
     shipping_markup_type:markupType,
     shipping_markup_value:markupValue,
@@ -5620,13 +5628,17 @@ function renderCorreoSettingsUi(settingsArg=null){
   if(label)label.textContent=type==='percent'?'Porcentaje adicional *':'Monto adicional fijo *';
   let status=qs('correoSettingsStatus');
   if(status){
-    let service=!!(s.correo_service_configured||s.correo_credentials_configured);
-    status.textContent=service?'Cotización disponible':'Servicio técnico no disponible';
-    status.className='serviceState '+(service?'ok':'bad');
+    let platform=!!(s.correo_platform_configured||s.correo_credentials_configured);
+    let account=!!s.correo_account_configured;
+    let service=!!s.correo_service_configured;
+    status.textContent=service?'Listo para cotizar y exportar':(!platform?'Integración técnica no disponible':(!account?'Falta el número de cuenta MiCorreo':'Servicio MiCorreo no disponible'));
+    status.className='serviceState '+(service?'ok':(platform?'warn':'bad'));
   }
 }
 
 function validateCorreoSettings(){
+  let customerId=cfgGet('cfgCorreoCustomerId').trim();
+  if(customerId&&!/^\d{1,32}$/.test(customerId))return'El número de cuenta MiCorreo (customerId) debe contener solamente dígitos.';
   let originPostalCode=cfgGet('cfgCorreoOriginPostalCode').trim();
   if(originPostalCode&&!/^(?:\d{4}|[A-Za-z]\d{4}[A-Za-z]{3})$/.test(originPostalCode))return'Ingresá un código postal de origen válido.';
   let type=cfgGet('cfgShippingMarkupType')||'none';
@@ -5715,6 +5727,7 @@ async function loadConfig(){
     cfgSet('cfgConcepto',s.default_invoice_concept||'Productos');
     let sound=normalizeNotificationSound(s.notification_sound||(s.raw_settings&&s.raw_settings.notification_sound)||'off');
     cfgSet('cfgNotificationSound',sound);
+    cfgSet('cfgCorreoCustomerId',s.correo_customer_id||'');
     cfgSet('cfgCorreoOriginPostalCode',s.correo_origin_postal_code||'');
     cfgSet('cfgShippingMarkupType',s.shipping_markup_type||'none');
     cfgSet('cfgShippingMarkupValue',s.shipping_markup_value||0);

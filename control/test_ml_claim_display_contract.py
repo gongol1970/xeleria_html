@@ -35,15 +35,19 @@ class MlClaimDisplayContract(unittest.TestCase):
         self.assertNotIn("o.created_at", sale_date_line)
         self.assertIn("Fecha de venta pendiente", body)
 
-    def test_correo_keeps_pricing_settings_without_login_or_export_action(self):
-        self.assertIn("const CORREO_ARGENTINO_OAUTH_ENABLED=false", HTML)
+    def test_micorreo_uses_customer_id_without_tenant_credentials_or_token(self):
+        self.assertIn("const MICORREO_ORDER_EXPORT_ENABLED=true", HTML)
+        self.assertNotIn("CORREO_ARGENTINO_OAUTH_ENABLED", HTML)
         self.assertIn('<div class="card" id="correoSettingsCard">', HTML)
+        self.assertIn('id="cfgCorreoCustomerId"', HTML)
         self.assertIn('id="cfgShippingMarkupValue"', HTML)
         self.assertIn('id="cfgShippingRoundingStep"', HTML)
         self.assertNotIn('id="cfgCorreoAccountEmail"', HTML)
         self.assertNotIn('id="cfgCorreoAccountPassword"', HTML)
+        self.assertNotIn('id="cfgCorreoBearerToken"', HTML)
+        self.assertIn("correo_customer_id:correoCustomerId||null", function_body("personalizationPayload"))
         self.assertIn(
-            "if(!CORREO_ARGENTINO_OAUTH_ENABLED)return''",
+            "!state.tenantSettings?.correo_service_configured",
             function_body("correoActionHtml"),
         )
 
