@@ -36,6 +36,24 @@ class CancelledSaleActionsContract(unittest.TestCase):
         self.assertIn("confirmar:true", body)
         self.assertIn("restore-cancelled-stock", body)
 
+    def test_restore_button_blocks_repeat_clicks_and_reports_local_result(self):
+        actions_body = function_body("cancelledSaleActionsHtml")
+        restore_body = function_body("restoreCancelledSaleStock")
+        self.assertIn("restoreCancelledSaleStock(this", actions_body)
+        self.assertIn("button.disabled=true", restore_body)
+        self.assertIn("button.textContent='Restaurando...'", restore_body)
+        self.assertIn("'Stock ya restaurado'", restore_body)
+        self.assertIn("cancelledSaleRestoreFeedback", restore_body)
+        self.assertIn("button.disabled=false", restore_body)
+
+    def test_successful_restore_is_not_reported_as_failed_if_reload_fails(self):
+        body = function_body("restoreCancelledSaleStock")
+        success_position = body.index("restoredCount=Number")
+        reload_position = body.index("await loadRecent")
+        reload_catch_position = body.index("No se pudo actualizar la lista")
+        self.assertLess(success_position, reload_position)
+        self.assertGreater(reload_catch_position, reload_position)
+
     def test_credit_note_is_available_for_issued_ml_and_tn_invoices(self):
         body = function_body("issuedInvoiceActionsHtml")
         nc_position = body.index("arcaStartNoteFromInvoice")

@@ -1020,6 +1020,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 .crossSourceGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-top:12px}.crossSourceCard{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:14px;border:1px solid var(--line);border-radius:12px;background:#fff}.crossDraft{margin-top:16px;padding:16px;border:1px solid #d7c28c;border-radius:14px;background:#fffaf0;max-width:100%;overflow:hidden}.crossDraftGrid{grid-template-columns:repeat(12,minmax(0,1fr));align-items:start}.crossDraftGrid>*{min-width:0}.crossTitleField{grid-column:span 8}.crossSkuField{grid-column:span 4}.crossPriceField,.crossStockField{grid-column:span 2}.crossPackageSection{grid-column:span 8;min-width:0}.crossPackageGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.crossPackageGrid>div{min-width:0}.crossPackageGrid label{font-size:11px}.crossDescriptionField,.crossImagesField,.crossCategoriesField,.crossAttributesField,.crossConfirmField{grid-column:1/-1;min-width:0}.crossImages{min-height:110px}.crossFieldHead{display:flex;align-items:center;justify-content:space-between;gap:10px}.crossCounter{font-size:12px;font-weight:800;color:var(--muted);white-space:nowrap}.crossCounter.limit{color:var(--bad)}.crossCategoryBox{max-height:280px;overflow:auto;padding:10px;border:1px solid var(--line);border-radius:10px;background:#fff}.crossCategoryRow{display:flex;align-items:flex-start;gap:9px;padding:7px 4px;border-bottom:1px solid #eee}.crossCategoryRow:last-child{border-bottom:0}.crossCategoryRow input{width:auto;margin-top:2px}.crossMlSetupGrid{display:grid;grid-template-columns:minmax(0,2fr) minmax(150px,.72fr) minmax(135px,.58fr);gap:14px;align-items:start}.crossMlSetupGrid>div,.crossAttributeGrid>div{display:flex;flex-direction:column;min-width:0}.crossMlSetupGrid label,.crossAttributeGrid label{min-height:36px;display:flex;align-items:flex-end}.crossAttributeGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.crossValueUnit{display:grid!important;grid-template-columns:minmax(0,1fr) 90px;gap:8px}.crossAttributeHint{margin:0 0 10px}.crossNotice{padding:12px;border-radius:10px;background:#eef5ff;border:1px solid #bed4ff;color:#234b87;font-size:12px;line-height:1.45}.crossDanger{background:#fff0ed;border-color:#f1b8ad;color:#8d2c1e}.crossResult{margin-top:12px;padding:14px;border-radius:12px;background:#ecfdf3;border:1px solid #a7e0be}#publicador-cruzado>.card>.crossNotice+.grid{width:100%;grid-template-columns:280px minmax(360px,1fr) 170px}#publicador-cruzado>.card>.crossNotice+.grid>.col-2,#publicador-cruzado>.card>.crossNotice+.grid>.col-3,#publicador-cruzado>.card>.crossNotice+.grid>.col-7{grid-column:auto}@media(max-width:1050px){#publicador-cruzado>.card>.crossNotice+.grid{grid-template-columns:1fr}#publicador-cruzado>.card>.crossNotice+.grid>*{grid-column:1/-1!important}.crossDraftGrid>*{grid-column:1/-1!important}.crossPackageGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.crossMlSetupGrid,.crossAttributeGrid{grid-template-columns:1fr}}@media(max-width:620px){.crossPackageGrid{grid-template-columns:1fr}}
 .cancelledSaleActions{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
 .cancelledSaleActions button{min-height:0;padding:6px 9px;font-size:11px}
+.cancelledSaleRestoreFeedback{display:block;width:100%;color:var(--bad);font-size:11px;font-weight:800}
 .cancelledSaleRestored{display:block;margin-top:5px;color:var(--ok);font-size:11px;font-weight:900}
 </style>
 <!-- UI_ALERTS_INVENTORY_FILTERS_FRONTEND_1_39 -->
@@ -1442,8 +1443,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.19-explicit-nc-stock-choice';
-const FRONTEND_BUILD='admin-erp-v29719-explicit-nc-stock-choice';
+const FRONTEND_VERSION='2.97.20-sales-shipping-restore';
+const FRONTEND_BUILD='admin-erp-v29720-sales-shipping-restore';
 const CORREO_ARGENTINO_OAUTH_ENABLED=false;
 const SALES_DB_LOAD_MAX_MS=15000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
@@ -2741,6 +2742,15 @@ function logisticLabel(o,ch){
     let st=o.tn_shipping_status||'';
     return tnLogisticLabel(opt,st);
   }
+  let persistedRaw=rawObj(o);
+  let stockMode=(o.ml_stock_mode&&typeof o.ml_stock_mode==='object')?o.ml_stock_mode:{};
+  let persistedStockMode=deepVal(persistedRaw,'ml_stock_mode')||{};
+  if(
+    boolishTrue(o.ml_is_full_or_external_stock)||
+    boolishTrue(stockMode.is_full_or_external_stock)||
+    boolishTrue(deepVal(persistedRaw,'ml_is_full_or_external_stock'))||
+    boolishTrue(persistedStockMode.is_full_or_external_stock)
+  )return 'FULL';
   let explicitType=String(o.ml_shipping_ui_type||o.shipping_type||o.ml_shipping_type||'').trim();
   if(explicitType){
     let et=explicitType.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
@@ -3217,12 +3227,12 @@ function cancelledSaleActionsHtml(o,ch,shippingLabel){
   let orderIds=saleExternalOrderIds(o,ch);
   if(restore.pending>0&&orderIds.length){
     let encoded=encodeURIComponent(JSON.stringify(orderIds));
-    actions.push(`<button type="button" class="secondary" onclick="restoreCancelledSaleStock('${jsq(ch)}','${jsq(encoded)}')">Restaurar stock</button>`);
+    actions.push(`<button type="button" class="secondary" onclick="restoreCancelledSaleStock(this,'${jsq(ch)}','${jsq(encoded)}')">Restaurar stock</button>`);
   }
   let restored=restore.sold>0&&restore.pending===0?'<span class="cancelledSaleRestored">Stock restaurado</span>':'';
-  return (actions.length?`<div class="cancelledSaleActions">${actions.join('')}</div>`:'')+restored;
+  return (actions.length?`<div class="cancelledSaleActions">${actions.join('')}<span class="cancelledSaleRestoreFeedback" aria-live="polite"></span></div>`:'')+restored;
 }
-async function restoreCancelledSaleStock(ch,encodedOrderIds){
+async function restoreCancelledSaleStock(button,ch,encodedOrderIds){
   let channel=String(ch||'').toUpperCase();
   let orderIds=[];
   try{orderIds=JSON.parse(decodeURIComponent(String(encodedOrderIds||'')))}catch(_e){}
@@ -3234,17 +3244,31 @@ async function restoreCancelledSaleStock(ch,encodedOrderIds){
   let ok=confirm(`\u00bfRestaurar el stock descontado por esta venta cancelada?\n\n${detail||'Se usar\u00e1n los movimientos reales de la venta.'}\n\nUs\u00e1 esta opci\u00f3n solamente si la mercader\u00eda no fue despachada.`);
   if(!ok)return;
   let statusId=channel.toLowerCase()+'VentasStatus';
+  let originalText=button?.textContent||'Restaurar stock';
+  let feedback=button?.parentElement?.querySelector('.cancelledSaleRestoreFeedback');
+  if(feedback)feedback.textContent='';
+  if(button){button.disabled=true;button.textContent='Restaurando...'}
   setStatus(statusId,'Restaurando el stock de la venta cancelada...');
+  let restoredCount=0;
   try{
     let d=await fetchJson(`/admin/${channel.toLowerCase()}/orders/restore-cancelled-stock`,{
       method:'POST',
       body:JSON.stringify({order_ids:orderIds,confirmar:true})
     });
-    let restoredCount=Number(d.restored_count||0);
+    restoredCount=Number(d.restored_count||0);
+    if(button)button.textContent=restoredCount?'Stock restaurado':'Stock ya restaurado';
     setStatus(statusId,restoredCount?`Stock restaurado: ${restoredCount} movimiento${restoredCount===1?'':'s'} auditado${restoredCount===1?'':'s'}.`:'El stock de esta venta ya estaba restaurado.',true);
+  }catch(e){
+    let message='No se pudo restaurar el stock: '+errText(e);
+    if(button){button.disabled=false;button.textContent=originalText}
+    if(feedback)feedback.textContent=message;
+    setStatus(statusId,message,false);
+    return;
+  }
+  try{
     await loadRecent(channel,state.sales[channel]?.offset||0,{refreshShipping:false});
   }catch(e){
-    setStatus(statusId,'No se pudo restaurar el stock: '+errText(e),false);
+    setStatus(statusId,(restoredCount?'El stock fue restaurado. ':'El stock ya estaba restaurado. ')+'No se pudo actualizar la lista: '+errText(e),'warn');
   }
 }
 
@@ -3256,6 +3280,9 @@ function orderCard(o,ch){
   let logistic=hasClaim?'RECLAMO':logisticLabel(o,ch);
   let logState=shippingStateLabel(o,ch);
   let act=hasClaim?'':saleNeedsAction(o,ch);
+  let logStateLow=String(logState||'').trim().toLowerCase();
+  let actLow=String(act||'').trim().toLowerCase();
+  if(logStateLow==='pendiente'&&actLow.startsWith('pendiente')){logState=act;act=''}
   let stateCls=shippingStateClass(logState);
   let stateHtml=!hasClaim&&logState?`<span class="shippingAction ${stateCls}">${esc(logState)}</span>`:'';
   let manualDeliveredHtml=tnDeliveredButton(o,ch);

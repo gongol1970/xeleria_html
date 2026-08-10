@@ -91,6 +91,19 @@ class SalesNonBlockingContract(unittest.TestCase):
         self.assertIn("return 'A coordinar'", body)
         self.assertIn("return tnLogisticLabel(opt,st)", logistic_body)
 
+    def test_persisted_external_stock_evidence_wins_over_generic_ml_label(self):
+        body = sync_function_body("logisticLabel")
+        full_position = body.index("boolishTrue(o.ml_is_full_or_external_stock)")
+        explicit_position = body.index("let explicitType=")
+        self.assertLess(full_position, explicit_position)
+        self.assertIn("return 'FULL'", body)
+
+    def test_specific_pending_action_replaces_generic_pending_state(self):
+        body = sync_function_body("orderCard")
+        self.assertIn("logStateLow==='pendiente'", body)
+        self.assertIn("actLow.startsWith('pendiente')", body)
+        self.assertIn("logState=act;act=''", body)
+
     def test_combo_save_error_keeps_human_and_technical_detail_copyable(self):
         body = sync_function_body("comboFriendlyComboError")
         self.assertIn("detail.message", body)
