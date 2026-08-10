@@ -43,10 +43,22 @@ class CancelledSaleActionsContract(unittest.TestCase):
         self.assertLess(nc_position, tn_only_position)
         self.assertIn("Nota de Cr&eacute;dito", body)
 
-    def test_credit_note_and_direct_stock_restore_remain_separate_decisions(self):
-        body = function_body("arcaStartNoteFromInvoice")
-        self.assertIn("qs('amModificaStock').checked=false", body)
-        self.assertIn("value=(kind==='NC'?'devolucion':'comprobante')", body)
+    def test_credit_note_requires_an_explicit_restore_or_keep_stock_choice(self):
+        start_body = function_body("arcaStartNoteFromInvoice")
+        validation_body = function_body("arcaManualValidateStockDecision")
+        payload_body = function_body("arcaManualBody")
+        self.assertIn("arcaManualRequireStockDecision(kind==='NC')", start_body)
+        self.assertIn("Elegí si esta Nota de Crédito restaura stock o no", validation_body)
+        self.assertIn("arcaManualValidateStockDecision()", payload_body)
+        self.assertIn("arcaManualRequireStockDecision([3,8,13].includes(tipo))", function_body("arcaManualTypeChanged"))
+
+    def test_explicit_nc_stock_choice_controls_the_existing_stock_contract(self):
+        element_body = function_body("arcaManualStockDecisionElement")
+        choice_body = function_body("arcaManualStockDecisionChanged")
+        self.assertIn("No restaurar stock", element_body)
+        self.assertIn("Restaurar stock", element_body)
+        self.assertIn("checkbox.checked=select?.value==='restore'", choice_body)
+        self.assertIn("value='devolucion'", choice_body)
 
 
 if __name__ == "__main__":

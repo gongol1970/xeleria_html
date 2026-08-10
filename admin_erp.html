@@ -1442,8 +1442,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.18-cancelled-sale-actions';
-const FRONTEND_BUILD='admin-erp-v29718-cancelled-sale-actions';
+const FRONTEND_VERSION='2.97.19-explicit-nc-stock-choice';
+const FRONTEND_BUILD='admin-erp-v29719-explicit-nc-stock-choice';
 const CORREO_ARGENTINO_OAUTH_ENABLED=false;
 const SALES_DB_LOAD_MAX_MS=15000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
@@ -4305,6 +4305,51 @@ function arcaLineUnitGross(l){
   let q=Number(l.quantity||1)||1;
   return Number(l.unit_price_gross||l.unit_price_display||l.unit_price||0)||((Number(l.total_gross||l.subtotal_display||l.subtotal||0)||0)/q);
 }
+function arcaManualStockDecisionElement(){
+  let select=qs('amStockDecision');
+  if(select)return select;
+  let checkbox=qs('amModificaStock');
+  let legacyLabel=checkbox?.closest('label');
+  if(!legacyLabel)return null;
+  select=document.createElement('select');
+  select.id='amStockDecision';
+  select.className='hidden';
+  select.style.width='270px';
+  select.setAttribute('aria-label','Stock de la Nota de Crédito');
+  select.innerHTML='<option value="">Stock de la NC *: elegí una opción</option><option value="keep">No restaurar stock</option><option value="restore">Restaurar stock</option>';
+  select.addEventListener('change',arcaManualStockDecisionChanged);
+  legacyLabel.insertAdjacentElement('afterend',select);
+  return select;
+}
+function arcaManualStockDecisionChanged(){
+  let select=qs('amStockDecision');
+  let checkbox=qs('amModificaStock');
+  if(checkbox)checkbox.checked=select?.value==='restore';
+  if(select?.value==='restore'&&qs('amStockReason'))qs('amStockReason').value='devolucion';
+}
+function arcaManualRequireStockDecision(required){
+  let select=arcaManualStockDecisionElement();
+  let checkbox=qs('amModificaStock');
+  let legacyLabel=checkbox?.closest('label');
+  let reason=qs('amStockReason');
+  if(!select)return;
+  let wasRequired=select.dataset.required==='1';
+  select.dataset.required=required?'1':'0';
+  select.required=!!required;
+  select.classList.toggle('hidden',!required);
+  legacyLabel?.classList.toggle('hidden',!!required);
+  reason?.classList.toggle('hidden',!!required);
+  if(required&&!wasRequired){select.value='';if(checkbox)checkbox.checked=false}
+  if(!required){select.value='';if(wasRequired&&checkbox)checkbox.checked=false}
+}
+function arcaManualValidateStockDecision(){
+  let select=qs('amStockDecision');
+  if(select?.dataset.required==='1'&&!select.value){
+    let e=new Error('Elegí si esta Nota de Crédito restaura stock o no.');
+    e.manualValidation=true;
+    throw e;
+  }
+}
 async function arcaStartNoteFromInvoice(invoiceId,kind){
   try{
     setStatus('arcaStatus',`Preparando ${kind==='NC'?'Nota de Crédito':'Nota de Débito'}...`);
@@ -4342,6 +4387,7 @@ async function arcaStartNoteFromInvoice(invoiceId,kind){
     qs('amNotes').value=`${kind==='NC'?'Nota de crédito':'Nota de débito'} asociada a ${arcaTypeShort(inv)} ${nro} · CAE ${inv.cae||''}`;
     if(qs('amModificaStock'))qs('amModificaStock').checked=false;
     if(qs('amStockReason'))qs('amStockReason').value=(kind==='NC'?'devolucion':'comprobante');
+    arcaManualRequireStockDecision(kind==='NC');
     qs('arcaManualLines').innerHTML='';arcaManualSeq=0;
     let lines=(inv.lines||[]);
     if(!lines.length){lines=[{sku:'',description:'Ajuste sobre comprobante original',quantity:1,unit_price_gross:Number(inv.importe_total||0),iva_pct:21}]}
@@ -4354,7 +4400,7 @@ async function arcaStartNoteFromInvoice(invoiceId,kind){
       iva_pct:l.iva_pct||21
     }));
     showView('arca-manual',{preserveManualDraft:true});
-    setStatus('arcaManualStatus',`${kind==='NC'?'Nota de Crédito':'Nota de Débito'} preparada desde ${arcaTypeShort(inv)} ${nro}. Revisá/importes y emití.`,true);
+    setStatus('arcaManualStatus',kind==='NC'?`Nota de Crédito preparada desde ${arcaTypeShort(inv)} ${nro}. Revisá los importes, elegí qué hacer con el stock y emití.`:`Nota de Débito preparada desde ${arcaTypeShort(inv)} ${nro}. Revisá los importes y emití.`,true);
   }catch(e){setStatus('arcaStatus','No pude preparar NC/ND: '+(e.message||JSON.stringify(e)),false)}
 }
 
@@ -4512,6 +4558,7 @@ function arcaManualTypeChanged(){
     input.disabled=isC;
     if(isC)input.value='0';else if(Number(input.value||0)===0)input.value='21';
   });
+  arcaManualRequireStockDecision([3,8,13].includes(tipo));
 }
 function arcaManualToday(){
   return new Intl.DateTimeFormat('en-CA',{timeZone:'America/Argentina/Buenos_Aires'}).format(new Date());
@@ -4634,6 +4681,7 @@ function arcaManualClear(){hideManualPreviewBox();
   if(qs('amNotes'))qs('amNotes').value='';
   if(qs('amModificaStock'))qs('amModificaStock').checked=false;
   if(qs('amStockReason'))qs('amStockReason').value='comprobante';
+  arcaManualRequireStockDecision(false);
   ['amServiceDesde','amServiceHasta','amVtoPago'].forEach(id=>{if(qs(id))qs(id).value=''});
   arcaManualConceptChanged();
   arcaManualTypeChanged();
@@ -4644,6 +4692,7 @@ function cancelArcaManual(){
   cancelToPreviousView();
 }
 function arcaManualBody(dryRun=true,confirmar=false){
+  arcaManualValidateStockDecision();
   let lines=[...document.querySelectorAll('#arcaManualLines .arcaLine')].map(r=>({
     sku:r.querySelector('.amSku').value.trim()||'ARCA_MANUAL',
     description:r.querySelector('.amDesc').value.trim(),
