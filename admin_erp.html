@@ -1374,6 +1374,8 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
         <label for="cfgCorreoCustomerId">Número de cuenta MiCorreo (customerId)</label>
         <input id="cfgCorreoCustomerId" inputmode="numeric" pattern="[0-9]*" maxlength="32" autocomplete="off" placeholder="Ej.: 0090000025">
         <div class="small" style="margin-top:6px">Es el único dato de acceso de MiCorreo que guarda este comercio. No cargues email, contraseña ni token: XelerIA gestiona el acceso técnico en forma segura.</div>
+        <div class="btnrow" style="margin-top:10px"><a class="btn secondary" href="./Obtener_customerId_MiCorreo.bat" download>Descargar asistente local (.bat)</a></div>
+        <div class="small" style="margin-top:6px">El asistente abre únicamente el portal oficial de MiCorreo y te entrega el customerId para copiar. No configura XelerIA ni solicita tus credenciales.</div>
       </div>
       <div class="col-4">
         <label>CP de origen predeterminado</label>
@@ -1448,8 +1450,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.21-micorreo-customer-id';
-const FRONTEND_BUILD='admin-erp-v29721-micorreo-customer-id';
+const FRONTEND_VERSION='2.97.22-micorreo-local-helper';
+const FRONTEND_BUILD='admin-erp-v29722-micorreo-local-helper';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
