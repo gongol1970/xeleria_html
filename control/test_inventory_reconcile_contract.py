@@ -6,6 +6,10 @@ HTML = (Path(__file__).resolve().parents[1] / "admin_erp.html").read_text(encodi
 
 
 class InventoryReconcileContractTests(unittest.TestCase):
+    def test_button_names_the_bounded_preview_instead_of_a_general_resync(self):
+        self.assertIn(">Comparar título y stock</button>", HTML)
+        self.assertNotIn(">Resincronizar título y stock</button>", HTML)
+
     def test_report_separates_real_differences_from_warnings(self):
         self.assertIn("Diferencias comprobadas", HTML)
         self.assertIn("Advertencias sin diferencia comprobada", HTML)
