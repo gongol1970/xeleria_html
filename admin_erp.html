@@ -1165,7 +1165,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
   <div class="col-search"><label>Buscar SKU / producto</label><input id="invSearch" oninput="debouncedSearch('inv')" placeholder="Buscar por SKU o nombre..."></div>
   <div class="col-small"><label>Canal</label><select id="invMarket" onchange="searchInventory(0,true)"><option value="">Todos</option><option>TN</option><option>ML</option></select></div>
   <div class="col-stockle"><label>Stock &lt;=</label><input id="invMaxStock" type="number" step="1" placeholder="Ej: 0" oninput="debouncedSearch('inv')"></div>
-  <div class="col-small"><label>Cantidad</label><select id="invLimit" class="limitSelect" onchange="searchInventory(0,true)"><option selected>20</option><option>40</option><option>80</option><option>100</option></select></div>
+  <div class="col-small"><label>Mostrar en pantalla</label><select id="invLimit" class="limitSelect" onchange="searchInventory(0,true)"><option selected>20</option><option>40</option><option>80</option><option>100</option></select></div>
   <div class="col-small"><label>&nbsp;</label><button onclick="searchInventory(0,true)">Filtrar</button></div>
   <div class="col-12"><div class="btnrow" style="margin-top:4px">
     <button class="primary" onclick="toggleInventoryTool('product')">Agregar producto</button>
@@ -1450,8 +1450,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.26-inventory-stock-reconcile-jobs';
-const FRONTEND_BUILD='admin-erp-v29726-inventory-stock-reconcile-jobs';
+const FRONTEND_VERSION='2.97.27-inventory-cost-fallback';
+const FRONTEND_BUILD='admin-erp-v29727-inventory-cost-fallback';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
@@ -2042,30 +2042,42 @@ async function fetchJson(path,opt={}){
   let trackActivity=opt.trackActivity!==false;
   let fetchOpt={...opt};
   delete fetchOpt.trackActivity;
+  delete fetchOpt.skipLastJson;
+  delete fetchOpt.retrySafeGet;
+  let method=String(opt.method||'GET').toUpperCase();
+  let maxAttempts=(method==='GET'&&opt.retrySafeGet!==false)?3:1;
+  let retryableStatus=new Set([429,500,502,503,504]);
+  let waitRetry=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   if(trackActivity)globalActivityBegin();
   try{
-    let r,txt='',data=null;
-    try{
-      r=await fetch(url(path),{...fetchOpt,headers:xeleriaHeaders(fetchOpt.headers||{})});
-      txt=await r.text();
-      try{data=JSON.parse(txt)}catch{data={ok:r.ok,text:txt}}
-      rememberTenantIdFromPayload(data);
-      if(!opt.skipLastJson)saveLastJson({ok:r.ok,http_status:r.status,path,method:opt.method||'GET',response:data});
-    }catch(networkError){
-      let out={ok:false,network:true,message:networkError?.message||String(networkError),path,method:opt.method||'GET'};
-      if(!opt.skipLastJson)saveLastJson(out);
-      if(String(path).includes('/admin/arca/'))saveLastArcaError(out,{path,method:opt.method||'GET'});
-      throw out;
-    }
-    if(!r.ok){
-      let out={ok:false,http_status:r.status,http_status_text:r.statusText,path,method:opt.method||'GET',response:data,raw_text:txt};
+    for(let attempt=1;attempt<=maxAttempts;attempt++){
+      let r,txt='',data=null;
+      try{
+        r=await fetch(url(path),{...fetchOpt,headers:xeleriaHeaders(fetchOpt.headers||{})});
+        txt=await r.text();
+        try{data=JSON.parse(txt)}catch{data={ok:r.ok,text:txt}}
+        rememberTenantIdFromPayload(data);
+      }catch(networkError){
+        let aborted=fetchOpt.signal?.aborted||networkError?.name==='AbortError';
+        if(!aborted&&attempt<maxAttempts){await waitRetry(attempt===1?800:2200);continue}
+        let out={ok:false,network:true,message:networkError?.message||String(networkError),path,method};
+        if(!opt.skipLastJson)saveLastJson(out);
+        if(String(path).includes('/admin/arca/'))saveLastArcaError(out,{path,method});
+        throw out;
+      }
+      if(r.ok){
+        if(!opt.skipLastJson)saveLastJson({ok:true,http_status:r.status,path,method,response:data});
+        return data;
+      }
+      let out={ok:false,http_status:r.status,http_status_text:r.statusText,path,method,response:data,raw_text:txt};
       if(data&&typeof data==='object'){
         if(data.detail!==undefined)out.detail=data.detail;
         if(data.message!==undefined)out.message=data.message;
         if(data.error!==undefined)out.error=data.error;
       }
+      if(retryableStatus.has(r.status)&&attempt<maxAttempts){await waitRetry(attempt===1?800:2200);continue}
       if(!opt.skipLastJson)saveLastJson(out);
-      if(String(path).includes('/admin/arca/'))saveLastArcaError(out,{path,method:opt.method||'GET'});
+      if(String(path).includes('/admin/arca/'))saveLastArcaError(out,{path,method});
       try{
         if(subscriptionExpiredError(out)){
           try{localStorage.removeItem('xeleria_session_token');sessionStorage.removeItem('xeleria_session_token');}catch(_e){}
@@ -2078,7 +2090,6 @@ async function fetchJson(path,opt={}){
       }catch(_authRedirectError){}
       throw out;
     }
-    return data;
   }finally{
     if(trackActivity)globalActivityEnd();
   }
@@ -3840,7 +3851,7 @@ async function applyInventoryReconciliation(sku,source,fingerprint){
     await searchInventory(state.inventory.offset||0,false);
   }catch(e){setStatus('inventoryReconcileStatus','No pude resincronizar: '+friendlyInventoryError(e),false)}
 }
-async function searchInventory(offset=0,savePref=false){
+async function searchInventory(offset=0,savePref=false,feedback={}){
   let q=qs('invSearch').value.trim();
   let lim=invLimit();
   let market=qs('invMarket')?.value||'';
@@ -3851,24 +3862,31 @@ async function searchInventory(offset=0,savePref=false){
     state.inventoryItems=[];state.inventory.total=0;renderInventory();
     if(qs('invPager'))qs('invPager').innerHTML='';
     setStatus('invStatus','Ingresá al menos 4 caracteres para buscar productos.');
-    return;
+    return false;
   }
   if(savePref)saveViewPref('inventario','limit',lim);
   state.inventory.offset=offset;
-  setStatus('invStatus','Buscando inventario + publicaciones...');
+  setStatus('invStatus',feedback.savedSummary?feedback.savedSummary+' · Actualizando la grilla...':'Buscando inventario + publicaciones...');
   try{
     let d=await fetchJson(`/admin/v2/inventory/products?q=${encodeURIComponent(q)}&limit=${encodeURIComponent(lim)}&offset=${encodeURIComponent(offset)}&marketplace=${encodeURIComponent(market)}&include_listings=true${maxStock!==''?'&max_stock='+encodeURIComponent(maxStock):''}`);
-    if(seq!==state.inventory.searchSeq)return;
+    if(seq!==state.inventory.searchSeq)return false;
     state.inventoryItems=d.items||[];
     state.inventory.total=Number(d.total||0);
     renderInventory();
     let linked=Number(d.publications_visible??state.inventoryItems.reduce((a,i)=>a+(Array.isArray(i.listings)?i.listings.length:0),0));
     if(qs('invPager'))qs('invPager').innerHTML=inventoryPagerHtml(d);
     let filtro=(market?` · canal ${market}`:'')+(maxStock!==''?` · stock <= ${maxStock}`:'');
-    setStatus('invStatus',`Inventario: ${state.inventoryItems.length} de ${state.inventory.total} ítems${filtro} · Publicaciones visibles: ${linked}`,true)
+    let gridSummary=`Inventario: ${state.inventoryItems.length} de ${state.inventory.total} ítems${filtro} · Publicaciones visibles: ${linked}`;
+    setStatus('invStatus',feedback.savedSummary?feedback.savedSummary+' · '+gridSummary:gridSummary,true);
+    return true;
   }catch(e){
-    if(seq!==state.inventory.searchSeq)return;
-    setStatus('invStatus','Error inventario: '+friendlyInventoryError(e), rawIncludesResourceUnavailable(e)?'warn':false)
+    if(seq!==state.inventory.searchSeq)return false;
+    let fallback='La grilla no respondió, pero podés seguir trabajando: XelerIA la reintentará automáticamente.';
+    setStatus('invStatus',feedback.savedSummary?feedback.savedSummary+' · '+fallback:fallback,'warn');
+    if(feedback.autoRetry&&!feedback.retrying){
+      setTimeout(()=>searchInventory(offset,savePref,{...feedback,retrying:true}),5000);
+    }
+    return false;
   }
 }
 function rawIncludesResourceUnavailable(e){let raw='';try{raw=JSON.stringify(e)}catch(_){raw=String(e||'')}return raw.includes('Resource temporarily unavailable')||raw.includes('[Errno 11]')}
@@ -5444,16 +5462,49 @@ async function applyFullInboundPdf(dryRun=true){
 }
 
 function summarizeInventoryUploadResult(j){
-  if(!j||typeof j!=='object')return 'Importación finalizada.';
+  if(!j||typeof j!=='object')return 'Planilla guardada.';
   let parts=[];
   if(j.rows!==undefined)parts.push('filas '+j.rows);
   if(j.inserted)parts.push('nuevos '+j.inserted);
-  if(j.updated)parts.push('actualizados '+j.updated);
+  let productChanges=Number(j.product_changes_count||0);
+  let priceChanges=Number(j.price_changes_count||0);
+  if(productChanges)parts.push('productos modificados '+productChanges);
+  else if(j.updated)parts.push('actualizados '+j.updated);
+  if(priceChanges)parts.push('precios modificados '+priceChanges);
   let listings=Number(j.marketplace_listings_updated||0);
   if(listings)parts.push('publicaciones '+listings);
-  let jobs=Number(j.sync_jobs_created||0)+Number(j.sync_jobs_updated||0);
-  if(jobs)parts.push('jobs '+jobs);
-  return parts.length?'Importación OK: '+parts.join(' · '):'Importación OK.';
+  let jobs=Number(j.sync_pending_count||0)||(Number(j.sync_jobs_created||0)+Number(j.sync_jobs_updated||0));
+  if(jobs)parts.push('envíos encolados '+jobs);
+  let pending=Number(j.sync_run_errors||j.sync_run?.errors||0);
+  let base=parts.length?'Planilla guardada: '+parts.join(' · '):'Planilla guardada.';
+  return pending?base+` · ${pending} sincronización(es) pendientes; se reintentan solas.`:base;
+}
+async function recoverInventoryUploadConfirmation(filename,startedAt,attempt=0){
+  await loadNotifications(false);
+  let found=(state.notifications.items||[]).find(n=>{
+    if(!inventoryImportNotificationIsFinal(n))return false;
+    let payload=n.payload||{};
+    if(String(payload.filename||'')!==String(filename||''))return false;
+    let created=Date.parse(n.created_at||'');
+    return !Number.isFinite(created)||created>=startedAt-10000;
+  });
+  if(found){
+    let failed=notificationType(found).includes('failed');
+    let message=failed?(found.body||'La planilla fue rechazada; revisá Notificaciones.'):(found.body||'Planilla guardada; la confirmación llegó por Notificaciones.');
+    setStatus('invStatus',message,failed?false:true);
+    if(!failed){
+      let input=qs('csvFile');try{if(input)input.value=''}catch(_e){}
+      searchInventory(0,true,{savedSummary:message,autoRetry:true});
+    }
+    return true;
+  }
+  if(attempt<11){
+    setStatus('invStatus','La conexión se cortó; estoy comprobando si la planilla quedó guardada...','warn');
+    setTimeout(()=>recoverInventoryUploadConfirmation(filename,startedAt,attempt+1),5000);
+    return false;
+  }
+  setStatus('invStatus','Todavía no pude confirmar el guardado. El archivo sigue seleccionado: revisá Notificaciones antes de volver a enviarlo.','warn');
+  return false;
 }
 function firstInventoryUploadError(j){
   if(!j||typeof j!=='object')return '';
@@ -5478,9 +5529,7 @@ async function uploadCsv(){
   }
   let fd=new FormData();
   fd.append('file',f,f.name);
-  // Limpiamos el input apenas capturamos el archivo.
-  // Si el import rechaza o falla, obliga a elegir de nuevo y evita nombres fantasma.
-  try{input.value=''}catch(_e){}
+  let uploadStartedAt=Date.now();
   setStatus('invStatus','Subiendo planilla...');
   try{
     var h=xeleriaHeaders();
@@ -5500,25 +5549,24 @@ async function uploadCsv(){
       return;
     }
     if(j&&j.ok){
-      setStatus('invStatus',summarizeInventoryUploadResult(j),true);
+      try{input.value=''}catch(_e){}
+      let summary=summarizeInventoryUploadResult(j);
+      let pending=Number(j.sync_run_errors||j.sync_run?.errors||0);
+      setStatus('invStatus',summary,pending?'warn':true);
       state.inventory.offset=0;
       state.inventory.searchSeq=0;
       setTimeout(async function(){
-        try{
-          showView('inventario');
-          window.scrollTo({top:0,behavior:'smooth'});
-          await searchInventory(0,true);
-        }catch(e){
-          setStatus('invStatus','La planilla se guardó, pero no pude refrescar la grilla. Tocá Productos nuevamente.',false);
-          console.error('uploadCsv refresh inventory',e);
-        }
+        showView('inventario');
+        window.scrollTo({top:0,behavior:'smooth'});
+        await searchInventory(0,true,{savedSummary:summary,autoRetry:true});
       },1500);
       return;
     }
     setStatus('invStatus','Respuesta inesperada al subir planilla.',false);
     if(out){out.classList.remove('hidden');out.textContent=txt}
   }catch(e){
-    setStatus('invStatus','Error subiendo planilla: '+e,false);
+    setStatus('invStatus','La conexión se cortó; estoy comprobando si la planilla quedó guardada...','warn');
+    recoverInventoryUploadConfirmation(f.name,uploadStartedAt).catch(err=>console.warn('inventory upload confirmation',err));
   }
 }async function postText(path,out){try{let txt=await fetchText(path,{method:'POST'});showPre(out,txt)}catch(e){showPre(out,'Error: '+e)}}function statusPill(s){let cls=s==='done'||s==='issued'?'ok':(s==='manual_review'||s==='failed_retry'||s==='error'||s==='rejected'?'bad':(s==='pending'?'warn':'info'));return `<span class="pill ${cls}">${s||''}</span>`}
 function jobsLimit(){let value=Number(qs('jobsLimit')?.value||20);return Number.isFinite(value)?Math.max(1,Math.min(value,50)):20}
