@@ -40,6 +40,8 @@ class MlClaimDisplayContract(unittest.TestCase):
         self.assertNotIn("CORREO_ARGENTINO_OAUTH_ENABLED", HTML)
         self.assertIn('<div class="card" id="correoSettingsCard">', HTML)
         self.assertIn('id="cfgCorreoCustomerId"', HTML)
+        self.assertIn('N° de comercio MiCorreo', HTML)
+        self.assertIn('No cargues usuario, contraseña ni token.', HTML)
         self.assertIn('id="cfgShippingMarkupValue"', HTML)
         self.assertIn('id="cfgShippingRoundingStep"', HTML)
         self.assertNotIn('id="cfgCorreoAccountEmail"', HTML)
