@@ -3,24 +3,32 @@ from pathlib import Path
 
 
 HTML = (Path(__file__).resolve().parents[1] / "admin_erp.html").read_text(encoding="utf-8")
+RECONCILE = HTML[
+    HTML.index("function inventoryReconcileSourceCell"):
+    HTML.index("async function searchInventory")
+]
 
 
 class InventoryReconcileContractTests(unittest.TestCase):
-    def test_button_names_the_bounded_preview_instead_of_a_general_resync(self):
-        self.assertIn(">Comparar título y stock</button>", HTML)
+    def test_button_names_the_full_stock_comparison(self):
+        self.assertIn(">Comparar stock completo</button>", HTML)
         self.assertNotIn(">Resincronizar título y stock</button>", HTML)
 
     def test_report_separates_real_differences_from_warnings(self):
-        self.assertIn("Diferencias comprobadas", HTML)
+        self.assertIn("Diferencias de stock comprobadas", HTML)
         self.assertIn("Advertencias sin diferencia comprobada", HTML)
-        self.assertIn("Diferencia comprobada en", HTML)
+        self.assertIn("Diferencia comprobada de stock", HTML)
         self.assertNotIn("Sin diferencia aplicable; revisar advertencia.", HTML)
 
-    def test_report_names_exact_fields_and_internal_listing_conflicts(self):
-        self.assertIn("difference_fields", HTML)
-        self.assertIn("ambiguous_fields", HTML)
-        self.assertIn("Las publicaciones de ${sourceName} difieren en", HTML)
+    def test_report_is_stock_only_and_exposes_internal_listing_conflicts(self):
+        self.assertNotIn("título", RECONCILE.lower())
+        self.assertIn("tienen stock distinto entre sí", HTML)
         self.assertIn("Ver ${values.length} publicaciones de ${esc(sourceName)}", HTML)
+
+    def test_preview_uses_full_stock_endpoint_without_a_limit(self):
+        self.assertIn("fetchJson('/admin/inventory/reconcile-stock/preview'", HTML)
+        self.assertNotIn("reconcile-stock/preview?limit=", HTML)
+        self.assertIn("fetchJson('/admin/inventory/reconcile-stock/apply'", HTML)
 
     def test_unreadable_sources_have_no_fake_action_button(self):
         self.assertIn("let action=source.selectable?", HTML)

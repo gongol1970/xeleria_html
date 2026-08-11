@@ -1169,7 +1169,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
   <div class="col-small"><label>&nbsp;</label><button onclick="searchInventory(0,true)">Filtrar</button></div>
   <div class="col-12"><div class="btnrow" style="margin-top:4px">
     <button class="primary" onclick="toggleInventoryTool('product')">Agregar producto</button>
-    <button type="button" class="secondary" onclick="previewInventoryReconciliation()">Comparar título y stock</button>
+    <button type="button" class="secondary" onclick="previewInventoryReconciliation()">Comparar stock completo</button>
     <button type="button" class="secondary" id="downloadCsv" onclick="downloadInventoryCsv()">Bajar planilla inventario XLSX</button>
     <input type="file" id="csvFile" accept=".xlsx,.csv" style="max-width:340px">
     <button class="secondary" onclick="uploadCsv()">Subir planilla inventario</button>
@@ -1177,7 +1177,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 </div>
 <div id="inventoryTools" class="hidden" style="margin-top:12px"></div>
 <div id="inventoryReconcilePanel" class="card hidden" style="margin-top:12px">
-  <div class="btnrow"><div><h3 style="margin:0">Diferencias de título y stock</h3><p>Compara cada SKU entre ML, TN y XelerIA. Las diferencias comprobadas aparecen primero; los problemas de lectura o las publicaciones distintas dentro de un mismo canal se muestran aparte. No revisa pagos, cancelaciones ni envíos.</p></div><button class="secondary" onclick="closeInventoryReconciliation()">Cerrar</button></div>
+  <div class="btnrow"><div><h3 style="margin:0">Diferencias de stock</h3><p>Recorre todos los SKU vinculados del inventario y compara el stock de ML, TN y XelerIA. Las diferencias comprobadas aparecen primero; los problemas de lectura o publicaciones con stock distinto dentro de un canal se muestran aparte.</p></div><button class="secondary" onclick="closeInventoryReconciliation()">Cerrar</button></div>
   <div id="inventoryReconcileStatus" class="status"></div>
   <div id="inventoryReconcileResults" class="tableWrap" style="margin-top:12px"></div>
 </div>
@@ -1450,8 +1450,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.24-inventory-reconcile-report';
-const FRONTEND_BUILD='admin-erp-v29724-inventory-reconcile-report';
+const FRONTEND_VERSION='2.97.25-inventory-full-stock-reconcile';
+const FRONTEND_BUILD='admin-erp-v29725-inventory-full-stock-reconcile';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
@@ -3724,18 +3724,15 @@ async function openInventoryReconciliation(){
 function inventoryReconcileSourceCell(row,sourceName){
   let source=(row.sources||{})[sourceName];
   if(!source)return'<span class="muted">No conectado / sin publicación</span>';
-  let fields=(source.ambiguous_fields||[]).map(v=>v==='title'?'título':'stock');
-  let title=source.title==null?(source.ambiguous?`Valores distintos en ${source.listings||0} publicaciones`:'—'):source.title;
   let stock=source.stock==null?'—':source.stock;
-  let problem=(source.errors||[])[0]||(source.ambiguous?`Las publicaciones de ${sourceName} difieren en ${fields.join(' y ')}`:'');
+  let problem=(source.errors||[])[0]||(source.ambiguous?`Las publicaciones de ${sourceName} tienen stock distinto entre sí`:'');
   let values=(source.values||[]);
-  let details=source.ambiguous&&values.length?`<details class="small" style="margin-top:6px"><summary>Ver ${values.length} publicaciones de ${esc(sourceName)}</summary>${values.map(v=>{let id=String(v.product_id||'')+(String(v.variant_id||'0')!=='0'?` / variante ${v.variant_id}`:'');return `<div style="margin-top:5px"><strong class="mono">${esc(id||'Sin ID')}</strong><br>${esc(v.title||'Sin título')} · Stock: ${esc(v.stock)}</div>`}).join('')}</details>`:'';
-  let action=source.selectable?`<button class="secondary" style="margin-top:7px" onclick="applyInventoryReconciliation('${esc(row.sku)}','${sourceName}','${esc(row.fingerprint)}')">Usar ${sourceName==='XELERIA'?'XelerIA':sourceName}</button>`:'';
-  return `<div><strong>${esc(title)}</strong><div class="small">Stock: ${esc(stock)}${source.listings?` · ${esc(source.listings)} publicación(es)`:''}</div>${problem?`<div class="small" style="color:var(--bad)">${esc(problem)}</div>`:''}${details}${action}</div>`;
+  let details=source.ambiguous&&values.length?`<details class="small" style="margin-top:6px"><summary>Ver ${values.length} publicaciones de ${esc(sourceName)}</summary>${values.map(v=>{let id=String(v.product_id||'')+(String(v.variant_id||'0')!=='0'?` / variante ${v.variant_id}`:'');return `<div style="margin-top:5px"><strong class="mono">${esc(id||'Sin ID')}</strong> · Stock: ${esc(v.stock)}</div>`}).join('')}</details>`:'';
+  let action=source.selectable?`<button class="secondary" style="margin-top:7px" onclick="applyInventoryReconciliation('${esc(row.sku)}','${sourceName}','${esc(row.fingerprint)}')">Usar stock de ${sourceName==='XELERIA'?'XelerIA':sourceName}</button>`:'';
+  return `<div><strong>Stock: ${esc(stock)}</strong>${source.listings?`<div class="small">${esc(source.listings)} publicación(es)</div>`:''}${problem?`<div class="small" style="color:var(--bad)">${esc(problem)}</div>`:''}${details}${action}</div>`;
 }
 function inventoryReconcileDifferenceLabel(row){
-  let fields=(row.difference_fields||[]).map(v=>v==='title'?'título':'stock');
-  return fields.length?`Diferencia comprobada en ${fields.join(' y ')}`:'No hay una diferencia comprobable';
+  return row.has_difference?'Diferencia comprobada de stock':'No hay una diferencia comprobable de stock';
 }
 function inventoryReconcileTable(title,description,rows){
   if(!rows.length)return'';
@@ -3746,13 +3743,13 @@ function renderInventoryReconciliation(){
   let box=qs('inventoryReconcileResults');if(!box)return;
   let differences=rows.filter(row=>row.has_difference);
   let warnings=rows.filter(row=>!row.has_difference);
-  box.innerHTML=inventoryReconcileTable('Diferencias comprobadas','El título, el stock o ambos cambian entre las fuentes que pudieron compararse.',differences)+inventoryReconcileTable('Advertencias sin diferencia comprobada','No se pudo completar la comparación o un canal tiene publicaciones distintas entre sí. No se cuentan como diferencias.',warnings)||'<div class="muted" style="text-align:center;padding:16px">Título y stock coinciden en todas las fuentes que pudieron leerse.</div>';
+  box.innerHTML=inventoryReconcileTable('Diferencias de stock comprobadas','El stock cambia entre ML, TN o XelerIA.',differences)+inventoryReconcileTable('Advertencias sin diferencia comprobada','No se pudo completar la lectura o un canal tiene publicaciones con stock distinto entre sí. No se cuentan como diferencias.',warnings)||'<div class="muted" style="text-align:center;padding:16px">El stock coincide en todas las fuentes que pudieron leerse.</div>';
 }
 async function previewInventoryReconciliation(){
   qs('inventoryReconcilePanel')?.classList.remove('hidden');
-  setStatus('inventoryReconcileStatus','Consultando únicamente título y stock en ML y TN...');
+  setStatus('inventoryReconcileStatus','Consultando el stock de todo el inventario vinculado en ML y TN...');
   try{
-    let d=await fetchJson('/admin/inventory/reconcile-title-stock/preview?limit=100',{method:'POST'});
+    let d=await fetchJson('/admin/inventory/reconcile-stock/preview',{method:'POST'});
     state.inventoryReconcileItems=d.items||[];renderInventoryReconciliation();
     let msg=`Revisados: ${Number(d.checked_skus||0)} SKU · diferencias comprobadas: ${Number(d.differences||0)}`;
     if(Number(d.warning_only_skus||0))msg+=` · advertencias sin diferencia: ${Number(d.warning_only_skus||0)}`;
@@ -3763,10 +3760,10 @@ async function previewInventoryReconciliation(){
   }catch(e){setStatus('inventoryReconcileStatus','No pude comparar: '+friendlyInventoryError(e),false)}
 }
 async function applyInventoryReconciliation(sku,source,fingerprint){
-  if(!confirm(`Usar título y stock de ${source==='XELERIA'?'XelerIA':source} para ${sku} y sincronizarlos en las tres plataformas?`))return;
+  if(!confirm(`Usar el stock de ${source==='XELERIA'?'XelerIA':source} para ${sku} y sincronizarlo en las tres plataformas?`))return;
   setStatus('inventoryReconcileStatus',`Aplicando ${source} para ${sku}...`);
   try{
-    let d=await fetchJson('/admin/inventory/reconcile-title-stock/apply',{method:'POST',body:JSON.stringify({sku,source,fingerprint})});
+    let d=await fetchJson('/admin/inventory/reconcile-stock/apply',{method:'POST',body:JSON.stringify({sku,source,fingerprint})});
     setStatus('inventoryReconcileStatus',d.message||`${sku} resincronizado.`,true);
     await previewInventoryReconciliation();
     await searchInventory(state.inventory.offset||0,false);
