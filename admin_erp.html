@@ -1169,7 +1169,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
   <div class="col-small"><label>&nbsp;</label><button onclick="searchInventory(0,true)">Filtrar</button></div>
   <div class="col-12"><div class="btnrow" style="margin-top:4px">
     <button class="primary" onclick="toggleInventoryTool('product')">Agregar producto</button>
-    <button type="button" class="secondary" onclick="previewInventoryReconciliation()">Comparar stock completo</button>
+    <button type="button" class="secondary" id="inventoryReconcileStart" onclick="previewInventoryReconciliation()">Controlar stock en segundo plano</button>
     <button type="button" class="secondary" id="downloadCsv" onclick="downloadInventoryCsv()">Bajar planilla inventario XLSX</button>
     <input type="file" id="csvFile" accept=".xlsx,.csv" style="max-width:340px">
     <button class="secondary" onclick="uploadCsv()">Subir planilla inventario</button>
@@ -1177,7 +1177,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 </div>
 <div id="inventoryTools" class="hidden" style="margin-top:12px"></div>
 <div id="inventoryReconcilePanel" class="card hidden" style="margin-top:12px">
-  <div class="btnrow"><div><h3 style="margin:0">Diferencias de stock</h3><p>Recorre todos los SKU vinculados del inventario y compara el stock de ML, TN y XelerIA. Las diferencias comprobadas aparecen primero; los problemas de lectura o publicaciones con stock distinto dentro de un canal se muestran aparte.</p></div><button class="secondary" onclick="closeInventoryReconciliation()">Cerrar</button></div>
+  <div class="btnrow"><div><h3 style="margin:0">Diferencias de stock</h3><p>El control corre en segundo plano, en tandas de 50 SKU. Podés seguir trabajando: XelerIA te notifica al terminar y conserva el resultado para abrirlo después.</p></div><button class="secondary" onclick="closeInventoryReconciliation()">Cerrar</button></div>
   <div id="inventoryReconcileStatus" class="status"></div>
   <div id="inventoryReconcileResults" class="tableWrap" style="margin-top:12px"></div>
 </div>
@@ -1450,11 +1450,12 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.25-inventory-full-stock-reconcile';
-const FRONTEND_BUILD='admin-erp-v29725-inventory-full-stock-reconcile';
+const FRONTEND_VERSION='2.97.26-inventory-stock-reconcile-jobs';
+const FRONTEND_BUILD='admin-erp-v29726-inventory-stock-reconcile-jobs';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
+state.inventoryReconcileJobId='';state.inventoryReconcileItems=[];
 const XELERIA_MIN_SEARCH_CHARS=4;function isShortSearch(q){q=String(q||'').trim();return q.length>0&&q.length<XELERIA_MIN_SEARCH_CHARS}function minSearchMessage(){return 'Ingresá al menos '+XELERIA_MIN_SEARCH_CHARS+' caracteres para buscar.'}
 const INVENTORY_IMPORT_STARTED_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
 const INVENTORY_IMPORT_RUNNING_MESSAGE='Importando, podés continuar trabajando que te notificaremos al terminar.';
@@ -2111,6 +2112,7 @@ const NOTIFICATION_GROUPS=[
   {key:'ml_claims',source:'Mercado Libre',slot:'Reclamos',view:'ml-ventas'},
   {key:'ml_sales',source:'Mercado Libre',slot:'Ventas',view:'ml-ventas'},
   {key:'tn_sales',source:'Tienda Nube',slot:'Ventas',view:'tn-ventas'},
+  {key:'inventory_reconcile',source:'Inventario',slot:'Control de stock',view:'inventario'},
   {key:'inventory_import',source:'Carga general de inventario',slot:'Importación',view:'productos'}
 ];
 
@@ -2119,6 +2121,7 @@ function notificationType(n){return String((n&&n.type)||'').toLowerCase()}
 function notificationTarget(n){return String((n&&n.target_view)||'').toLowerCase()}
 function notificationGroupKey(n){
   let t=notificationType(n), v=notificationTarget(n);
+  if(t.includes('inventory_stock_reconcile'))return 'inventory_reconcile';
   if(t.includes('inventory_import')||v.includes('inventory-import'))return 'inventory_import';
   if(t.includes('ml_claim')||t.includes('claim'))return 'ml_claims';
   if((t.includes('question')||v.includes('ml-preguntas'))&&t.includes('ml'))return 'ml_questions';
@@ -2284,6 +2287,7 @@ async function markNotificationGroupRead(key){
 async function viewNotificationGroup(key){
   let cfg=NOTIFICATION_GROUPS.find(x=>x.key===key)||{view:'notificaciones'};
   let items=(notificationGroups()[key]||[]).filter(notificationIsUnread);
+  let selected=items[0]||((notificationGroups()[key]||[])[0])||null;
   try{
     for(const n of items){
       if(n&&n.id)await fetchJson('/admin/notifications/'+encodeURIComponent(n.id)+'/read',{method:'POST'});
@@ -2293,6 +2297,10 @@ async function viewNotificationGroup(key){
     setStatus('notificationsStatus','No pude marcar leído: '+errText(e),false);
   }
   showView(cfg.view||'notificaciones');
+  if(key==='inventory_reconcile'){
+    let jobId=String((selected&&selected.payload&&selected.payload.job_id)||'').trim();
+    setTimeout(()=>openInventoryReconciliationJob(jobId),80);
+  }
   if(cfg.scroll)setTimeout(()=>qs(cfg.scroll)?.scrollIntoView({behavior:'smooth',block:'start'}),120);
 }
 
@@ -3745,19 +3753,82 @@ function renderInventoryReconciliation(){
   let warnings=rows.filter(row=>!row.has_difference);
   box.innerHTML=inventoryReconcileTable('Diferencias de stock comprobadas','El stock cambia entre ML, TN o XelerIA.',differences)+inventoryReconcileTable('Advertencias sin diferencia comprobada','No se pudo completar la lectura o un canal tiene publicaciones con stock distinto entre sí. No se cuentan como diferencias.',warnings)||'<div class="muted" style="text-align:center;padding:16px">El stock coincide en todas las fuentes que pudieron leerse.</div>';
 }
+function inventoryReconcileSetBusy(busy){
+  let button=qs('inventoryReconcileStart');
+  if(button)button.disabled=!!busy;
+}
+function inventoryReconcileSummary(d){
+  d=d||{};
+  let msg=`Revisados: ${Number(d.checked_skus||0)} SKU · diferencias comprobadas: ${Number(d.differences||0)}`;
+  if(Number(d.warning_only_skus||0))msg+=` · advertencias sin diferencia: ${Number(d.warning_only_skus||0)}`;
+  if(Number(d.unreadable_listings||0))msg+=` · ${Number(d.unreadable_listings||0)} publicación(es) no pudieron leerse después del reintento`;
+  let retry=d.tn_retry||{};
+  if(Number(retry.attempted_products||0))msg+=` · TN reintentó ${Number(retry.attempted_products||0)} producto(s): ${Number(retry.recovered_products||0)} recuperados, ${Number(retry.failed_products||0)} fallidos`;
+  return msg;
+}
+function inventoryReconcileShowResult(d){
+  d=d||{};
+  state.inventoryReconcileItems=d.items||[];
+  renderInventoryReconciliation();
+  setStatus('inventoryReconcileStatus',inventoryReconcileSummary(d),Number(d.unreadable_listings||0)?'warn':true);
+}
+function inventoryReconcileClearPoll(){
+  if(timers.inventoryReconcilePoll)clearInterval(timers.inventoryReconcilePoll);
+  timers.inventoryReconcilePoll=null;
+}
+async function inventoryReconcileReadJob(jobId,{showResult=true}={}){
+  let path=jobId?'/admin/inventory/reconcile-stock/jobs/'+encodeURIComponent(jobId):'/admin/inventory/reconcile-stock/jobs/latest';
+  let d=await fetchJson(path,{skipLastJson:true});
+  if(!d||d.job===null)return d;
+  state.inventoryReconcileJobId=String(d.job_id||jobId||'');
+  if(d.status==='completed'){
+    inventoryReconcileClearPoll();inventoryReconcileSetBusy(false);
+    if(showResult){qs('inventoryReconcilePanel')?.classList.remove('hidden');inventoryReconcileShowResult(d.result||{})}
+    await loadNotifications(false);
+  }else if(d.status==='failed'){
+    inventoryReconcileClearPoll();inventoryReconcileSetBusy(false);
+    if(showResult){qs('inventoryReconcilePanel')?.classList.remove('hidden');setStatus('inventoryReconcileStatus','El control no pudo terminar: '+(d.last_error||'error desconocido'),false)}
+    await loadNotifications(false);
+  }else if(d.status==='queued'||d.status==='running'){
+    inventoryReconcileSetBusy(true);
+    if(!qs('inventoryReconcilePanel')?.classList.contains('hidden')){
+      let total=Number(d.total_skus||0), processed=Number(d.processed_skus||0);
+      setStatus('inventoryReconcileStatus',total?`Controlando stock en segundo plano: ${processed} de ${total} SKU. Podés seguir trabajando; te avisaremos al terminar.`:'Preparando el control de stock en segundo plano, en tandas de 50. Podés seguir trabajando; te avisaremos al terminar.',true);
+    }
+  }
+  return d;
+}
+function inventoryReconcileSchedulePoll(jobId){
+  inventoryReconcileClearPoll();
+  timers.inventoryReconcilePoll=setInterval(()=>inventoryReconcileReadJob(jobId,{showResult:true}).catch(e=>console.debug('inventory reconcile poll',e)),4000);
+}
+async function openInventoryReconciliationJob(jobId=''){
+  showView('inventario');
+  qs('inventoryReconcilePanel')?.classList.remove('hidden');
+  setStatus('inventoryReconcileStatus','Abriendo el resultado del control de stock...');
+  try{
+    let d=await inventoryReconcileReadJob(jobId,{showResult:true});
+    if(d&&(d.status==='queued'||d.status==='running'))inventoryReconcileSchedulePoll(d.job_id);
+    qs('inventoryReconcilePanel')?.scrollIntoView({behavior:'smooth',block:'start'});
+  }catch(e){setStatus('inventoryReconcileStatus','No pude abrir el control: '+friendlyInventoryError(e),false)}
+}
+async function resumeInventoryReconciliationJob(){
+  try{
+    let d=await inventoryReconcileReadJob('',{showResult:false});
+    if(d&&(d.status==='queued'||d.status==='running'))inventoryReconcileSchedulePoll(d.job_id);
+  }catch(e){console.debug('resume inventory reconcile',e)}
+}
 async function previewInventoryReconciliation(){
   qs('inventoryReconcilePanel')?.classList.remove('hidden');
-  setStatus('inventoryReconcileStatus','Consultando el stock de todo el inventario vinculado en ML y TN...');
+  state.inventoryReconcileItems=[];let resultBox=qs('inventoryReconcileResults');if(resultBox)resultBox.innerHTML='';
+  setStatus('inventoryReconcileStatus','Iniciando el control de stock en segundo plano...');
+  inventoryReconcileSetBusy(true);
   try{
-    let d=await fetchJson('/admin/inventory/reconcile-stock/preview',{method:'POST'});
-    state.inventoryReconcileItems=d.items||[];renderInventoryReconciliation();
-    let msg=`Revisados: ${Number(d.checked_skus||0)} SKU · diferencias comprobadas: ${Number(d.differences||0)}`;
-    if(Number(d.warning_only_skus||0))msg+=` · advertencias sin diferencia: ${Number(d.warning_only_skus||0)}`;
-    if(Number(d.unreadable_listings||0))msg+=` · ${Number(d.unreadable_listings||0)} publicación(es) no pudieron leerse después del reintento`;
-    let retry=d.tn_retry||{};
-    if(Number(retry.attempted_products||0))msg+=` · TN reintentó ${Number(retry.attempted_products||0)} producto(s): ${Number(retry.recovered_products||0)} recuperados, ${Number(retry.failed_products||0)} fallidos`;
-    setStatus('inventoryReconcileStatus',msg,Number(d.unreadable_listings||0)?'warn':true);
-  }catch(e){setStatus('inventoryReconcileStatus','No pude comparar: '+friendlyInventoryError(e),false)}
+    let d=await fetchJson('/admin/inventory/reconcile-stock/jobs',{method:'POST'});
+    state.inventoryReconcileJobId=String(d.job_id||'');
+    setStatus('inventoryReconcileStatus',d.message||'El control corre en segundo plano. Te avisaremos al terminar.',true);
+    inventoryReconcileSchedulePoll(state.inventoryReconcileJobId);
+  }catch(e){inventoryReconcileSetBusy(false);setStatus('inventoryReconcileStatus','No pude iniciar el control: '+friendlyInventoryError(e),false)}
 }
 async function applyInventoryReconciliation(sku,source,fingerprint){
   if(!confirm(`Usar el stock de ${source==='XELERIA'?'XelerIA':source} para ${sku} y sincronizarlo en las tres plataformas?`))return;
@@ -6217,7 +6288,7 @@ async function loadInventoryImportGrid(offset=0,opts={}){
 cleanTokenFromUrl();
 loadSettings();if(typeof loadMLQuestionSettings==='function')loadMLQuestionSettings();renderMLQuickButtons();
 let migrationAuditRequested=new URLSearchParams(location.search).get('migration_audit')==='1';
-startHumanInactivityGuard();showView(migrationAuditRequested?'versiones':'inicio',{skipHistory:true});health();handleOauthReturn();updateVersionBar();startAlertPolling();inventoryImportBootstrapGridButton();if(migrationAuditRequested)loadMigrationAudit();/* Recuperación única al iniciar: muestra staging pendiente sin activar polling periódico. */
+startHumanInactivityGuard();showView(migrationAuditRequested?'versiones':'inicio',{skipHistory:true});health();handleOauthReturn();updateVersionBar();startAlertPolling();inventoryImportBootstrapGridButton();resumeInventoryReconciliationJob();if(migrationAuditRequested)loadMigrationAudit();/* Recuperación única al iniciar: muestra staging pendiente sin activar polling periódico. */
 </script>
 </body>
 </html>

@@ -10,8 +10,8 @@ RECONCILE = HTML[
 
 
 class InventoryReconcileContractTests(unittest.TestCase):
-    def test_button_names_the_full_stock_comparison(self):
-        self.assertIn(">Comparar stock completo</button>", HTML)
+    def test_button_names_the_background_stock_control(self):
+        self.assertIn(">Controlar stock en segundo plano</button>", HTML)
         self.assertNotIn(">Resincronizar título y stock</button>", HTML)
 
     def test_report_separates_real_differences_from_warnings(self):
@@ -25,10 +25,18 @@ class InventoryReconcileContractTests(unittest.TestCase):
         self.assertIn("tienen stock distinto entre sí", HTML)
         self.assertIn("Ver ${values.length} publicaciones de ${esc(sourceName)}", HTML)
 
-    def test_preview_uses_full_stock_endpoint_without_a_limit(self):
-        self.assertIn("fetchJson('/admin/inventory/reconcile-stock/preview'", HTML)
-        self.assertNotIn("reconcile-stock/preview?limit=", HTML)
+    def test_control_starts_a_persistent_job_without_waiting_for_the_full_scan(self):
+        self.assertIn("fetchJson('/admin/inventory/reconcile-stock/jobs',{method:'POST'}", HTML)
+        self.assertIn("/admin/inventory/reconcile-stock/jobs/latest", HTML)
+        self.assertNotIn("fetchJson('/admin/inventory/reconcile-stock/preview'", HTML)
         self.assertIn("fetchJson('/admin/inventory/reconcile-stock/apply'", HTML)
+
+    def test_background_control_is_resumable_and_opens_from_notifications(self):
+        self.assertIn("tandas de 50 SKU", HTML)
+        self.assertIn("inventory_stock_reconcile", HTML)
+        self.assertIn("inventoryReconcileSchedulePoll", HTML)
+        self.assertIn("resumeInventoryReconciliationJob();", HTML)
+        self.assertIn("openInventoryReconciliationJob(jobId)", HTML)
 
     def test_unreadable_sources_have_no_fake_action_button(self):
         self.assertIn("let action=source.selectable?", HTML)
