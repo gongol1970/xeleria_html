@@ -10,8 +10,13 @@ RECONCILE = HTML[
 
 
 class InventoryReconcileContractTests(unittest.TestCase):
-    def test_button_names_the_background_stock_control(self):
-        self.assertIn(">Controlar stock en segundo plano</button>", HTML)
+    def test_button_lives_only_with_the_initial_import_in_configuration(self):
+        config_card = HTML[HTML.index('<div id="inventoryImportCard"'):]
+        inventory_view = HTML[HTML.index('<section id="inventario"'):HTML.index('<section id="movimientos"')]
+        self.assertIn('id="inventoryReconcileStart"', config_card)
+        self.assertIn('onclick="startInventoryReconciliationFromConfig()"', config_card)
+        self.assertIn(">Re-sincronizar stock</button>", config_card)
+        self.assertNotIn('id="inventoryReconcileStart"', inventory_view)
         self.assertNotIn(">Resincronizar título y stock</button>", HTML)
 
     def test_report_separates_real_differences_from_warnings(self):
@@ -26,6 +31,7 @@ class InventoryReconcileContractTests(unittest.TestCase):
         self.assertIn("Ver ${values.length} publicaciones de ${esc(sourceName)}", HTML)
 
     def test_control_starts_a_persistent_job_without_waiting_for_the_full_scan(self):
+        self.assertIn("async function startInventoryReconciliationFromConfig()", HTML)
         self.assertIn("fetchJson('/admin/inventory/reconcile-stock/jobs',{method:'POST'}", HTML)
         self.assertIn("/admin/inventory/reconcile-stock/jobs/latest", HTML)
         self.assertNotIn("fetchJson('/admin/inventory/reconcile-stock/preview'", HTML)

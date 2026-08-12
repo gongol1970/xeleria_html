@@ -6,6 +6,10 @@ HTML = (Path(__file__).resolve().parents[1] / "admin_erp.html").read_text(encodi
 
 
 class InventoryUploadFallbackContractTests(unittest.TestCase):
+    def test_download_identifies_the_cost_column_unambiguously(self):
+        self.assertIn("inventario_xeleria_con_costo.xlsx", HTML)
+        self.assertIn("incluye K Costo antes de L Precio de lista", HTML)
+
     def test_limit_is_explained_as_screen_pagination(self):
         self.assertIn("<label>Mostrar en pantalla</label><select id=\"invLimit\"", HTML)
 

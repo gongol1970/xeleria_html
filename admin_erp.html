@@ -1169,7 +1169,6 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
   <div class="col-small"><label>&nbsp;</label><button onclick="searchInventory(0,true)">Filtrar</button></div>
   <div class="col-12"><div class="btnrow" style="margin-top:4px">
     <button class="primary" onclick="toggleInventoryTool('product')">Agregar producto</button>
-    <button type="button" class="secondary" id="inventoryReconcileStart" onclick="previewInventoryReconciliation()">Controlar stock en segundo plano</button>
     <button type="button" class="secondary" id="downloadCsv" onclick="downloadInventoryCsv()">Bajar planilla inventario XLSX</button>
     <input type="file" id="csvFile" accept=".xlsx,.csv" style="max-width:340px">
     <button class="secondary" onclick="uploadCsv()">Subir planilla inventario</button>
@@ -1374,8 +1373,6 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
         <label for="cfgCorreoCustomerId">N° de comercio MiCorreo</label>
         <input id="cfgCorreoCustomerId" inputmode="numeric" pattern="[0-9]*" maxlength="32" autocomplete="off" placeholder="Ej.: 0090000025">
         <div class="small" style="margin-top:6px">Es el “N° Cliente” que figura en MiCorreo y el único dato que debe cargar el comercio. Conservá los ceros iniciales. No cargues usuario, contraseña ni token.</div>
-        <div class="btnrow" style="margin-top:10px"><a class="btn secondary" href="./Obtener_customerId_MiCorreo.bat" download>Descargar asistente local (.bat)</a></div>
-        <div class="small" style="margin-top:6px">El asistente abre únicamente el portal oficial de MiCorreo y te ayuda a encontrar el N° Cliente para copiar. No configura XelerIA ni solicita tus credenciales.</div>
       </div>
       <div class="col-4">
         <label>CP de origen predeterminado</label>
@@ -1396,7 +1393,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
     </div>
   </div>
 
-<div id="inventoryImportCard" class="card"><div class="btnrow"><div><h3>Carga general de inventario</h3></div></div><div class="importConnectorGrid"><div id="inventoryImportMLCard" class="importConnectorCard"><h4>Mercado Libre</h4><div class="importConnectorMeta">Estado: <span id="inventoryImportMLStatus" class="pill">revisando</span><span id="inventoryImportMLDot" class="dot">·</span><span id="inventoryImportMLAccount" class="importConnectorAccount">—</span></div><div class="importConnectorActions"><button id="inventoryImportMLButton" class="secondary" onclick="connectInventoryChannel('ML')">Conectar ML</button></div></div><div id="inventoryImportTNCard" class="importConnectorCard"><h4>Tienda Nube</h4><div class="importConnectorMeta">Estado: <span id="inventoryImportTNStatus" class="pill">revisando</span><span id="inventoryImportTNDot" class="dot">·</span><span id="inventoryImportTNAccount" class="importConnectorAccount">—</span></div><div class="importConnectorActions"><button id="inventoryImportTNButton" class="secondary" onclick="connectInventoryChannel('TN')">Conectar TN</button></div></div></div><div class="btnrow importImportActions"><button id="inventoryImportRunButton" class="primary" onclick="runInventoryImportRefresh(0)">Importar canales conectados</button></div><div id="inventoryImportStatus" class="status"></div><div id="inventoryImportSummary" class="status"></div><div id="inventoryImportErrors" class="status hidden"></div><div class="importReviewLegend importReviewLegendInline hidden"><span class="pill ok">Verde: SKU o publicación nueva / S-C cambiado</span><span class="pill bad">Rojo: falta en refresh confirmado</span><span class="pill warn">Amarillo: SKU faltante</span></div><div class="importReviewGrid hidden"><table><colgroup><col class="sku"><col class="tn"><col class="kind"><col class="ml"></colgroup><thead><tr><th>SKU</th><th>Tienda Nube</th><th title="Simple / Combo">S/C</th><th>Mercado Libre</th></tr></thead><tbody id="inventoryImportGridBody"></tbody></table></div><div id="inventoryImportPager" class="btnrow" style="margin-top:12px"></div></div>
+<div id="inventoryImportCard" class="card"><div class="btnrow"><div><h3>Carga general de inventario</h3></div></div><div class="importConnectorGrid"><div id="inventoryImportMLCard" class="importConnectorCard"><h4>Mercado Libre</h4><div class="importConnectorMeta">Estado: <span id="inventoryImportMLStatus" class="pill">revisando</span><span id="inventoryImportMLDot" class="dot">·</span><span id="inventoryImportMLAccount" class="importConnectorAccount">—</span></div><div class="importConnectorActions"><button id="inventoryImportMLButton" class="secondary" onclick="connectInventoryChannel('ML')">Conectar ML</button></div></div><div id="inventoryImportTNCard" class="importConnectorCard"><h4>Tienda Nube</h4><div class="importConnectorMeta">Estado: <span id="inventoryImportTNStatus" class="pill">revisando</span><span id="inventoryImportTNDot" class="dot">·</span><span id="inventoryImportTNAccount" class="importConnectorAccount">—</span></div><div class="importConnectorActions"><button id="inventoryImportTNButton" class="secondary" onclick="connectInventoryChannel('TN')">Conectar TN</button></div></div></div><div class="btnrow importImportActions"><button id="inventoryImportRunButton" class="primary" onclick="runInventoryImportRefresh(0)">Importar canales conectados</button><button type="button" class="secondary" id="inventoryReconcileStart" onclick="startInventoryReconciliationFromConfig()">Re-sincronizar stock</button></div><div class="small" style="margin-top:8px">El re-sync recorre todas las publicaciones y corre en segundo plano. Usalo solamente cuando necesites una revisión integral.</div><div id="inventoryImportStatus" class="status"></div><div id="inventoryImportSummary" class="status"></div><div id="inventoryImportErrors" class="status hidden"></div><div class="importReviewLegend importReviewLegendInline hidden"><span class="pill ok">Verde: SKU o publicación nueva / S-C cambiado</span><span class="pill bad">Rojo: falta en refresh confirmado</span><span class="pill warn">Amarillo: SKU faltante</span></div><div class="importReviewGrid hidden"><table><colgroup><col class="sku"><col class="tn"><col class="kind"><col class="ml"></colgroup><thead><tr><th>SKU</th><th>Tienda Nube</th><th title="Simple / Combo">S/C</th><th>Mercado Libre</th></tr></thead><tbody id="inventoryImportGridBody"></tbody></table></div><div id="inventoryImportPager" class="btnrow" style="margin-top:12px"></div></div>
 </section>
 <section id="bitacora" class="view"><div class="card"><div class="dashStatusLine"><div><h3>Registro operativo</h3><p>Errores y advertencias accionables. Cada evento trae contexto, lectura humana y detalle plegable.</p></div><button class="secondary dashRefresh" onclick="loadOpsLog(true)">Actualizar</button></div><div class="opsLogFilters" role="group" aria-label="Filtrar registro operativo"><button id="opsFilterAll" class="secondary active" onclick="setOpsLogFilter('all')">Todos</button><button id="opsFilterInvoice" class="secondary" onclick="setOpsLogFilter('invoice')">Facturación</button><button id="opsFilterStock" class="secondary" onclick="setOpsLogFilter('stock')">Stock</button><button id="opsFilterImport" class="secondary" onclick="setOpsLogFilter('import')">Importación</button><button id="opsFilterOther" class="secondary" onclick="setOpsLogFilter('other')">Otros</button></div><div id="opsLogStatus" class="status"></div><div id="opsLogList" class="opsLogList"></div></div></section>
 <section id="versiones" class="view">
@@ -1450,8 +1447,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.27-inventory-cost-fallback';
-const FRONTEND_BUILD='admin-erp-v29727-inventory-cost-fallback';
+const FRONTEND_VERSION='2.97.28-inventory-config-resync';
+const FRONTEND_BUILD='admin-erp-v29728-inventory-config-resync';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
@@ -1789,8 +1786,8 @@ async function downloadInventoryCsv(){
   setBusy(true,'Preparando inventario','Armando la planilla completa...');
   setStatus('invStatus','Preparando planilla...');
   try{
-    await xeliDownload('/admin/v2/inventory/products/export','inventario_xeleria.xlsx');
-    setStatus('invStatus','Planilla de inventario descargada.',true);
+    await xeliDownload('/admin/v2/inventory/products/export','inventario_xeleria_con_costo.xlsx');
+    setStatus('invStatus','Planilla descargada · incluye K Costo antes de L Precio de lista.',true);
     clearStatusLater('invStatus',5000);
   }catch(e){
     setStatus('invStatus','Error preparando descarga: '+friendlyInventoryError(e),false);
@@ -3828,6 +3825,19 @@ async function resumeInventoryReconciliationJob(){
     let d=await inventoryReconcileReadJob('',{showResult:false});
     if(d&&(d.status==='queued'||d.status==='running'))inventoryReconcileSchedulePoll(d.job_id);
   }catch(e){console.debug('resume inventory reconcile',e)}
+}
+async function startInventoryReconciliationFromConfig(){
+  setStatus('inventoryImportStatus','Iniciando el re-sync completo de stock en segundo plano...');
+  inventoryReconcileSetBusy(true);
+  try{
+    let d=await fetchJson('/admin/inventory/reconcile-stock/jobs',{method:'POST'});
+    state.inventoryReconcileJobId=String(d.job_id||'');
+    setStatus('inventoryImportStatus',d.message||'El re-sync quedó trabajando. Podés seguir usando XelerIA; te avisaremos al terminar.',true);
+    inventoryReconcileSchedulePoll(state.inventoryReconcileJobId);
+  }catch(e){
+    inventoryReconcileSetBusy(false);
+    setStatus('inventoryImportStatus','No pude iniciar el re-sync: '+friendlyInventoryError(e),false);
+  }
 }
 async function previewInventoryReconciliation(){
   qs('inventoryReconcilePanel')?.classList.remove('hidden');
