@@ -574,6 +574,11 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 .productEditCard .productEditListings{max-height:330px!important}
 .productEditPubLine{grid-template-columns:46px minmax(260px,1fr) 120px 92px 74px!important}
 .productEditPubStatus .productStatusText{font-weight:400!important}
+.productEditPubStatus{display:flex;align-items:center;justify-content:space-between;gap:4px;min-width:0}
+.productEditPubDelete{width:26px!important;height:26px!important;min-width:26px!important;min-height:26px!important;padding:0!important;border:0!important;border-radius:7px!important;background:transparent!important;color:#b91c1c!important;font-size:17px!important;line-height:1!important;box-shadow:none!important;filter:none!important}
+.productEditPubDelete svg{width:16px;height:16px;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+.productEditPubDelete:hover{background:#fee2e2!important;color:#991b1b!important;filter:none!important}
+.productEditPubDelete:disabled{opacity:.45!important;cursor:wait!important}
 @media(max-width:1050px){#inventario table.productMatrixTable{min-width:980px!important}.productPublicationDetailRow .productPubLine{grid-template-columns:36px minmax(320px,1fr) 86px 46px 66px!important}.productDetailRow .comboComponentInner{max-width:none!important}}
 
 
@@ -1447,8 +1452,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.28-inventory-config-resync';
-const FRONTEND_BUILD='admin-erp-v29728-inventory-config-resync';
+const FRONTEND_VERSION='2.97.29-inventory-listing-unlink';
+const FRONTEND_BUILD='admin-erp-v29729-inventory-listing-unlink';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
@@ -5241,13 +5246,37 @@ function renderEditableListingsForItem(item,idx){
   if(!arr.length)return '<div class="muted" style="padding:8px 0">Sin publicaciones vinculadas.</div>';
   arr.sort((a,b)=>(listingMarket(a)+listingProductId(a)+listingVariantId(a)).localeCompare(listingMarket(b)+listingProductId(b)+listingVariantId(b)));
   item._editListings=arr;
-  return arr.map((l,j)=>`<div class="productEditPubLine">
+  return arr.map((l,j)=>`<div class="productEditPubLine" id="editListingRow_${idx}_${j}">
     <div><strong>${esc(listingMarket(l))}</strong></div>
     <div class="productEditPubTitle" title="${esc(l.title||l.name||'Publicación')}">${esc(l.title||l.name||'Publicación')}<div class="productEditPubMeta">${esc(listingProductId(l))} · Var ${esc(listingVariantId(l)||'0')} ${listingUrl(l)?`· <a href="${esc(listingUrl(l))}" target="_blank" rel="noopener">abrir</a>`:''}</div></div>
     <div><input id="editListingPrice_${idx}_${j}" type="number" step="0.01" value="${esc(listingPrice(l)??'')}"></div>
     <div><input id="editListingStock_${idx}_${j}" type="number" step="1" value="${esc(listingStock(l)??'')}" title="Stock de la publicación registrado localmente"></div>
-    <div class="productEditPubStatus">${listingStatusTextSpan(l)}</div>
+    <div class="productEditPubStatus">${listingStatusTextSpan(l)}<button type="button" class="productEditPubDelete" id="editListingDelete_${idx}_${j}" onclick="unlinkInventoryListing(${idx},${j})" title="Quitar esta publicación de XelerIA" aria-label="Quitar esta publicación de XelerIA"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6.5 7l1 13h9l1-13M10 11v5M14 11v5"/></svg></button></div>
   </div>`).join('');
+}
+async function unlinkInventoryListing(idx,j){
+  let item=state.inventoryItems[idx];if(!item)return;
+  let arr=item._editListings||item.listings||[];
+  let listing=arr[j];if(!listing||listing._unlinked)return;
+  let market=listingMarket(listing),productId=String(listingProductId(listing)||''),variantId=String(listingVariantId(listing)||'0');
+  if(!productId){invToolStatus('La publicación no tiene un ID válido para desvincular.',false);return}
+  let variantText=variantId&&variantId!=='0'?` · variante ${variantId}`:'';
+  if(!confirm(`Quitar de XelerIA la publicación ${market} ${productId}${variantText}?\n\nEsto no borra ni modifica la publicación en ${market}. Las demás publicaciones del SKU ${item.sku} quedan intactas.`))return;
+  let button=qs(`editListingDelete_${idx}_${j}`);if(button)button.disabled=true;
+  invToolStatus(`Quitando ${market} ${productId}${variantText} de XelerIA...`);
+  try{
+    let body=listing.id!=null&&listing.id!==''?{listing_id:listing.id}:{marketplace:market,external_product_id:productId,external_variant_id:variantId};
+    let d=await fetchJson('/admin/v2/inventory/product/'+encodeURIComponent(item.sku)+'/unlink-listing',{method:'POST',body:JSON.stringify(body)});
+    listing._unlinked=true;
+    item.listings=(item.listings||[]).filter(x=>x!==listing);
+    qs(`editListingRow_${idx}_${j}`)?.remove();
+    let list=qs(`editListingList_${idx}`);
+    if(list&&!list.querySelector('.productEditPubLine'))list.innerHTML='<div class="muted" style="padding:8px 0">Sin publicaciones vinculadas.</div>';
+    invToolStatus(Number(d.unlinked_count||0)>0?`Publicación ${market} ${productId}${variantText} quitada de XelerIA. No se modificó el marketplace.`:`La publicación ya no estaba vinculada en XelerIA.`,true);
+  }catch(e){
+    if(button)button.disabled=false;
+    invToolStatus('No pude quitar la publicación: '+friendlyInventoryError(e),false);
+  }
 }
 function renderEditProductTool(idx){
   let item=state.inventoryItems[idx];if(!item)return;
@@ -5269,7 +5298,7 @@ function renderEditProductTool(idx){
       <div class="col-3"><label>Alto (cm)</label><input id="editHeightCm" type="number" min="0" step="0.1" value="${esc(item.height_cm??'')}"></div>
       <div class="col-3"><label>Largo (cm)</label><input id="editDepthCm" type="number" min="0" step="0.1" value="${esc(item.depth_cm??'')}"></div>
       <div class="col-12 small">Datos del bulto terminado y embalado${isBundle?' del combo':''}. Quedarán listos para cotizar por MiCorreo.</div>
-      <div class="col-12"><label>Precios / stock de publicaciones asociadas</label><div class="productEditListings">${renderEditableListingsForItem(item,idx)}</div><div class="small">Al guardar, el stock del SKU se replica como objetivo ML/TN mediante sync_jobs. Stock marketplace nunca baja de 0.</div></div>
+      <div class="col-12"><label>Precios / stock de publicaciones asociadas</label><div class="productEditListings" id="editListingList_${idx}">${renderEditableListingsForItem(item,idx)}</div><div class="small">Al guardar, el stock del SKU se replica como objetivo ML/TN mediante sync_jobs. Stock marketplace nunca baja de 0.</div></div>
     </div>
     <div class="btnrow" style="margin-top:12px">
       <button class="ok" onclick="saveInventoryProductAll(${idx})">Guardar cambios</button>
@@ -5300,7 +5329,7 @@ function prepareProductComboConversion(idx){
 
 function inventoryListingPayloadsFromEdit(idx,item){
   let arr=item._editListings||item.listings||[];
-  return arr.map((l,j)=>({
+  return arr.map((l,j)=>l._unlinked?null:({
     marketplace:listingMarket(l),
     external_product_id:String(listingProductId(l)||''),
     external_variant_id:String(listingVariantId(l)||'0'),
@@ -5312,7 +5341,7 @@ function inventoryListingPayloadsFromEdit(idx,item){
     url:listingUrl(l)||null,
     listing_type:l.listing_type||null,
     raw_data:l.raw_data||{}
-  })).filter(x=>x.marketplace&&x.external_product_id);
+  })).filter(x=>x&&x.marketplace&&x.external_product_id);
 }
 
 async function saveInventoryListingPrices(idx){
