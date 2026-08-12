@@ -1027,6 +1027,9 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 .cancelledSaleActions button{min-height:0;padding:6px 9px;font-size:11px}
 .cancelledSaleRestoreFeedback{display:block;width:100%;color:var(--bad);font-size:11px;font-weight:800}
 .cancelledSaleRestored{display:block;margin-top:5px;color:var(--ok);font-size:11px;font-weight:900}
+.orderHead{grid-template-columns:minmax(0,1.15fr) minmax(0,1.25fr) minmax(210px,.9fr) minmax(120px,.8fr) minmax(135px,.58fr) 52px}
+.orderCorreoActions{display:flex;flex-direction:column;gap:7px;align-items:flex-start}.orderCorreoActions button{white-space:nowrap;padding:8px 12px!important}
+.correoModal{position:fixed;inset:0;z-index:9900;background:rgba(16,16,16,.58);display:flex;align-items:center;justify-content:center;padding:20px}.correoModalCard{width:min(720px,96vw);max-height:92vh;overflow:auto;background:#fffdf8;border:1px solid var(--line);border-radius:22px;box-shadow:0 22px 70px rgba(0,0,0,.35);padding:22px}.correoPackageGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.correoPackageGrid label{font-weight:900;font-size:12px}.correoPackageGrid input{margin-top:5px;width:100%}.correoPackageItems{margin:12px 0;border:1px solid #eee2c8;border-radius:13px;overflow:hidden}.correoPackageItem{display:grid;grid-template-columns:minmax(110px,.6fr) minmax(0,1fr) auto;gap:9px;padding:8px 10px;border-bottom:1px solid #eee2c8;font-size:12px}.correoPackageItem:last-child{border-bottom:0}.correoRates{display:grid;gap:7px;margin-top:12px}.correoRate{display:flex;justify-content:space-between;gap:12px;padding:9px 11px;background:#fff7d6;border-radius:11px}.correoModalActions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}@media(max-width:1050px){.orderHead{grid-template-columns:1fr}}@media(max-width:700px){.correoPackageGrid{grid-template-columns:1fr 1fr}.correoPackageItem{grid-template-columns:1fr}}
 </style>
 <!-- UI_ALERTS_INVENTORY_FILTERS_FRONTEND_1_39 -->
 </head>
@@ -1438,6 +1441,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 </section>
 
 </main></div>
+<div id="correoPackageModal" class="correoModal hidden" role="dialog" aria-modal="true" aria-labelledby="correoPackageTitle"><div class="correoModalCard"><h3 id="correoPackageTitle">Correo Argentino</h3><p id="correoPackageIntro" class="muted"></p><div id="correoPackageItems" class="correoPackageItems"></div><div class="correoPackageGrid"><label>Peso total (g)<input id="correoPackageWeight" type="number" min="1" max="25000"></label><label>Alto (cm)<input id="correoPackageHeight" type="number" min="1" max="150"></label><label>Ancho (cm)<input id="correoPackageWidth" type="number" min="1" max="150"></label><label>Largo (cm)<input id="correoPackageLength" type="number" min="1" max="150"></label></div><div id="correoPackageNote" class="small" style="margin-top:10px"></div><div id="correoPackageRates" class="correoRates"></div><div id="correoPackageStatus" class="status"></div><div class="correoModalActions"><button id="correoPackageExport" class="primary hidden" onclick="exportCorreoPackage()">Exportar</button><button class="secondary" onclick="closeCorreoPackageModal()">Cerrar</button></div></div></div>
 <div id="erpBusyOverlay" class="erpBusyOverlay"><div class="erpBusyBox"><div class="erpSpinner"></div><div id="erpBusyTitle" class="erpBusyTitle">Procesando...</div><div id="erpBusyMsg" class="erpBusyMsg">No cierres esta pantalla.</div></div></div>
 <div id="erpActivity" class="erpActivity" aria-hidden="true"></div>
 <script>
@@ -1452,8 +1456,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.29-inventory-listing-unlink';
-const FRONTEND_BUILD='admin-erp-v29729-inventory-listing-unlink';
+const FRONTEND_VERSION='2.97.30-correo-smart-package';
+const FRONTEND_BUILD='admin-erp-v29730-correo-smart-package';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
@@ -3129,58 +3133,37 @@ function correoOrderId(o){
   return String(children.length===1?children[0]:(o.external_order_id||''));
 }
 function correoActionHtml(o,ch,logistic){
-  if(!MICORREO_ORDER_EXPORT_ENABLED||!state.tenantSettings?.correo_service_configured)return'';
-  if(ch!=='ML'||!['A coordinar','Sin envío'].includes(logistic))return'';
+  if(!MICORREO_ORDER_EXPORT_ENABLED||!String(state.tenantSettings?.correo_customer_id||'').trim())return'';
+  if(!['ML','TN'].includes(ch)||logistic!=='A coordinar')return'';
   let oid=correoOrderId(o);if(!oid)return'';
   let correo=(o.correo_argentino&&typeof o.correo_argentino==='object')?o.correo_argentino:{};
   if(correo.delivered_at)return`<span class="shippingAction delivered">Entregado por Correo Argentino</span>`;
   if(correo.exported_at){
-    let tracking=correo.tracking_number?`<span class="small">Seguimiento: ${esc(correo.tracking_number)} · ${esc(correo.last_status||'en curso')}</span>`:`<button class="secondary smallBtn" onclick="linkCorreoTracking('${esc(oid)}')">Vincular seguimiento</button>`;
+    let tracking=correo.tracking_number?`<span class="small">Seguimiento: ${esc(correo.tracking_number)} · ${esc(correo.last_status||'en curso')}</span>`:`<button class="secondary smallBtn" onclick="linkCorreoTracking('${esc(oid)}','${esc(ch)}')">Vincular seguimiento</button>`;
     return`<span class="shippingAction other">Orden exportada a MiCorreo</span>${tracking}`;
   }
-  return`<button class="secondary smallBtn" style="margin-top:6px" onclick="exportMlOrderToCorreo('${esc(oid)}')">Exportar a Correo Argentino</button>`;
+  return`<button class="secondary smallBtn" onclick="openCorreoPackageModal('${esc(oid)}','${esc(ch)}','quote')">Cotizar con CA</button><button class="secondary smallBtn" onclick="openCorreoPackageModal('${esc(oid)}','${esc(ch)}','export')">Exportar a CA</button>`;
 }
-async function exportMlOrderToCorreo(orderId){
-  setBusy(true,'Preparando exportación','Verificando que sea una venta ML a coordinar y reuniendo los datos...');
-  setStatus('mlVentasStatus','Preparando orden para MiCorreo...');
-  try{
-    let prepared=await fetchJson(`/admin/ml/orders/${encodeURIComponent(orderId)}/correo/prepare`);
-    if(prepared.already_exported){setStatus('mlVentasStatus','Orden exportada a MiCorreo.',true);await loadRecent('ML',state.sales.ML.offset||0,{refreshShipping:false});return}
-    let draft={...(prepared.draft||{})};
-    let labels={
-      recipient_name:'Nombre del destinatario *',recipient_email:'Email del destinatario *',
-      street_name:'Calle *',street_number:'Altura *',city:'Ciudad *',
-      province_code:'Código de provincia (una letra) *',postal_code:'Código postal *',
-      weight:'Peso total en gramos *',height:'Alto en cm *',width:'Ancho en cm *',
-      length:'Largo en cm *',declared_value:'Valor declarado *'
-    };
-    for(let field of (prepared.missing_fields||[])){
-      let value=prompt(labels[field]||field,String(draft[field]??''));
-      if(value===null){setStatus('mlVentasStatus','Exportación cancelada.');return}
-      draft[field]=['weight','height','width','length','declared_value'].includes(field)?Number(String(value).replace(',','.')):String(value).trim();
-    }
-    let required=Object.keys(labels);
-    let missing=required.filter(field=>draft[field]===null||draft[field]===undefined||draft[field]===''||draft[field]===0||Number.isNaN(draft[field]));
-    if(missing.length){setStatus('mlVentasStatus','Faltan datos obligatorios: '+missing.map(f=>labels[f]).join(', '),false);return}
-    if(!confirm(`Exportar la venta ${orderId} a MiCorreo?\n\nDestinatario: ${draft.recipient_name}\nDomicilio: ${draft.street_name} ${draft.street_number}, ${draft.city}\nPaquete: ${draft.weight} g · ${draft.height} × ${draft.width} × ${draft.length} cm\n\nLuego el comercio paga e imprime la etiqueta en MiCorreo.`))return;
-    let result=await fetchJson(`/admin/ml/orders/${encodeURIComponent(orderId)}/correo/export`,{method:'POST',body:JSON.stringify(draft)});
-    let extra=result.tracking_link_required?' Falta vincular el número de seguimiento después de pagarlo en MiCorreo.':'';
-    setStatus('mlVentasStatus',(result.message||'Orden exportada a MiCorreo.')+extra,true);
-    await loadRecent('ML',state.sales.ML.offset||0,{refreshShipping:false});
-  }catch(e){setStatus('mlVentasStatus','No pude exportar a MiCorreo: '+errText(e),false)}
-  finally{setBusy(false)}
-}
-async function linkCorreoTracking(orderId){
+function closeCorreoPackageModal(){clearTimeout(timers.correoQuote);qs('correoPackageModal')?.classList.add('hidden')}
+function correoPackageFromInputs(){let draft={...(state.correoPrepared?.draft||{})};for(let [field,id] of [['weight','correoPackageWeight'],['height','correoPackageHeight'],['width','correoPackageWidth'],['length','correoPackageLength']])draft[field]=Number(qs(id)?.value||0);return draft}
+function renderCorreoPackageItems(items){let el=qs('correoPackageItems');if(!el)return;el.innerHTML=(items||[]).map(item=>`<div class="correoPackageItem"><strong>${esc(item.sku||'Sin SKU')} × ${esc(item.quantity||1)}</strong><span>${esc(item.name||'')}</span><span>${esc(item.width_cm||'—')} × ${esc(item.height_cm||'—')} × ${esc(item.depth_cm||'—')} cm · ${item.weight_kg?esc(item.weight_kg)+' kg':'sin peso'}</span></div>`).join('')||'<div class="correoPackageItem">No hay renglones de producto para calcular.</div>'}
+function renderCorreoRates(result){let el=qs('correoPackageRates');if(!el)return;let rates=result?.rates||[];el.innerHTML=rates.length?rates.map(rate=>`<div class="correoRate"><strong>${esc(rate.product_name||'Correo Argentino')}</strong><strong>${money(rate.price)}</strong></div>`).join(''):'<span class="small">Sin tarifa disponible para estas medidas.</span>'}
+async function quoteCorreoPackage(){clearTimeout(timers.correoQuote);let draft=correoPackageFromInputs(),status=qs('correoPackageStatus');if(!draft.postal_code||!draft.weight||!draft.height||!draft.width||!draft.length){if(status)status.textContent='Completá peso y las tres medidas para cotizar.';renderCorreoRates(null);return}if(status)status.textContent='Cotizando...';try{let result=await fetchJson(`/admin/${state.correoChannel.toLowerCase()}/orders/${encodeURIComponent(state.correoOrderId)}/correo/quote`,{method:'POST',body:JSON.stringify({postal_code:draft.postal_code,weight:draft.weight,height:draft.height,width:draft.width,length:draft.length})});renderCorreoRates(result);if(status)status.textContent='Tarifa calculada con las medidas mostradas.'}catch(e){renderCorreoRates(null);if(status)status.textContent='No pude cotizar: '+errText(e)}}
+function scheduleCorreoQuote(){clearTimeout(timers.correoQuote);timers.correoQuote=setTimeout(quoteCorreoPackage,600)}
+async function openCorreoPackageModal(orderId,channel,mode){state.correoOrderId=String(orderId);state.correoChannel=String(channel||'ML').toUpperCase();state.correoMode=mode;setBusy(true,'Preparando Correo Argentino','Leyendo la venta y calculando el bulto desde Inventario...');try{let prepared=await fetchJson(`/admin/${state.correoChannel.toLowerCase()}/orders/${encodeURIComponent(orderId)}/correo/prepare`);if(prepared.already_exported){setStatus(state.correoChannel.toLowerCase()+'VentasStatus','Orden ya exportada a MiCorreo.',true);await loadRecent(state.correoChannel,state.sales[state.correoChannel].offset||0,{refreshShipping:false});return}state.correoPrepared=prepared;let draft=prepared.draft||{};qs('correoPackageTitle').textContent=(mode==='export'?'Exportar':'Cotizar')+' con Correo Argentino';qs('correoPackageIntro').textContent='Revisá y corregí el peso y las medidas totales del bulto.';for(let [field,id] of [['weight','correoPackageWeight'],['height','correoPackageHeight'],['width','correoPackageWidth'],['length','correoPackageLength']]){let el=qs(id);el.value=draft[field]||'';el.oninput=scheduleCorreoQuote}renderCorreoPackageItems(prepared.package_items||[]);qs('correoPackageNote').textContent=(prepared.package_strategy||'')+(prepared.package_missing_skus?.length?' Faltan medidas o peso en Inventario para: '+prepared.package_missing_skus.join(', ')+'.':'');qs('correoPackageExport').classList.toggle('hidden',mode!=='export');renderCorreoRates(null);qs('correoPackageStatus').textContent='';qs('correoPackageModal').classList.remove('hidden');quoteCorreoPackage()}catch(e){setStatus(state.correoChannel.toLowerCase()+'VentasStatus','No pude preparar Correo Argentino: '+errText(e),false)}finally{setBusy(false)}}
+async function exportCorreoPackage(){let draft=correoPackageFromInputs();let labels={recipient_name:'Nombre del destinatario *',recipient_email:'Email del destinatario *',street_name:'Calle *',street_number:'Altura *',city:'Ciudad *',province_code:'Código de provincia (una letra) *',postal_code:'Código postal *',declared_value:'Valor declarado *'};for(let field of Object.keys(labels)){if(draft[field]===null||draft[field]===undefined||draft[field]===''||draft[field]===0){let value=prompt(labels[field],String(draft[field]??''));if(value===null)return;draft[field]=field==='declared_value'?Number(String(value).replace(',','.')):String(value).trim()}}if(!draft.weight||!draft.height||!draft.width||!draft.length){qs('correoPackageStatus').textContent='Completá peso y las tres medidas antes de exportar.';return}setBusy(true,'Exportando a MiCorreo','Enviando la orden a Correo Argentino...');try{let result=await fetchJson(`/admin/${state.correoChannel.toLowerCase()}/orders/${encodeURIComponent(state.correoOrderId)}/correo/export`,{method:'POST',body:JSON.stringify(draft)});closeCorreoPackageModal();let extra=result.tracking_link_required?' Falta vincular el seguimiento después de pagarlo en MiCorreo.':'';setStatus(state.correoChannel.toLowerCase()+'VentasStatus',(result.message||'Orden exportada a MiCorreo.')+extra,true);await loadRecent(state.correoChannel,state.sales[state.correoChannel].offset||0,{refreshShipping:false})}catch(e){qs('correoPackageStatus').textContent='No pude exportar: '+errText(e)}finally{setBusy(false)}}
+async function linkCorreoTracking(orderId,channel='ML'){
+  channel=String(channel||'ML').toUpperCase();
   let shippingId=prompt('Pegá el número de seguimiento que muestra MiCorreo *','');
   if(shippingId===null)return;
   shippingId=String(shippingId||'').trim();
-  if(!shippingId){setStatus('mlVentasStatus','El número de seguimiento es obligatorio.',false);return}
+  if(!shippingId){setStatus(channel.toLowerCase()+'VentasStatus','El número de seguimiento es obligatorio.',false);return}
   setBusy(true,'Vinculando seguimiento','Validando el número con Correo Argentino...');
   try{
-    let d=await fetchJson(`/admin/ml/orders/${encodeURIComponent(orderId)}/correo/link-tracking`,{method:'POST',body:JSON.stringify({shipping_id:shippingId})});
-    setStatus('mlVentasStatus',d.message||'Seguimiento vinculado.',true);
-    await loadRecent('ML',state.sales.ML.offset||0,{refreshShipping:false});
-  }catch(e){setStatus('mlVentasStatus','No pude vincular el seguimiento: '+errText(e),false)}
+    let d=await fetchJson(`/admin/${channel.toLowerCase()}/orders/${encodeURIComponent(orderId)}/correo/link-tracking`,{method:'POST',body:JSON.stringify({shipping_id:shippingId})});
+    setStatus(channel.toLowerCase()+'VentasStatus',d.message||'Seguimiento vinculado.',true);
+    await loadRecent(channel,state.sales[channel].offset||0,{refreshShipping:false});
+  }catch(e){setStatus(channel.toLowerCase()+'VentasStatus','No pude vincular el seguimiento: '+errText(e),false)}
   finally{setBusy(false)}
 }
 async function markTnMotoDelivered(orderId,label){
@@ -3324,7 +3307,7 @@ function orderCard(o,ch){
   let needsVisualAction=saleNeedsVisualAction(o,ch);
   let saleDate=o.display_created_at||o.sale_at||o.ml_date_created||o.tn_created_at||o.ml_date_closed||o.tn_paid_at;
   let saleDateLabel=saleDate?dateAR(saleDate):'Fecha de venta pendiente';
-  return `<div class="orderCard ${needsVisualAction?'actionSale':''} ${o.ml_claim_open?'mlClaimOpen':''}">${mlClaimHtml(o,ch)}<div class="orderHead"><div><strong>${esc(orderNumber(o,ch))}</strong>${sub?`<br><span class="small">${sub}</span>`:''}<br><span class="small">${esc(saleDateLabel)}</span></div><div>${channelCustomerHtml(o,ch)}</div><div class="orderLogisticsBlock"><span class="pill ${logisticClass} shippingPill">${esc(logistic)}</span><br><span class="orderPayStatus">${esc(orderStatusLabel(o,ch))}</span>${stateHtml}${manualDeliveredHtml}${actionHtml}${correoHtml}${cancelledActions}</div><div class="orderAmountBlock"><strong>${money(o.total)}</strong>${totalSub}<br><span class="small">${countLabel(lines.length)}</span></div><div class="orderInvoiceBlock">${invoiceButton(o,ch)}</div></div><div class="orderLines">${display}</div></div>`
+  return `<div class="orderCard ${needsVisualAction?'actionSale':''} ${o.ml_claim_open?'mlClaimOpen':''}">${mlClaimHtml(o,ch)}<div class="orderHead"><div><strong>${esc(orderNumber(o,ch))}</strong>${sub?`<br><span class="small">${sub}</span>`:''}<br><span class="small">${esc(saleDateLabel)}</span></div><div>${channelCustomerHtml(o,ch)}</div><div class="orderLogisticsBlock"><span class="pill ${logisticClass} shippingPill">${esc(logistic)}</span><br><span class="orderPayStatus">${esc(orderStatusLabel(o,ch))}</span>${stateHtml}${manualDeliveredHtml}${actionHtml}${cancelledActions}</div><div class="orderAmountBlock"><strong>${money(o.total)}</strong>${totalSub}<br><span class="small">${countLabel(lines.length)}</span></div><div class="orderCorreoActions">${correoHtml}</div><div class="orderInvoiceBlock">${invoiceButton(o,ch)}</div></div><div class="orderLines">${display}</div></div>`
 }
 
 
@@ -3386,9 +3369,9 @@ async function refreshVisibleShipping(ch,items,opts={}){
       skipLastJson:!manual
     });
     let correoRefresh=null,correoError='';
-    if(ch==='ML'&&MICORREO_ORDER_EXPORT_ENABLED&&state.tenantSettings?.correo_service_configured){
+    if(['ML','TN'].includes(ch)&&MICORREO_ORDER_EXPORT_ENABLED&&String(state.tenantSettings?.correo_customer_id||'').trim()){
       try{
-        correoRefresh=await fetchJson('/admin/ml/orders/correo/refresh-visible',{
+        correoRefresh=await fetchJson(`/admin/${ch.toLowerCase()}/orders/correo/refresh-visible`,{
           ...requestOpt,
           body:JSON.stringify({order_ids:ids}),
           skipLastJson:true

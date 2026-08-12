@@ -49,7 +49,7 @@ class MlClaimDisplayContract(unittest.TestCase):
         self.assertNotIn('id="cfgCorreoBearerToken"', HTML)
         self.assertIn("correo_customer_id:correoCustomerId||null", function_body("personalizationPayload"))
         self.assertIn(
-            "!state.tenantSettings?.correo_service_configured",
+            "String(state.tenantSettings?.correo_customer_id||'').trim()",
             function_body("correoActionHtml"),
         )
 
