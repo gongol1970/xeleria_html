@@ -58,6 +58,16 @@ class CorreoSalesPackageContractTests(unittest.TestCase):
         self.assertNotIn("quoteCorreoPackage()", open_modal)
         self.assertNotIn("scheduleCorreoQuote", open_modal)
 
+    def test_export_uses_visible_recipient_fields_without_technical_prompts(self):
+        modal = re.search(r'<div id="correoPackageModal"([\s\S]*?)<div id="erpBusyOverlay"', HTML).group(1)
+        for field in ("correoRecipientName", "correoRecipientEmail", "correoRecipientStreet", "correoRecipientStreetNumber", "correoRecipientCity", "correoRecipientProvince"):
+            self.assertIn(f'id="{field}"', modal)
+        export = re.search(r"async function exportCorreoPackage\(\)\{([^\n]+)", HTML).group(1)
+        self.assertNotIn("prompt(", export)
+        self.assertNotIn("province_code", export)
+        self.assertIn("altura / N° de puerta", export)
+        self.assertNotIn("Código de provincia (una letra)", HTML)
+
     def test_global_configuration_save_is_last_and_outside_cards(self):
         configuration = re.search(r'<section id="configuracion" class="view">([\s\S]*?)</section>', HTML).group(1)
         save_index = configuration.index('id="configSaveActions"')
