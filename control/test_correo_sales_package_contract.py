@@ -35,6 +35,22 @@ class CorreoSalesPackageContractTests(unittest.TestCase):
         self.assertIn("correo/export`,{method:'POST'", HTML)
         self.assertIn("state.correoChannel.toLowerCase()", HTML)
 
+    def test_modal_orders_dimensions_then_weight_in_kg_and_postal_codes_below(self):
+        modal = re.search(r'<div id="correoPackageModal"([\s\S]*?)<div id="erpBusyOverlay"', HTML).group(1)
+        fields = [
+            'id="correoPackageHeight"',
+            'id="correoPackageWidth"',
+            'id="correoPackageLength"',
+            'id="correoPackageWeight"',
+            'id="correoPackageOriginPostalCode"',
+            'id="correoPackageDestinationPostalCode"',
+        ]
+        positions = [modal.index(field) for field in fields]
+        self.assertEqual(positions, sorted(positions))
+        self.assertIn("Peso total (kg)", modal)
+        self.assertIn("*1000", HTML)
+        self.assertIn("Number(draft.weight)/1000", HTML)
+
     def test_quote_is_explicit_and_modal_does_not_auto_quote(self):
         modal = re.search(r'<div id="correoPackageModal"([\s\S]*?)<div id="erpBusyOverlay"', HTML).group(1)
         self.assertIn('onclick="quoteCorreoPackage()"', modal)
