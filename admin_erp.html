@@ -54,6 +54,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 
 .erpBusyOverlay{position:fixed;inset:0;background:rgba(16,16,16,.58);z-index:9999;display:none;align-items:center;justify-content:center;padding:24px}.erpBusyOverlay.active{display:flex}.erpBusyBox{width:min(520px,92vw);background:#fffdf8;border:1px solid var(--line);border-radius:22px;box-shadow:0 22px 70px rgba(0,0,0,.35);padding:24px;text-align:center}.erpBusyTitle{font-size:20px;font-weight:900;margin-bottom:8px}.erpBusyMsg{color:var(--muted);font-size:14px;line-height:1.45}.erpSpinner{width:42px;height:42px;border-radius:50%;border:5px solid #eee2c8;border-top-color:var(--brand2);margin:0 auto 16px;animation:erpSpin .9s linear infinite}@keyframes erpSpin{to{transform:rotate(360deg)}}body.erpBusy button,body.erpBusy .btn,body.erpBusy summary{pointer-events:none;opacity:.72}.erpBusyOverlay button{pointer-events:auto;opacity:1}
 .erpActivity{position:fixed;top:16px;right:18px;width:30px;height:30px;z-index:10001;border-radius:50%;background:#fffdf8;box-shadow:0 5px 18px rgba(17,17,17,.22);opacity:0;visibility:hidden;transform:scale(.82);transition:opacity .15s ease,transform .15s ease,visibility .15s}.erpActivity.active{opacity:1;visibility:visible;transform:scale(1)}.erpActivity::before{content:"";position:absolute;inset:6px;border:3px solid #eadfc9;border-top-color:var(--brand2);border-right-color:#111;border-radius:50%;animation:erpSpin .72s linear infinite}@media(prefers-reduced-motion:reduce){.erpActivity::before,.erpSpinner{animation-duration:1.5s}}
+.subscriptionGate{position:fixed;inset:0;z-index:12000;display:flex;align-items:center;justify-content:center;background:#f6f1e7;padding:24px}.subscriptionGateBox{width:min(460px,92vw);padding:25px;border-radius:22px;background:#fffdf8;border:1px solid var(--line);box-shadow:0 22px 70px rgba(0,0,0,.14);text-align:center}.subscriptionGateTitle{font-size:20px;font-weight:950;margin:0 0 8px}.subscriptionGateText{color:var(--muted);font-size:14px}.subscriptionGate.hidden{display:none}body.subscriptionGatePending .app{visibility:hidden}
 
 .mlQuestionCard{border:1px solid var(--line);border-radius:18px;background:#fff;margin:12px 0;overflow:hidden;box-shadow:var(--shadow)}
 .mlQuestionHead{display:grid;grid-template-columns:96px 1fr auto;gap:12px;align-items:center;background:#fffaf0;border-bottom:1px solid #eee2c8;padding:12px 14px}
@@ -1033,7 +1034,8 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 </style>
 <!-- UI_ALERTS_INVENTORY_FILTERS_FRONTEND_1_39 -->
 </head>
-<body>
+<body class="subscriptionGatePending">
+<div class="subscriptionGate" id="subscriptionGate"><div class="subscriptionGateBox"><div class="erpSpinner"></div><div class="subscriptionGateTitle">Verificando tu suscripción</div><div class="subscriptionGateText" id="subscriptionGateText">Estamos confirmando el vencimiento antes de abrir XelerIA.</div></div></div>
 <div class="app">
 <aside>
 <div class="brand"><div class="brandTop"><button class="mobileMenuToggle" type="button" onclick="toggleMobileMenu()" aria-label="Abrir menú">☰</button><span class="appMark"><img src="./favicon_xeleria.png?v=20260620" alt="XelerIA"></span><div class="brandName">XelerIA</div><div class="brandTenantStack"><div class="brandTenantLogo" id="brandTenantLogo">LOGO</div><button type="button" class="brandLogoutBtn" onclick="logoutXeleria()" title="Cerrar sesión">Salir</button></div></div><p>Backoffice operativo</p></div>
@@ -1045,7 +1047,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 <div class="navTitle">Local físico</div><div class="sub"><button class="navBtn" data-view="arca-manual">Emitir comprobante manual</button></div>
 <div class="navTitle">Gestión</div><div class="sub"><div class="navParent">Inventario</div><div class="sub2"><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="publicador-cruzado">Publicador cruzado ML / TN</button><button class="navBtn" data-view="combos">Combos / Kits</button><button class="navBtn" data-view="full-inbound">Envío a Full</button><button class="navBtn" data-view="movimientos">Movimientos de stock</button></div><button class="navBtn" data-view="clientes">Clientes ML / TN</button><button class="navBtn" data-view="arca-reportes">ARCA reportes</button></div>
 <div class="navTitle">Inteligencia Artificial</div><div class="sub"><button class="navBtn" data-view="xeli-config">Configuración Xeli</button><button class="navBtn" data-view="xeli-training">Entrenamiento Xeli</button></div>
-<div class="navTitle">Sistema</div><div class="sub"><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" data-view="bitacora">Registro operativo</button><button class="navBtn" data-view="versiones">Versión</button></div>
+<div class="navTitle">Sistema</div><div class="sub"><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" type="button" onclick="location.href='suscripcion.html'">Suscripción</button><button class="navBtn" data-view="bitacora">Registro operativo</button><button class="navBtn" data-view="versiones">Versión</button></div>
 </nav></aside>
 <main>
 <div class="topbar"><div><h2 id="pageTitle">Inicio</h2><div class="crumb" id="pageCrumb">Panel operativo</div></div></div>
@@ -1452,8 +1454,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.34-correo-recipient-address';
-const FRONTEND_BUILD='admin-erp-v29734-correo-recipient-address';
+const FRONTEND_VERSION='2.97.35-subscription-gate';
+const FRONTEND_BUILD='admin-erp-v29735-subscription-gate';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
@@ -2082,9 +2084,8 @@ async function fetchJson(path,opt={}){
       if(String(path).includes('/admin/arca/'))saveLastArcaError(out,{path,method});
       try{
         if(subscriptionExpiredError(out)){
-          try{localStorage.removeItem('xeleria_session_token');sessionStorage.removeItem('xeleria_session_token');}catch(_e){}
           setBusy(true,'Suscripción vencida','Tu acceso y los procesos automáticos están pausados.');
-          setTimeout(()=>redirectToInicio('subscription_expired'),700);
+          setTimeout(()=>location.replace('suscripcion.html?mode=renewal'),700);
         }else if(authExpiredError(out)){
           try{localStorage.removeItem('xeleria_session_token');sessionStorage.removeItem('xeleria_session_token');}catch(_e){}
           setTimeout(()=>redirectToInicio(''),0);
@@ -6366,10 +6367,32 @@ async function loadInventoryImportGrid(offset=0,opts={}){
 }
 
 
-cleanTokenFromUrl();
-loadSettings();if(typeof loadMLQuestionSettings==='function')loadMLQuestionSettings();renderMLQuickButtons();
-let migrationAuditRequested=new URLSearchParams(location.search).get('migration_audit')==='1';
-startHumanInactivityGuard();showView(migrationAuditRequested?'versiones':'inicio',{skipHistory:true});health();handleOauthReturn();updateVersionBar();startAlertPolling();inventoryImportBootstrapGridButton();resumeInventoryReconciliationJob();if(migrationAuditRequested)loadMigrationAudit();/* Recuperación única al iniciar: muestra staging pendiente sin activar polling periódico. */
+async function verifySubscriptionGate(){
+  let gate=qs('subscriptionGate'),text=qs('subscriptionGateText');
+  if(!sessionToken()){redirectToInicio('');return false}
+  try{
+    let response=await fetch(apiBase()+'/subscription/status',{headers:xeleriaHeaders(),cache:'no-store'});
+    let data={};try{data=await response.json()}catch(e){}
+    if(response.status===401){clearLocalSession();redirectToInicio('');return false}
+    if(!response.ok)throw new Error(errText(data)||`No pudimos validar la suscripción (HTTP ${response.status}).`);
+    state.subscription=data.subscription||{};
+    if(!state.subscription.allowed){location.replace('suscripcion.html?mode=renewal');return false}
+    document.body.classList.remove('subscriptionGatePending');
+    gate?.classList.add('hidden');
+    return true;
+  }catch(error){
+    if(text)text.innerHTML=`${esc(errText(error))}<br><button class="secondary" type="button" style="margin-top:14px" onclick="location.reload()">Reintentar</button>`;
+    return false;
+  }
+}
+async function bootstrapXeleria(){
+  cleanTokenFromUrl();
+  if(!await verifySubscriptionGate())return;
+  loadSettings();if(typeof loadMLQuestionSettings==='function')loadMLQuestionSettings();renderMLQuickButtons();
+  let migrationAuditRequested=new URLSearchParams(location.search).get('migration_audit')==='1';
+  startHumanInactivityGuard();showView(migrationAuditRequested?'versiones':'inicio',{skipHistory:true});health();handleOauthReturn();updateVersionBar();startAlertPolling();inventoryImportBootstrapGridButton();resumeInventoryReconciliationJob();if(migrationAuditRequested)loadMigrationAudit();/* Recuperación única al iniciar: muestra staging pendiente sin activar polling periódico. */
+}
+bootstrapXeleria();
 </script>
 </body>
 </html>

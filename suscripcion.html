@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Suscripción · XelerIA</title>
+  <link rel="icon" href="./favicon_xeleria.png?v=20260620">
+  <style>
+    :root{--ink:#17191d;--muted:#69707d;--paper:#f5f1e8;--card:#fffdf8;--line:#e4dac6;--gold:#c59638;--green:#267a52;--red:#b53b31;--blue:#315ac7}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 85% 5%,#fff7df 0,transparent 28%),var(--paper);color:var(--ink);font:15px/1.5 Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+    header{height:76px;padding:0 max(22px,calc((100vw - 1120px)/2));display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);background:rgba(255,253,248,.9);backdrop-filter:blur(12px)}
+    .brand{display:flex;align-items:center;gap:11px;font-size:22px;font-weight:900}.brand img{width:42px;height:42px}.back{color:var(--ink);text-decoration:none;font-size:13px;font-weight:800;border:1px solid var(--line);padding:9px 13px;border-radius:999px;background:#fff}
+    main{width:min(1120px,calc(100% - 36px));margin:54px auto 72px}.eyebrow{color:#996c18;font-size:12px;font-weight:900;letter-spacing:.13em;text-transform:uppercase}h1{font-size:clamp(42px,7vw,76px);line-height:.98;letter-spacing:-.055em;margin:12px 0 16px}.lead{max-width:690px;color:var(--muted);font-size:17px;margin:0 0 32px}
+    .layout{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,.85fr);gap:20px}.card{background:var(--card);border:1px solid var(--line);border-radius:24px;box-shadow:0 18px 50px rgba(43,37,24,.08);padding:28px}.summaryHead{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.summaryHead h2{font-size:30px;margin:3px 0 2px}.merchant{color:var(--muted)}.pill{display:inline-flex;border-radius:999px;padding:7px 11px;font-size:12px;font-weight:900;background:#e8f6ee;color:var(--green)}.pill.expired{background:#fce8e5;color:var(--red)}.pill.paused{background:#eee;color:#555}
+    .dates{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:26px}.metric{border-top:1px solid var(--line);padding-top:16px}.metric span{display:block;color:var(--muted);font-size:12px}.metric strong{display:block;font-size:16px;margin-top:5px}.limits{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:22px}.limit{background:#f6f1e6;border-radius:16px;padding:15px}.limit strong{display:block;font-size:22px}.featureList{padding:0;margin:22px 0 0;list-style:none}.featureList li{padding:10px 0;border-top:1px solid #eee5d5}.featureList li::before{content:"✓";color:var(--green);font-weight:900;margin-right:9px}.featureList li.off{color:#9a9da4}.featureList li.off::before{content:"—";color:#9a9da4}
+    .payCard{background:#17191d;color:white;border-color:#17191d;display:flex;flex-direction:column}.payCard p{color:#bfc3cb}.payCard h2{font-size:27px;margin:9px 0}.payButton{width:100%;border:0;border-radius:14px;background:#44a5f5;color:#07121b;padding:15px 18px;font-size:15px;font-weight:950;cursor:pointer;margin-top:18px}.payButton:hover{filter:brightness(1.05)}.payButton:disabled{cursor:wait;opacity:.7}.secure{font-size:12px;color:#aeb5c0;margin-top:11px}.notice{min-height:24px;margin-top:15px;font-size:13px}.notice.bad{color:#ffafa8}.notice.ok{color:#9ee3bc}.returnNote{margin-top:auto;padding-top:26px;color:#aeb5c0;font-size:12px}.skeleton{opacity:.55}.version{margin-top:18px;color:#8e9097;font-size:11px;text-align:center}
+    @media(max-width:780px){header{height:66px;padding:0 18px}.brand img{width:36px;height:36px}.brand{font-size:19px}main{margin-top:38px}.layout{grid-template-columns:1fr}.card{padding:22px}.dates{grid-template-columns:1fr}.limits{grid-template-columns:1fr}.summaryHead{display:block}.pill{margin-top:12px}}
+  </style>
+</head>
+<body>
+  <header><div class="brand"><img src="./favicon_xeleria.png?v=20260620" alt="XelerIA"><span>XelerIA</span></div><a id="backLink" class="back" href="admin_erp.html">Volver a XelerIA</a></header>
+  <main>
+    <div class="eyebrow">Configuración · Suscripción</div>
+    <h1>Tu plan,<br>bien claro.</h1>
+    <p class="lead">Consultá el estado, las fechas y los límites de tu cuenta. El pago puede iniciarse desde el primer día; si renovás antes del vencimiento, conservás el tiempo que ya tenías disponible.</p>
+    <div class="layout skeleton" id="content">
+      <section class="card">
+        <div class="summaryHead"><div><div class="eyebrow">Plan actual</div><h2 id="planName">Cargando…</h2><div class="merchant" id="merchantName">Identificando comercio</div></div><span class="pill" id="statusPill">Revisando</span></div>
+        <div class="dates"><div class="metric"><span>Inicio del período</span><strong id="periodStart">—</strong></div><div class="metric"><span>Vencimiento</span><strong id="periodEnd">—</strong></div><div class="metric"><span>Tiempo disponible</span><strong id="remaining">—</strong></div></div>
+        <div class="limits"><div class="limit"><span>Inventario</span><strong id="skuLimit">—</strong><small>SKU incluidos</small></div><div class="limit"><span>Facturación</span><strong id="invoiceLimit">—</strong><small>comprobantes por mes</small></div></div>
+        <ul class="featureList"><li id="featureXeli">Xeli</li><li id="featureCorreo">Cotizaciones de Correo Argentino</li><li id="featureCross">Publicador cruzado</li></ul>
+      </section>
+      <aside class="card payCard">
+        <div class="eyebrow">Pago y renovación</div><h2>Pagar con Mercado Pago</h2>
+        <p id="paymentCopy">El botón de pago quedará conectado al checkout seguro de Mercado Pago.</p>
+        <button class="payButton" id="payButton" type="button">Pagar / renovar</button>
+        <div class="secure">El acceso se rehabilitará después de que Mercado Pago confirme la acreditación.</div>
+        <div class="notice" id="notice" role="status"></div>
+        <div class="returnNote">Después del pago volvés a <strong>xeleria.com.ar/inicio.html</strong>.</div>
+      </aside>
+    </div>
+    <div class="version">suscripcion-v1-status-and-renewal</div>
+  </main>
+  <script>
+    const API_BASE='https://api.xeleria.com.ar';
+    const params=new URLSearchParams(location.search);
+    const renewalState=params.get('state')||'';
+    const mode=params.get('mode')||'';
+    const sessionToken=()=>String(localStorage.getItem('xeleria_session_token')||sessionStorage.getItem('xeleria_session_token')||'').trim();
+    const el=id=>document.getElementById(id);
+    const headers=()=>{const token=sessionToken();return {'Content-Type':'application/json',...(token?{'x-session-token':token,'Authorization':'Bearer '+token}:{})}};
+    const detailMessage=(data,fallback)=>{const detail=data&&data.detail;return typeof detail==='string'?detail:(detail&&detail.message)||data?.message||fallback};
+    const dateAR=value=>{if(!value)return '—';const d=new Date(value);return Number.isNaN(d.getTime())?'—':new Intl.DateTimeFormat('es-AR',{timeZone:'America/Argentina/Buenos_Aires',day:'2-digit',month:'2-digit',year:'numeric'}).format(d)};
+    const merchantLabel=tenant=>tenant?.display_name||tenant?.name||'Tu comercio';
+    function remainingText(value){if(!value)return '—';const ms=new Date(value).getTime()-Date.now();if(ms<=0)return 'Vencida';const days=Math.ceil(ms/86400000);return days===1?'1 día':`${days} días`}
+    function feature(id,enabled){el(id).classList.toggle('off',!enabled)}
+    function render(data){const subscription=data.subscription||{},plan=subscription.plan||{};const allowed=!!subscription.allowed;const active=subscription.active!==false;el('planName').textContent=plan.name||'Plan sin asignar';el('merchantName').textContent=merchantLabel(data.tenant);el('periodStart').textContent=dateAR(subscription.current_period_start);el('periodEnd').textContent=dateAR(subscription.current_period_ends_at);el('remaining').textContent=remainingText(subscription.current_period_ends_at);el('skuLimit').textContent=Number(plan.sku_limit||0).toLocaleString('es-AR');el('invoiceLimit').textContent=Number(plan.invoice_monthly_limit||0).toLocaleString('es-AR');feature('featureXeli',!!plan.features?.xeli);feature('featureCorreo',!!plan.features?.correo_quotes);feature('featureCross',!!plan.features?.cross_publisher);const pill=el('statusPill');pill.className='pill'+(!allowed?' expired':(!active?' paused':''));pill.textContent=!allowed?'Vencida':(!active?'Pausada':String(subscription.status||'Vigente').replace(/^./,x=>x.toUpperCase()));if(!allowed){el('backLink').textContent='Volver al ingreso';el('backLink').href='inicio.html';el('paymentCopy').textContent='Tu cuenta está pausada. Renová para recuperar el acceso y los procesos automáticos.'}const payment=data.payment||{};if(!payment.available)el('paymentCopy').textContent=payment.message||el('paymentCopy').textContent;el('content').classList.remove('skeleton')}
+    async function load(){try{let url;if(mode==='renewal'&&renewalState){url=`${API_BASE}/subscription/renewal?state=${encodeURIComponent(renewalState)}`}else if(sessionToken()){url=`${API_BASE}/subscription/status`}else{location.replace('inicio.html?next=suscripcion.html');return}const response=await fetch(url,{headers:headers(),cache:'no-store'});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(detailMessage(data,`No pude leer la suscripción (HTTP ${response.status}).`));render(data)}catch(error){el('content').classList.remove('skeleton');el('notice').className='notice bad';el('notice').textContent=error.message||'No pude leer la suscripción.';el('payButton').disabled=true}}
+    async function pay(){const button=el('payButton');button.disabled=true;el('notice').className='notice';el('notice').textContent='Preparando el pago…';try{const url=mode==='renewal'&&renewalState?`${API_BASE}/subscription/renewal/checkout?state=${encodeURIComponent(renewalState)}`:`${API_BASE}/subscription/checkout`;const response=await fetch(url,{method:'POST',headers:headers(),body:'{}'});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(detailMessage(data,`No pude iniciar el pago (HTTP ${response.status}).`));if(!data.checkout_url)throw new Error('Mercado Pago no devolvió un enlace de cobro.');el('notice').className='notice ok';el('notice').textContent='Abriendo Mercado Pago…';location.href=data.checkout_url}catch(error){el('notice').className='notice bad';el('notice').textContent=error.message||'No pude iniciar el pago.';button.disabled=false}}
+    el('payButton').addEventListener('click',pay);load();
+  </script>
+</body>
+</html>
