@@ -1456,7 +1456,7 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.36-plan-disabled-options';
+const FRONTEND_VERSION='2.97.37-mercadopago-subscriptions';
 const FRONTEND_BUILD='admin-erp-v29736-plan-disabled-options';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
@@ -6390,7 +6390,7 @@ async function verifySubscriptionGate(){
     if(response.status===401){clearLocalSession();redirectToInicio('');return false}
     if(!response.ok)throw new Error(errText(data)||`No pudimos validar la suscripción (HTTP ${response.status}).`);
     state.subscription=data.subscription||{};
-    if(!state.subscription.allowed){location.replace('suscripcion.html?mode=renewal');return false}
+    if(!state.subscription.allowed){location.replace('renovar.html');return false}
     applyPlanUiEntitlements();
     document.body.classList.remove('subscriptionGatePending');
     gate?.classList.add('hidden');
