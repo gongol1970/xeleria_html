@@ -43,6 +43,8 @@ aside .navBtn,aside .navBtn.active,aside .navParent{background:transparent!impor
 aside .navBtn:hover{background:#c3a354!important;color:#111!important;border-color:rgba(220,197,143,.45)!important;filter:saturate(1.08)!important}
 aside .navBtn:active,aside .navBtn.active:active{background:#a9822d!important;color:#111!important;transform:translateY(1px) scale(.99)!important;filter:saturate(1.18)!important}
 aside .navTitle{background:transparent!important;color:#d5c6a2!important;border:0!important}
+aside .navBtn.planUnavailable,aside .navBtn.planUnavailable:hover,aside .navBtn.planUnavailable:active{background:rgba(255,255,255,.035)!important;color:#817d74!important;border-color:transparent!important;cursor:not-allowed!important;filter:grayscale(1)!important;opacity:.62!important;transform:none!important}
+.view.planLockedView{filter:grayscale(1);opacity:.62}.view.planLockedView button,.view.planLockedView input,.view.planLockedView select,.view.planLockedView textarea{cursor:not-allowed}
 .btnrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.view{display:none}.view.active{display:block}.status{min-height:24px;color:var(--muted);margin-top:10px}.status.oktxt{color:var(--ok);font-weight:800}.status.badtxt{color:var(--bad);font-weight:800}.status.warntxt{color:var(--warn);font-weight:800}.small,.muted{font-size:12px;color:var(--muted)}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px}
 .stat{background:linear-gradient(180deg,#fffdf8,#f7f1e3);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--shadow)}.stat .k{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800}.stat .v{font-size:28px;font-weight:900;margin-top:5px}.stat .s{font-size:12px;color:var(--muted);margin-top:3px}.dashHero{background:linear-gradient(135deg,#fffdf8,#efe3c5);border:1px solid var(--line);border-radius:24px;padding:18px;box-shadow:var(--shadow);margin-bottom:14px}.dashHero h3{font-size:22px;margin:0 0 6px}.dashStat{position:relative;overflow:hidden}.dashStat.alert{border-left:6px solid var(--bad)}.dashStat.good{border-left:6px solid var(--ok)}.dashStat.warnline{border-left:6px solid var(--warn)}.dashBig{font-size:34px;font-weight:950;letter-spacing:-.03em}.dashMoney{font-size:20px;font-weight:900;margin-top:4px}.dashGridSmall{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}.dashMini{border:1px solid #eee2c8;background:#fffaf0;border-radius:14px;padding:10px}.dashMini b{display:block;font-size:18px}.dashList{display:grid;gap:8px}.dashItem{display:grid;grid-template-columns:90px 1fr auto;gap:10px;align-items:center;border:1px solid #eee2c8;border-radius:14px;background:#fff;padding:10px}.dashItem .small{line-height:1.35}.dashTable td,.dashTable th{font-size:12px}.dashRefresh{margin-left:auto}.dashStatusLine{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.dashEmpty{border:1px dashed var(--line);border-radius:16px;padding:18px;text-align:center;color:var(--muted);background:#fffaf0}
 table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;overflow:hidden;font-size:13px}th,td{border-bottom:1px solid #eee2c8;padding:8px 9px;text-align:left;vertical-align:top}th{background:#151515;color:#fff;position:sticky;top:0;z-index:1}.tableWrap{border:1px solid var(--line);border-radius:14px;overflow:auto;max-height:660px;background:#fff}.pill{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;font-size:12px;font-weight:800;background:#efe7d5;color:#453d31}.pill.ok{background:#ecfdf3;color:var(--ok)}.pill.bad{background:#fef3f2;color:var(--bad)}.pill.warn{background:#fff7ed;color:var(--warn)}.marketStatus.warn{background:transparent;color:var(--warn);padding-left:0;padding-right:0}.pill.info{background:#eef2ff;color:#3730a3}.pill.dark{background:#111;color:#fff}
@@ -1454,8 +1456,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.35-subscription-gate';
-const FRONTEND_BUILD='admin-erp-v29735-subscription-gate';
+const FRONTEND_VERSION='2.97.36-plan-disabled-options';
+const FRONTEND_BUILD='admin-erp-v29736-plan-disabled-options';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
@@ -1876,7 +1878,19 @@ function copyVersionsJson(){
 
 let xeleriaCurrentView='inicio';
 let xeleriaPreviousView='inicio';
+const PLAN_VIEW_FEATURES={'publicador-cruzado':'cross_publisher','xeli-config':'xeli','xeli-training':'xeli'};
+function planFeatureAvailable(feature){return state.subscription?.plan?.features?.[feature]===true}
+function planViewAvailable(id){let feature=PLAN_VIEW_FEATURES[id];return !feature||planFeatureAvailable(feature)}
+function applyPlanUiEntitlements(){
+  Object.entries(PLAN_VIEW_FEATURES).forEach(([viewId,feature])=>{
+    if(planFeatureAvailable(feature))return;
+    let nav=document.querySelector(`.navBtn[data-view="${viewId}"]`),view=qs(viewId);
+    if(nav){nav.disabled=true;nav.classList.add('planUnavailable');nav.setAttribute('aria-disabled','true');nav.title='No incluido en tu plan actual'}
+    if(view){view.classList.add('planLockedView');view.setAttribute('aria-disabled','true');view.querySelectorAll('button,input,select,textarea').forEach(control=>{control.disabled=true})}
+  });
+}
 function showView(id,options={}){
+  if(!planViewAvailable(id))return;
   if(id!==xeleriaCurrentView){
     if(!options.skipHistory)xeleriaPreviousView=xeleriaCurrentView;
     xeleriaCurrentView=id;
@@ -6377,6 +6391,7 @@ async function verifySubscriptionGate(){
     if(!response.ok)throw new Error(errText(data)||`No pudimos validar la suscripción (HTTP ${response.status}).`);
     state.subscription=data.subscription||{};
     if(!state.subscription.allowed){location.replace('suscripcion.html?mode=renewal');return false}
+    applyPlanUiEntitlements();
     document.body.classList.remove('subscriptionGatePending');
     gate?.classList.add('hidden');
     return true;
