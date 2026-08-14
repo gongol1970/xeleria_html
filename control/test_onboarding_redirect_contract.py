@@ -20,6 +20,15 @@ def function_body(name: str) -> str:
 
 
 class OnboardingRedirectContract(unittest.TestCase):
+    def test_public_plan_names_and_base_prices_are_explicit(self):
+        for name in ("Gestión", "Profesional", "Senior", "Personalizado"):
+            self.assertIn(f'<h3 class="planName">{name}</h3>', INICIO_HTML)
+
+        for price in ("$16.000", "$35.000", "$62.000"):
+            self.assertIn(price, INICIO_HTML)
+        self.assertEqual(INICIO_HTML.count('<span class="planPriceTax">+ IVA</span>'), 3)
+        self.assertNotIn('<span class="planPriceValue">A definir</span>', INICIO_HTML)
+
     def test_disconnected_tenant_stays_in_xeleria_to_connect_a_channel(self):
         body = function_body("gateIfNoConnectedChannels")
 
