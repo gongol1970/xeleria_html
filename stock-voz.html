@@ -7,7 +7,7 @@
     <meta name="api-base" content="https://api.xeleria.com.ar" />
     <title>Stock por voz</title>
     <link rel="icon" href="favicon_xeleria.png" />
-    <link rel="stylesheet" href="stock-voz.css" />
+    <link rel="stylesheet" href="stock-voz.css?v=2" />
   </head>
   <body>
     <main class="shell">
@@ -33,7 +33,6 @@
         <p id="statusText" class="status" aria-live="polite">
           Tocá el micrófono y hablá. Se detiene solo cuando terminás.
         </p>
-        <p class="example">Por ejemplo: “Naxos, una unidad”</p>
       </section>
 
       <section id="candidates" class="candidates-card" hidden aria-live="polite">
@@ -69,6 +68,10 @@
             <dd id="modelValue">—</dd>
           </div>
           <div>
+            <dt>Cantidad reconocida</dt>
+            <dd id="quantityValue">—</dd>
+          </div>
+          <div>
             <dt>Stock actual</dt>
             <dd id="stockValue">—</dd>
           </div>
@@ -89,6 +92,6 @@
         </div>
       </section>
     </main>
-    <script src="stock-voz.js" defer></script>
+    <script src="stock-voz.js?v=2" defer></script>
   </body>
 </html>

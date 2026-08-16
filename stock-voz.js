@@ -20,6 +20,8 @@ let autoListenTimer = null;
 let cancelled = false;
 let currentCandidates = [];
 let conversationHistory = [];
+let pendingQuantity = null;
+let awaitingQuantity = false;
 
 const setState = (state, message) => {
   halo.classList.toggle("listening", state === "listening");
@@ -123,6 +125,11 @@ const preferredMimeType = () => {
 const startRecording = async ({ refinement = false } = {}) => {
   if (autoListenTimer) clearTimeout(autoListenTimer);
   if (!refinement) hideAllResults();
+  else if (awaitingQuantity) {
+    resultCard.hidden = false;
+    emptyResult.hidden = true;
+    candidatesCard.hidden = true;
+  }
   else {
     resultCard.hidden = true;
     emptyResult.hidden = true;
@@ -176,6 +183,9 @@ const sendAudio = async (blob) => {
   if (currentCandidates.length) {
     form.append("candidate_ids", JSON.stringify(currentCandidates.map((product) => product.id)));
   }
+  if (pendingQuantity !== null) {
+    form.append("cantidad_previa", String(pendingQuantity));
+  }
   if (conversationHistory.length) {
     form.append("contexto", conversationHistory.slice(-4).join(" | "));
   }
@@ -188,12 +198,31 @@ const sendAudio = async (blob) => {
 
     if (data.estado === "encontrado" && data.producto) {
       currentCandidates = [];
+      awaitingQuantity = false;
       showProduct(data);
+      pendingQuantity = null;
       setState("ready", "Listo para otra prueba. Tocá el micrófono cuando quieras.");
       return;
     }
 
+    if (data.estado === "falta_cantidad" && data.producto) {
+      currentCandidates = [data.producto];
+      pendingQuantity = null;
+      awaitingQuantity = true;
+      showProduct(data);
+      setState("ready", data.mensaje || "Producto reconocido. Decime cuántas unidades.");
+      autoListenTimer = setTimeout(
+        () => startRecording({ refinement: true }),
+        650,
+      );
+      return;
+    }
+
     if (data.estado === "candidatos" && data.candidatos?.length) {
+      awaitingQuantity = false;
+      if (Number.isInteger(data.cantidad_mencionada)) {
+        pendingQuantity = data.cantidad_mencionada;
+      }
       showCandidates(data);
       setState("ready", data.mensaje || "Encontré varias opciones. Te sigo escuchando para refinar.");
       autoListenTimer = setTimeout(
@@ -204,6 +233,8 @@ const sendAudio = async (blob) => {
     }
 
     currentCandidates = [];
+    pendingQuantity = null;
+    awaitingQuantity = false;
     showNoMatch(data.transcripcion);
     setState("ready", "No encontré una coincidencia segura. Ya podés volver a intentar.");
   } catch (error) {
@@ -217,6 +248,9 @@ const showProduct = (data) => {
   document.querySelector("#productName").textContent = `${product.marca} ${product.modelo}`;
   document.querySelector("#brandValue").textContent = product.marca;
   document.querySelector("#modelValue").textContent = product.modelo;
+  document.querySelector("#quantityValue").textContent = Number.isInteger(data.cantidad_mencionada)
+    ? `${data.cantidad_mencionada} unidades`
+    : "Falta indicar";
   document.querySelector("#stockValue").textContent = `${product.stock} unidades`;
   document.querySelector("#priceValue").textContent = formatPrice(product);
   document.querySelector("#heardText").textContent = `Escuché: “${data.transcripcion}”`;
@@ -228,8 +262,24 @@ const showProduct = (data) => {
 const chooseCandidate = (product) => {
   if (autoListenTimer) clearTimeout(autoListenTimer);
   if (recorder?.state === "recording") cancelRecording("");
+  showProduct({
+    producto: product,
+    transcripcion: "selección en pantalla",
+    cantidad_mencionada: pendingQuantity,
+  });
+  if (pendingQuantity === null) {
+    currentCandidates = [product];
+    awaitingQuantity = true;
+    setState("ready", "Producto reconocido. Decime cuántas unidades.");
+    autoListenTimer = setTimeout(
+      () => startRecording({ refinement: true }),
+      650,
+    );
+    return;
+  }
   currentCandidates = [];
-  showProduct({ producto: product, transcripcion: "selección en pantalla" });
+  pendingQuantity = null;
+  awaitingQuantity = false;
   setState("ready", "Listo para otra prueba. Tocá el micrófono cuando quieras.");
 };
 
@@ -238,7 +288,8 @@ const showCandidates = (data) => {
   document.querySelector("#candidateCount").textContent = String(currentCandidates.length);
   document.querySelector("#candidatesTitle").textContent = `${currentCandidates.length} opciones posibles`;
   document.querySelector("#candidatesHint").textContent = data.mensaje || (
-    "Sigo escuchando. Describilo como quieras: por el nombre, posición, precio, presentación o cualquier otro detalle."
+    `${pendingQuantity === null ? "Todavía falta la cantidad. " : `Cantidad: ${pendingQuantity}. `}` +
+    "Sigo escuchando: describilo por el nombre, posición, precio, presentación o como te salga."
   );
   candidateList.replaceChildren();
 
@@ -285,6 +336,8 @@ const resetConversation = ({ listen = false } = {}) => {
   if (wasRecording) cancelRecording("");
   currentCandidates = [];
   conversationHistory = [];
+  pendingQuantity = null;
+  awaitingQuantity = false;
   hideAllResults();
   setState("ready", "Nueva búsqueda lista. Hablá como te salga.");
   if (listen) {

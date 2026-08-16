@@ -108,7 +108,6 @@ button { font: inherit; }
 
 .voice-panel h2 { margin: 0 0 8px; font: 600 28px/1.15 Georgia, serif; }
 .status { margin: 0; color: var(--muted); text-align: center; line-height: 1.5; }
-.example { margin: 15px 0 0; color: #9a776b; font-size: 13px; font-style: italic; }
 
 .result-card, .empty-card, .candidates-card {
   margin-top: 18px;
@@ -149,15 +148,32 @@ button { font: inherit; }
 .new-search { margin-top: 16px; padding: 9px 0; border: 0; color: var(--accent-dark); background: transparent; cursor: pointer; font-weight: 750; }
 
 @media (max-width: 520px) {
-  .shell { width: min(100% - 22px, 720px); padding-top: 20px; }
-  .brand { margin-bottom: 18px; }
-  .brand h1 { font-size: 22px; }
+  .shell { width: min(100% - 16px, 720px); padding: 10px 0 18px; }
+  .brand { gap: 10px; margin-bottom: 10px; }
+  .brand-mark { width: 36px; height: 36px; border-radius: 10px; font-size: 18px; }
+  .brand h1 { font-size: 20px; }
   .brand .eyebrow { display: none; }
-  .read-only { padding: 6px 8px; font-size: 11px; }
-  .voice-panel { padding: 34px 18px 30px; border-radius: 22px; }
-  .halo { width: 132px; height: 132px; }
-  .mic-button { width: 92px; height: 92px; }
-  .product-grid { grid-template-columns: 1fr; }
+  .read-only { padding: 5px 7px; font-size: 10px; }
+  .voice-panel { padding: 16px 14px 15px; border-radius: 18px; }
+  .halo { width: 96px; height: 96px; margin-bottom: 10px; }
+  .mic-button { width: 68px; height: 68px; }
+  .mic-button svg { width: 29px; }
+  .voice-panel h2 { margin-bottom: 5px; font-size: 22px; }
+  .status { font-size: 13px; line-height: 1.35; }
+  .result-card, .empty-card, .candidates-card { margin-top: 10px; padding: 15px; border-radius: 17px; }
+  .result-heading h2 { font-size: 20px; }
+  .check { width: 29px; height: 29px; }
+  .product-grid { grid-template-columns: 1fr 1fr; margin-top: 12px; border-radius: 12px; }
+  .product-grid div { padding: 10px; }
+  .product-grid dt { font-size: 10px; }
+  .product-grid dd { margin-top: 3px; font-size: 13px; }
+  .heard { margin-top: 10px !important; font-size: 11px; }
+  .safe-note { margin-top: 5px !important; font-size: 10px; }
+  .candidates-heading h2 { font-size: 20px; }
+  .candidates-hint { margin: 7px 0 10px; font-size: 13px; }
+  .candidate-list { gap: 6px; }
+  .candidate-option { padding: 10px 11px; gap: 4px 10px; font-size: 13px; }
+  .new-search { margin-top: 9px; padding: 6px 0; font-size: 13px; }
   .candidate-option { grid-template-columns: 1fr; }
   .candidate-price { grid-column: 1; grid-row: auto; }
 }
