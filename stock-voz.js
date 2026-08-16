@@ -159,7 +159,11 @@ const startRecording = async ({ refinement = false } = {}) => {
     recorder.start(200);
     setState(
       "listening",
-      refinement ? "Te sigo escuchando… agregá cualquier detalle." : "Te escucho… hablá normalmente.",
+      refinement
+        ? (awaitingQuantity
+            ? "Te escucho… decime cuántas unidades."
+            : "Te sigo escuchando… agregá cualquier detalle.")
+        : "Te escucho… hablá normalmente.",
     );
     watchSilence(stream);
     maxTimer = setTimeout(stopRecording, 14000);
@@ -176,7 +180,12 @@ const startRecording = async ({ refinement = false } = {}) => {
 };
 
 const sendAudio = async (blob) => {
-  setState("processing", currentCandidates.length ? "Refinando las opciones…" : "Buscando el producto…");
+  setState(
+    "processing",
+    awaitingQuantity
+      ? "Reconociendo la cantidad…"
+      : (currentCandidates.length ? "Refinando las opciones…" : "Buscando el producto…"),
+  );
   const extension = blob.type.includes("mp4") ? "m4a" : "webm";
   const form = new FormData();
   form.append("audio", blob, `prueba.${extension}`);
@@ -195,6 +204,18 @@ const sendAudio = async (blob) => {
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.detail || "No se pudo procesar la prueba.");
     if (data.transcripcion) conversationHistory.push(data.transcripcion);
+
+    if (data.estado === "sin_audio") {
+      if (awaitingQuantity) {
+        setState("ready", "No escuché una cantidad. Tocá el micrófono y decímela cuando quieras.");
+        return;
+      }
+      currentCandidates = [];
+      pendingQuantity = null;
+      showNoMatch("", "No escuché nada claro. Tocá el micrófono para probar otra vez.");
+      setState("ready", "Listo para volver a escuchar.");
+      return;
+    }
 
     if (data.estado === "encontrado" && data.producto) {
       currentCandidates = [];
