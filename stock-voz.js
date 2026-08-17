@@ -48,27 +48,29 @@ const hideAllResults = () => {
   candidatesCard.hidden = true;
 };
 
-const cleanupRecording = () => {
+const cleanupRecording = ({ stopStream = true } = {}) => {
   if (monitorFrame) cancelAnimationFrame(monitorFrame);
   if (maxTimer) clearTimeout(maxTimer);
   monitorFrame = null;
   maxTimer = null;
-  if (stream) stream.getTracks().forEach((track) => track.stop());
-  stream = null;
+  if (stopStream && stream) {
+    stream.getTracks().forEach((track) => track.stop());
+    stream = null;
+  }
 };
 
 const stopRecording = () => {
   if (recorder?.state === "recording") recorder.stop();
 };
 
-const cancelRecording = (message) => {
+const cancelRecording = (message, { keepStream = false } = {}) => {
   cancelled = true;
   stopRecording();
-  cleanupRecording();
+  cleanupRecording({ stopStream: !keepStream });
   setState("ready", message);
 };
 
-const watchSilence = (audioStream) => {
+const watchSilence = (audioStream, { waitIndefinitely = false } = {}) => {
   const context = new AudioContext();
   const source = context.createMediaStreamSource(audioStream);
   const analyser = context.createAnalyser();
@@ -103,6 +105,10 @@ const watchSilence = (audioStream) => {
       return;
     }
     if (!heardVoice && now - startedAt > 7000) {
+      if (waitIndefinitely) {
+        monitorFrame = requestAnimationFrame(tick);
+        return;
+      }
       const hasCandidates = currentCandidates.length > 0;
       cancelRecording(
         hasCandidates
@@ -144,16 +150,22 @@ const startRecording = async ({ refinement = false } = {}) => {
   }
 
   try {
-    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const hasLiveAudioTrack = stream?.getAudioTracks().some(
+      (track) => track.readyState === "live",
+    );
+    if (!hasLiveAudioTrack) {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    }
     const mimeType = preferredMimeType();
     recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+    const activeRecorder = recorder;
     recorder.addEventListener("dataavailable", (event) => {
       if (event.data.size) chunks.push(event.data);
     });
     recorder.addEventListener("stop", async () => {
-      cleanupRecording();
+      cleanupRecording({ stopStream: false });
       if (cancelled) return;
-      const blob = new Blob(chunks, { type: recorder.mimeType || "audio/webm" });
+      const blob = new Blob(chunks, { type: activeRecorder.mimeType || "audio/webm" });
       await sendAudio(blob);
     });
     recorder.start(200);
@@ -165,8 +177,8 @@ const startRecording = async ({ refinement = false } = {}) => {
             : "Te sigo escuchando… agregá cualquier detalle.")
         : "Te escucho… hablá normalmente.",
     );
-    watchSilence(stream);
-    maxTimer = setTimeout(stopRecording, 14000);
+    watchSilence(stream, { waitIndefinitely: refinement });
+    if (!refinement) maxTimer = setTimeout(stopRecording, 14000);
   } catch (error) {
     cleanupRecording();
     const denied = error?.name === "NotAllowedError";
@@ -206,10 +218,20 @@ const sendAudio = async (blob) => {
     if (data.transcripcion) conversationHistory.push(data.transcripcion);
 
     if (data.estado === "sin_audio") {
-      if (awaitingQuantity) {
-        setState("ready", "No escuché una cantidad. Tocá el micrófono y decímela cuando quieras.");
+      if (awaitingQuantity || currentCandidates.length) {
+        setState(
+          "ready",
+          awaitingQuantity
+            ? "No escuché la cantidad. Sigo escuchando."
+            : "No escuché el detalle. Sigo escuchando.",
+        );
+        autoListenTimer = setTimeout(
+          () => startRecording({ refinement: true }),
+          350,
+        );
         return;
       }
+      cleanupRecording();
       currentCandidates = [];
       pendingQuantity = null;
       showNoMatch("", "No escuché nada claro. Tocá el micrófono para probar otra vez.");
@@ -218,6 +240,7 @@ const sendAudio = async (blob) => {
     }
 
     if (data.estado === "encontrado" && data.producto) {
+      cleanupRecording();
       currentCandidates = [];
       awaitingQuantity = false;
       showProduct(data);
@@ -256,9 +279,11 @@ const sendAudio = async (blob) => {
     currentCandidates = [];
     pendingQuantity = null;
     awaitingQuantity = false;
+    cleanupRecording();
     showNoMatch(data.transcripcion);
     setState("ready", "No encontré una coincidencia segura. Ya podés volver a intentar.");
   } catch (error) {
+    cleanupRecording();
     showNoMatch("", error.message);
     setState("ready", "Hubo un problema. Ya podés volver a intentar.");
   }
@@ -282,7 +307,9 @@ const showProduct = (data) => {
 
 const chooseCandidate = (product) => {
   if (autoListenTimer) clearTimeout(autoListenTimer);
-  if (recorder?.state === "recording") cancelRecording("");
+  if (recorder?.state === "recording") {
+    cancelRecording("", { keepStream: pendingQuantity === null });
+  }
   showProduct({
     producto: product,
     transcripcion: "selección en pantalla",
@@ -301,6 +328,7 @@ const chooseCandidate = (product) => {
   currentCandidates = [];
   pendingQuantity = null;
   awaitingQuantity = false;
+  cleanupRecording();
   setState("ready", "Listo para otra prueba. Tocá el micrófono cuando quieras.");
 };
 
@@ -355,6 +383,7 @@ const resetConversation = ({ listen = false } = {}) => {
   if (autoListenTimer) clearTimeout(autoListenTimer);
   const wasRecording = recorder?.state === "recording";
   if (wasRecording) cancelRecording("");
+  else cleanupRecording();
   currentCandidates = [];
   conversationHistory = [];
   pendingQuantity = null;
