@@ -10,8 +10,12 @@ class InventoryUploadFallbackContractTests(unittest.TestCase):
         self.assertIn("inventario_xeleria_con_costo.xlsx", HTML)
         self.assertIn("incluye K Costo antes de L Precio de lista", HTML)
 
-    def test_limit_is_explained_as_screen_pagination(self):
-        self.assertIn("<label>Mostrar en pantalla</label><select id=\"invLimit\"", HTML)
+    def test_inventory_toolbar_is_compact_without_changing_pagination(self):
+        self.assertIn("<label>Mostrar</label><select id=\"invLimit\"", HTML)
+        self.assertIn('class="inventoryFilterActions"', HTML)
+        self.assertIn('class="inventoryFileInput"', HTML)
+        self.assertIn("#inventario .inventoryFilters{row-gap:10px;align-items:end", HTML)
+        self.assertIn("#inventario .inventoryFilters>.col-stockle,#inventario .inventoryFilters>.inventoryFilterActions{grid-column:1/-1!important", HTML)
 
     def test_safe_reads_retry_but_writes_do_not(self):
         self.assertIn("maxAttempts=(method==='GET'&&opt.retrySafeGet!==false)?3:1", HTML)

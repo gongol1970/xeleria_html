@@ -496,7 +496,11 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 /* PRODUCTS_MATRIX_V2_241 */
 #inventario .card{border-color:#d8c8a8}
 #inventario>.card:first-child{background:linear-gradient(135deg,#fffdf8,#fbf4e5);border-left:6px solid var(--brand2)}
-#inventario .inventoryFilters{background:#fff;border:1px solid #eee2c8;border-radius:16px;padding:12px;box-shadow:0 5px 16px rgba(17,17,17,.035)}
+#inventario .inventoryFilters{row-gap:10px;align-items:end;background:#fff;border:1px solid #eee2c8;border-radius:16px;padding:12px;box-shadow:0 5px 16px rgba(17,17,17,.035)}
+#inventario .inventoryFilters>.inventoryFilterActions{grid-column:1/-1}
+#inventario .inventoryFilterActions .btnrow{margin-top:0}
+#inventario .inventoryFileInput{flex:1 1 300px;max-width:410px}
+@media(max-width:1050px){#inventario .inventoryFilters>.col-search,#inventario .inventoryFilters>.col-small,#inventario .inventoryFilters>.col-stockle,#inventario .inventoryFilters>.inventoryFilterActions{grid-column:1/-1!important;min-width:0;width:100%}#inventario .inventoryFilterActions .btnrow{align-items:stretch}#inventario .inventoryFileInput{max-width:none}}
 #inventario #invStatus:not(:empty){display:inline-flex;align-items:center;gap:8px;min-height:0;margin-top:12px;padding:8px 12px;border-radius:999px;background:#fffaf0;border:1px solid #eee2c8;font-size:12px;font-weight:900}
 #inventario #invStatus.oktxt:not(:empty){background:#ecfdf3;border-color:#b7ebc9;color:var(--ok)}
 #inventario #invStatus.badtxt:not(:empty){background:#fef3f2;border-color:#fecaca;color:var(--bad)}
@@ -1177,12 +1181,12 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
   <div class="col-search"><label>Buscar SKU / producto</label><input id="invSearch" oninput="debouncedSearch('inv')" placeholder="Buscar por SKU o nombre..."></div>
   <div class="col-small"><label>Canal</label><select id="invMarket" onchange="searchInventory(0,true)"><option value="">Todos</option><option>TN</option><option>ML</option></select></div>
   <div class="col-stockle"><label>Stock &lt;=</label><input id="invMaxStock" type="number" step="1" placeholder="Ej: 0" oninput="debouncedSearch('inv')"></div>
-  <div class="col-small"><label>Mostrar en pantalla</label><select id="invLimit" class="limitSelect" onchange="searchInventory(0,true)"><option selected>20</option><option>40</option><option>80</option><option>100</option></select></div>
+  <div class="col-small"><label>Mostrar</label><select id="invLimit" class="limitSelect" onchange="searchInventory(0,true)"><option selected>20</option><option>40</option><option>80</option><option>100</option></select></div>
   <div class="col-small"><label>&nbsp;</label><button onclick="searchInventory(0,true)">Filtrar</button></div>
-  <div class="col-12"><div class="btnrow" style="margin-top:4px">
+  <div class="inventoryFilterActions"><div class="btnrow">
     <button class="primary" onclick="toggleInventoryTool('product')">Agregar producto</button>
     <button type="button" class="secondary" id="downloadCsv" onclick="downloadInventoryCsv()">Bajar planilla inventario XLSX</button>
-    <input type="file" id="csvFile" accept=".xlsx,.csv" style="max-width:340px">
+    <input type="file" id="csvFile" class="inventoryFileInput" accept=".xlsx,.csv">
     <button class="secondary" onclick="uploadCsv()">Subir planilla inventario</button>
   </div></div>
 </div>
@@ -1456,7 +1460,7 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.37-mercadopago-subscriptions';
+const FRONTEND_VERSION='2.97.38-inventory-compact-toolbar';
 const FRONTEND_BUILD='admin-erp-v29736-plan-disabled-options';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
