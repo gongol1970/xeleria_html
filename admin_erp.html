@@ -1460,7 +1460,7 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.39-micorreo-safe-repeat-tests';
+const FRONTEND_VERSION='2.97.40-micorreo-visible-quote-error';
 const FRONTEND_BUILD='admin-erp-v29736-plan-disabled-options';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
@@ -5158,7 +5158,8 @@ async function xeliPreanswer(){
     qs('xeliSku').value=d.sku||qs('xeliSku').value;
     qs('xeliProposedAnswer').value=d.response||'';
     qs('xeliSkillSummary').innerHTML=`<span class="pill">Skill: ${esc(d.skill_id||'sin asignar')}</span><span class="pill">${esc(d.response_mode||'pre_respuesta')}</span><span class="pill ${d.needs_human?'warn':'ok'}">${d.response_mode==='manual'?'respuesta manual':d.needs_human?'revisar':'pre-respuesta lista'}</span>`;
-    setStatus('xeliTrainingStatus',d.response_mode==='manual'?'Este SKU está en modo manual.':'Pre-respuesta generada por Xeli.',true)
+    let quoteError=String(d?.response_facts?.shipping?.quote_error||'').trim();
+    setStatus('xeliTrainingStatus',quoteError?'MiCorreo rechazó la cotización: '+quoteError:(d.response_mode==='manual'?'Este SKU está en modo manual.':'Pre-respuesta generada por Xeli.'),quoteError?false:true)
   }catch(e){
     let msg=errText(e);
     if(e?.network||/failed to fetch/i.test(msg))msg='Se cortó la conexión mientras Xeli preparaba la respuesta. Volvé a intentar una vez.';

@@ -92,6 +92,12 @@ class CorreoSalesPackageContractTests(unittest.TestCase):
         self.assertIn("confirm('Esta orden ya fue exportada.", export)
         self.assertIn("draft.repeat_export=repeat", export)
 
+    def test_xeli_trainer_shows_the_real_micorreo_quote_error(self):
+        preanswer = re.search(r"async function xeliPreanswer\(\)\{([\s\S]*?)\n\}", HTML).group(1)
+
+        self.assertIn("d?.response_facts?.shipping?.quote_error", preanswer)
+        self.assertIn("MiCorreo rechazó la cotización:", preanswer)
+
 
 if __name__ == "__main__":
     unittest.main()
