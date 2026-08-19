@@ -54,7 +54,7 @@ class CorreoSalesPackageContractTests(unittest.TestCase):
     def test_quote_is_explicit_and_modal_does_not_auto_quote(self):
         modal = re.search(r'<div id="correoPackageModal"([\s\S]*?)<div id="erpBusyOverlay"', HTML).group(1)
         self.assertIn('onclick="quoteCorreoPackage()"', modal)
-        open_modal = re.search(r"async function openCorreoPackageModal\(orderId,channel,mode\)\{([^\n]+)", HTML).group(1)
+        open_modal = re.search(r"async function openCorreoPackageModal\(orderId,channel,mode\)\{([\s\S]*?)\n\}", HTML).group(1)
         self.assertNotIn("quoteCorreoPackage()", open_modal)
         self.assertNotIn("scheduleCorreoQuote", open_modal)
 
@@ -62,7 +62,7 @@ class CorreoSalesPackageContractTests(unittest.TestCase):
         modal = re.search(r'<div id="correoPackageModal"([\s\S]*?)<div id="erpBusyOverlay"', HTML).group(1)
         for field in ("correoRecipientName", "correoRecipientEmail", "correoRecipientStreet", "correoRecipientStreetNumber", "correoRecipientCity", "correoRecipientProvince"):
             self.assertIn(f'id="{field}"', modal)
-        export = re.search(r"async function exportCorreoPackage\(\)\{([^\n]+)", HTML).group(1)
+        export = re.search(r"async function exportCorreoPackage\(\)\{([\s\S]*?)\n\}", HTML).group(1)
         self.assertNotIn("prompt(", export)
         self.assertNotIn("province_code", export)
         self.assertIn("altura / N° de puerta", export)
@@ -79,6 +79,18 @@ class CorreoSalesPackageContractTests(unittest.TestCase):
         action = re.search(r"function correoActionHtml\(o,ch,logistic\)\{([\s\S]*?)\n\}", HTML).group(1)
         self.assertNotIn("shippingStateLabel", action)
         self.assertNotIn("Entregado'", action)
+
+    def test_exported_order_can_be_quoted_again_and_reexport_is_explicit(self):
+        action = re.search(r"function correoActionHtml\(o,ch,logistic\)\{([\s\S]*?)\n\}", HTML).group(1)
+        modal = re.search(r"async function openCorreoPackageModal\(orderId,channel,mode\)\{([\s\S]*?)\n\}", HTML).group(1)
+        export = re.search(r"async function exportCorreoPackage\(\)\{([\s\S]*?)\n\}", HTML).group(1)
+
+        self.assertIn("Volver a cotizar", action)
+        self.assertIn("Volver a exportar", action)
+        self.assertNotIn("if(prepared.already_exported)", modal)
+        self.assertIn("se creará un envío adicional", modal)
+        self.assertIn("confirm('Esta orden ya fue exportada.", export)
+        self.assertIn("draft.repeat_export=repeat", export)
 
 
 if __name__ == "__main__":
