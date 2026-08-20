@@ -19,9 +19,16 @@ def function_body(name: str) -> str:
 class CancelledSaleActionsContract(unittest.TestCase):
     def test_restore_is_offered_only_for_cancelled_sales_with_pending_sale_movements(self):
         body = function_body("cancelledSaleActionsHtml")
-        self.assertIn("includes('cancelado')", body)
+        self.assertIn("saleIsCancelled(o,ch)", body)
         self.assertIn("restore.pending>0", body)
         self.assertIn(">Restaurar stock</button>", body)
+
+    def test_cancelled_sale_uses_order_status_even_if_shipping_is_not_cancelled(self):
+        body = function_body("saleIsCancelled")
+        self.assertIn("o?.is_cancelled===true", body)
+        self.assertIn("o?.ml_status", body)
+        self.assertIn("deepVal(r,'ml_raw.status')", body)
+        self.assertIn("'cancelled'", body)
 
     def test_restore_balance_uses_audited_sale_and_cancellation_movements(self):
         body = function_body("cancelledSaleRestoreState")
@@ -66,19 +73,19 @@ class CancelledSaleActionsContract(unittest.TestCase):
 
     def test_claim_does_not_hide_independent_cancelled_sale_actions(self):
         body = function_body("orderCard")
-        self.assertIn("let cancelledActions=cancelledSaleActionsHtml(o,ch,logState);", body)
+        self.assertIn("let cancelledActions=cancelledSaleActionsHtml(o,ch);", body)
         self.assertNotIn("hasClaim?'':cancelledSaleActionsHtml", body)
 
     def test_cancelled_sale_has_no_pending_invoice_icon(self):
         body = function_body("invoiceButton")
-        cancelled_position = body.index("shippingLow.includes('cancelado')")
+        cancelled_position = body.index("saleIsCancelled(o,ch)")
         waiting_position = body.index("shippingLow!=='entregado'")
         self.assertLess(cancelled_position, waiting_position)
-        self.assertIn("if(shippingLow.includes('cancelado'))return '';", body)
+        self.assertIn("if(saleIsCancelled(o,ch))return '';", body)
 
     def test_cancelled_sale_is_not_requested_by_visible_shipping_refresh(self):
         body = function_body("salesVisibleOrderIds")
-        self.assertIn("shipping==='cancelado'", body)
+        self.assertIn("if(saleIsCancelled(item,ch))continue;", body)
         self.assertIn("continue", body)
 
     def test_credit_note_requires_an_explicit_restore_or_keep_stock_choice(self):

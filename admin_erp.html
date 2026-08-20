@@ -1460,7 +1460,7 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.41-cancelled-sale-terminal-actions';
+const FRONTEND_VERSION='2.97.42-cancelled-order-terminal-ui';
 const FRONTEND_BUILD='admin-erp-v29736-plan-disabled-options';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
@@ -2935,6 +2935,21 @@ function shippingStateTokens(...values){
   values.forEach(add);
   return out;
 }
+function saleIsCancelled(o,ch){
+  if(o?.is_cancelled===true)return true;
+  let r=rawObj(o);
+  let tokens=shippingStateTokens(
+    o?.status,o?.ml_status,o?.tn_status,o?.tn_payment_status,
+    o?.shipping_status,o?.ml_shipping_status,o?.ml_shipping_substatus,
+    o?.tn_shipping_status,o?.shipping_ui_status,o?.ml_shipping_ui_status,o?.tn_shipping_ui_status,
+    deepVal(r,'ml_status'),deepVal(r,'tn_status'),deepVal(r,'tn_payment_status'),
+    deepVal(r,'shipping_status'),deepVal(r,'shipping_ui_status'),
+    deepVal(r,'ml_raw.status'),deepVal(r,'ml_raw.shipping.status'),deepVal(r,'tn_raw.status'),
+    deepVal(r,'tn_raw.payment_status'),deepVal(r,'tn_raw.shipping_status'),
+    deepVal(r,'ml_shipping_last_snapshot.status'),deepVal(r,'ml_shipping_last_snapshot.substatus')
+  );
+  return ['cancel','cancelled','canceled','cancelado','void','refunded'].some(value=>tokens.has(value));
+}
 function shippingStateLabel(o,ch){
   // Para TN moto/manual, el estado operativo del ERP gana sobre lo que devuelve TN.
   if(ch==='TN'&&(o.tn_manual_delivered||String(o.delivery_status||o.tn_delivery_status||'').toLowerCase().includes('delivered'))){
@@ -3067,9 +3082,9 @@ function invoiceButton(o,ch){
   if(st==='external'||o.invoice_ml_fiscal_document_present){
     return `<div class="invoiceMiniWrap" data-invoice-channel="${channel}" data-invoice-order="${safeOid}"><span class="invoiceStatusIcon issued" title="Factura adjunta en Mercado Libre" aria-label="Factura adjunta en Mercado Libre">📄</span></div>`;
   }
+  if(saleIsCancelled(o,ch))return '';
   let shippingLabel=String(shippingStateLabel(o,ch)||'').trim();
   let shippingLow=shippingLabel.toLowerCase();
-  if(shippingLow.includes('cancelado'))return '';
   if(shippingLow!=='entregado'){
     return `<div class="invoiceMiniWrap" data-invoice-channel="${channel}" data-invoice-order="${safeOid}"><span class="invoiceStatusIcon waiting" title="Esperando entrega para habilitar la facturación" aria-label="Esperando entrega para facturar">📄⏳</span></div>`;
   }
@@ -3282,8 +3297,8 @@ function saleExternalOrderIds(o,ch){
   if(!ids.length)ids=[ch==='ML'?(o?.ml_order_id||o?.external_order_id):(o?.tn_order_id||o?.external_order_id)];
   return [...new Set(ids.map(value=>String(value||'').trim()).filter(Boolean))];
 }
-function cancelledSaleActionsHtml(o,ch,shippingLabel){
-  if(!String(shippingLabel||'').toLowerCase().includes('cancelado'))return '';
+function cancelledSaleActionsHtml(o,ch){
+  if(!saleIsCancelled(o,ch))return '';
   let actions=[];
   let invoiceId=String(o.invoice_id||o.arca_invoice_id||'').trim();
   let invoiceStatus=String(o.invoice_status||o.arca_status||'').toLowerCase();
@@ -3358,7 +3373,7 @@ function orderCard(o,ch){
   let correoState=(o.correo_argentino&&typeof o.correo_argentino==='object')?o.correo_argentino:{};
   let showAction=!!(act&&!correoState.exported_at&&String(act).trim().toLowerCase()!==String(logState||'').trim().toLowerCase());
   let actionHtml=showAction?`<span class="logisticsAction">${esc(act)}</span>`:'';
-  let cancelledActions=cancelledSaleActionsHtml(o,ch,logState);
+  let cancelledActions=cancelledSaleActionsHtml(o,ch);
   let totalSub=o.total_products&&Number(o.total_products)!==Number(o.total)?`<br><span class="small">Productos: ${money(o.total_products)}</span>`:'';
   let logisticClass=hasClaim?'bad':logistic==='FULL'?'ship-full':logistic==='FLEX'?'ship-flex':(logistic==='A coordinar'||logistic==='Sin envío')?'ship-coord':'ship-ml';
   let needsVisualAction=saleNeedsVisualAction(o,ch);
@@ -3380,12 +3395,13 @@ function clearSalesSearch(ch){let el=qs(ch.toLowerCase()+'VentasSearch');if(el)e
 function salesVisibleOrderIds(ch,items){
   let ids=[];
   for(let item of (items||[])){
+    if(saleIsCancelled(item,ch))continue;
     let shipping=String(shippingStateLabel(item,ch)||'').trim().toLowerCase();
     let invoiceState=String(item.invoice_status||item.arca_status||'').trim().toLowerCase();
     let invoiceIssued=invoiceState==='issued'||invoiceState==='external'||!!(item.invoice_cae||item.cae||item.arca_cae||item.invoice_ml_fiscal_document_present);
     // Estados terminales no requieren API. Una entrega ya facturada tampoco
     // necesita repetir los chequeos idempotentes de ARCA en cada entrada al menú.
-    if(shipping==='cancelado'||shipping==='devuelto'||shipping==='devuelto al remitente'||(shipping==='entregado'&&invoiceIssued))continue;
+    if(shipping==='devuelto'||shipping==='devuelto al remitente'||(shipping==='entregado'&&invoiceIssued))continue;
     let candidates=ch==='ML'?(Array.isArray(item.child_order_ids)?item.child_order_ids:[]):[];
     candidates=[...candidates,item.external_order_id].filter(Boolean);
     for(let value of candidates){let clean=String(value).trim();if(clean&&!ids.includes(clean))ids.push(clean);if(ids.length>=50)return ids}
