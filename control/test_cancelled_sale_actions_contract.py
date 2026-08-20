@@ -25,6 +25,9 @@ class CancelledSaleActionsContract(unittest.TestCase):
 
     def test_restore_balance_uses_audited_sale_and_cancellation_movements(self):
         body = function_body("cancelledSaleRestoreState")
+        self.assertIn("movement.reference_id", body)
+        self.assertIn("movement.movement_type", body)
+        self.assertIn("movement.reference_type", body)
         self.assertIn("type==='sale'&&referenceType==='order'&&quantity<0", body)
         self.assertIn("type==='sale_cancellation_restore'&&referenceType==='order_cancellation'&&quantity>0", body)
         self.assertIn("Math.max(0,entry.sold-entry.restored)", body)
@@ -60,6 +63,23 @@ class CancelledSaleActionsContract(unittest.TestCase):
         tn_only_position = body.index("if(channel==='TN')")
         self.assertLess(nc_position, tn_only_position)
         self.assertIn("Nota de Cr&eacute;dito", body)
+
+    def test_claim_does_not_hide_independent_cancelled_sale_actions(self):
+        body = function_body("orderCard")
+        self.assertIn("let cancelledActions=cancelledSaleActionsHtml(o,ch,logState);", body)
+        self.assertNotIn("hasClaim?'':cancelledSaleActionsHtml", body)
+
+    def test_cancelled_sale_has_no_pending_invoice_icon(self):
+        body = function_body("invoiceButton")
+        cancelled_position = body.index("shippingLow.includes('cancelado')")
+        waiting_position = body.index("shippingLow!=='entregado'")
+        self.assertLess(cancelled_position, waiting_position)
+        self.assertIn("if(shippingLow.includes('cancelado'))return '';", body)
+
+    def test_cancelled_sale_is_not_requested_by_visible_shipping_refresh(self):
+        body = function_body("salesVisibleOrderIds")
+        self.assertIn("shipping==='cancelado'", body)
+        self.assertIn("continue", body)
 
     def test_credit_note_requires_an_explicit_restore_or_keep_stock_choice(self):
         start_body = function_body("arcaStartNoteFromInvoice")

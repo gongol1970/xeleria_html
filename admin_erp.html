@@ -1460,7 +1460,7 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.40-micorreo-visible-quote-error';
+const FRONTEND_VERSION='2.97.41-cancelled-sale-terminal-actions';
 const FRONTEND_BUILD='admin-erp-v29736-plan-disabled-options';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
@@ -3358,7 +3358,7 @@ function orderCard(o,ch){
   let correoState=(o.correo_argentino&&typeof o.correo_argentino==='object')?o.correo_argentino:{};
   let showAction=!!(act&&!correoState.exported_at&&String(act).trim().toLowerCase()!==String(logState||'').trim().toLowerCase());
   let actionHtml=showAction?`<span class="logisticsAction">${esc(act)}</span>`:'';
-  let cancelledActions=hasClaim?'':cancelledSaleActionsHtml(o,ch,logState);
+  let cancelledActions=cancelledSaleActionsHtml(o,ch,logState);
   let totalSub=o.total_products&&Number(o.total_products)!==Number(o.total)?`<br><span class="small">Productos: ${money(o.total_products)}</span>`:'';
   let logisticClass=hasClaim?'bad':logistic==='FULL'?'ship-full':logistic==='FLEX'?'ship-flex':(logistic==='A coordinar'||logistic==='Sin envío')?'ship-coord':'ship-ml';
   let needsVisualAction=saleNeedsVisualAction(o,ch);
