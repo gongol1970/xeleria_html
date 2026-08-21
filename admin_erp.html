@@ -1039,6 +1039,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 .correoModal{position:fixed;inset:0;z-index:9900;background:rgba(16,16,16,.58);display:flex;align-items:center;justify-content:center;padding:20px}.correoModalCard{width:min(820px,96vw);max-height:92vh;overflow:auto;background:#fffdf8;border:1px solid var(--line);border-radius:22px;box-shadow:0 22px 70px rgba(0,0,0,.35);padding:22px}.correoPackageGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.correoPackageGrid label{font-weight:900;font-size:12px}.correoPackageGrid input{margin-top:5px;width:100%}.correoPostalField{grid-column:span 2}.correoRecipientGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}.correoRecipientGrid label{font-weight:900;font-size:12px}.correoRecipientGrid input{margin-top:5px;width:100%}.correoRecipientWide{grid-column:span 2}.correoPackageItems{margin:12px 0;border:1px solid #eee2c8;border-radius:13px;overflow:hidden}.correoPackageItem{display:grid;grid-template-columns:minmax(110px,.6fr) minmax(0,1fr) auto;gap:9px;padding:8px 10px;border-bottom:1px solid #eee2c8;font-size:12px}.correoPackageItem:last-child{border-bottom:0}.correoRates{display:grid;gap:7px;margin-top:12px}.correoRate{display:flex;justify-content:space-between;gap:12px;padding:9px 11px;background:#fff7d6;border-radius:11px}.correoModalActions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}@media(max-width:1050px){.orderHead{grid-template-columns:1fr}}@media(max-width:700px){.correoPackageGrid,.correoRecipientGrid{grid-template-columns:1fr 1fr}.correoPostalField,.correoRecipientWide{grid-column:span 1}.correoPackageItem{grid-template-columns:1fr}}
 </style>
 <!-- UI_ALERTS_INVENTORY_FILTERS_FRONTEND_1_39 -->
+<script src="./meta-pixel.js?v=1"></script>
 </head>
 <body class="subscriptionGatePending">
 <div class="subscriptionGate" id="subscriptionGate"><div class="subscriptionGateBox"><div class="erpSpinner"></div><div class="subscriptionGateTitle">Verificando tu suscripción</div><div class="subscriptionGateText" id="subscriptionGateText">Estamos confirmando el vencimiento antes de abrir XelerIA.</div></div></div>
@@ -1460,7 +1461,7 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.42-cancelled-order-terminal-ui';
+const FRONTEND_VERSION='2.97.43-meta-pixel-conversions';
 const FRONTEND_BUILD='admin-erp-v29736-plan-disabled-options';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
@@ -6440,6 +6441,7 @@ async function verifySubscriptionGate(){
     if(response.status===401){clearLocalSession();redirectToInicio('');return false}
     if(!response.ok)throw new Error(errText(data)||`No pudimos validar la suscripción (HTTP ${response.status}).`);
     state.subscription=data.subscription||{};
+    window.XelerIAMetaPixel?.trackApprovedSubscription(data);
     if(!state.subscription.allowed){location.replace('renovar.html');return false}
     applyPlanUiEntitlements();
     document.body.classList.remove('subscriptionGatePending');
