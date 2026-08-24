@@ -1,4 +1,5 @@
 <!-- XELERIA_CONFIG_NOTIFICATIONS_DB_V2_23_COMBOS_SAAS_UI_INTEGRATED -->
+<!-- XELERIA_DASHBOARD_PARTIAL_CHANNEL_WARNING_REMOVED_V1 -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -2619,7 +2620,7 @@ async function loadMigrationAudit(){
 }
 function dashMoney(n){return money(Number(n||0))||'$0'}
 function dashSet(id,val){let el=qs(id);if(el)el.textContent=val}
-function setDashboardStatus(msg,tone=null){setStatus('homeStatus',msg,tone);qs('homeStatus')?.classList.add('dashboardNote')}
+function setDashboardStatus(msg,tone=null){let el=qs('homeStatus');setStatus('homeStatus',msg,tone);if(!el)return;el.classList.add('dashboardNote');el.classList.toggle('hidden',!String(msg||'').trim())}
 function dashChannelBox(obj,ch){return (obj&&obj.channels&&obj.channels[ch])?obj.channels[ch]:{count:0,total_amount:0,items:[],types:{}}}
 function dashInvChannelBox(obj,ch){return (obj&&obj.channels&&obj.channels[ch])?obj.channels[ch]:{count:0,total_amount:0,items:[]}}
 function dashMiniItem(it){let num=it.sale_number||it.external_order_id||'';let ch=it.channel||'';let cust=it.customer_name||'Sin nombre';let amt=dashMoney(it.total);return `<div class="dashItem"><div><span class="pill ${ch==='ML'?'info':'ok'}">${esc(ch)}</span></div><div><strong>${esc(num)}</strong><br><span class="small">${esc(cust)} · ${dateAR(it.created_at)}</span></div><div><strong>${amt}</strong></div></div>`}
@@ -2765,7 +2766,7 @@ async function loadDashboard(force=false){
     if(qs('stWa'))qs('stWa').textContent=poll.whatsapp_admin_configurado?'OK':'NO';
     generatedAt=dateAR(d.generated_at);
     let channels=dashboardRefreshErrorChannels(refreshResult);
-    if(channels.length)setDashboardStatus('Dashboard cargado con los datos disponibles; no respondieron: '+channels.join(', ')+'.',false);
+    if(channels.length)setDashboardStatus('',null);
     else setDashboardStatus('Dashboard actualizado · '+generatedAt,true);
   }catch(e){
     console.error('loadDashboard',e);
