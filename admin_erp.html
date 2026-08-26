@@ -17,7 +17,7 @@
 <!-- XELERIA_INVOICE_CLICK_FIX_V288 -->
 <!-- XELERIA_ARCA_PRODUCTION_ONLY_UI_V289 -->
 <!-- XELERIA_ARCA_CHECK_A_B_UI_V291 -->
-<!-- XELERIA_ARCA_MANUAL_CUSTOMER_AUTOCOMPLETE_A5_TYPE_SYNC_V294 -->
+<!-- XELERIA_ARCA_MANUAL_CUSTOMER_AUTOCOMPLETE_A5_TYPE_SYNC_V296 -->
 <!-- XELERIA_SALES_INVOICE_STATES_ALIGNMENT_V292 -->
 <!-- XELERIA_CONNECTIONS_LIVE_ARCA_TEST_CONFIG_SAVE_V290 -->
 <!-- XELERIA_OXANIUM_BRAND_V283 -->
@@ -1462,7 +1462,7 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.44-arca-customer-autocomplete-a5-type-sync';
+const FRONTEND_VERSION='2.97.46-arca-customer-a5-fiscal-type-sync';
 const FRONTEND_BUILD='admin-erp-v29736-plan-disabled-options';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
@@ -4827,6 +4827,14 @@ function arcaManualPickProduct(el){
 function onlyDigits(s){return String(s||'').replace(/\D/g,'')}
 function arcaManualEnsureCustomerAutocomplete(){
   let input=qs('amCustomerName');if(!input)return;
+  let ivaSelect=qs('amIvaCond');
+  if(ivaSelect){
+    if(!Array.from(ivaSelect.options).some(option=>normalizar(option.value||option.text)==='no alcanzado'))ivaSelect.add(new Option('No alcanzado','No alcanzado'));
+    if(ivaSelect.dataset.arcaInvoiceTypeSyncBound!=='1'){
+      ivaSelect.dataset.arcaInvoiceTypeSyncBound='1';
+      ivaSelect.addEventListener('change',arcaManualSyncInvoiceTypeFromIva);
+    }
+  }
   input.autocomplete='off';
   let wrap=input.parentElement;
   if(!wrap?.classList.contains('fieldRel')){
@@ -4846,11 +4854,29 @@ function arcaManualEnsureCustomerAutocomplete(){
 function arcaManualHideCustomerSuggestions(){
   let box=qs('amCustomerSuggest');if(box){box.style.display='none';box.innerHTML=''}
 }
+function arcaManualCanonicalIvaCondition(value){
+  let iva=normalizar(value||'');
+  if(!iva)return null;
+  if(iva.includes('monotrib'))return 'Monotributo';
+  if(iva.includes('responsable inscrip')||iva.includes('iva responsable')||iva==='ri')return 'Responsable Inscripto';
+  if(iva.includes('consumidor final')||iva==='cf')return 'Consumidor Final';
+  if(iva.includes('no alcanz'))return 'No alcanzado';
+  if(iva.includes('exent'))return 'Exento';
+  return null;
+}
+function arcaManualSetIvaCondition(value){
+  let select=qs('amIvaCond'),canonical=arcaManualCanonicalIvaCondition(value);
+  if(!select||!canonical)return null;
+  let option=Array.from(select.options).find(item=>normalizar(item.value||item.text)===normalizar(canonical));
+  if(!option){option=new Option(canonical,canonical);select.add(option)}
+  select.value=option.value;
+  return canonical;
+}
 function arcaManualSyncInvoiceTypeFromIva(){
   let select=qs('amTipo');if(!select)return null;
   let current=Number(select.value||0);
   if(arcaManualIsNoteType(current))return null;
-  let iva=normalizar(qs('amIvaCond')?.value||'');
+  let iva=normalizar(arcaManualCanonicalIvaCondition(qs('amIvaCond')?.value)||qs('amIvaCond')?.value||'');
   let next=null;
   if(iva.includes('responsable inscrip')||iva.includes('monotrib'))next=1;
   else if(iva.includes('consumidor final')||iva.includes('exent')||iva.includes('no alcanz'))next=6;
@@ -4882,18 +4908,24 @@ function arcaManualCustomerSearch(input){
     }
   },300);
 }
-function arcaManualPickCustomer(index){
+async function arcaManualPickCustomer(index){
   let customer=(state.arcaManualCustomerSuggestions||[])[Number(index)];
   if(!customer)return;
   arcaFillManualCustomer(customer);arcaManualHideCustomerSuggestions();
-  setStatus('arcaManualStatus','Cliente guardado cargado. Podés validar sus datos fiscales con ARCA antes de facturar.',true);
+  let digits=onlyDigits(qs('amDocNumber')?.value||customer.doc_number||'');
+  if(digits.length>=7&&!arcaManualIsNoteType(Number(qs('amTipo')?.value||0))){
+    setStatus('arcaManualStatus','Cliente guardado cargado. Validando condición fiscal actual en ARCA A5...');
+    await arcaLookupCustomerA5(true);
+  }else{
+    setStatus('arcaManualStatus','Cliente guardado cargado.',true);
+  }
 }
 function arcaFillManualCustomer(c){
   if(!c)return false;
   if((c.fiscal_name||c.name)&&qs('amCustomerName'))qs('amCustomerName').value=c.fiscal_name||c.name;
   if(c.doc_type&&qs('amDocType'))qs('amDocType').value=String(c.doc_type).toUpperCase().includes('CUIT')?'CUIT':(String(c.doc_type).toUpperCase().includes('DNI')?'DNI':qs('amDocType').value);
   if(c.doc_number&&qs('amDocNumber'))qs('amDocNumber').value=c.doc_number;
-  if(c.iva_condition&&qs('amIvaCond'))qs('amIvaCond').value=c.iva_condition;
+  arcaManualSetIvaCondition(c.iva_condition||c.customer_iva_condition||c.fiscal_condition||c.tax_condition);
   if(c.email&&qs('amEmail'))qs('amEmail').value=c.email;
   if(c.address&&qs('amAddress'))qs('amAddress').value=c.address;
   let loc=[c.city,c.province].filter(Boolean).join(', ');
@@ -4939,14 +4971,14 @@ async function arcaLookupCustomerA5(force){
     if(f.doc_number)qs('amDocNumber').value=f.doc_number;
     let fiscalDigits=onlyDigits(f.doc_number||qs('amDocNumber').value);
     if(qs('amDocType'))qs('amDocType').value=fiscalDigits.length===11?'CUIT':(f.doc_type||qs('amDocType').value);
-    if(f.iva_condition)qs('amIvaCond').value=f.iva_condition;
+    arcaManualSetIvaCondition(f.iva_condition||f.customer_iva_condition||f.fiscal_condition||f.tax_condition);
     let resolvedInvoiceType=arcaManualSyncInvoiceTypeFromIva();
     if(f.address)qs('amAddress').value=f.address;
     let loc=[f.city,f.province].filter(Boolean).join(', '); if(loc)qs('amLocalidad').value=loc;
     setStatus('arcaManualStatus','Receptor fiscal cargado desde ARCA.'+(resolvedInvoiceType?' Comprobante actualizado a '+resolvedInvoiceType+'.':''),true);
   }catch(e){setStatus('arcaManualStatus','No pude traer datos de ARCA: '+(e.detail?.arca_padron_error||e.message||JSON.stringify(e)),false)}
 }
-function arcaManualClear(){hideManualPreviewBox();
+function arcaManualClear(){hideManualPreviewBox();arcaManualEnsureCustomerAutocomplete();
   ['amSourceOrder','amAssociatedVoucher','amCustomerName','amDocNumber','amEmail','amAddress','amNotes','amAssocInvoiceId','amAssocCbteTipo','amAssocPtoVta','amAssocCbteNro','amAssocInvoiceDate','amAssocCae'].forEach(id=>{if(qs(id))qs(id).value=''})
   if(qs('amTipo'))qs('amTipo').value='6';
   if(qs('amConcepto'))qs('amConcepto').value='Productos';
@@ -6526,6 +6558,7 @@ async function verifySubscriptionGate(){
 async function bootstrapXeleria(){
   cleanTokenFromUrl();
   if(!await verifySubscriptionGate())return;
+  arcaManualEnsureCustomerAutocomplete();
   loadSettings();if(typeof loadMLQuestionSettings==='function')loadMLQuestionSettings();renderMLQuickButtons();
   let migrationAuditRequested=new URLSearchParams(location.search).get('migration_audit')==='1';
   startHumanInactivityGuard();showView(migrationAuditRequested?'versiones':'inicio',{skipHistory:true});health();handleOauthReturn();updateVersionBar();startAlertPolling();inventoryImportBootstrapGridButton();resumeInventoryReconciliationJob();if(migrationAuditRequested)loadMigrationAudit();/* Recuperación única al iniciar: muestra staging pendiente sin activar polling periódico. */
