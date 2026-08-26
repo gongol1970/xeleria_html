@@ -17,6 +17,7 @@
 <!-- XELERIA_INVOICE_CLICK_FIX_V288 -->
 <!-- XELERIA_ARCA_PRODUCTION_ONLY_UI_V289 -->
 <!-- XELERIA_ARCA_CHECK_A_B_UI_V291 -->
+<!-- XELERIA_ARCA_MANUAL_CUSTOMER_AUTOCOMPLETE_A5_TYPE_SYNC_V294 -->
 <!-- XELERIA_SALES_INVOICE_STATES_ALIGNMENT_V292 -->
 <!-- XELERIA_CONNECTIONS_LIVE_ARCA_TEST_CONFIG_SAVE_V290 -->
 <!-- XELERIA_OXANIUM_BRAND_V283 -->
@@ -1461,7 +1462,7 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.43-meta-pixel-conversions';
+const FRONTEND_VERSION='2.97.44-arca-customer-autocomplete-a5-type-sync';
 const FRONTEND_BUILD='admin-erp-v29736-plan-disabled-options';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
@@ -4775,6 +4776,7 @@ function arcaManualToday(){
   return new Intl.DateTimeFormat('en-CA',{timeZone:'America/Argentina/Buenos_Aires'}).format(new Date());
 }
 function arcaManualInit(){
+  arcaManualEnsureCustomerAutocomplete();
   if(qs('arcaManualLines') && !qs('arcaManualLines').children.length){
     if(!qs('amCustomerName').value)qs('amCustomerName').value='Consumidor Final';
     if(!qs('amLocalidad').value)qs('amLocalidad').value='Ciudad Autónoma de Buenos Aires';
@@ -4823,6 +4825,69 @@ function arcaManualPickProduct(el){
   let box=line.querySelector('.arcaSuggest'); if(box){box.style.display='none';box.innerHTML=''}
 }
 function onlyDigits(s){return String(s||'').replace(/\D/g,'')}
+function arcaManualEnsureCustomerAutocomplete(){
+  let input=qs('amCustomerName');if(!input)return;
+  input.autocomplete='off';
+  let wrap=input.parentElement;
+  if(!wrap?.classList.contains('fieldRel')){
+    wrap=document.createElement('div');wrap.className='fieldRel';
+    input.parentNode.insertBefore(wrap,input);wrap.appendChild(input);
+  }
+  let box=qs('amCustomerSuggest');
+  if(!box){box=document.createElement('div');box.id='amCustomerSuggest';box.className='arcaSuggest';wrap.appendChild(box)}
+  if(input.dataset.arcaCustomerAutocompleteBound==='1')return;
+  input.dataset.arcaCustomerAutocompleteBound='1';
+  input.addEventListener('input',()=>arcaManualCustomerSearch(input));
+  input.addEventListener('keydown',event=>{
+    if(event.key==='Escape')arcaManualHideCustomerSuggestions();
+  });
+  input.addEventListener('blur',()=>setTimeout(arcaManualHideCustomerSuggestions,180));
+}
+function arcaManualHideCustomerSuggestions(){
+  let box=qs('amCustomerSuggest');if(box){box.style.display='none';box.innerHTML=''}
+}
+function arcaManualSyncInvoiceTypeFromIva(){
+  let select=qs('amTipo');if(!select)return null;
+  let current=Number(select.value||0);
+  if(arcaManualIsNoteType(current))return null;
+  let iva=normalizar(qs('amIvaCond')?.value||'');
+  let next=null;
+  if(iva.includes('responsable inscrip')||iva.includes('monotrib'))next=1;
+  else if(iva.includes('consumidor final')||iva.includes('exent')||iva.includes('no alcanz'))next=6;
+  if(!next||current===next)return null;
+  select.value=String(next);arcaManualTypeChanged();
+  return select.options[select.selectedIndex]?.text||('Factura '+(next===1?'A':'B'));
+}
+function arcaManualCustomerSearch(input){
+  clearTimeout(input._arcaCustomerTimer);
+  input._arcaCustomerTimer=setTimeout(async()=>{
+    let q=String(input.value||'').trim(),box=qs('amCustomerSuggest');
+    if(!box||q.length<XELERIA_MIN_SEARCH_CHARS){arcaManualHideCustomerSuggestions();return}
+    input._arcaCustomerQuery=q;
+    box.innerHTML='<div class="arcaSuggestItem muted">Buscando clientes guardados...</div>';box.style.display='block';
+    try{
+      let d=await fetchJson('/admin/customers/recent?limit=8&q='+encodeURIComponent(q));
+      if(input._arcaCustomerQuery!==q)return;
+      let items=d.items||[];state.arcaManualCustomerSuggestions=items;
+      box.innerHTML=items.map((c,i)=>{
+        let name=c.fiscal_name||c.name||c.display_name||'Cliente';
+        let doc=[c.doc_type,c.doc_number].filter(Boolean).join(' ');
+        let detail=[doc,c.iva_condition,c.email].filter(Boolean).join(' · ');
+        return `<div class="arcaSuggestItem" onmousedown="event.preventDefault()" onclick="arcaManualPickCustomer(${i})"><b>${esc(name)}</b>${detail?`<br><span class="muted">${esc(detail)}</span>`:''}</div>`;
+      }).join('')||'<div class="arcaSuggestItem muted">Sin clientes guardados coincidentes</div>';
+      box.style.display='block';
+    }catch(e){
+      if(input._arcaCustomerQuery!==q)return;
+      box.innerHTML='<div class="arcaSuggestItem muted">No pude buscar clientes guardados</div>';box.style.display='block';
+    }
+  },300);
+}
+function arcaManualPickCustomer(index){
+  let customer=(state.arcaManualCustomerSuggestions||[])[Number(index)];
+  if(!customer)return;
+  arcaFillManualCustomer(customer);arcaManualHideCustomerSuggestions();
+  setStatus('arcaManualStatus','Cliente guardado cargado. Podés validar sus datos fiscales con ARCA antes de facturar.',true);
+}
 function arcaFillManualCustomer(c){
   if(!c)return false;
   if((c.fiscal_name||c.name)&&qs('amCustomerName'))qs('amCustomerName').value=c.fiscal_name||c.name;
@@ -4833,6 +4898,7 @@ function arcaFillManualCustomer(c){
   if(c.address&&qs('amAddress'))qs('amAddress').value=c.address;
   let loc=[c.city,c.province].filter(Boolean).join(', ');
   if(loc&&qs('amLocalidad'))qs('amLocalidad').value=loc;
+  arcaManualSyncInvoiceTypeFromIva();
   return true;
 }
 async function arcaLookupLocalCustomer(doc){
@@ -4851,6 +4917,10 @@ async function arcaLookupLocalCustomer(doc){
   return exact.find(c=>String(c.email||'').trim())||exact[0]||null;
 }
 async function arcaLookupCustomerA5(force){
+  if(arcaManualIsNoteType(Number(qs('amTipo')?.value||0))){
+    if(force)setStatus('arcaManualStatus','Para NC/ND se conserva el receptor histórico de la factura asociada; no se vuelve a consultar A5.',true);
+    return;
+  }
   let doc=(qs('amDocNumber')&&qs('amDocNumber').value||'').trim();
   let type=(qs('amDocType')&&qs('amDocType').value||'DNI');
   if(!doc||doc.replace(/\D/g,'').length<7){if(force)setStatus('arcaManualStatus','Cargá DNI/CUIT para buscar en ARCA.',false);return}
@@ -4870,13 +4940,10 @@ async function arcaLookupCustomerA5(force){
     let fiscalDigits=onlyDigits(f.doc_number||qs('amDocNumber').value);
     if(qs('amDocType'))qs('amDocType').value=fiscalDigits.length===11?'CUIT':(f.doc_type||qs('amDocType').value);
     if(f.iva_condition)qs('amIvaCond').value=f.iva_condition;
-    if(String(f.iva_condition||'').toLowerCase().includes('monotrib')&&qs('amTipo')){
-      let map={'6':'1','7':'2','8':'3'},current=String(qs('amTipo').value||'');
-      if(map[current]){qs('amTipo').value=map[current];arcaManualTypeChanged()}
-    }
+    let resolvedInvoiceType=arcaManualSyncInvoiceTypeFromIva();
     if(f.address)qs('amAddress').value=f.address;
     let loc=[f.city,f.province].filter(Boolean).join(', '); if(loc)qs('amLocalidad').value=loc;
-    setStatus('arcaManualStatus','Receptor fiscal cargado desde ARCA.',true);
+    setStatus('arcaManualStatus','Receptor fiscal cargado desde ARCA.'+(resolvedInvoiceType?' Comprobante actualizado a '+resolvedInvoiceType+'.':''),true);
   }catch(e){setStatus('arcaManualStatus','No pude traer datos de ARCA: '+(e.detail?.arca_padron_error||e.message||JSON.stringify(e)),false)}
 }
 function arcaManualClear(){hideManualPreviewBox();
