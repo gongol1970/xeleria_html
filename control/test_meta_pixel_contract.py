@@ -12,7 +12,7 @@ def test_shared_pixel_is_loaded_only_on_the_conversion_funnel():
     for name in ("inicio.html", "suscripcion.html", "renovar.html", "admin_erp.html"):
         assert './meta-pixel.js?v=1' in read(name)
     assert "1452913843369062" in read("meta-pixel.js")
-    assert "2.97.43-meta-pixel-conversions" in read("admin_erp.html")
+    assert "2.97.47-publications-manual-remove" in read("admin_erp.html")
     assert "inicio-v37-meta-pixel-conversions" in read("inicio.html")
     assert "suscripcion-v4-meta-pixel-conversions" in read("suscripcion.html")
     assert "renovar-v2-meta-pixel-conversions" in read("renovar.html")
