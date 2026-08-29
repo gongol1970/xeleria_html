@@ -1037,6 +1037,11 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 .cancelledSaleActions button{min-height:0;padding:6px 9px;font-size:11px}
 .cancelledSaleRestoreFeedback{display:block;width:100%;color:var(--bad);font-size:11px;font-weight:800}
 .cancelledSaleRestored{display:block;margin-top:5px;color:var(--ok);font-size:11px;font-weight:900}
+.orderCard.mlClaimFollowup{border:4px solid #d97706!important;box-shadow:0 10px 26px rgba(217,119,6,.18)}
+.mlClaimStrip.followup{background:#fff7ed;border-bottom-color:#fed7aa;color:#7c2d12}
+.mlClaimStrip.followup .mlClaimLink{color:var(--warn)!important;border-color:var(--warn)!important}
+.mlClaimActions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.mlClaimFinalize{background:var(--warn)!important;color:#fff!important;border-color:var(--warn)!important;padding:7px 10px!important}
+.dashClaimCard.hasFollowup{border:3px solid #d97706!important;background:#fff7ed!important}
 .orderHead{grid-template-columns:minmax(0,1.15fr) minmax(0,1.25fr) minmax(210px,.9fr) minmax(120px,.8fr) minmax(135px,.58fr) 52px}
 .orderCorreoActions{display:flex;flex-direction:column;gap:7px;align-items:flex-start}.orderCorreoActions button{white-space:nowrap;padding:8px 12px!important}
 .correoModal{position:fixed;inset:0;z-index:9900;background:rgba(16,16,16,.58);display:flex;align-items:center;justify-content:center;padding:20px}.correoModalCard{width:min(820px,96vw);max-height:92vh;overflow:auto;background:#fffdf8;border:1px solid var(--line);border-radius:22px;box-shadow:0 22px 70px rgba(0,0,0,.35);padding:22px}.correoPackageGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.correoPackageGrid label{font-weight:900;font-size:12px}.correoPackageGrid input{margin-top:5px;width:100%}.correoPostalField{grid-column:span 2}.correoRecipientGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}.correoRecipientGrid label{font-weight:900;font-size:12px}.correoRecipientGrid input{margin-top:5px;width:100%}.correoRecipientWide{grid-column:span 2}.correoPackageItems{margin:12px 0;border:1px solid #eee2c8;border-radius:13px;overflow:hidden}.correoPackageItem{display:grid;grid-template-columns:minmax(110px,.6fr) minmax(0,1fr) auto;gap:9px;padding:8px 10px;border-bottom:1px solid #eee2c8;font-size:12px}.correoPackageItem:last-child{border-bottom:0}.correoRates{display:grid;gap:7px;margin-top:12px}.correoRate{display:flex;justify-content:space-between;gap:12px;padding:9px 11px;background:#fff7d6;border-radius:11px}.correoModalActions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}@media(max-width:1050px){.orderHead{grid-template-columns:1fr}}@media(max-width:700px){.correoPackageGrid,.correoRecipientGrid{grid-template-columns:1fr 1fr}.correoPostalField,.correoRecipientWide{grid-column:span 1}.correoPackageItem{grid-template-columns:1fr}}
@@ -1098,7 +1103,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
       <div class="s">Backend <span id="dashBackendVer">?</span></div>
     </div>
     <div id="dashClaimsCard" class="col-3 stat dashStat dashClaimCard" onclick="showView('ml-ventas')">
-      <div class="k">Reclamos Mercado Libre</div>
+      <div class="k">Reclamos y devoluciones ML</div>
       <div class="v" id="dashClaimsCount">0</div>
       <div class="s"><span id="dashClaimsActionCount">0</span> requieren tu acción</div>
     </div>
@@ -1108,10 +1113,10 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
     <div id="dashClaimsDetailCard" class="col-12 card hidden">
       <div class="controlHeader">
         <div>
-          <h3>Reclamos abiertos de Mercado Libre</h3>
-          <p>El estado de la venta no cambia. El borde rojo permanece hasta que Mercado Libre cierre el reclamo.</p>
+          <h3>Reclamos y seguimientos de Mercado Libre</h3>
+          <p>Rojo: reclamo abierto. Amarillo: reclamo cerrado con devolución o acción posterior pendiente.</p>
         </div>
-        <button class="secondary" onclick="showView('ml-ventas')">Ver ventas con reclamo</button>
+        <button class="secondary" onclick="showView('ml-ventas')">Ver pendientes ML</button>
       </div>
       <div id="dashClaimsList" class="dashList" style="margin-top:12px"></div>
     </div>
@@ -1464,8 +1469,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.47-publications-manual-remove';
-const FRONTEND_BUILD='admin-erp-v29747-publications-manual-remove';
+const FRONTEND_VERSION='2.97.48-ml-return-followup';
+const FRONTEND_BUILD='admin-erp-v29748-ml-return-followup';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
@@ -2768,14 +2773,21 @@ async function loadDashboard(force=false){
     let st=qs('dashShippingTable');if(st)st.innerHTML=dashShippingRows(ps);
     let sl=qs('dashShippingList');if(sl)sl.innerHTML=(ps.items||[]).length?(ps.items||[]).slice(0,10).map(it=>`<div class="dashItem"><div><span class="pill ${it.channel==='ML'?'info':'ok'}">${esc(it.channel)}</span></div><div><strong>${esc(it.sale_number||it.external_order_id||'')}</strong><br><span class="small">${esc(it.customer_name||'')} · ${esc(it.logistic_type||'')} · ${esc(it.shipping_status||'')}</span></div><div><strong>${dashMoney(it.total)}</strong></div></div>`).join(''):'<div class="dashEmpty">No hay ventas pendientes de envío.</div>';
     let claims=d.ml_claims||{};
-    dashSet('dashClaimsCount',claims.open_count??0);
+    dashSet('dashClaimsCount',claims.attention_count??claims.open_count??0);
     dashSet('dashClaimsActionCount',claims.seller_action_required_count??0);
     let claimsCard=qs('dashClaimsCard');
-    if(claimsCard)claimsCard.classList.toggle('hasOpen',Number(claims.open_count||0)>0);
+    if(claimsCard){
+      claimsCard.classList.toggle('hasOpen',Number(claims.open_count||0)>0);
+      claimsCard.classList.toggle('hasFollowup',Number(claims.open_count||0)===0&&Number(claims.pending_followup_count||0)>0);
+    }
     let claimsDetail=qs('dashClaimsDetailCard');
-    if(claimsDetail)claimsDetail.classList.toggle('hidden',Number(claims.open_count||0)===0);
+    if(claimsDetail)claimsDetail.classList.toggle('hidden',Number((claims.attention_count??claims.open_count)||0)===0);
     let claimsList=qs('dashClaimsList');
-    if(claimsList)claimsList.innerHTML=(claims.items||[]).length?(claims.items||[]).slice(0,10).map(c=>`<div class="dashItem"><div><span class="pill bad">${esc(c.state_label||'Reclamo abierto')}</span></div><div><strong>Venta ${esc(c.order_id||c.pack_id||'sin vincular')}</strong><br><span class="small">${esc(c.problem||c.detail_title||'Revisar en Mercado Libre')}${c.due_date?' · vence '+dateAR(c.due_date):''}</span></div><div><a class="btn secondary" target="_blank" rel="noopener" href="${esc(c.ml_url||'https://www.mercadolibre.com.ar/ventas')}">Abrir ML</a></div></div>`).join(''):'';
+    if(claimsList)claimsList.innerHTML=(claims.items||[]).length?(claims.items||[]).slice(0,10).map(c=>{
+      let followup=String(c.status||'').toLowerCase()!=='opened'&&c.post_claim_action_pending===true;
+      let label=followup?(c.post_claim_state_label||'Seguimiento pendiente'):(c.state_label||'Reclamo abierto');
+      return `<div class="dashItem"><div><span class="pill ${followup?'warn':'bad'}">${esc(label)}</span></div><div><strong>Venta ${esc(c.order_id||c.pack_id||'sin vincular')}</strong><br><span class="small">${esc(c.problem||c.detail_title||'Revisar en Mercado Libre')}${c.due_date&&!followup?' · vence '+dateAR(c.due_date):''}</span></div><div><a class="btn secondary" target="_blank" rel="noopener" href="${esc(c.ml_url||'https://www.mercadolibre.com.ar/ventas')}">Abrir ML</a></div></div>`;
+    }).join(''):'';
     let failuresBox=qs('dashFailuresSummary');if(failuresBox)failuresBox.innerHTML=dashFailureRows(d.failures||{});
     let poll=d.pollers||{};
     // Los boxes viejos ya no se muestran, pero quedan por compatibilidad si existen.
@@ -3275,13 +3287,31 @@ async function markTnMotoDelivered(orderId,label){
 }
 
 function mlClaimHtml(o,ch){
-  if(ch!=='ML'||!o.ml_claim_open)return'';
-  let stateLabel=o.ml_claim_state||'Reclamo abierto';
-  let problem=o.ml_claim_problem||'Revisar el reclamo en Mercado Libre';
-  let due=o.ml_claim_due_date?` · vence ${dateAR(o.ml_claim_due_date)}`:'';
-  let reputation=o.ml_claim_affects_reputation===true?' · afecta reputación':(o.ml_claim_affects_reputation===false?' · no afecta reputación':'');
+  let open=ch==='ML'&&o.ml_claim_open===true;
+  let followup=ch==='ML'&&o.ml_claim_followup_pending===true;
+  if(!open&&!followup)return'';
+  let stateLabel=o.ml_claim_state||(followup?'Seguimiento post-reclamo pendiente':'Reclamo abierto');
+  let problem=o.ml_claim_problem||'Revisar el caso en Mercado Libre';
+  let due=open&&o.ml_claim_due_date?` · vence ${dateAR(o.ml_claim_due_date)}`:'';
+  let reputation=open?(o.ml_claim_affects_reputation===true?' · afecta reputación':(o.ml_claim_affects_reputation===false?' · no afecta reputación':'')):'';
+  let tracking=followup&&o.ml_return_tracking_number?` · seguimiento ${o.ml_return_tracking_number}`:'';
   let link=o.ml_claim_url||'https://www.mercadolibre.com.ar/ventas';
-  return `<div class="mlClaimStrip"><div class="mlClaimMain"><span class="pill bad">RECLAMO ABIERTO</span><span class="mlClaimTitle">${esc(stateLabel)}</span><span class="mlClaimDetail">${esc(problem)}${esc(due)}${esc(reputation)}</span></div><a class="btn mlClaimLink" target="_blank" rel="noopener" href="${esc(link)}">Abrir en Mercado Libre</a></div>`;
+  let finalize=followup&&o.ml_claim_id?`<button type="button" class="mlClaimFinalize" onclick="finalizeMlClaimFollowup('${jsq(o.ml_claim_id)}','${jsq(orderNumber(o,ch))}')">Dar por finalizado el reclamo por parte de ${esc(tenantDisplayName())}</button>`:'';
+  return `<div class="mlClaimStrip ${followup?'followup':''}"><div class="mlClaimMain"><span class="pill ${followup?'warn':'bad'}">${followup?'SEGUIMIENTO PENDIENTE':'RECLAMO ABIERTO'}</span><span class="mlClaimTitle">${esc(stateLabel)}</span><span class="mlClaimDetail">${esc(problem)}${esc(due)}${esc(reputation)}${esc(tracking)}</span></div><div class="mlClaimActions">${finalize}<a class="btn mlClaimLink" target="_blank" rel="noopener" href="${esc(link)}">Abrir en Mercado Libre</a></div></div>`;
+}
+
+async function finalizeMlClaimFollowup(claimId,saleLabel){
+  let commerce=tenantDisplayName();
+  if(!confirm(`¿Dar por finalizado el seguimiento del reclamo de ${saleLabel||'esta venta'} por parte de ${commerce}?\n\nLa tarjeta dejará de estar fijada. Esta acción no emite Nota de Crédito ni modifica stock.`))return;
+  setBusy(true,'Finalizando seguimiento','Registrando la decisión del comercio...');
+  try{
+    let d=await fetchJson(`/admin/ml/claims/${encodeURIComponent(claimId)}/finalize-followup`,{method:'POST'});
+    setStatus('mlVentasStatus',d.message||`Seguimiento finalizado por ${commerce}.`,true);
+    await loadRecent('ML',state.sales.ML?.offset||0,{refreshShipping:false});
+    loadDashboard(false);
+  }catch(e){
+    setStatus('mlVentasStatus','No pude finalizar el seguimiento: '+errText(e),false);
+  }finally{setBusy(false)}
 }
 
 function cancelledSaleRestoreState(o){
@@ -3317,22 +3347,24 @@ function saleExternalOrderIds(o,ch){
   if(!ids.length)ids=[ch==='ML'?(o?.ml_order_id||o?.external_order_id):(o?.tn_order_id||o?.external_order_id)];
   return [...new Set(ids.map(value=>String(value||'').trim()).filter(Boolean))];
 }
-function cancelledSaleActionsHtml(o,ch){
-  if(!saleIsCancelled(o,ch))return '';
+function saleResolutionActionsHtml(o,ch){
+  let cancelled=saleIsCancelled(o,ch);
+  let claimFollowup=ch==='ML'&&o.ml_claim_followup_pending===true;
+  if(!cancelled&&!claimFollowup)return '';
   let actions=[];
   let invoiceId=String(o.invoice_id||o.arca_invoice_id||'').trim();
   let invoiceStatus=String(o.invoice_status||o.arca_status||'').toLowerCase();
   let invoiceIssued=!!(o.invoice_cae||o.cae||o.arca_cae)||invoiceStatus==='issued';
-  if(invoiceIssued&&invoiceId){
+  if(invoiceIssued&&invoiceId&&(cancelled||claimFollowup)){
     actions.push(`<button type="button" class="secondary" onclick="arcaStartNoteFromInvoice('${jsq(invoiceId)}','NC')">Nota de Cr&eacute;dito</button>`);
   }
   let restore=cancelledSaleRestoreState(o);
   let orderIds=saleExternalOrderIds(o,ch);
-  if(restore.pending>0&&orderIds.length){
+  if(cancelled&&!claimFollowup&&restore.pending>0&&orderIds.length){
     let encoded=encodeURIComponent(JSON.stringify(orderIds));
     actions.push(`<button type="button" class="secondary" onclick="restoreCancelledSaleStock(this,'${jsq(ch)}','${jsq(encoded)}')">Restaurar stock</button>`);
   }
-  let restored=restore.sold>0&&restore.pending===0?'<span class="cancelledSaleRestored">Stock restaurado</span>':'';
+  let restored=cancelled&&restore.sold>0&&restore.pending===0?'<span class="cancelledSaleRestored">Stock restaurado</span>':'';
   return (actions.length?`<div class="cancelledSaleActions">${actions.join('')}<span class="cancelledSaleRestoreFeedback" aria-live="polite"></span></div>`:'')+restored;
 }
 async function restoreCancelledSaleStock(button,ch,encodedOrderIds){
@@ -3380,34 +3412,36 @@ function orderCard(o,ch){
   let display=lines.map(l=>`<div class="lineItem"><div><strong>${esc(l.sku)}</strong></div><div>${esc(l.name||'')}</div><div>Cant: <strong>${esc(l.quantity)}</strong></div><div>${l.unit_price!==''?money(l.unit_price):''}</div><div>${l.prev!==undefined?`Stock ${esc(l.prev)} → ${esc(l.next)}`:(l.subtotal?money(l.subtotal):'')}</div></div>`).join('')||'<div class="muted">Sin líneas visibles todavía.</div>';
   let sub=subOrderText(o,ch);
   let hasClaim=ch==='ML'&&o.ml_claim_open===true;
-  let logistic=hasClaim?'RECLAMO':logisticLabel(o,ch);
+  let hasFollowup=ch==='ML'&&o.ml_claim_followup_pending===true;
+  let hasClaimAttention=hasClaim||hasFollowup;
+  let logistic=hasClaim?'RECLAMO':hasFollowup?'DEVOLUCIÓN':logisticLabel(o,ch);
   let logState=shippingStateLabel(o,ch);
-  let act=hasClaim?'':saleNeedsAction(o,ch);
+  let act=hasClaimAttention?'':saleNeedsAction(o,ch);
   let logStateLow=String(logState||'').trim().toLowerCase();
   let actLow=String(act||'').trim().toLowerCase();
   if(logStateLow==='pendiente'&&actLow.startsWith('pendiente')){logState=act;act=''}
   let stateCls=shippingStateClass(logState);
-  let stateHtml=!hasClaim&&logState?`<span class="shippingAction ${stateCls}">${esc(logState)}</span>`:'';
+  let stateHtml=!hasClaimAttention&&logState?`<span class="shippingAction ${stateCls}">${esc(logState)}</span>`:'';
   let manualDeliveredHtml=tnDeliveredButton(o,ch);
-  let correoHtml=hasClaim?'':correoActionHtml(o,ch,logistic);
+  let correoHtml=hasClaimAttention?'':correoActionHtml(o,ch,logistic);
   let correoState=(o.correo_argentino&&typeof o.correo_argentino==='object')?o.correo_argentino:{};
   let showAction=!!(act&&!correoState.exported_at&&String(act).trim().toLowerCase()!==String(logState||'').trim().toLowerCase());
   let actionHtml=showAction?`<span class="logisticsAction">${esc(act)}</span>`:'';
-  let cancelledActions=cancelledSaleActionsHtml(o,ch);
+  let resolutionActions=saleResolutionActionsHtml(o,ch);
   let totalSub=o.total_products&&Number(o.total_products)!==Number(o.total)?`<br><span class="small">Productos: ${money(o.total_products)}</span>`:'';
-  let logisticClass=hasClaim?'bad':logistic==='FULL'?'ship-full':logistic==='FLEX'?'ship-flex':(logistic==='A coordinar'||logistic==='Sin envío')?'ship-coord':'ship-ml';
+  let logisticClass=hasClaim?'bad':hasFollowup?'warn':logistic==='FULL'?'ship-full':logistic==='FLEX'?'ship-flex':(logistic==='A coordinar'||logistic==='Sin envío')?'ship-coord':'ship-ml';
   let needsVisualAction=saleNeedsVisualAction(o,ch);
   let saleDate=o.display_created_at||o.sale_at||o.ml_date_created||o.tn_created_at||o.ml_date_closed||o.tn_paid_at;
   let saleDateLabel=saleDate?dateAR(saleDate):'Fecha de venta pendiente';
-  return `<div class="orderCard ${needsVisualAction?'actionSale':''} ${o.ml_claim_open?'mlClaimOpen':''}">${mlClaimHtml(o,ch)}<div class="orderHead"><div><strong>${esc(orderNumber(o,ch))}</strong>${sub?`<br><span class="small">${sub}</span>`:''}<br><span class="small">${esc(saleDateLabel)}</span></div><div>${channelCustomerHtml(o,ch)}</div><div class="orderLogisticsBlock"><span class="pill ${logisticClass} shippingPill">${esc(logistic)}</span><br><span class="orderPayStatus">${esc(orderStatusLabel(o,ch))}</span>${stateHtml}${manualDeliveredHtml}${actionHtml}${cancelledActions}</div><div class="orderAmountBlock"><strong>${money(o.total)}</strong>${totalSub}<br><span class="small">${countLabel(lines.length)}</span></div><div class="orderCorreoActions">${correoHtml}</div><div class="orderInvoiceBlock">${invoiceButton(o,ch)}</div></div><div class="orderLines">${display}</div></div>`
+  return `<div class="orderCard ${needsVisualAction?'actionSale':''} ${hasClaim?'mlClaimOpen':''} ${hasFollowup?'mlClaimFollowup':''}">${mlClaimHtml(o,ch)}<div class="orderHead"><div><strong>${esc(orderNumber(o,ch))}</strong>${sub?`<br><span class="small">${sub}</span>`:''}<br><span class="small">${esc(saleDateLabel)}</span></div><div>${channelCustomerHtml(o,ch)}</div><div class="orderLogisticsBlock"><span class="pill ${logisticClass} shippingPill">${esc(logistic)}</span><br><span class="orderPayStatus">${esc(orderStatusLabel(o,ch))}</span>${stateHtml}${manualDeliveredHtml}${actionHtml}${resolutionActions}</div><div class="orderAmountBlock"><strong>${money(o.total)}</strong>${totalSub}<br><span class="small">${countLabel(lines.length)}</span></div><div class="orderCorreoActions">${correoHtml}</div><div class="orderInvoiceBlock">${invoiceButton(o,ch)}</div></div><div class="orderLines">${display}</div></div>`
 }
 
 
-function prioritizeOpenClaims(items,channel){
+function prioritizeClaimAttention(items,channel){
   if(channel!=='ML')return [...(items||[])];
-  return (items||[]).map((item,index)=>({item,index})).sort((a,b)=>Number(!!b.item.ml_claim_open)-Number(!!a.item.ml_claim_open)||a.index-b.index).map(entry=>entry.item);
+  return (items||[]).map((item,index)=>({item,index})).sort((a,b)=>Number(!!b.item.ml_claim_open)-Number(!!a.item.ml_claim_open)||Number(!!b.item.ml_claim_followup_pending)-Number(!!a.item.ml_claim_followup_pending)||a.index-b.index).map(entry=>entry.item);
 }
-function ordersTable(items,channel){if(!items||!items.length)return '<div class="card"><p>No hay ventas capturadas.</p></div>';return prioritizeOpenClaims(items,channel).map(o=>orderCard(o,channel)).join('')}
+function ordersTable(items,channel){if(!items||!items.length)return '<div class="card"><p>No hay ventas capturadas.</p></div>';return prioritizeClaimAttention(items,channel).map(o=>orderCard(o,channel)).join('')}
 function salesLimit(ch){let el=qs(ch.toLowerCase()+'VentasLimit');return Number(el?.value||20)}
 function salesSearch(ch){let el=qs(ch.toLowerCase()+'VentasSearch');return (el?.value||'').trim()}
 function debouncedSales(ch){clearTimeout(timers['sales_'+ch]);timers['sales_'+ch]=setTimeout(()=>{let q=salesSearch(ch);let lc=ch.toLowerCase();if(isShortSearch(q)){if(qs(lc+'VentasTable'))qs(lc+'VentasTable').innerHTML='<div class="card"><p>'+esc(minSearchMessage())+'</p></div>';if(qs(lc+'VentasPager'))qs(lc+'VentasPager').innerHTML='';setStatus(lc+'VentasStatus',minSearchMessage(),'warn');return}loadRecent(ch,0)},350)}
