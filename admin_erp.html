@@ -3296,13 +3296,13 @@ function mlClaimHtml(o,ch){
   let reputation=open?(o.ml_claim_affects_reputation===true?' · afecta reputación':(o.ml_claim_affects_reputation===false?' · no afecta reputación':'')):'';
   let tracking=followup&&o.ml_return_tracking_number?` · seguimiento ${o.ml_return_tracking_number}`:'';
   let link=o.ml_claim_url||'https://www.mercadolibre.com.ar/ventas';
-  let finalize=followup&&o.ml_claim_id?`<button type="button" class="mlClaimFinalize" onclick="finalizeMlClaimFollowup('${jsq(o.ml_claim_id)}','${jsq(orderNumber(o,ch))}')">Dar por finalizado el reclamo por parte de ${esc(tenantDisplayName())}</button>`:'';
+  let finalize=followup&&o.ml_claim_id?`<button type="button" class="mlClaimFinalize" onclick="finalizeMlClaimFollowup('${jsq(o.ml_claim_id)}','${jsq(orderNumber(o,ch))}')">Desestimar · Ya se hizo todo lo necesario</button>`:'';
   return `<div class="mlClaimStrip ${followup?'followup':''}"><div class="mlClaimMain"><span class="pill ${followup?'warn':'bad'}">${followup?'SEGUIMIENTO PENDIENTE':'RECLAMO ABIERTO'}</span><span class="mlClaimTitle">${esc(stateLabel)}</span><span class="mlClaimDetail">${esc(problem)}${esc(due)}${esc(reputation)}${esc(tracking)}</span></div><div class="mlClaimActions">${finalize}<a class="btn mlClaimLink" target="_blank" rel="noopener" href="${esc(link)}">Abrir en Mercado Libre</a></div></div>`;
 }
 
 async function finalizeMlClaimFollowup(claimId,saleLabel){
   let commerce=tenantDisplayName();
-  if(!confirm(`¿Dar por finalizado el seguimiento del reclamo de ${saleLabel||'esta venta'} por parte de ${commerce}?\n\nLa tarjeta dejará de estar fijada. Esta acción no emite Nota de Crédito ni modifica stock.`))return;
+  if(!confirm(`¿Desestimar el seguimiento del reclamo de ${saleLabel||'esta venta'}?\n\n${commerce} confirma que ya se hizo todo lo necesario. La tarjeta dejará de estar fijada. Esta acción no emite Nota de Crédito ni modifica stock.`))return;
   setBusy(true,'Finalizando seguimiento','Registrando la decisión del comercio...');
   try{
     let d=await fetchJson(`/admin/ml/claims/${encodeURIComponent(claimId)}/finalize-followup`,{method:'POST'});
