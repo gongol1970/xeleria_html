@@ -1955,20 +1955,36 @@ function cancelToPreviousView(){showView(xeleriaPreviousView||'inicio',{skipHist
 function toggleMobileMenu(){let a=document.querySelector('aside');if(!a)return;a.classList.toggle('mobileOpen');document.body.classList.toggle('mobileMenuOpen',a.classList.contains('mobileOpen'))}
 function closeMobileMenu(){let a=document.querySelector('aside');if(!a)return;a.classList.remove('mobileOpen');document.body.classList.remove('mobileMenuOpen')}
 document.addEventListener('click',e=>{let b=e.target.closest('.navBtn[data-view]');if(b){showView(b.dataset.view);closeMobileMenu()}});
-function errText(e){
-  if(!e)return 'Error desconocido';
-  if(typeof e==='string')return e;
-  if(e.message)return e.message;
-  if(e.detail){
-    if(typeof e.detail==='string')return e.detail;
-    if(typeof e.detail?.detail?.detail==='string')return e.detail.detail.detail;
-    if(typeof e.detail?.user_message==='string')return e.detail.user_message;
-    if(typeof e.detail?.message==='string')return e.detail.message.replace(/^\d{3}:\s*/,'');
-    try{return JSON.stringify(e.detail,null,2)}catch{}
+function humanFrontendError(e,fallback='No se pudo completar la operación. Volvé a intentarlo.'){
+  try{console.error('XelerIA frontend error',e)}catch(_e){}
+  if(!e)return fallback;
+  let detail=e&&typeof e==='object'?e.detail:null;
+  let detailObj=detail&&typeof detail==='object'?detail:null;
+  let count=Number(detailObj?.component_refs_count||0);
+  let candidates=[
+    detailObj?.user_message,
+    detailObj?.message,
+    typeof detail==='string'?detail:'',
+    e?.user_message,
+    e?.message,
+    typeof e?.error==='string'?e.error:'',
+    e?.response?.user_message,
+    e?.response?.message,
+    e?.response?.detail?.user_message,
+    e?.response?.detail?.message,
+    typeof e==='string'?e:''
+  ].filter(v=>typeof v==='string'&&v.trim()).map(v=>v.trim().replace(/^\d{3}:\s*/,''));
+  let msg=candidates[0]||'';
+  if(msg.includes('No se puede eliminar/desactivar este producto porque se usa como componente de combos')){
+    return count>0?`No se puede eliminar este producto porque forma parte de ${count} combo${count===1?'':'s'}. Primero tenés que quitarlo de ${count===1?'ese combo':'esos combos'}.`:'No se puede eliminar este producto porque forma parte de uno o más combos. Primero tenés que quitarlo de esos combos.';
   }
-  if(e.error)return typeof e.error==='string'?e.error:JSON.stringify(e.error,null,2);
-  try{return JSON.stringify(e,null,2)}catch{return String(e)}
+  if(/Sesión XelerIA requerida|session.*required|unauthorized|token.*expired|sesión.*venc/i.test(msg))return 'La sesión venció. Volvé a ingresar y repetí la operación.';
+  if(e?.network||/failed to fetch|networkerror|network request failed|resource temporarily unavailable|\[errno 11\]/i.test(msg))return 'No pude comunicarme con XelerIA. Reintentá en unos segundos.';
+  if(Number(e?.http_status)===404)return 'La función solicitada todavía no está disponible. Actualizá la página y volvé a intentar.';
+  if(/sql|postgres|traceback|exception|stack|constraint|foreign key|duplicate key|not-null|syntax error|internal server error|bundle_item_id|component_refs|tenant_id|database/i.test(msg))return fallback;
+  return msg||fallback;
 }
+function errText(e){return humanFrontendError(e,'Ocurrió un error. Volvé a intentarlo.')}
 function saveLastArcaError(e,ctx={}){
   try{localStorage.setItem('hubiax_last_arca_error',JSON.stringify({at:new Date().toISOString(),ctx,error:e},null,2))}catch{}
 }
@@ -3766,11 +3782,7 @@ function listingStatusTextSpan(l){
   return `<span class="productStatusText ${esc(cls)}">${esc(label)}</span>`;
 }
 function friendlyInventoryError(e){
-  let raw='';try{raw=JSON.stringify(e)}catch(_){raw=String(e||'')}
-  if(raw.includes('Resource temporarily unavailable')||raw.includes('[Errno 11]'))return 'La base respondió ocupada unos segundos. Mantengo la grilla anterior; reintentá Filtrar.';
-  if(raw.includes('404'))return 'Endpoint de Productos no disponible todavía. Falta que Render tome el deploy del backend.';
-  if(raw.includes('Sesión XelerIA requerida'))return 'La sesión venció. Volvé a ingresar y repetí la operación.';
-  return raw.length>260?raw.slice(0,260)+'…':raw;
+  return humanFrontendError(e,'No pude completar la operación de Inventario. Reintentá en unos segundos.');
 }
 function saleNeedsVisualAction(o,ch){
   let logistic=logisticLabel(o,ch);
@@ -5597,7 +5609,7 @@ async function saveInventoryProductAll(idx){
 
 /* COMBOS_LEGACY_MONOUSER_EDIT_JS_REMOVED */
 
-async function deleteInventoryItem(idx){let item=state.inventoryItems[idx];if(!item)return;let isBundle=String(item.item_type||'').toLowerCase()==='bundle';let label=isBundle?'combo':'producto';let msg=`Eliminar ${label} ${item.sku}?\n\nSe hará borrado lógico: active=false, SKU _deleted_<id> y publicaciones locales liberadas. No borra publicaciones reales ML/TN.`;if(!confirm(msg))return;let inCombos=!!(qs('combos')&&qs('combos').classList.contains('active'));let statusId=inCombos?'comboStatus':'invStatus';setStatus(statusId,`Eliminando ${item.sku}...`);try{let d=await fetchJson('/admin/v2/inventory/product/'+encodeURIComponent(item.sku),{method:'DELETE'});setStatus(statusId,`${item.sku}: desactivado OK${d.renamed_sku?' · '+d.renamed_sku:''}`,true);if(inCombos){await loadCombos()}else{await searchInventory(state.inventory.offset||0,true)}}catch(e){setStatus(statusId,'Error eliminando: '+(e?.detail?JSON.stringify(e.detail):JSON.stringify(e)),false)}}
+async function deleteInventoryItem(idx){let item=state.inventoryItems[idx];if(!item)return;let isBundle=String(item.item_type||'').toLowerCase()==='bundle';let label=isBundle?'combo':'producto';let msg=`Eliminar ${label} ${item.sku}?\n\nSe hará borrado lógico: active=false, SKU _deleted_<id> y publicaciones locales liberadas. No borra publicaciones reales ML/TN.`;if(!confirm(msg))return;let inCombos=!!(qs('combos')&&qs('combos').classList.contains('active'));let statusId=inCombos?'comboStatus':'invStatus';setStatus(statusId,`Eliminando ${item.sku}...`);try{let d=await fetchJson('/admin/v2/inventory/product/'+encodeURIComponent(item.sku),{method:'DELETE'});setStatus(statusId,`${item.sku}: desactivado OK${d.renamed_sku?' · '+d.renamed_sku:''}`,true);if(inCombos){await loadCombos()}else{await searchInventory(state.inventory.offset||0,true)}}catch(e){setStatus(statusId,humanFrontendError(e,'No pude eliminar este producto. Revisá si está siendo usado por otra función y volvé a intentarlo.'),false)}}
 
 function customerPrefix(ch){return ch==='ALL'?'all':ch.toLowerCase()}
 function customerTableId(ch){return customerPrefix(ch)+'ClientesTable'}
