@@ -19,15 +19,23 @@ def function_body(name: str) -> str:
 class MlClaimDisplayContract(unittest.TestCase):
     def test_claim_overrides_logistics_and_hides_other_actions(self):
         body = function_body("orderCard")
-        self.assertIn("let logistic=hasClaim?'RECLAMO':logisticLabel(o,ch)", body)
-        self.assertIn("let act=hasClaim?'':saleNeedsAction(o,ch)", body)
-        self.assertIn("let correoHtml=hasClaim?'':correoActionHtml", body)
+        self.assertIn("let logistic=hasClaim?'RECLAMO':hasFollowup?'DEVOLUCIÓN':logisticLabel(o,ch)", body)
+        self.assertIn("let act=hasClaimAttention?'':saleNeedsAction(o,ch)", body)
+        self.assertIn("let correoHtml=hasClaimAttention?'':correoActionHtml", body)
 
     def test_open_claims_are_stably_prioritized(self):
-        body = function_body("prioritizeOpenClaims")
+        body = function_body("prioritizeClaimAttention")
         self.assertIn("ml_claim_open", body)
+        self.assertIn("ml_claim_followup_pending", body)
         self.assertIn("a.index-b.index", body)
-        self.assertIn("prioritizeOpenClaims(items,channel)", function_body("ordersTable"))
+        self.assertIn("prioritizeClaimAttention(items,channel)", function_body("ordersTable"))
+
+    def test_pending_return_never_displays_as_finalized(self):
+        helper = function_body("mlClaimFollowupLabel")
+        self.assertIn("if(status==='shipped')return 'Devolución en camino'", helper)
+        self.assertIn("fallback.toLowerCase().includes('finalizada')", helper)
+        self.assertIn("let label=followup?mlClaimFollowupLabel(c)", function_body("loadDashboard"))
+        self.assertIn("let stateLabel=followup?mlClaimFollowupLabel(o)", function_body("mlClaimHtml"))
 
     def test_capture_timestamp_is_not_a_visible_sale_date_fallback(self):
         body = function_body("orderCard")

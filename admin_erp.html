@@ -83,6 +83,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 
 .globalAlertBell{display:none!important;position:relative;margin:12px auto 0;width:58px;height:58px;border-radius:18px;background:transparent;color:#f5c84b;border:0;font-size:42px;line-height:1;display:flex;align-items:center;justify-content:center;text-shadow:0 2px 0 rgba(0,0,0,.22);animation:bellPulse 1.5s ease-in-out infinite}.globalAlertBell:hover{background:rgba(220,197,143,.08)}.globalAlertBell.hidden{display:none!important}.globalAlertBell span{position:absolute;right:-7px;top:-5px;min-width:24px;height:24px;border-radius:999px;background:#e11d2e;color:#fff;font-size:14px;font-weight:950;display:flex;align-items:center;justify-content:center;padding:0 6px;text-shadow:none;border:2px solid #101010}.navBtn{position:relative}.navAlertBadge{position:absolute;right:10px;top:50%;transform:translateY(-50%);min-width:20px;height:20px;border-radius:999px;background:#e11d2e;color:#fff;font-size:12px;font-weight:950;display:none;align-items:center;justify-content:center;padding:0 6px}.navBtn.hasAlert{box-shadow:0 0 0 1px rgba(225,29,46,.35),0 0 18px rgba(225,29,46,.18)}.navBtn.hasAlert .navAlertBadge{display:flex}@keyframes bellPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
 .inventoryFilters .col-stockle{grid-column:span 1}.inventoryFilters .col-small{grid-column:span 1}.inventoryFilters .col-search{grid-column:span 5}@media(max-width:1050px){.inventoryFilters .col-stockle,.inventoryFilters .col-small,.inventoryFilters .col-search{grid-column:span 12}}
+.customerAlphabet{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-top:6px}.customerAlphabet button{min-width:34px;padding:6px 8px;border-radius:9px;background:#fffaf0}.customerAlphabet button.active{background:var(--brand);color:#111;border-color:#b58d32}.customerPager{display:flex;justify-content:center;gap:10px;align-items:center;margin-top:12px}.customerPager .small{min-width:130px;text-align:center}
 
 @media(max-width:1050px){aside{width:235px}main{margin-left:235px;width:calc(100% - 235px)}.col-2,.col-3,.col-4,.col-5,.col-6,.col-8{grid-column:span 12}.tokenBox{flex-wrap:wrap}.tokenBox input{width:220px}.orderHead,.lineItem,.marketBox{grid-template-columns:1fr}.tableWrap{max-height:none}}
 
@@ -1470,8 +1471,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.53-customer-delete';
-const FRONTEND_BUILD='admin-erp-v29753-customer-delete';
+const FRONTEND_VERSION='2.97.55-customer-directory-pagination';
+const FRONTEND_BUILD='admin-erp-v29755-customer-directory-pagination';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
@@ -2743,6 +2744,21 @@ function dashFailureRows(f){
   return blocks.join('')||'<div class="dashEmpty">No hay fallas operativas detectadas.</div>';
 }
 
+function mlClaimFollowupLabel(claim){
+  let c=claim||{};
+  let pending=c.post_claim_action_pending===true||c.ml_claim_followup_pending===true;
+  let fallback=String(c.post_claim_state_label||c.ml_claim_state||'Seguimiento post-reclamo pendiente').trim();
+  if(!pending)return fallback;
+  let status=String(c.return_shipment_status||c.ml_return_shipment_status||c.return_status||c.ml_return_status||'').trim().toLowerCase();
+  if(status==='shipped')return 'Devolución en camino';
+  if(['pending','ready_to_ship','label_generated','scheduled'].includes(status))return 'Devolución pendiente de despacho';
+  if(['delivered','pending_delivered'].includes(status))return 'Devolución recibida: revisar';
+  if(['failed','not_delivered','pending_failure','return_to_buyer'].includes(status))return 'Devolución con incidencia';
+  if(['cancelled','expired','closed'].includes(status))return 'Devolución cerrada: confirmar seguimiento';
+  if(fallback.toLowerCase().includes('finalizada'))return 'Seguimiento post-reclamo pendiente';
+  return fallback||'Seguimiento post-reclamo pendiente';
+}
+
 
 async function loadDashboard(force=false){
   if(loadDashboard.loading)return;
@@ -2786,7 +2802,7 @@ async function loadDashboard(force=false){
     let claimsList=qs('dashClaimsList');
     if(claimsList)claimsList.innerHTML=(claims.items||[]).length?(claims.items||[]).slice(0,10).map(c=>{
       let followup=String(c.status||'').toLowerCase()!=='opened'&&c.post_claim_action_pending===true;
-      let label=followup?(c.post_claim_state_label||'Seguimiento pendiente'):(c.state_label||'Reclamo abierto');
+      let label=followup?mlClaimFollowupLabel(c):(c.state_label||'Reclamo abierto');
       return `<div class="dashItem"><div><span class="pill ${followup?'warn':'bad'}">${esc(label)}</span></div><div><strong>Venta ${esc(c.order_id||c.pack_id||'sin vincular')}</strong><br><span class="small">${esc(c.problem||c.detail_title||'Revisar en Mercado Libre')}${c.due_date&&!followup?' · vence '+dateAR(c.due_date):''}</span></div><div><a class="btn secondary" target="_blank" rel="noopener" href="${esc(c.ml_url||'https://www.mercadolibre.com.ar/ventas')}">Abrir ML</a></div></div>`;
     }).join(''):'';
     let failuresBox=qs('dashFailuresSummary');if(failuresBox)failuresBox.innerHTML=dashFailureRows(d.failures||{});
@@ -3291,7 +3307,7 @@ function mlClaimHtml(o,ch){
   let open=ch==='ML'&&o.ml_claim_open===true;
   let followup=ch==='ML'&&o.ml_claim_followup_pending===true;
   if(!open&&!followup)return'';
-  let stateLabel=o.ml_claim_state||(followup?'Seguimiento post-reclamo pendiente':'Reclamo abierto');
+  let stateLabel=followup?mlClaimFollowupLabel(o):(o.ml_claim_state||'Reclamo abierto');
   let problem=o.ml_claim_problem||'Revisar el caso en Mercado Libre';
   let due=open&&o.ml_claim_due_date?` · vence ${dateAR(o.ml_claim_due_date)}`:'';
   let reputation=open?(o.ml_claim_affects_reputation===true?' · afecta reputación':(o.ml_claim_affects_reputation===false?' · no afecta reputación':'')):'';
@@ -5671,7 +5687,7 @@ async function importTnCustomersFromConfig(){
   setStatus('tnCustomerImportStatus','Importando clientes de Tienda Nube...');
   try{
     let d=await fetchJson('/admin/customers/import/tn',{method:'POST'});
-    let summary=`Importación terminada · leídos ${d.total||0} · nuevos ${d.inserted||0} · actualizados ${d.updated||0} · omitidos sin documento ${d.skipped_without_document||0}`;
+    let summary=`Importación terminada · leídos en TN ${d.total||0} · con documento procesados ${d.with_document||0} · nuevos ${d.inserted||0} · actualizados ${d.updated||0} · omitidos sin documento ${d.skipped_without_document||0}`;
     if(d.failed)summary+=` · no procesados por error ${d.failed}`;
     setStatus('tnCustomerImportStatus',summary,d.failed?'warn':true);
   }catch(e){
@@ -5688,17 +5704,47 @@ function customerStatusId(ch){return customerPrefix(ch)+'ClientesStatus'}
 function customerToolsId(ch){return customerPrefix(ch)+'ClientesTools'}
 function customerLimit(ch){return Number(qs(customerPrefix(ch)+'ClientesLimit')?.value||50)}
 function customerSearch(ch){return (qs(customerPrefix(ch)+'ClientesSearch')?.value||'').trim()}
-async function loadCustomers(ch){
+function customerPageState(ch){
+  state.customerPages=state.customerPages||{};
+  state.customerPages[ch]=state.customerPages[ch]||{offset:0,initial:''};
+  return state.customerPages[ch];
+}
+function ensureCustomerNavigation(ch){
+  let prefix=customerPrefix(ch),status=qs(customerStatusId(ch)),table=qs(customerTableId(ch));
+  let alphabet=qs(prefix+'ClientesAlphabet');
+  if(!alphabet&&status){alphabet=document.createElement('div');alphabet.id=prefix+'ClientesAlphabet';alphabet.className='customerAlphabet';status.insertAdjacentElement('afterend',alphabet)}
+  let pager=qs(prefix+'ClientesPager');
+  if(!pager&&table){pager=document.createElement('div');pager.id=prefix+'ClientesPager';pager.className='customerPager';table.insertAdjacentElement('afterend',pager)}
+  let search=qs(prefix+'ClientesSearch');
+  if(search&&!search.dataset.alphabetReset){search.dataset.alphabetReset='1';search.addEventListener('input',()=>{let page=customerPageState(ch);page.initial='';page.offset=0})}
+  return {alphabet,pager};
+}
+function setCustomerInitial(ch,initial){
+  let page=customerPageState(ch);page.initial=String(initial||'');page.offset=0;loadCustomers(ch,0);
+}
+function renderCustomerNavigation(ch,total,visible){
+  let page=customerPageState(ch),nav=ensureCustomerNavigation(ch),limit=customerLimit(ch),offset=page.offset||0;
+  let letters=['','A','B','C','D','E','F','G','H','I','J','K','L','M','N','Ñ','O','P','Q','R','S','T','U','V','W','X','Y','Z','#'];
+  if(nav.alphabet)nav.alphabet.innerHTML=letters.map(letter=>`<button type="button" class="${page.initial===letter?'active':''}" onclick="setCustomerInitial('${ch}','${letter}')">${letter||'Todos'}</button>`).join('');
+  let pages=Math.max(1,Math.ceil(Number(total||0)/limit)),current=Math.min(pages,Math.floor(offset/limit)+1);
+  if(nav.pager)nav.pager.innerHTML=`<button type="button" class="secondary" ${offset<=0?'disabled':''} onclick="loadCustomers('${ch}',${Math.max(0,offset-limit)})">Anterior</button><span class="small">Página ${current} de ${pages}</span><button type="button" class="secondary" ${offset+Number(visible||0)>=Number(total||0)?'disabled':''} onclick="loadCustomers('${ch}',${offset+limit})">Siguiente</button>`;
+}
+async function loadCustomers(ch,offset=0){
+  let page=customerPageState(ch);page.offset=Math.max(0,Number(offset||0));ensureCustomerNavigation(ch);
   setStatus(customerStatusId(ch),'Cargando clientes '+(ch==='ALL'?'ML / TN':ch)+'...');
   try{
-    let params=`limit=${encodeURIComponent(customerLimit(ch))}`;
+    let params=`limit=${encodeURIComponent(customerLimit(ch))}&offset=${encodeURIComponent(page.offset)}`;
     if(ch!=='ALL')params+=`&channel=${encodeURIComponent(ch)}`;
     let q=customerSearch(ch);
     if(q)params+=`&q=${encodeURIComponent(q)}`;
+    if(page.initial)params+=`&initial=${encodeURIComponent(page.initial)}`;
     let d=await fetchJson(`/admin/customers/recent?${params}`);
+    page.offset=Number(d.offset||0);
     state['customers_'+ch]=d.items||[];
     renderCustomers(ch);
-    setStatus(customerStatusId(ch),`Clientes ${(ch==='ALL'?'ML / TN':ch)}: ${(d.items||[]).length}${d.total!=null?' de '+d.total:''}`,true);
+    renderCustomerNavigation(ch,d.total,(d.items||[]).length);
+    let filtered=page.initial?` · inicial ${page.initial}`:'';
+    setStatus(customerStatusId(ch),`Clientes ${(ch==='ALL'?'ML / TN':ch)}: ${(d.items||[]).length}${d.total!=null?' de '+d.total:''}${filtered}`,true);
   }catch(e){setStatus(customerStatusId(ch),'Error clientes: '+(e?.detail?JSON.stringify(e.detail):(e?.message||JSON.stringify(e)||'sin detalle')),false)}
 }
 function customerDisplayName(c){return c.fiscal_name||c.name||c.display_name||c.source_label||c.nickname||c.doc_number||'Sin nombre'}
