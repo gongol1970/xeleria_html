@@ -1469,8 +1469,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.50-stock-reconcile-full-separated';
-const FRONTEND_BUILD='admin-erp-v29750-stock-reconcile-full-separated';
+const FRONTEND_VERSION='2.97.51-inventory-import-notification-link';
+const FRONTEND_BUILD='admin-erp-v29751-inventory-import-notification-link';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
@@ -2170,7 +2170,7 @@ const NOTIFICATION_GROUPS=[
   {key:'ml_sales',source:'Mercado Libre',slot:'Ventas',view:'ml-ventas'},
   {key:'tn_sales',source:'Tienda Nube',slot:'Ventas',view:'tn-ventas'},
   {key:'inventory_reconcile',source:'Inventario',slot:'Control de stock',view:'inventario'},
-  {key:'inventory_import',source:'Carga general de inventario',slot:'Importación',view:'productos'}
+  {key:'inventory_import',source:'Carga general de inventario',slot:'Importación',view:'configuracion',scroll:'inventoryImportCard'}
 ];
 
 function notificationIsUnread(n){return !n.read_at}

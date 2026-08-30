@@ -50,6 +50,13 @@ class InventoryReconcileContractTests(unittest.TestCase):
         self.assertIn("resumeInventoryReconciliationJob();", HTML)
         self.assertIn("openInventoryReconciliationJob(jobId)", HTML)
 
+    def test_import_notification_opens_the_real_import_card(self):
+        self.assertIn(
+            "{key:'inventory_import',source:'Carga general de inventario',slot:'Importación',view:'configuracion',scroll:'inventoryImportCard'}",
+            HTML,
+        )
+        self.assertNotIn("slot:'Importación',view:'productos'", HTML)
+
     def test_unreadable_sources_have_no_fake_action_button(self):
         self.assertIn("let action=row.actionable&&source.selectable?", HTML)
         self.assertNotIn("${source.selectable?'':\"disabled\"}", HTML)
