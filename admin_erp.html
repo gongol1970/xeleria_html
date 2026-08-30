@@ -1413,7 +1413,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
     </div>
   </div>
 
-<div id="inventoryImportCard" class="card"><div class="btnrow"><div><h3>Carga general de inventario</h3></div></div><div class="importConnectorGrid"><div id="inventoryImportMLCard" class="importConnectorCard"><h4>Mercado Libre</h4><div class="importConnectorMeta">Estado: <span id="inventoryImportMLStatus" class="pill">revisando</span><span id="inventoryImportMLDot" class="dot">·</span><span id="inventoryImportMLAccount" class="importConnectorAccount">—</span></div><div class="importConnectorActions"><button id="inventoryImportMLButton" class="secondary" onclick="connectInventoryChannel('ML')">Conectar ML</button></div></div><div id="inventoryImportTNCard" class="importConnectorCard"><h4>Tienda Nube</h4><div class="importConnectorMeta">Estado: <span id="inventoryImportTNStatus" class="pill">revisando</span><span id="inventoryImportTNDot" class="dot">·</span><span id="inventoryImportTNAccount" class="importConnectorAccount">—</span></div><div class="importConnectorActions"><button id="inventoryImportTNButton" class="secondary" onclick="connectInventoryChannel('TN')">Conectar TN</button></div></div></div><div class="btnrow importImportActions"><button id="inventoryImportRunButton" class="primary" onclick="runInventoryImportRefresh(0)">Importar canales conectados</button><button type="button" class="secondary" id="inventoryReconcileStart" onclick="startInventoryReconciliationFromConfig()">Re-sincronizar stock</button></div><div class="small" style="margin-top:8px">El re-sync recorre todas las publicaciones y corre en segundo plano. Usalo solamente cuando necesites una revisión integral.</div><div id="inventoryImportStatus" class="status"></div><div id="inventoryImportSummary" class="status"></div><div id="inventoryImportErrors" class="status hidden"></div><div class="importReviewLegend importReviewLegendInline hidden"><span class="pill ok">Verde: SKU o publicación nueva / S-C cambiado</span><span class="pill bad">Rojo: falta en refresh confirmado</span><span class="pill warn">Amarillo: SKU faltante</span></div><div class="importReviewGrid hidden"><table><colgroup><col class="sku"><col class="tn"><col class="kind"><col class="ml"></colgroup><thead><tr><th>SKU</th><th>Tienda Nube</th><th title="Simple / Combo">S/C</th><th>Mercado Libre</th></tr></thead><tbody id="inventoryImportGridBody"></tbody></table></div><div id="inventoryImportPager" class="btnrow" style="margin-top:12px"></div></div>
+<div id="inventoryImportCard" class="card"><div class="btnrow"><div><h3>Carga general de inventario</h3></div></div><div class="importConnectorGrid"><div id="inventoryImportMLCard" class="importConnectorCard"><h4>Mercado Libre</h4><div class="importConnectorMeta">Estado: <span id="inventoryImportMLStatus" class="pill">revisando</span><span id="inventoryImportMLDot" class="dot">·</span><span id="inventoryImportMLAccount" class="importConnectorAccount">—</span></div><div class="importConnectorActions"><button id="inventoryImportMLButton" class="secondary" onclick="connectInventoryChannel('ML')">Conectar ML</button></div></div><div id="inventoryImportTNCard" class="importConnectorCard"><h4>Tienda Nube</h4><div class="importConnectorMeta">Estado: <span id="inventoryImportTNStatus" class="pill">revisando</span><span id="inventoryImportTNDot" class="dot">·</span><span id="inventoryImportTNAccount" class="importConnectorAccount">—</span></div><div class="importConnectorActions"><button id="inventoryImportTNButton" class="secondary" onclick="connectInventoryChannel('TN')">Conectar TN</button></div></div></div><div class="btnrow importImportActions"><button id="inventoryImportRunButton" class="primary" onclick="runInventoryImportRefresh(0)">Importar canales conectados</button><button type="button" class="secondary" id="inventoryReconcileStart" onclick="startInventoryReconciliationFromConfig()">Re-sincronizar stock</button></div><div class="small" style="margin-top:8px">El re-sync controla únicamente el stock de las publicaciones vinculadas y corre en segundo plano. No reimporta ni elimina publicaciones.</div><div id="inventoryImportStatus" class="status"></div><div id="inventoryImportSummary" class="status"></div><div id="inventoryImportErrors" class="status hidden"></div><div class="importReviewLegend importReviewLegendInline hidden"><span class="pill ok">Verde: SKU o publicación nueva / S-C cambiado</span><span class="pill bad">Rojo: falta en refresh confirmado</span><span class="pill warn">Amarillo: SKU faltante</span></div><div class="importReviewGrid hidden"><table><colgroup><col class="sku"><col class="tn"><col class="kind"><col class="ml"></colgroup><thead><tr><th>SKU</th><th>Tienda Nube</th><th title="Simple / Combo">S/C</th><th>Mercado Libre</th></tr></thead><tbody id="inventoryImportGridBody"></tbody></table></div><div id="inventoryImportPager" class="btnrow" style="margin-top:12px"></div></div>
 <div id="configSaveActions"><div class="btnrow" style="justify-content:flex-end"><button class="primary" onclick="saveConfig()">Guardar toda la configuración</button><button class="secondary" onclick="cancelToPreviousView()">Cancelar</button></div><div id="cfgStatus" class="status"></div></div>
 </section>
 <section id="bitacora" class="view"><div class="card"><div class="dashStatusLine"><div><h3>Registro operativo</h3><p>Errores y advertencias accionables. Cada evento trae contexto, lectura humana y detalle plegable.</p></div><button class="secondary dashRefresh" onclick="loadOpsLog(true)">Actualizar</button></div><div class="opsLogFilters" role="group" aria-label="Filtrar registro operativo"><button id="opsFilterAll" class="secondary active" onclick="setOpsLogFilter('all')">Todos</button><button id="opsFilterInvoice" class="secondary" onclick="setOpsLogFilter('invoice')">Facturación</button><button id="opsFilterStock" class="secondary" onclick="setOpsLogFilter('stock')">Stock</button><button id="opsFilterImport" class="secondary" onclick="setOpsLogFilter('import')">Importación</button><button id="opsFilterOther" class="secondary" onclick="setOpsLogFilter('other')">Otros</button></div><div id="opsLogStatus" class="status"></div><div id="opsLogList" class="opsLogList"></div></div></section>
@@ -1469,8 +1469,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.48-ml-return-followup';
-const FRONTEND_BUILD='admin-erp-v29748-ml-return-followup';
+const FRONTEND_VERSION='2.97.49-stock-reconcile-clean-warnings';
+const FRONTEND_BUILD='admin-erp-v29749-stock-reconcile-clean-warnings';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
@@ -3855,11 +3855,22 @@ function inventoryReconcileSourceCell(row,sourceName){
   let source=(row.sources||{})[sourceName];
   if(!source)return'<span class="muted">No conectado / sin publicación</span>';
   let stock=source.stock==null?'—':source.stock;
-  let problem=(source.errors||[])[0]||(source.ambiguous?`Las publicaciones de ${sourceName} tienen stock distinto entre sí`:'');
+  let unavailable=(source.unavailable||[]);
+  let rawProblem=(source.errors||[])[0]||(unavailable[0]&&unavailable[0].reason)||(source.ambiguous?`Las publicaciones de ${sourceName} tienen stock distinto entre sí`:'');
+  let problem=inventoryReconcileHumanProblem(sourceName,rawProblem);
   let values=(source.values||[]);
   let details=source.ambiguous&&values.length?`<details class="small" style="margin-top:6px"><summary>Ver ${values.length} publicaciones de ${esc(sourceName)}</summary>${values.map(v=>{let id=String(v.product_id||'')+(String(v.variant_id||'0')!=='0'?` / variante ${v.variant_id}`:'');return `<div style="margin-top:5px"><strong class="mono">${esc(id||'Sin ID')}</strong> · Stock: ${esc(v.stock)}</div>`}).join('')}</details>`:'';
-  let action=source.selectable?`<button class="secondary" style="margin-top:7px" onclick="applyInventoryReconciliation('${esc(row.sku)}','${sourceName}','${esc(row.fingerprint)}')">Usar stock de ${sourceName==='XELERIA'?'XelerIA':sourceName}</button>`:'';
+  let action=row.actionable&&source.selectable?`<button class="secondary" style="margin-top:7px" onclick="applyInventoryReconciliation('${esc(row.sku)}','${sourceName}','${esc(row.fingerprint)}')">Usar stock de ${sourceName==='XELERIA'?'XelerIA':sourceName}</button>`:'';
   return `<div><strong>Stock: ${esc(stock)}</strong>${source.listings?`<div class="small">${esc(source.listings)} publicación(es)</div>`:''}${problem?`<div class="small" style="color:var(--bad)">${esc(problem)}</div>`:''}${details}${action}</div>`;
+}
+function inventoryReconcileHumanProblem(sourceName,value){
+  let raw=String(value||'').trim();if(!raw)return'';
+  let low=raw.toLowerCase(),channel=sourceName==='ML'?'Mercado Libre':sourceName==='TN'?'Tienda Nube':sourceName;
+  if(low.includes('404')||low.includes('not found')||low.includes('does not exist')||low.includes('no existe'))return`La publicación ya no existe en ${channel}.`;
+  if(low.includes('429')||low.includes('rate limit')||low.includes('too many requests'))return`${channel} demoró la lectura. Volvé a intentar más tarde.`;
+  if(low.includes('timeout')||low.includes('timed out'))return`${channel} no respondió a tiempo. Volvé a intentar más tarde.`;
+  if(low.includes('{')||low.includes('"code"')||low.length>180)return`${channel} no pudo leer esta publicación. Volvé a intentar más tarde.`;
+  return raw;
 }
 function inventoryReconcileDifferenceLabel(row){
   return row.has_difference?'Diferencia comprobada de stock':'No hay una diferencia comprobable de stock';
@@ -3884,6 +3895,7 @@ function inventoryReconcileSummary(d){
   let msg=`Revisados: ${Number(d.checked_skus||0)} SKU · diferencias comprobadas: ${Number(d.differences||0)}`;
   if(Number(d.warning_only_skus||0))msg+=` · advertencias sin diferencia: ${Number(d.warning_only_skus||0)}`;
   if(Number(d.unreadable_listings||0))msg+=` · ${Number(d.unreadable_listings||0)} publicación(es) no pudieron leerse después del reintento`;
+  if(Number(d.unavailable_listings||0))msg+=` · ${Number(d.unavailable_listings||0)} publicación(es) cerradas o eliminadas quedaron fuera del control de stock`;
   let retry=d.tn_retry||{};
   if(Number(retry.attempted_products||0))msg+=` · TN reintentó ${Number(retry.attempted_products||0)} producto(s): ${Number(retry.recovered_products||0)} recuperados, ${Number(retry.failed_products||0)} fallidos`;
   return msg;
@@ -3970,8 +3982,10 @@ async function applyInventoryReconciliation(sku,source,fingerprint){
   setStatus('inventoryReconcileStatus',`Aplicando ${source} para ${sku}...`);
   try{
     let d=await fetchJson('/admin/inventory/reconcile-stock/apply',{method:'POST',body:JSON.stringify({sku,source,fingerprint})});
-    setStatus('inventoryReconcileStatus',d.message||`${sku} resincronizado.`,true);
-    await previewInventoryReconciliation();
+    state.inventoryReconcileItems=(state.inventoryReconcileItems||[]).filter(row=>String(row.sku||'')!==String(sku||''));
+    renderInventoryReconciliation();
+    let remaining=(state.inventoryReconcileItems||[]).filter(row=>row.has_difference).length;
+    setStatus('inventoryReconcileStatus',`${d.message||`${sku} resincronizado.`} ${remaining?`Quedan ${remaining} diferencia(s) comprobada(s) por revisar.`:'No quedan diferencias comprobadas en este resultado.'}`,true);
     await searchInventory(state.inventory.offset||0,false);
   }catch(e){setStatus('inventoryReconcileStatus','No pude resincronizar: '+friendlyInventoryError(e),false)}
 }

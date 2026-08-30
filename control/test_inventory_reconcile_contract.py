@@ -45,14 +45,33 @@ class InventoryReconcileContractTests(unittest.TestCase):
         self.assertIn("openInventoryReconciliationJob(jobId)", HTML)
 
     def test_unreadable_sources_have_no_fake_action_button(self):
-        self.assertIn("let action=source.selectable?", HTML)
+        self.assertIn("let action=row.actionable&&source.selectable?", HTML)
         self.assertNotIn("${source.selectable?'':\"disabled\"}", HTML)
+
+    def test_warning_messages_hide_raw_provider_json(self):
+        self.assertIn("function inventoryReconcileHumanProblem", HTML)
+        self.assertIn("La publicación ya no existe en ${channel}.", HTML)
+        self.assertIn("low.includes('{')", HTML)
+
+    def test_stock_resync_copy_does_not_claim_to_reimport_publications(self):
+        self.assertIn("controla únicamente el stock de las publicaciones vinculadas", HTML)
+        self.assertIn("No reimporta ni elimina publicaciones", HTML)
 
     def test_summary_exposes_retry_and_final_counts(self):
         self.assertIn("diferencias comprobadas:", HTML)
         self.assertIn("advertencias sin diferencia:", HTML)
         self.assertIn("no pudieron leerse después del reintento", HTML)
+        self.assertIn("cerradas o eliminadas quedaron fuera del control de stock", HTML)
         self.assertIn("TN reintentó", HTML)
+
+    def test_applying_one_sku_preserves_the_remaining_result(self):
+        apply_block = HTML[
+            HTML.index("async function applyInventoryReconciliation"):
+            HTML.index("async function searchInventory")
+        ]
+        self.assertIn("filter(row=>String(row.sku||'')!==String(sku||''))", apply_block)
+        self.assertIn("Quedan ${remaining} diferencia(s) comprobada(s) por revisar.", apply_block)
+        self.assertNotIn("await previewInventoryReconciliation()", apply_block)
 
 
 if __name__ == "__main__":
