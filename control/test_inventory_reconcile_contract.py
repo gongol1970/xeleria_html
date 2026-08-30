@@ -30,6 +30,12 @@ class InventoryReconcileContractTests(unittest.TestCase):
         self.assertIn("tienen stock distinto entre sí", HTML)
         self.assertIn("Ver ${values.length} publicaciones de ${esc(sourceName)}", HTML)
 
+    def test_full_stock_is_shown_separately_and_never_offered_as_own_stock(self):
+        self.assertIn("publicación(es) Full fuera del control de stock propio", RECONCILE)
+        self.assertIn("Stock Full:", RECONCILE)
+        self.assertIn("Lo administra Mercado Libre", RECONCILE)
+        self.assertIn("El stock Full no se modificará.", RECONCILE)
+
     def test_control_starts_a_persistent_job_without_waiting_for_the_full_scan(self):
         self.assertIn("async function startInventoryReconciliationFromConfig()", HTML)
         self.assertIn("fetchJson('/admin/inventory/reconcile-stock/jobs',{method:'POST'}", HTML)
@@ -62,6 +68,7 @@ class InventoryReconcileContractTests(unittest.TestCase):
         self.assertIn("advertencias sin diferencia:", HTML)
         self.assertIn("no pudieron leerse después del reintento", HTML)
         self.assertIn("cerradas o eliminadas quedaron fuera del control de stock", HTML)
+        self.assertIn("publicación(es) Full informadas aparte, sin modificar su stock", HTML)
         self.assertIn("TN reintentó", HTML)
 
     def test_applying_one_sku_preserves_the_remaining_result(self):

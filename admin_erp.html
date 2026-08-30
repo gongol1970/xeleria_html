@@ -1469,8 +1469,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.49-stock-reconcile-clean-warnings';
-const FRONTEND_BUILD='admin-erp-v29749-stock-reconcile-clean-warnings';
+const FRONTEND_VERSION='2.97.50-stock-reconcile-full-separated';
+const FRONTEND_BUILD='admin-erp-v29750-stock-reconcile-full-separated';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
@@ -3859,9 +3859,11 @@ function inventoryReconcileSourceCell(row,sourceName){
   let rawProblem=(source.errors||[])[0]||(unavailable[0]&&unavailable[0].reason)||(source.ambiguous?`Las publicaciones de ${sourceName} tienen stock distinto entre sí`:'');
   let problem=inventoryReconcileHumanProblem(sourceName,rawProblem);
   let values=(source.values||[]);
+  let fullValues=(source.external_values||[]);
   let details=source.ambiguous&&values.length?`<details class="small" style="margin-top:6px"><summary>Ver ${values.length} publicaciones de ${esc(sourceName)}</summary>${values.map(v=>{let id=String(v.product_id||'')+(String(v.variant_id||'0')!=='0'?` / variante ${v.variant_id}`:'');return `<div style="margin-top:5px"><strong class="mono">${esc(id||'Sin ID')}</strong> · Stock: ${esc(v.stock)}</div>`}).join('')}</details>`:'';
+  let fullDetails=fullValues.length?`<details class="small" style="margin-top:6px"><summary>${fullValues.length} publicación(es) Full fuera del control de stock propio</summary>${fullValues.map(v=>{let id=String(v.product_id||'')+(String(v.variant_id||'0')!=='0'?` / variante ${v.variant_id}`:'');return `<div style="margin-top:5px"><strong class="mono">${esc(id||'Sin ID')}</strong> · Stock Full: ${esc(v.stock)} · Lo administra Mercado Libre</div>`}).join('')}</details>`:'';
   let action=row.actionable&&source.selectable?`<button class="secondary" style="margin-top:7px" onclick="applyInventoryReconciliation('${esc(row.sku)}','${sourceName}','${esc(row.fingerprint)}')">Usar stock de ${sourceName==='XELERIA'?'XelerIA':sourceName}</button>`:'';
-  return `<div><strong>Stock: ${esc(stock)}</strong>${source.listings?`<div class="small">${esc(source.listings)} publicación(es)</div>`:''}${problem?`<div class="small" style="color:var(--bad)">${esc(problem)}</div>`:''}${details}${action}</div>`;
+  return `<div><strong>${fullValues.length?'Stock propio':'Stock'}: ${esc(stock)}</strong>${source.listings?`<div class="small">${esc(source.listings)} publicación(es) de stock propio</div>`:''}${problem?`<div class="small" style="color:var(--bad)">${esc(problem)}</div>`:''}${details}${fullDetails}${action}</div>`;
 }
 function inventoryReconcileHumanProblem(sourceName,value){
   let raw=String(value||'').trim();if(!raw)return'';
@@ -3896,6 +3898,7 @@ function inventoryReconcileSummary(d){
   if(Number(d.warning_only_skus||0))msg+=` · advertencias sin diferencia: ${Number(d.warning_only_skus||0)}`;
   if(Number(d.unreadable_listings||0))msg+=` · ${Number(d.unreadable_listings||0)} publicación(es) no pudieron leerse después del reintento`;
   if(Number(d.unavailable_listings||0))msg+=` · ${Number(d.unavailable_listings||0)} publicación(es) cerradas o eliminadas quedaron fuera del control de stock`;
+  if(Number(d.excluded_full_listings||0))msg+=` · ${Number(d.excluded_full_listings||0)} publicación(es) Full informadas aparte, sin modificar su stock`;
   let retry=d.tn_retry||{};
   if(Number(retry.attempted_products||0))msg+=` · TN reintentó ${Number(retry.attempted_products||0)} producto(s): ${Number(retry.recovered_products||0)} recuperados, ${Number(retry.failed_products||0)} fallidos`;
   return msg;
@@ -3978,7 +3981,7 @@ async function previewInventoryReconciliation(){
   }catch(e){inventoryReconcileSetBusy(false);setStatus('inventoryReconcileStatus','No pude iniciar el control: '+friendlyInventoryError(e),false)}
 }
 async function applyInventoryReconciliation(sku,source,fingerprint){
-  if(!confirm(`Usar el stock de ${source==='XELERIA'?'XelerIA':source} para ${sku} y sincronizarlo en las tres plataformas?`))return;
+  if(!confirm(`Usar el stock de ${source==='XELERIA'?'XelerIA':source} para ${sku} y sincronizarlo en XelerIA y las publicaciones de stock propio? El stock Full no se modificará.`))return;
   setStatus('inventoryReconcileStatus',`Aplicando ${source} para ${sku}...`);
   try{
     let d=await fetchJson('/admin/inventory/reconcile-stock/apply',{method:'POST',body:JSON.stringify({sku,source,fingerprint})});
