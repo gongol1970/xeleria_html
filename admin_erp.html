@@ -1471,8 +1471,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.55-customer-directory-pagination';
-const FRONTEND_BUILD='admin-erp-v29755-customer-directory-pagination';
+const FRONTEND_VERSION='2.97.56-inventory-live-listing-search';
+const FRONTEND_BUILD='admin-erp-v29756-inventory-live-listing-search';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
@@ -5458,7 +5458,55 @@ async function createInventoryProduct(){
 
 /* COMBOS_LEGACY_MONOUSER_JS_REMOVED: la UI nueva debe vivir integrada en la vista combos SaaS. */
 
-function renderLinkPublicationsTool(prefillSku=''){inventoryToolBox().innerHTML=`<div class="card" style="background:#fffaf0;border-color:#eee2c8"><h3>Vincular publicaciones sin asociar</h3><p>Trae publicaciones/variantes huérfanas desde ML o TN y las asocia al SKU elegido. El usuario no carga IDs a mano.</p><div class="grid"><div class="col-3"><label>SKU destino *</label><input id="linkSku" value="${esc(prefillSku||qs('invSearch')?.value||'')}" placeholder="SKU simple o combo"></div><div class="col-2"><label>Canal</label><select id="linkMarket"><option>ML</option><option>TN</option></select></div><div class="col-5"><label>Buscar dentro de huérfanas</label><input id="linkQuery" placeholder="Título, SKU, publicación"></div><div class="col-2"><label>Límite</label><select id="linkLimit"><option>50</option><option selected>100</option><option>200</option></select></div></div><div class="btnrow" style="margin-top:12px"><button class="primary" onclick="loadUnlinkedPublications()">Buscar publicaciones sin vincular</button><button class="secondary" onclick="inventoryToolBox().classList.add('hidden')">Cancelar</button></div><div id="inventoryToolStatus" class="status"></div><div id="unlinkedResults" class="tableWrap" style="margin-top:12px"></div></div>`;scrollToInventoryTool()}async function loadUnlinkedPublications(){let market=qs('linkMarket').value;let lim=qs('linkLimit').value;let qRaw=(qs('linkQuery').value||'').trim();if(isShortSearch(qRaw)){state.linkCandidates=[];renderUnlinkedPublications();invToolStatus('Ingresá al menos 4 caracteres para buscar huérfanas.',false);return}let q=encodeURIComponent(qRaw);invToolStatus(`Buscando huérfanas ${market}...`);try{let d=await fetchJson(`/admin/v2/marketplace/unlinked?marketplace=${encodeURIComponent(market)}&limit=${encodeURIComponent(lim)}&q=${q}`);state.linkCandidates=d.items||[];renderUnlinkedPublications();invToolStatus(`${market}: ${state.linkCandidates.length} publicaciones/variantes sin vincular`,true)}catch(e){invToolStatus('Error buscando huérfanas: '+(e?.detail?JSON.stringify(e.detail):JSON.stringify(e)),false)}}function renderUnlinkedPublications(){let items=state.linkCandidates||[];if(!items.length){qs('unlinkedResults').innerHTML='<div class="muted" style="padding:18px">Sin publicaciones huérfanas para ese filtro.</div>';return}let rows=items.map((x,idx)=>`<tr><td><strong>${esc(x.marketplace)}</strong><br><span class="small">Pub: ${esc(x.external_product_id)}<br>Var: ${esc(x.external_variant_id||'0')}</span></td><td>${esc(x.title||'')}<br><span class="small">SKU canal: <strong class="mono">${esc(x.seller_sku||'sin SKU')}</strong> · ${esc(x.sku_source||'')}</span></td><td>$ ${esc(x.price??'')}<br><span class="small">stock canal: ${esc(x.stock??'')}</span></td><td>${statusPill(x.status||'')}</td><td><button class="ok" onclick="linkPublication(${idx})">Vincular al SKU</button>${x.url?`<br><a href="${esc(x.url)}" target="_blank" class="small">abrir</a>`:''}</td></tr>`).join('');qs('unlinkedResults').innerHTML=`<table><thead><tr><th>Canal / IDs</th><th>Publicación</th><th>Precio / stock</th><th>Estado</th><th>Acción</th></tr></thead><tbody>${rows}</tbody></table>`}async function linkPublication(idx){
+function renderLinkPublicationsTool(prefillSku=''){
+  inventoryToolBox().innerHTML=`<div class="card" style="background:#fffaf0;border-color:#eee2c8"><h3>Vincular publicaciones sin asociar</h3><p>Buscá publicaciones sin vincular y elegí cuál asociar al SKU. Buscar no importa, no vincula ni cambia stock.</p><div class="grid"><div class="col-3"><label>SKU destino *</label><input id="linkSku" value="${esc(prefillSku||qs('invSearch')?.value||'')}" placeholder="SKU simple o combo"></div><div class="col-2"><label>Canal</label><select id="linkMarket" onchange="resetUnlinkedPublicationSearch()"><option>ML</option><option>TN</option></select></div><div class="col-5"><label>Buscar publicaciones sin vincular</label><input id="linkQuery" placeholder="Título, SKU, publicación" oninput="resetUnlinkedPublicationSearch()" onkeydown="if(event.key==='Enter')loadUnlinkedPublications()"></div><div class="col-2"><label>Límite</label><select id="linkLimit" onchange="resetUnlinkedPublicationSearch()"><option selected>50</option><option>100</option><option>200</option></select></div></div><label class="comboLiveSearchLine"><input id="linkLiveSearch" type="checkbox" checked onchange="resetUnlinkedPublicationSearch()"> Buscar en vivo en ML/TN</label><div class="comboLiveSearchHint">Activado: consulta el canal para encontrar publicaciones nuevas (hasta 50 resultados). Desactivado: busca sólo en la base local. ${minSearchMessage()}</div><div class="btnrow" style="margin-top:12px"><button id="linkSearchButton" class="primary" onclick="loadUnlinkedPublications()">Buscar publicaciones sin vincular</button><button class="secondary" onclick="resetUnlinkedPublicationSearch();inventoryToolBox().classList.add('hidden')">Cancelar</button></div><div id="inventoryToolStatus" class="status"></div><div id="unlinkedResults" class="tableWrap" style="margin-top:12px"></div></div>`;
+  resetUnlinkedPublicationSearch();
+  scrollToInventoryTool();
+}
+function resetUnlinkedPublicationSearch(){
+  state.unlinkedSearchSeq=(state.unlinkedSearchSeq||0)+1;
+  state.linkCandidates=[];
+  let live=!!qs('linkLiveSearch')?.checked,limit=qs('linkLimit');
+  if(limit){limit.disabled=live;if(live)limit.value='50'}
+  let button=qs('linkSearchButton');if(button)button.disabled=false;
+  let results=qs('unlinkedResults');if(results)results.innerHTML='';
+  invToolStatus(live?'Búsqueda en vivo activada. Ingresá el título, SKU o publicación.':'Búsqueda en base local. Las publicaciones nuevas pueden no estar importadas todavía.');
+}
+async function loadUnlinkedPublications(){
+  let market=qs('linkMarket').value,live=!!qs('linkLiveSearch')?.checked;
+  let lim=live?50:Number(qs('linkLimit').value||100),qRaw=(qs('linkQuery').value||'').trim();
+  let seq=state.unlinkedSearchSeq=(state.unlinkedSearchSeq||0)+1;
+  let results=qs('unlinkedResults'),button=qs('linkSearchButton');
+  state.linkCandidates=[];
+  if(results)results.innerHTML='';
+  if((live||qRaw.length>0)&&qRaw.length<XELERIA_MIN_SEARCH_CHARS){if(button)button.disabled=false;invToolStatus(minSearchMessage(),false);return}
+  if(button)button.disabled=true;
+  invToolStatus(live?`Buscando en vivo en ${market}...`:`Buscando en base local de ${market}...`);
+  try{
+    let d=await fetchJson(`/admin/v2/marketplace/unlinked?marketplace=${encodeURIComponent(market)}&limit=${encodeURIComponent(lim)}&q=${encodeURIComponent(qRaw)}${live?'&live=true':''}`);
+    if(seq!==state.unlinkedSearchSeq||results!==qs('unlinkedResults'))return;
+    state.linkCandidates=d.items||[];
+    renderUnlinkedPublications();
+    let source=live?'en vivo':'en base local';
+    invToolStatus(`${market}: ${state.linkCandidates.length} publicaciones/variantes sin vincular · ${source}${live&&state.linkCandidates.length>=50?' · Mostrando hasta 50; afiná la búsqueda si falta alguna.':''}`,true);
+  }catch(e){
+    if(seq!==state.unlinkedSearchSeq||results!==qs('unlinkedResults'))return;
+    invToolStatus(humanFrontendError(e,live?`No pude consultar ${market} en vivo. Revisá la conexión del canal y volvé a intentar.`:'No pude buscar las publicaciones guardadas. Volvé a intentar.'),false);
+  }finally{
+    if(seq===state.unlinkedSearchSeq&&button)button.disabled=false;
+  }
+}
+function renderUnlinkedPublications(){
+  let items=state.linkCandidates||[],results=qs('unlinkedResults');if(!results)return;
+  if(!items.length){
+    let live=!!qs('linkLiveSearch')?.checked;
+    results.innerHTML=`<div class="muted" style="padding:18px">${live?'No encontré publicaciones sin vincular en el canal para ese filtro. Probá otra parte del título o revisá si ya está asociada.':'Sin publicaciones sin vincular en la base local para ese filtro. Si la creaste recién, activá “Buscar en vivo en ML/TN”.'}</div>`;
+    return;
+  }
+  let rows=items.map((x,idx)=>`<tr><td><strong>${esc(x.marketplace)}</strong><br><span class="small">Pub: ${esc(x.external_product_id)}<br>Var: ${esc(x.external_variant_id||'0')}</span></td><td>${esc(x.title||'')}${String(x.source||'').startsWith('live_')?'<span class="comboLiveBadge">en vivo</span>':''}<br><span class="small">SKU canal: <strong class="mono">${esc(x.seller_sku||'sin SKU')}</strong> · ${esc(x.sku_source||'')}</span></td><td>$ ${esc(x.price??'')}<br><span class="small">stock canal: ${esc(x.stock??'')}</span></td><td>${statusPill(x.status||'')}</td><td><button class="ok" onclick="linkPublication(${idx})">Vincular al SKU</button>${x.url?`<br><a href="${esc(x.url)}" target="_blank" rel="noopener" class="small">abrir</a>`:''}</td></tr>`).join('');
+  results.innerHTML=`<table><thead><tr><th>Canal / IDs</th><th>Publicación</th><th>Precio / stock</th><th>Estado</th><th>Acción</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+async function linkPublication(idx){
   let sku=(qs('linkSku').value||'').trim();
   if(!sku){invToolStatus('Primero indicá el SKU destino.',false);return}
   let x=state.linkCandidates[idx];if(!x)return;
