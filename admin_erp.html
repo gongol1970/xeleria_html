@@ -1471,8 +1471,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.58-explicit-simple-to-bundle';
-const FRONTEND_BUILD='admin-erp-v29758-explicit-simple-to-bundle';
+const FRONTEND_VERSION='2.97.59-legacy-duplicate-conversion';
+const FRONTEND_BUILD='admin-erp-v29759-legacy-duplicate-conversion';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
@@ -4438,9 +4438,13 @@ async function comboLoadOrphans(key,market){
   }
 }
 function comboExistingSimpleError(e){
-  const detail=(e&&e.detail&&typeof e.detail==='object')?e.detail:null;
-  if(detail?.code==='sku_exists_as_simple')return true;
-  const plain=String(errText(e)||'');
+  const code=e?.detail?.code||e?.response?.detail?.code;
+  if(code==='sku_exists_as_simple')return true;
+  const values=[e?.detail,e?.response?.detail,e?.response?.detail?.message,e?.raw_text,e?.message];
+  const plain=values.map(value=>{
+    if(typeof value==='string')return value;
+    try{return value&&typeof value==='object'?JSON.stringify(value):''}catch(_e){return ''}
+  }).join(' ');
   return plain.includes('El SKU ya existe:')||plain.includes('ya existe como producto simple');
 }
 function comboConfirmExistingProductConversion(key){

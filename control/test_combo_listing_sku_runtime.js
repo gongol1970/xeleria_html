@@ -162,6 +162,21 @@ test('SKU simple existente no convierte ni altera el borrador en el primer inten
   assert.match(s.nodes.comboFormStatus_new.innerHTML,/Convertir este producto en combo/);
   assert.ok(!JSON.parse(s.calls[0].options.body).convert_existing_simple);
 });
+test('respuesta antigua de SKU duplicado también ofrece conversión',async()=>{
+  const oldErrors=[
+    {detail:'El SKU ya existe: PCMAGICRACKIMP4x6'},
+    {response:{detail:'El SKU ya existe: PCMAGICRACKIMP4x6'}},
+    {raw_text:'{"detail":"El SKU ya existe: PCMAGICRACKIMP4x6"}'},
+  ];
+  for(const oldError of oldErrors){
+    const s=setup();s.form.components=[{sku:'SIMPLE',name:'Simple',quantity:6}];
+    s.respond(async()=>{throw oldError;});
+    await s.context.comboSaveForm('new','create');
+    assert.match(s.nodes.comboFormStatus_new.innerHTML,/No cambié nada/);
+    assert.match(s.nodes.comboFormStatus_new.innerHTML,/Convertir este producto en combo/);
+    assert.doesNotMatch(s.nodes.comboFormStatus_new.innerHTML,/No pudimos completar/);
+  }
+});
 test('cancelar confirmación no llama al backend',async()=>{
   const s=setup();s.context.confirm=()=>false;
   const result=s.context.comboConfirmExistingProductConversion('new');
