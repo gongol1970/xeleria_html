@@ -14,7 +14,8 @@ function extract(name) {
 const code = [
   'comboListingSkuHtml', 'comboSkuInput', 'comboListingKey', 'comboSelectedListingsMini',
   'comboRenderSelectedListings', 'comboRenderOrphans', 'comboAddListing',
-  'comboLoadOrphans', 'comboFormInner', 'comboSaveForm',
+  'comboLoadOrphans', 'comboFormInner', 'comboExistingSimpleError',
+  'comboConfirmExistingProductConversion', 'comboSaveForm',
 ].map(extract).join('\n');
 const candidate = {marketplace:'ML', external_product_id:'MLA2051775405', external_variant_id:'0',
   title:'Magic Rack x6', seller_sku:'PCMAGICRACKIMP4x6', sku_source:'item.attributes.SELLER_SKU', source:'live_ml', price:28882};
@@ -23,7 +24,8 @@ function setup() {
   const form = {sku:candidate.seller_sku, name:'Magic Rack x6', listings:[], orphanML:[{...candidate}], orphanTN:[], components:[]};
   const nodes = {comboOrphan_new_ML:{innerHTML:''}, comboOrphan_new_TN:{innerHTML:''},
     comboOrphan_new_ML_q:{value:'magic'}, comboOrphan_new_TN_q:{value:''},
-    comboLiveSearch_new:{checked:true}, comboSelectedListings_new:{innerHTML:''}};
+    comboLiveSearch_new:{checked:true}, comboSelectedListings_new:{innerHTML:''},
+    comboFormStatus_new:{innerHTML:'',className:'',closest:()=>null}};
   const calls = [];
   let response = async()=>({items:[{...candidate}]});
   const context = vm.createContext({
@@ -33,6 +35,7 @@ function setup() {
     fetchJson:async(url,options)=>{calls.push({url,options});return response(url,options);},
     comboQtyInt:value=>Math.max(1,Math.trunc(Number(value))), comboCloseNew:()=>{},
     setStatus:()=>{}, loadCombos:async()=>{}, comboFriendlyComboError:e=>String(e),
+    errText:e=>String(e?.detail?.message||e?.message||e||''), confirm:()=>true,
   });
   vm.runInContext(code,context);
   return {form,nodes,calls,context,respond:fn=>{response=fn;}};
@@ -145,6 +148,44 @@ test('guardar mantiene SKU elegido y contrato anterior sin metadatos de comparac
   assert.equal(payload.sku,'OTROx6');assert.equal(payload.components[0].quantity,6);
   assert.equal(payload.listings[0].external_product_id,candidate.external_product_id);
   assert.ok(!('seller_sku' in payload.listings[0]));assert.ok(!('sku_source' in payload.listings[0]));
+});
+test('SKU simple existente no convierte ni altera el borrador en el primer intento',async()=>{
+  const s=setup();s.context.comboAddListing('new','ML',0);
+  s.form.components=[{sku:'SIMPLE',name:'Simple',quantity:6,stock:39,price:5764}];
+  s.respond(async()=>{throw {detail:{code:'sku_exists_as_simple',message:'El SKU ya existe como producto simple.'}};});
+  await s.context.comboSaveForm('new','create');
+  assert.equal(s.calls.length,1);
+  assert.equal(s.form.conversionFromProduct,undefined);
+  assert.equal(s.form.components[0].quantity,6);
+  assert.equal(s.form.listings[0].external_product_id,candidate.external_product_id);
+  assert.match(s.nodes.comboFormStatus_new.innerHTML,/No cambié nada/);
+  assert.match(s.nodes.comboFormStatus_new.innerHTML,/Convertir este producto en combo/);
+  assert.ok(!JSON.parse(s.calls[0].options.body).convert_existing_simple);
+});
+test('cancelar confirmación no llama al backend',async()=>{
+  const s=setup();s.context.confirm=()=>false;
+  const result=s.context.comboConfirmExistingProductConversion('new');
+  assert.equal(result,undefined);assert.equal(s.calls.length,0);
+  assert.equal(s.form.conversionFromProduct,undefined);
+});
+test('confirmar convierte con componentes y publicación seleccionada',async()=>{
+  const s=setup();s.context.comboAddListing('new','ML',0);
+  s.form.components=[{sku:'PCMAGICRACKIMP4',name:'Magic Rack',quantity:6,stock:39,price:5764}];
+  s.respond(async()=>({available_to_sell:6}));
+  await s.context.comboConfirmExistingProductConversion('new');
+  assert.equal(s.calls.length,1);
+  assert.equal(s.calls[0].url,'/admin/v2/inventory/create-bundle');
+  const payload=JSON.parse(s.calls[0].options.body);
+  assert.equal(payload.convert_existing_simple,true);
+  assert.deepEqual(payload.components,[{component_sku:'PCMAGICRACKIMP4',quantity:6}]);
+  assert.equal(payload.listings[0].external_product_id,candidate.external_product_id);
+  assert.equal(payload.sku,candidate.seller_sku);
+});
+test('combo ya existente no ofrece conversión de producto simple',async()=>{
+  const s=setup();s.form.components=[{sku:'SIMPLE',name:'Simple',quantity:1}];
+  s.respond(async()=>{throw {detail:{code:'sku_exists_as_bundle',message:'Ya existe como combo'}};});
+  await s.context.comboSaveForm('new','create');
+  assert.doesNotMatch(s.nodes.comboFormStatus_new.innerHTML,/Convertir este producto/);
 });
 (async()=>{
   for(const {name,fn} of tests){await fn();console.log('OK '+name);}

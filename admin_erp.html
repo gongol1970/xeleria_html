@@ -1471,8 +1471,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.57-combo-listing-sku';
-const FRONTEND_BUILD='admin-erp-v29757-combo-listing-sku';
+const FRONTEND_VERSION='2.97.58-explicit-simple-to-bundle';
+const FRONTEND_BUILD='admin-erp-v29758-explicit-simple-to-bundle';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
@@ -4314,6 +4314,7 @@ function comboAddBlankComponent(key){let f=comboForm(key);f.components.push({sku
 function comboFriendlyComboError(e){
   let detail=(e&&e.detail&&typeof e.detail==='object')?e.detail:null;
   if(detail&&detail.message){
+    if(detail.code==='sku_exists_as_bundle')return String(detail.message);
     let extras=[];
     if(detail.code)extras.push('Código: '+detail.code);
     if(detail.technical_detail)extras.push('Detalle: '+detail.technical_detail);
@@ -4436,6 +4437,19 @@ async function comboLoadOrphans(key,market){
     list.innerHTML='<div class="comboPubMiniItem"><span class="small">'+esc(msg)+'</span><span></span></div>';
   }
 }
+function comboExistingSimpleError(e){
+  const detail=(e&&e.detail&&typeof e.detail==='object')?e.detail:null;
+  if(detail?.code==='sku_exists_as_simple')return true;
+  const plain=String(errText(e)||'');
+  return plain.includes('El SKU ya existe:')||plain.includes('ya existe como producto simple');
+}
+function comboConfirmExistingProductConversion(key){
+  const f=comboForm(key);
+  const sku=String(f.sku||'').trim();
+  if(!confirm(`Convertir ${sku} en combo?\n\nSe conservarán el SKU y las publicaciones. El stock dejará de ser manual: se calculará según los componentes y se sincronizará con los canales asociados.\n\nEsta acción se ejecutará recién al confirmar.`))return;
+  f.conversionFromProduct=true;
+  return comboSaveForm(key,'create');
+}
 function comboRenderOrphans(key,market){let f=comboForm(key);let list=qs(`comboOrphan_${key}_${market}`);let rows=f['orphan'+market]||[];if(!list)return;let q=(qs(`comboOrphan_${key}_${market}_q`)?.value||'').trim();let live=!!qs(`comboLiveSearch_${key}`)?.checked;if(q.length<XELERIA_MIN_SEARCH_CHARS){list.innerHTML='';return}list.innerHTML=rows.map((x,i)=>{let ref={marketplace:market,external_product_id:String(x.external_product_id||''),external_variant_id:String(x.external_variant_id||'0'),external_full_id:x.external_full_id,title:x.title||'',status:x.status||'',price:x.price};let already=f.listings.some(y=>comboListingKey(y)===comboListingKey(ref));let liveBadge=(x.source&&String(x.source).includes('live'))?'<span class="comboLiveBadge">en vivo</span>':'';return `<div class="comboPubMiniItem${live?' live':''}"><span><b>${esc(x.title||'')}</b>${liveBadge}<br><span class="comboSaasMini comboSaasMono">${esc(x.external_product_id||'')} · ${esc(x.status||'')} · ${money(x.price)}</span>${comboListingSkuHtml(key,x,market)}</span><button class="comboPubAddBtn" ${already?'disabled':''} onclick="comboAddListing('${key}','${market}',${i})">${already?'Agregada':'Agregar'}</button></div>`}).join('')||`<div class="comboPubMiniItem"><span class="small">${live?'Sin resultados en vivo para este filtro.':'Sin huérfanas en base local para este filtro.'}</span><span></span></div>`}
 function comboAddListing(key,market,i){let f=comboForm(key);let x=(f['orphan'+market]||[])[i];if(!x)return;let ref={marketplace:market,external_product_id:String(x.external_product_id||''),external_variant_id:String(x.external_variant_id||'0'),external_full_id:x.external_full_id,title:x.title||'',status:x.status||'',price:x.price,seller_sku:x.seller_sku,sku_source:x.sku_source,source:x.source};let k=comboListingKey(ref);if(!f.listings.some(y=>comboListingKey(y)===k))f.listings.push(ref);comboRenderSelectedListings(key);comboRenderOrphans(key,market)}
 function comboToggleListing(key,market,i,on){if(on!==false)comboAddListing(key,market,i)}
@@ -4463,8 +4477,8 @@ async function comboSaveForm(key,mode){
     };
     if(!payload.components.length)throw {message:'El combo debe tener al menos un componente'};
     let converting=mode==='create'&&!!f.conversionFromProduct;
-    let path=converting?'/admin/inventory/change-item-type/session':(mode==='create'?'/admin/v2/inventory/create-bundle':'/admin/v2/inventory/update-bundle');
-    let requestBody=converting?{sku:payload.sku,name:payload.name,item_type:'bundle',components:payload.components}:payload;
+    let path=mode==='create'?'/admin/v2/inventory/create-bundle':'/admin/v2/inventory/update-bundle';
+    let requestBody=converting?{...payload,convert_existing_simple:true}:payload;
     let d=await fetchJson(path,{method:'POST',body:JSON.stringify(requestBody)});
     if(st){st.className='status oktxt';st.innerHTML='<span class="comboFriendlyOk">Guardado OK · disponible '+esc(d.available_to_sell??'—')+'</span>'}
     if(mode==='create'){
@@ -4478,7 +4492,10 @@ async function comboSaveForm(key,mode){
       setStatus('comboStatus','El combo se guardó, pero la lista no se pudo actualizar.', 'warn');
     });
   }catch(e){
-    if(st){st.className='status badtxt';st.innerHTML='<span class="comboFriendlyError">'+esc(comboFriendlyComboError(e))+'</span>'}
+    if(st&&mode==='create'&&comboExistingSimpleError(e)){
+      st.className='status badtxt';
+      st.innerHTML='<span class="comboFriendlyError">Ese SKU ya existe como producto simple. No cambié nada.</span> <button class="secondary" onclick="comboConfirmExistingProductConversion(\''+jsq(key)+'\')">Convertir este producto en combo</button>';
+    }else if(st){st.className='status badtxt';st.innerHTML='<span class="comboFriendlyError">'+esc(comboFriendlyComboError(e))+'</span>'}
   }finally{
     state.comboSaving=false;
     if(panel&&panel.isConnected)panel.querySelectorAll('button').forEach(b=>b.disabled=false);
