@@ -18,7 +18,7 @@ const code = [
   'comboConfirmExistingProductConversion', 'comboSaveForm',
 ].map(extract).join('\n');
 const candidate = {marketplace:'ML', external_product_id:'MLA2051775405', external_variant_id:'0',
-  title:'Magic Rack x6', seller_sku:'PCMAGICRACKIMP4x6', sku_source:'item.attributes.SELLER_SKU', source:'live_ml', price:28882};
+  title:'Magic Rack x6', seller_sku:'PCMAGICRACKIMP4x6', sku_source:'item.attributes.SELLER_SKU', source:'live_ml', price:28882, stock:4};
 const esc = value => String(value??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function setup() {
   const form = {sku:candidate.seller_sku, name:'Magic Rack x6', listings:[], orphanML:[{...candidate}], orphanTN:[], components:[]};
@@ -53,6 +53,7 @@ test('SKU del canal se conserva al agregar sin escritura',()=>{
   const s=setup();s.context.comboAddListing('new','ML',0);
   assert.equal(s.form.listings[0].seller_sku,candidate.seller_sku);
   assert.equal(s.form.listings[0].sku_source,candidate.sku_source);
+  assert.equal(s.form.listings[0].stock,candidate.stock);
   assert.match(s.nodes.comboSelectedListings_new.innerHTML,/SKU en ML/);
   assert.match(s.nodes.comboOrphan_new_ML.innerHTML,/Agregada/);
   assert.equal(s.calls.length,0);
@@ -147,7 +148,16 @@ test('guardar mantiene SKU elegido y contrato anterior sin metadatos de comparac
   const payload=JSON.parse(s.calls[0].options.body);
   assert.equal(payload.sku,'OTROx6');assert.equal(payload.components[0].quantity,6);
   assert.equal(payload.listings[0].external_product_id,candidate.external_product_id);
+  assert.equal(payload.listings[0].price,candidate.price);assert.equal(payload.listings[0].stock,candidate.stock);
   assert.ok(!('seller_sku' in payload.listings[0]));assert.ok(!('sku_source' in payload.listings[0]));
+});
+test('publicación sin precio o stock manda null y nunca texto vacío',async()=>{
+  const s=setup();delete s.form.orphanML[0].price;delete s.form.orphanML[0].stock;
+  s.context.comboAddListing('new','ML',0);
+  s.form.components=[{sku:'SIMPLE',name:'Simple',quantity:6}];
+  await s.context.comboSaveForm('new','edit');
+  const payload=JSON.parse(s.calls[0].options.body);
+  assert.equal(payload.listings[0].price,null);assert.equal(payload.listings[0].stock,null);
 });
 test('SKU simple existente no convierte ni altera el borrador en el primer intento',async()=>{
   const s=setup();s.context.comboAddListing('new','ML',0);

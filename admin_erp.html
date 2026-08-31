@@ -1471,8 +1471,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.59-legacy-duplicate-conversion';
-const FRONTEND_BUILD='admin-erp-v29759-legacy-duplicate-conversion';
+const FRONTEND_VERSION='2.97.60-combo-listing-nullables';
+const FRONTEND_BUILD='admin-erp-v29760-combo-listing-nullables';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
@@ -4455,7 +4455,7 @@ function comboConfirmExistingProductConversion(key){
   return comboSaveForm(key,'create');
 }
 function comboRenderOrphans(key,market){let f=comboForm(key);let list=qs(`comboOrphan_${key}_${market}`);let rows=f['orphan'+market]||[];if(!list)return;let q=(qs(`comboOrphan_${key}_${market}_q`)?.value||'').trim();let live=!!qs(`comboLiveSearch_${key}`)?.checked;if(q.length<XELERIA_MIN_SEARCH_CHARS){list.innerHTML='';return}list.innerHTML=rows.map((x,i)=>{let ref={marketplace:market,external_product_id:String(x.external_product_id||''),external_variant_id:String(x.external_variant_id||'0'),external_full_id:x.external_full_id,title:x.title||'',status:x.status||'',price:x.price};let already=f.listings.some(y=>comboListingKey(y)===comboListingKey(ref));let liveBadge=(x.source&&String(x.source).includes('live'))?'<span class="comboLiveBadge">en vivo</span>':'';return `<div class="comboPubMiniItem${live?' live':''}"><span><b>${esc(x.title||'')}</b>${liveBadge}<br><span class="comboSaasMini comboSaasMono">${esc(x.external_product_id||'')} · ${esc(x.status||'')} · ${money(x.price)}</span>${comboListingSkuHtml(key,x,market)}</span><button class="comboPubAddBtn" ${already?'disabled':''} onclick="comboAddListing('${key}','${market}',${i})">${already?'Agregada':'Agregar'}</button></div>`}).join('')||`<div class="comboPubMiniItem"><span class="small">${live?'Sin resultados en vivo para este filtro.':'Sin huérfanas en base local para este filtro.'}</span><span></span></div>`}
-function comboAddListing(key,market,i){let f=comboForm(key);let x=(f['orphan'+market]||[])[i];if(!x)return;let ref={marketplace:market,external_product_id:String(x.external_product_id||''),external_variant_id:String(x.external_variant_id||'0'),external_full_id:x.external_full_id,title:x.title||'',status:x.status||'',price:x.price,seller_sku:x.seller_sku,sku_source:x.sku_source,source:x.source};let k=comboListingKey(ref);if(!f.listings.some(y=>comboListingKey(y)===k))f.listings.push(ref);comboRenderSelectedListings(key);comboRenderOrphans(key,market)}
+function comboAddListing(key,market,i){let f=comboForm(key);let x=(f['orphan'+market]||[])[i];if(!x)return;let ref={marketplace:market,external_product_id:String(x.external_product_id||''),external_variant_id:String(x.external_variant_id||'0'),external_full_id:x.external_full_id,title:x.title||'',status:x.status||'',price:x.price??null,stock:x.stock??x.available_quantity??null,url:x.url||x.permalink||'',seller_sku:x.seller_sku,sku_source:x.sku_source,source:x.source};let k=comboListingKey(ref);if(!f.listings.some(y=>comboListingKey(y)===k))f.listings.push(ref);comboRenderSelectedListings(key);comboRenderOrphans(key,market)}
 function comboToggleListing(key,market,i,on){if(on!==false)comboAddListing(key,market,i)}
 function comboRenderSelectedListings(key){let el=qs('comboSelectedListings_'+key);if(el)el.innerHTML=comboSelectedListingsMini(key)}
 function comboRemoveSelectedListing(key,i){let f=comboForm(key);f.listings.splice(i,1);comboRenderSelectedListings(key);['ML','TN'].forEach(m=>comboRenderOrphans(key,m));renderCombos()}
@@ -4477,7 +4477,7 @@ async function comboSaveForm(key,mode){
       sku:String(f.sku||'').trim(),
       name:String(f.name||'').trim(),
       components:rawComponents.map(c=>({component_sku:String(c.sku||'').trim(),quantity:comboQtyInt(c.quantity)})),
-      listings:(f.listings||[]).map(l=>({marketplace:String(l.marketplace||'').toUpperCase(),external_product_id:String(l.external_product_id||''),external_variant_id:String(l.external_variant_id||'0'),external_full_id:l.external_full_id||l.external_product_id,title:l.title||'',status:l.status||'',price:l.price??'',stock:l.stock??'',url:l.url||l.permalink||''}))
+      listings:(f.listings||[]).map(l=>({marketplace:String(l.marketplace||'').toUpperCase(),external_product_id:String(l.external_product_id||''),external_variant_id:String(l.external_variant_id||'0'),external_full_id:l.external_full_id||l.external_product_id,title:l.title||'',status:l.status||'',price:l.price===''?null:(l.price??null),stock:l.stock===''?null:(l.stock??l.available_quantity??null),url:l.url||l.permalink||''}))
     };
     if(!payload.components.length)throw {message:'El combo debe tener al menos un componente'};
     let converting=mode==='create'&&!!f.conversionFromProduct;
