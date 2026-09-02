@@ -1495,8 +1495,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.65-manual-error-humano';
-const FRONTEND_BUILD='admin-erp-v29765-manual-error-humano';
+const FRONTEND_VERSION='2.97.66-preview-error-humano';
+const FRONTEND_BUILD='admin-erp-v29766-preview-error-humano';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
@@ -5500,7 +5500,29 @@ function arcaManualBody(dryRun=true,confirmar=false){
   };
 }
 async function arcaManualPreview(){
-  try{hideManualPreviewBox();setStatus('arcaManualStatus','Generando vista previa...');let body=arcaManualBody(true,false);let d=await fetchJson('/admin/arca/comprobantes/manual/preview',{method:'POST',body:JSON.stringify(body)});renderArcaManualPreview(d);setStatus('arcaManualStatus',`Preview OK · próximo ${d.cbte_letra} ${String(d.pto_vta).padStart(4,'0')}-${String(d.proximo).padStart(8,'0')} · total ${money(d.importe_total)}`,true)}catch(e){if(e?.manualValidation){setStatus('arcaManualStatus',e.message,false);return}saveLastArcaError(e,{fn:'arcaManualPreview'});setStatus('arcaManualStatus','No se pudo generar la vista previa: '+errText(e),false);showPre('arcaManualOut',e)}}
+  let out=qs('arcaManualOut');
+  if(out){out.classList.add('hidden');out.textContent=''}
+  try{
+    hideManualPreviewBox();
+    setStatus('arcaManualStatus','Generando vista previa...');
+    let body=arcaManualBody(true,false);
+    let d=await fetchJson('/admin/arca/comprobantes/manual/preview',{
+      method:'POST',
+      body:JSON.stringify(body),
+      skipLastJson:true
+    });
+    renderArcaManualPreview(d);
+    setStatus('arcaManualStatus',`Preview OK · próximo ${d.cbte_letra} ${String(d.pto_vta).padStart(4,'0')}-${String(d.proximo).padStart(8,'0')} · total ${money(d.importe_total)}`,true);
+  }catch(e){
+    if(out){out.classList.add('hidden');out.textContent=''}
+    if(e?.manualValidation){
+      setStatus('arcaManualStatus',e.message,false);
+      return;
+    }
+    saveLastArcaError(e,{fn:'arcaManualPreview'});
+    setStatus('arcaManualStatus','No se pudo generar la vista previa. '+arcaManualHumanError(e),false);
+  }
+}
 function arcaManualHumanError(e){
   const seen=new Set();
   function walk(v){
