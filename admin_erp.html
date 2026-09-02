@@ -1495,8 +1495,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.63-arca-incidents-flow';
-const FRONTEND_BUILD='admin-erp-v29763-arca-incidents-flow';
+const FRONTEND_VERSION='2.97.64-open-sales-batches';
+const FRONTEND_BUILD='admin-erp-v29764-open-sales-batches';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
@@ -2790,31 +2790,87 @@ async function fetchJsonWithTimeout(path,opt={},timeoutMs=15000,label='La consul
   }finally{clearTimeout(timer)}
 }
 function dashboardRefreshErrorChannels(result){return [...new Set((result?.errors||[]).map(x=>x.channel).filter(Boolean))]}
+function dashboardRefreshWarningText(result){
+  let warnings=result?.warnings||[];
+  if(!warnings.length)return '';
+  return warnings.map(x=>`${x.channel}: ${Number(x.errors||0)} operación${Number(x.errors||0)===1?'':'es'} sin actualizar`).join(' · ');
+}
+async function fetchOpenSalesBatch(ch,cursor=0,batchSize=50){
+  let lc=String(ch||'').toLowerCase();
+  return await fetchJson(`/admin/${lc}/orders/refresh-section?limit=${encodeURIComponent(batchSize)}&cursor=${encodeURIComponent(Math.max(0,Number(cursor)||0))}`,{
+    method:'POST',
+    skipLastJson:true,
+    trackActivity:false
+  });
+}
+function startOpenSalesBatchContinuation(ch,firstResult,opts={}){
+  if(!firstResult?.has_more)return null;
+  state.openSalesRefreshRuns=state.openSalesRefreshRuns||{};
+  if(state.openSalesRefreshRuns[ch])return state.openSalesRefreshRuns[ch];
+
+  let promise=(async()=>{
+    let current=firstResult,totalErrors=Number(firstResult?.errors_count||0),totalRefreshed=Number(firstResult?.refreshed_count||0),rounds=1;
+    while(current?.has_more){
+      await new Promise(r=>setTimeout(r,80));
+      current=await fetchOpenSalesBatch(ch,current.next_cursor,50);
+      totalErrors+=Number(current?.errors_count||0);
+      totalRefreshed+=Number(current?.refreshed_count||0);
+      rounds++;
+    }
+    return {channel:ch,totalErrors,totalRefreshed,rounds};
+  })().catch(e=>{
+    console.warn('Continuación ventas abiertas '+ch,e);
+    return {channel:ch,error:e};
+  }).finally(()=>{
+    state.openSalesRefreshRuns[ch]=null;
+  });
+  state.openSalesRefreshRuns[ch]=promise;
+
+  promise.then(result=>{
+    if(opts.refreshDashboard && document.querySelector('.view.active')?.id==='inicio'){
+      loadDashboard._lastShippingRefreshAt=Date.now();
+      loadDashboard(false);
+    }
+    if(opts.refreshSales && salesViewIsActive(ch)){
+      loadRecent(ch,state.sales[ch]?.offset||0,{refreshShipping:false,skipShippingRefresh:true,background:true});
+      let sid=String(ch||'').toLowerCase()+'VentasStatus';
+      if(result?.error)setStatus(sid,'Ventas mostradas; la actualización en segundo plano quedó incompleta: '+errText(result.error),false);
+      else if(Number(result?.totalErrors||0)>0)setStatus(sid,`Actualización ${ch} terminada con ${Number(result.totalErrors)} operación(es) sin actualizar.`,false);
+      else setStatus(sid,`Actualización ${ch} completa.`,true);
+    }
+  });
+  return promise;
+}
 async function refreshShippingForDashboard(force=false){
   let now=Date.now();
-  if(loadDashboard._refreshingShipping)return {attempted:false,pending:true,errors:[],updated:false};
-  if(!force&&loadDashboard._lastShippingRefreshAt && now-loadDashboard._lastShippingRefreshAt<45000)return {attempted:false,pending:false,errors:[],updated:false};
+  if(loadDashboard._refreshingShipping)return {attempted:false,pending:true,errors:[],warnings:[],updated:false};
+  if(!force&&loadDashboard._lastShippingRefreshAt && now-loadDashboard._lastShippingRefreshAt<45000)return {attempted:false,pending:false,errors:[],warnings:[],updated:false};
   loadDashboard._refreshingShipping=true;
-  let errors=[],updated=false;
+  let errors=[],warnings=[],updated=false;
   try{
-    let channels=[
-      {channel:'ML',section:'/admin/ml/orders/refresh-section?limit=20'},
-      {channel:'TN',section:'/admin/tn/orders/refresh-section?limit=20'}
-    ];
+    let channels=['ML','TN'];
     let [sectionResults,claimsResult]=await Promise.all([
-      Promise.allSettled(channels.map(x=>fetchJson(x.section,{method:'POST',skipLastJson:true}))),
+      Promise.allSettled(channels.map(ch=>fetchOpenSalesBatch(ch,0,50))),
       Promise.allSettled([fetchJson('/admin/ml/claims/refresh?max_claims=200',{method:'POST',skipLastJson:true,trackActivity:false})])
     ]);
     if(claimsResult[0]?.status==='fulfilled')updated=true;
     else errors.push({channel:'ML',stage:'reclamos',reason:claimsResult[0]?.reason});
+
     sectionResults.forEach((r,idx)=>{
-      let channel=channels[idx].channel,lc=channel.toLowerCase();
-      let capture=r.value?.steps?.[lc+'_orders'],openSales=r.value?.steps?.[lc+'_open_sales'];
-      let failed=r.status!=='fulfilled'||r.value?.skipped||!capture||capture.ok===false||!openSales||openSales.ok===false;
-      if(failed)errors.push({channel,stage:'ventas abiertas',reason:r.reason||openSales?.error||capture?.error||r.value?.reason});
-      else updated=true;
+      let channel=channels[idx];
+      if(r.status!=='fulfilled'){
+        errors.push({channel,stage:'ventas abiertas',reason:r.reason});
+        return;
+      }
+      updated=true;
+      let value=r.value||{};
+      let opErrors=Number(value.errors_count||0);
+      if(opErrors)warnings.push({channel,stage:'ventas abiertas',errors:opErrors,detail:value.errors||[]});
+      startOpenSalesBatchContinuation(channel,value,{refreshDashboard:true});
     });
+
     if(errors.length)console.warn('Dashboard refresh parcial',errors);
+    if(warnings.length)console.warn('Dashboard refresh con incidencias por operación',warnings);
     loadDashboard._lastShippingRefreshAt=Date.now();
   }catch(e){
     console.warn('refreshShippingForDashboard',e);
@@ -2822,7 +2878,7 @@ async function refreshShippingForDashboard(force=false){
   }finally{
     loadDashboard._refreshingShipping=false;
   }
-  return {attempted:true,pending:false,errors,updated};
+  return {attempted:true,pending:false,errors,warnings,updated};
 }
 function dashboardJobsPagerHtml(j){
   j=j||{};
@@ -2950,7 +3006,9 @@ async function loadDashboard(force=false){
     if(qs('stWa'))qs('stWa').textContent=poll.whatsapp_admin_configurado?'OK':'NO';
     generatedAt=dateAR(d.generated_at);
     let channels=dashboardRefreshErrorChannels(refreshResult);
+    let warningText=dashboardRefreshWarningText(refreshResult);
     if(channels.length)setDashboardStatus('Dashboard cargado con los datos disponibles; no respondieron: '+channels.join(', ')+'.',false);
+    else if(warningText)setDashboardStatus('Dashboard actualizado · '+generatedAt+' · '+warningText+'.',false);
     else setDashboardStatus('Dashboard actualizado · '+generatedAt,true);
   }catch(e){
     console.error('loadDashboard',e);
@@ -3703,44 +3761,41 @@ async function enterSalesView(ch){
   let liveVerified=false,refreshWarning='';
   salesState.freshnessWarning='';
   setStatus(sid,'Actualizando '+label+'...');
+
   let claimsResult=null,claimsWarning='';
   let claimsPromise=ch==='ML'
     ? fetchJson('/admin/ml/claims/refresh?max_claims=200',{method:'POST',skipLastJson:true,trackActivity:false})
     : Promise.resolve(null);
+
   try{
-    let refresh=await fetchJson(`/admin/${lc}/orders/refresh-section?limit=${encodeURIComponent(salesLimit(ch))}`,{
-      method:'POST',
-      skipLastJson:true,
-      trackActivity:false
-    });
-    let step=refresh?.steps?.[lc+'_orders'];
-    let result=step?.result;
-    let openStep=refresh?.steps?.[lc+'_open_sales'];
-    let openResult=openStep?.result;
-    let failedItem=(result?.items||step?.items||[]).find(item=>item?.action==='error'&&item?.error);
-    if(refresh?.skipped||!step||step.ok===false||result?.ok===false||step.guarded||Number(step.errors||result?.errors||0)>0||!openStep||openStep.ok===false||openResult?.ok===false||Number(openStep.errors||openResult?.errors_count||0)>0){
-      let itemReason=failedItem?.error?(failedItem?.tn_number?`Venta #${failedItem.tn_number}: ${failedItem.error}`:failedItem.error):'';
-      let reason=openStep?.reason||openResult?.reason||openStep?.error||step?.reason||result?.reason||refresh?.reason||step?.error||result?.error||itemReason||'la verificación no terminó correctamente';
-      throw new Error(reason);
-    }
+    let firstBatch=await fetchOpenSalesBatch(ch,0,50);
     liveVerified=true;
+    if(Number(firstBatch?.errors_count||0)>0){
+      refreshWarning=`${Number(firstBatch.errors_count)} operación(es) no pudieron actualizarse en la primera tanda.`;
+    }
+    startOpenSalesBatchContinuation(ch,firstBatch,{refreshSales:true});
   }catch(e){
     console.warn('enterSalesView '+ch,e);
     refreshWarning='No se pudo verificar '+label+' ahora. Se muestran datos guardados; no uses esta lista para afirmar que una compra no existe. '+errText(e);
   }
+
   try{claimsResult=await claimsPromise}catch(e){claimsWarning='No se pudieron actualizar los reclamos ML: '+errText(e)}
   if(enterSeq!==salesState.enterSeq||!salesViewIsActive(ch))return;
+
   salesState.freshnessWarning=[refreshWarning,claimsWarning].filter(Boolean).join(' ');
   await loadRecent(ch,salesState.offset||0,{refreshShipping:false,liveVerified,freshnessWarning:salesState.freshnessWarning});
   if(enterSeq!==salesState.enterSeq||!salesViewIsActive(ch))return;
+
   if(!liveVerified){
     if(claimsResult)setStatus(sid,`Reclamos ML actualizados: ${Number(claimsResult.open_count||0)} abiertos. ${refreshWarning}`,false);
     return;
   }
-  if(claimsResult){
-    setStatus(sid,`Actualización ML completa · reclamos: ${Number(claimsResult.open_count||0)} abiertos.`,true);
+  if(refreshWarning||claimsWarning){
+    setStatus(sid,[`Primera tanda ${ch} actualizada.`,refreshWarning,claimsWarning].filter(Boolean).join(' '),false);
+  }else if(claimsResult){
+    setStatus(sid,`Primera tanda ML actualizada · reclamos: ${Number(claimsResult.open_count||0)} abiertos. Continúa en segundo plano si quedan ventas pendientes.`,true);
   }else{
-    setStatus(sid,`Actualización ${ch} completa.`,true);
+    setStatus(sid,`Primera tanda ${ch} actualizada. Continúa en segundo plano si quedan ventas pendientes.`,true);
   }
 }
 function pagerHtml(ch,d){
