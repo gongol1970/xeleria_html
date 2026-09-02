@@ -1495,8 +1495,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.62-arca-manual-tn-refresh';
-const FRONTEND_BUILD='admin-erp-v29762-arca-manual-tn-refresh';
+const FRONTEND_VERSION='2.97.63-arca-incidents-flow';
+const FRONTEND_BUILD='admin-erp-v29763-arca-incidents-flow';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
@@ -2178,8 +2178,8 @@ function opsLogErrorLabel(error={},idx=0){if(typeof error==='string')return `Err
 function opsLogArcaDetailHtml(error={}){let observations=Array.isArray(error.arca_errors)?error.arca_errors:[];let meta=[error.classification?('Clasificación: '+error.classification):'',error.resultado?('Resultado: '+error.resultado):'',error.stage?('Etapa: '+error.stage):'',error.attempted_at?('Hora: '+dateAR(error.attempted_at)):'',error.expected_cbte_nro?('Comprobante esperado: '+error.expected_cbte_nro):''].filter(Boolean);let obs=observations.map(x=>`<div class="small"><strong>Código ${esc(x.code||'-')}</strong> · ${esc(x.message||'Sin mensaje')}</div>`).join('');return `${meta.length?`<span class="small">${esc(meta.join(' · '))}</span>`:''}${obs}`}
 function opsLogDetailHtml(n={}){let errors=opsLogPayloadErrors(n),p=n.payload||{};if(!errors.length){let summary=p.human_save_observation_summary||p.observation_summary||p.summary||p.human_summary||'';if(summary&&typeof summary==='object'){try{summary=summary.message||summary.detail||JSON.stringify(summary)}catch(_e){summary=String(summary)}}let body=String(summary||n.body||'').trim().replace(/\s*(?:[\/·-]?\s*Revisar bitácora|Abrilo para ver el detalle)\.?\s*$/i,'').trim();return body?`<div class="opsLogDetailItem"><strong>Detalle</strong><span>${esc(body)}</span></div>`:'<div class="muted">No hay más detalle disponible.</div>'}return `<div class="opsLogErrorList">${errors.map((error,idx)=>`<div class="opsLogDetailItem"><strong>${esc(opsLogErrorLabel(error,idx))}</strong><span>${esc(opsLogErrorText(error))}</span>${opsLogArcaDetailHtml(error)}</div>`).join('')}</div>`}
 function opsLogInvoiceSaleRef(n={}){let e=opsLogPayloadErrors(n)[0]||{},p=n.payload||{};return{channel:String(e.channel||p.channel||'').toUpperCase(),orderId:String(e.external_order_id||e.order_id||e.operation||p.external_order_id||p.order_id||p.operation||'')}}
-function opsLogActionsHtml(n={}){let acts=Array.isArray(n.actions)?n.actions:[];let html='';acts.forEach(a=>{let kind=String(a.kind||'');if(kind==='retry_import'&&a.job_id){html+=`<button class="secondary" onclick="retryInventoryImportErrors('${esc(String(a.job_id))}',true)">${esc(a.label||'Reintentar importación')}</button>`}else if(kind==='repair_save'&&a.job_id){html+=`<button class="secondary" onclick="repairInventoryImportSaveObservations('${esc(String(a.job_id))}')">${esc(a.label||'Reparar observaciones')}</button>`}else if(kind==='issue_invoice'&&a.channel&&a.order_id){html+=`<button class="secondary" onclick="openArcaManualSale('${jsq(String(a.channel))}','${jsq(String(a.order_id))}',{origin:'ops_log'})">${esc(a.label||'Revisar facturación')}</button>`}else if(kind==='open_view'&&a.view==='arca-reportes'&&opsLogCategory(n)==='invoice'){let ref=opsLogInvoiceSaleRef(n);html+=ref.channel&&ref.orderId?`<button class="secondary" onclick="openArcaManualSale('${jsq(ref.channel)}','${jsq(ref.orderId)}',{origin:'ops_log'})">${esc(a.label||'Revisar facturación')}</button>`:`<button class="secondary" onclick="openArcaManualQueue()">${esc(a.label||'Revisar facturación')}</button>`}else if(kind==='open_view'&&a.view){html+=`<button class="secondary" onclick="showView('${esc(String(a.view))}')">${esc(a.label||'Abrir')}</button>`}else if(kind==='dismiss'&&a.id){html+=`<button class="secondary trashBtn" onclick="deleteOpsLogItem('${esc(String(a.id))}')">🗑 ${esc(a.label||'Borrar')}</button>`}});return html||'<button class="secondary" disabled>Sin acción automática</button>'}
-function opsLogLiveInvoiceItems(dashboard={}){let items=dashboard.failures?.invoices?.items||[];return items.map((x,idx)=>{let operation=x.sale_number||x.external_order_id||x.invoice_id||String(idx+1);let isInvoice=x.kind==='invoice';let status=String(x.status||'not_attempted').toLowerCase();let title=isInvoice?'Comprobante con revisión.':(status==='not_attempted'?'Factura pendiente sin intento registrado.':'Factura pendiente de emitir.');let orderId=x.external_order_id||x.sale_number||'';let actions=orderId?[{kind:'issue_invoice',channel:x.channel,order_id:orderId,label:'Revisar facturación'}]:[{kind:'open_view',view:'arca-reportes',label:'Revisar facturación'}];return{id:`live-invoice-${x.channel||''}-${operation}`,type:isInvoice?'invoice_review':'invoice_pending',severity:['error','failed'].includes(status)?'error':'warning',title,created_at:x.attempted_at||x.created_at,payload:{errors:[{channel:x.channel,external_order_id:x.external_order_id,operation,customer_name:x.customer_name,total:x.total,status:x.status,stage:x.stage,attempted_at:x.attempted_at,reason:x.reason||x.status||'Pendiente de facturar',classification:x.classification,response_kind:x.response_kind,resultado:x.resultado,expected_cbte_nro:x.expected_cbte_nro,arca_errors:Array.isArray(x.arca_errors)?x.arca_errors:[]}]},actions,live_state:true}})}
+function opsLogActionsHtml(n={}){let acts=Array.isArray(n.actions)?n.actions:[];let html='';acts.forEach(a=>{let kind=String(a.kind||'');if(kind==='retry_import'&&a.job_id){html+=`<button class="secondary" onclick="retryInventoryImportErrors('${esc(String(a.job_id))}',true)">${esc(a.label||'Reintentar importación')}</button>`}else if(kind==='repair_save'&&a.job_id){html+=`<button class="secondary" onclick="repairInventoryImportSaveObservations('${esc(String(a.job_id))}')">${esc(a.label||'Reparar observaciones')}</button>`}else if(kind==='issue_invoice'&&a.channel&&a.order_id){html+=`<button class="secondary" onclick="openArcaManualQueue()">${esc(a.label||'Revisar facturación')}</button>`}else if(kind==='open_view'&&a.view==='arca-reportes'&&opsLogCategory(n)==='invoice'){html+=`<button class="secondary" onclick="openArcaManualQueue()">${esc(a.label||'Revisar facturación')}</button>`}else if(kind==='open_view'&&a.view){html+=`<button class="secondary" onclick="showView('${esc(String(a.view))}')">${esc(a.label||'Abrir')}</button>`}else if(kind==='dismiss'&&a.id){html+=`<button class="secondary trashBtn" onclick="deleteOpsLogItem('${esc(String(a.id))}')">🗑 ${esc(a.label||'Borrar')}</button>`}});return html||'<button class="secondary" disabled>Sin acción automática</button>'}
+function opsLogLiveInvoiceItems(dashboard={}){let items=dashboard.failures?.invoices?.items||[];return items.map((x,idx)=>{let operation=x.sale_number||x.external_order_id||x.invoice_id||String(idx+1);let isInvoice=x.kind==='invoice';let status=String(x.status||'not_attempted').toLowerCase();let title=['error','failed','manual_review','review'].includes(status)?'Facturación con incidencia.':(isInvoice?'Comprobante con revisión.':'Factura pendiente sin intento registrado.');let orderId=x.external_order_id||x.sale_number||'';let actions=[{kind:'open_view',view:'arca-reportes',label:'Ir a Facturación manual'}];return{id:`live-invoice-${x.channel||''}-${operation}`,type:isInvoice?'invoice_review':'invoice_pending',severity:['error','failed','manual_review','review'].includes(status)?'error':'warning',title,created_at:x.attempted_at||x.created_at,payload:{errors:[{channel:x.channel,external_order_id:x.external_order_id,operation,customer_name:x.customer_name,total:x.total,status:x.status,stage:x.stage,attempted_at:x.attempted_at,reason:x.reason||x.status||'Pendiente de facturar',classification:x.classification,response_kind:x.response_kind,resultado:x.resultado,expected_cbte_nro:x.expected_cbte_nro,arca_errors:Array.isArray(x.arca_errors)?x.arca_errors:[]}]},actions,live_state:true}})}
 function opsLogLiveStockItems(dashboard={}){let items=dashboard.failures?.sync_jobs?.items||[];return items.map((x,idx)=>{let operation=x.source_order_number||x.source_order_api_id||x.id||String(idx+1);return{id:`live-stock-${x.id||operation}`,type:'stock_sync_review',severity:['error','failed'].includes(String(x.status||'').toLowerCase())?'error':'warning',title:'Alerta de stock pendiente.',created_at:x.updated_at||x.created_at,payload:{errors:[{marketplace:x.marketplace,operation,sku:x.sku,item_name:x.item_name,current_stock:x.current_stock,target_stock:x.target_stock,status:x.status,reason:x.last_error||'La sincronización necesita revisión.'}]},actions:[{kind:'open_view',view:'fallas',label:'Resolver alerta de stock'}],live_state:true}})}
 function opsLogLiveClaimItems(dashboard={}){
   let items=dashboard.ml_claims?.items||[];
@@ -4666,8 +4666,8 @@ function ensureArcaReportTabs(){
   manual.id='arcaManualPendingPanel';manual.className='hidden';
   manual.innerHTML=`
     <h3>ARCA · Facturar manualmente</h3>
-    <p>Ventas ML/TN pagas, no canceladas y todavía sin comprobante emitido. Elegí una venta para abrir el comprobante ya prellenado; podés revisar o corregir los datos antes de facturar.</p>
-    <div class="btnrow" style="margin-top:12px"><button onclick="loadArcaManualPending(true)">Actualizar ventas no facturadas</button></div>
+    <p>Facturaciones ML/TN que tuvieron un problema real y todavía requieren resolución. Podés facturar la venta o derivarla a Incidencias fiscales para el informe contable.</p>
+    <div class="btnrow" style="margin-top:12px"><button onclick="loadArcaManualPending(true,0)">Actualizar pendientes</button></div>
     <div id="arcaManualPendingStatus" class="status"></div>
     <div id="arcaManualPendingTable" class="tableWrap" style="margin-top:12px"></div>`;
   incidents.id='arcaIncidentsPanel';incidents.className='hidden';
@@ -4706,30 +4706,49 @@ function arcaManualPendingSaleId(row={}){
   if(ch==='ML')return String(row.pack_id||row.ml_order_id||row.external_order_id||row.erp_order_id||'');
   return String(row.external_order_id||row.erp_order_id||'');
 }
-function arcaManualPendingSaleNumber(row={}){return String(row.sale_number||row.invoice_preview?.source_order_number||row.pack_id||row.external_order_id||row.erp_order_id||'')}
+function arcaManualPendingSaleNumber(row={}){return String(row.sale_number||row.pack_id||row.external_order_id||row.erp_order_id||'')}
+function arcaManualIssueText(row={}){
+  let txt=row.issue_reason||'La facturación requiere revisión.';
+  if(typeof txt==='object'){try{txt=errText(txt)}catch(_e){txt=JSON.stringify(txt)}}
+  return String(txt||'La facturación requiere revisión.');
+}
 function renderArcaManualPending(){
   let host=qs('arcaManualPendingTable');if(!host)return;
   let rows=Array.isArray(state.arcaManualPendingItems)?state.arcaManualPendingItems:[];
-  if(!rows.length){host.innerHTML='<div class="dashEmpty">No hay ventas pendientes de facturar.</div>';return}
-  host.innerHTML=`<table><thead><tr><th>Fecha</th><th>Canal</th><th>Venta</th><th>Cliente</th><th>Total</th><th>Estado</th><th></th></tr></thead><tbody>${rows.map(row=>{
-    let ch=String(row.channel||'').toUpperCase();let oid=arcaManualPendingSaleId(row);let sale=arcaManualPendingSaleNumber(row);let preview=row.invoice_preview||{};let err=row.preview_error||'';let status=err?'<span class="pill warn">Revisar datos fiscales</span>':'<span class="pill ok">Lista para revisar</span>';
-    let errTextShort='';if(err){try{errTextShort=typeof err==='string'?err:(err.message||err.detail||JSON.stringify(err))}catch(_e){errTextShort=String(err)}}
-    return `<tr><td>${esc(dateAR(row.created_at)||String(row.created_at||'').slice(0,10))}</td><td><strong>${esc(ch)}</strong></td><td>${esc(sale)}</td><td>${esc(row.customer_name||preview.customer_name||'')}</td><td><strong>${money(row.total??preview.importe_total)}</strong></td><td>${status}${errTextShort?`<div class="small" style="margin-top:4px">${esc(errTextShort)}</div>`:''}</td><td><button onclick="openArcaManualSale('${jsq(ch)}','${jsq(oid)}')">Facturar venta</button></td></tr>`;
+  if(!rows.length){host.innerHTML='<div class="dashEmpty">No hay facturaciones pendientes de resolver.</div>';return}
+  let offset=Number(state.arcaManualPendingOffset||0),limit=Number(state.arcaManualPendingLimit||100),hasMore=!!state.arcaManualPendingHasMore;
+  let table=`<table><thead><tr><th>Fecha venta</th><th>Canal</th><th>Venta</th><th>Cliente</th><th>Total</th><th>Problema</th><th></th></tr></thead><tbody>${rows.map(row=>{
+    let ch=String(row.channel||'').toUpperCase(),oid=arcaManualPendingSaleId(row),sale=arcaManualPendingSaleNumber(row),reason=arcaManualIssueText(row);
+    return `<tr><td>${esc(dateAR(row.sale_date||row.created_at)||String(row.sale_date||row.created_at||'').slice(0,10))}</td><td><strong>${esc(ch)}</strong></td><td>${esc(sale)}</td><td>${esc(row.customer_name||'')}</td><td><strong>${money(row.total)}</strong></td><td><span class="pill warn">Revisar facturación</span><div class="small" style="margin-top:4px">${esc(reason)}</div></td><td><div class="btnrow" style="margin:0;flex-wrap:nowrap"><button onclick="openArcaManualSale('${jsq(ch)}','${jsq(oid)}')">Facturar venta</button><button class="secondary" onclick="reportArcaManualIncident('${jsq(ch)}','${jsq(oid)}','${jsq(sale)}')">Reportarla como incidencia</button></div></td></tr>`;
   }).join('')}</tbody></table>`;
+  let pager=`<div class="btnrow" style="margin-top:10px"><button class="secondary" ${offset<=0?'disabled':''} onclick="loadArcaManualPending(false,${Math.max(0,offset-limit)})">Anterior</button><span class="pill">Mostrando ${offset+1}–${offset+rows.length}</span><button class="secondary" ${!hasMore?'disabled':''} onclick="loadArcaManualPending(false,${offset+limit})">Siguiente</button></div>`;
+  host.innerHTML=table+pager;
 }
-async function loadArcaManualPending(manual=false){
-  if(qs('arcaManualPendingStatus'))setStatus('arcaManualPendingStatus',manual?'Actualizando ventas no facturadas...':'Leyendo ventas no facturadas...');
+async function loadArcaManualPending(manual=false,offset=null){
+  let off=offset===null?Number(state.arcaManualPendingOffset||0):Math.max(0,Number(offset||0));
+  let lim=100;state.arcaManualPendingLimit=lim;
+  if(qs('arcaManualPendingStatus'))setStatus('arcaManualPendingStatus',manual?'Actualizando facturaciones pendientes...':'Leyendo facturaciones pendientes...');
   try{
-    let [ml,tn]=await Promise.all([
-      fetchJson('/admin/arca/orders/pending?channel=ML&hours=8760&limit=100',{skipLastJson:true}),
-      fetchJson('/admin/arca/orders/pending?channel=TN&hours=8760&limit=100',{skipLastJson:true})
-    ]);
-    let rows=[...(ml.items||[]),...(tn.items||[])].sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||'')));
-    state.arcaManualPendingItems=rows;renderArcaManualPending();
-    setStatus('arcaManualPendingStatus',rows.length?`${rows.length} venta(s) pendiente(s) de facturar.`:'No hay ventas pendientes de facturar.',true);
+    let d=await fetchJson(`/admin/arca/manual/actions?limit=${lim}&offset=${off}`,{skipLastJson:true});
+    let rows=Array.isArray(d.items)?d.items:[];
+    state.arcaManualPendingItems=rows;state.arcaManualPendingOffset=Number(d.offset||off);state.arcaManualPendingHasMore=!!d.has_more;
+    renderArcaManualPending();
+    setStatus('arcaManualPendingStatus',rows.length?`${rows.length} facturación(es) pendiente(s) de resolver en esta página.`:'No hay facturaciones pendientes de resolver.',true);
     return rows;
-  }catch(e){state.arcaManualPendingItems=[];renderArcaManualPending();setStatus('arcaManualPendingStatus','No pude leer las ventas pendientes: '+errText(e),false);return []}
+  }catch(e){state.arcaManualPendingItems=[];state.arcaManualPendingHasMore=false;renderArcaManualPending();setStatus('arcaManualPendingStatus','No pude leer las facturaciones pendientes: '+errText(e),false);return []}
 }
+async function reportArcaManualIncident(ch,orderId,sale){
+  ch=String(ch||'').toUpperCase();orderId=String(orderId||'').trim();
+  if(!ch||!orderId)return;
+  if(!confirm(`¿Pasar ${ch} ${sale||orderId} a Incidencias fiscales?\n\nDejará de aparecer en Facturar manualmente y quedará en el listado para la contadora.`))return;
+  try{
+    setStatus('arcaManualPendingStatus',`Reportando ${ch} ${sale||orderId} como incidencia fiscal...`);
+    await fetchJson(`/admin/arca/orders/${encodeURIComponent(ch)}/${encodeURIComponent(orderId)}/report-incident`,{method:'POST',skipLastJson:true});
+    await loadArcaManualPending(false,state.arcaManualPendingOffset||0);
+    setStatus('arcaManualPendingStatus',`${ch} ${sale||orderId} pasó a Incidencias fiscales.`,true);
+  }catch(e){setStatus('arcaManualPendingStatus','No pude reportar la incidencia: '+errText(e),false)}
+}
+
 function arcaManualSetDocType(value){
   let select=qs('amDocType'),raw=String(value||'').trim().toUpperCase();if(!select)return;
   if(!raw)raw='CF';let option=Array.from(select.options).find(o=>String(o.value||'').toUpperCase()===raw);
