@@ -1495,8 +1495,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.64-open-sales-batches';
-const FRONTEND_BUILD='admin-erp-v29764-open-sales-batches';
+const FRONTEND_VERSION='2.97.65-manual-error-humano';
+const FRONTEND_BUILD='admin-erp-v29765-manual-error-humano';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
@@ -5501,9 +5501,56 @@ function arcaManualBody(dryRun=true,confirmar=false){
 }
 async function arcaManualPreview(){
   try{hideManualPreviewBox();setStatus('arcaManualStatus','Generando vista previa...');let body=arcaManualBody(true,false);let d=await fetchJson('/admin/arca/comprobantes/manual/preview',{method:'POST',body:JSON.stringify(body)});renderArcaManualPreview(d);setStatus('arcaManualStatus',`Preview OK · próximo ${d.cbte_letra} ${String(d.pto_vta).padStart(4,'0')}-${String(d.proximo).padStart(8,'0')} · total ${money(d.importe_total)}`,true)}catch(e){if(e?.manualValidation){setStatus('arcaManualStatus',e.message,false);return}saveLastArcaError(e,{fn:'arcaManualPreview'});setStatus('arcaManualStatus','No se pudo generar la vista previa: '+errText(e),false);showPre('arcaManualOut',e)}}
+function arcaManualHumanError(e){
+  const seen=new Set();
+  function walk(v){
+    if(v===null||v===undefined)return '';
+    if(typeof v==='string')return '';
+    if(typeof v!=='object'||seen.has(v))return '';
+    seen.add(v);
+
+    // Prioridad: explicación fiscal concreta.
+    let direct=[
+      v.arca_padron_error,
+      v.user_message,
+      v.fiscal_error
+    ].find(x=>typeof x==='string'&&x.trim());
+    if(direct)return direct.trim().replace(/^\d{3}:\s*/,'');
+
+    // Observaciones de ARCA, si existen.
+    if(Array.isArray(v.arca_errors)){
+      for(let item of v.arca_errors){
+        if(item&&typeof item==='object'){
+          let msg=item.message||item.Msg||item.msg||item.descripcion||item.Descripcion;
+          if(typeof msg==='string'&&msg.trim())return msg.trim();
+        }
+      }
+    }
+
+    // Primero bajar por los contenedores típicos para evitar mostrar
+    // "ARCA/manual comprobante falló" cuando abajo está la causa real.
+    for(let key of ['detail','response','error']){
+      if(v[key]&&typeof v[key]==='object'){
+        let found=walk(v[key]);
+        if(found)return found;
+      }
+    }
+
+    // Último recurso: un message textual razonable.
+    if(typeof v.message==='string'&&v.message.trim()){
+      let msg=v.message.trim().replace(/^\d{3}:\s*/,'');
+      if(!/[{\[]/.test(msg) && !/HTTPException|Traceback|exception_type|safe_body|trace_tail/i.test(msg))return msg;
+    }
+    return '';
+  }
+  return walk(e)||'ARCA rechazó el comprobante. Revisá los datos fiscales del receptor o reportá la venta como incidencia fiscal.';
+}
+
 async function arcaManualEmit(){
   hideArcaMonitor();
   let btn=document.querySelector('#arca-manual button.danger');
+  let out=qs('arcaManualOut');
+  if(out){out.classList.add('hidden');out.textContent=''}
   try{
     let body=arcaManualBody(false,true);
     let total=body.lines.reduce((a,l)=>a+(Number(l.quantity)*Number(l.unit_price_gross)*(1-Number(l.discount_pct||0)/100)),0);
@@ -5511,14 +5558,18 @@ async function arcaManualEmit(){
     if(!confirm(`Emitir comprobante real en ARCA por ${money(total)}?${stockMsg}`))return;
     if(btn){btn.disabled=true;btn.textContent='Emitiendo...'}
     setStatus('arcaManualStatus','Emitiendo comprobante real... No vuelvas a tocar el botón.');
-    let d=await fetchJson('/admin/arca/comprobantes/manual/emitir',{method:'POST',body:JSON.stringify(body)});
+    let d=await fetchJson('/admin/arca/comprobantes/manual/emitir',{
+      method:'POST',
+      body:JSON.stringify(body),
+      skipLastJson:true
+    });
     let sm=d.stock_result&&d.stock_result.enabled?` · Stock: ${d.stock_result.mode}`:'';
     let nro=`${d.cbte_letra} ${String(d.pto_vta).padStart(4,'0')}-${String(d.cbte_nro).padStart(8,'0')}`;
     let invoiceId=String(d.invoice_id||d.invoice?.id||'');
     let localWarning=d.save_error?`<div style="margin-top:8px;color:#991b1b">ARCA lo emitió, pero falló el guardado local. No lo vuelvas a emitir; informá este número y CAE para recuperarlo.</div>`:'';
     qs('arcaManualStatus').className='status oktxt';
     qs('arcaManualStatus').innerHTML=`<div class="successBox">Emitido OK · ${esc(nro)} · CAE ${esc(d.cae||'')}${esc(sm)}${localWarning}${invoiceId?`<div style="margin-top:8px"><button class="secondary" onclick="openInvoiceHtml('${esc(invoiceId)}')">Ver / imprimir PDF</button> <button class="secondary" onclick="downloadInvoicePdf('${esc(invoiceId)}')">Descargar PDF</button></div>`:''}</div>`;
-    if(d.save_error){showPre('arcaManualOut',d);return}
+    if(d.save_error)return;
     setTimeout(()=>{
       let ctx=state.arcaManualReturnContext;
       arcaManualClear();
@@ -5534,8 +5585,19 @@ async function arcaManualEmit(){
       }
       window.scrollTo({top:0,behavior:'smooth'});
     },800);
-  }catch(e){if(e?.manualValidation){setStatus('arcaManualStatus',e.message,false)}else{saveLastArcaError(e,{fn:'arcaManualEmit'});setStatus('arcaManualStatus','No se pudo emitir: '+errText(e),false);showPre('arcaManualOut',e)}}
-  finally{if(btn){btn.disabled=false;btn.textContent='Emitir comprobante real'}}
+  }catch(e){
+    if(out){out.classList.add('hidden');out.textContent=''}
+    if(e?.manualValidation){
+      setStatus('arcaManualStatus',e.message,false);
+    }else{
+      // El detalle técnico queda guardado para diagnóstico, pero jamás se imprime al usuario.
+      saveLastArcaError(e,{fn:'arcaManualEmit'});
+      let msg=arcaManualHumanError(e);
+      setStatus('arcaManualStatus','No se pudo emitir. '+msg,false);
+    }
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent='Emitir comprobante real'}
+  }
 }
 
 
