@@ -18,6 +18,7 @@
 <!-- XELERIA_ARCA_PRODUCTION_ONLY_UI_V289 -->
 <!-- XELERIA_ARCA_CHECK_A_B_UI_V291 -->
 <!-- XELERIA_ARCA_MANUAL_CUSTOMER_AUTOCOMPLETE_A5_TYPE_SYNC_V296 -->
+<!-- XELERIA_ARCA_MANUAL_PENDING_QUEUE_V297 -->
 <!-- XELERIA_SALES_INVOICE_STATES_ALIGNMENT_V292 -->
 <!-- XELERIA_CONNECTIONS_LIVE_ARCA_TEST_CONFIG_SAVE_V290 -->
 <!-- XELERIA_OXANIUM_BRAND_V283 -->
@@ -1966,7 +1967,9 @@ function showView(id,options={}){
   if(id==='arca-reportes'){
     ensureArcaReportTabs();initArcaDates();initArcaIncidentDates();
     let active=state.arcaReportTab||'invoices';showArcaReportTab(active,false);
-    if(active==='incidents')loadArcaIncidents();else loadArcaInvoices();
+    if(active==='incidents')loadArcaIncidents();
+    else if(active==='manual')loadArcaManualPending();
+    else loadArcaInvoices();
   }
   if(id==='arca-manual'){
     if(options.preserveManualDraft)arcaManualInit();
@@ -2173,9 +2176,10 @@ function opsLogPayloadErrors(n={}){let p=n.payload||{};let candidates=[p.item_er
 function opsLogErrorText(error={}){if(typeof error==='string')return error;return String(error.user_message||error.message||error.detail||error.error||error.reason||error.type||'Error sin descripción')}
 function opsLogErrorLabel(error={},idx=0){if(typeof error==='string')return `Error ${idx+1}`;let parts=[];if(error.row!==undefined)parts.push(`Fila ${error.row}`);if(error.sku)parts.push(`SKU ${error.sku}`);if(error.marketplace||error.channel)parts.push(String(error.marketplace||error.channel));if(error.operation)parts.push(`Operación ${error.operation}`);if(error.customer_name)parts.push(String(error.customer_name));if(error.external_product_id||error.publication_id)parts.push(`Publicación ${error.external_product_id||error.publication_id}`);if(error.external_variant_id||error.variant_id)parts.push(`Variante ${error.external_variant_id||error.variant_id}`);return parts.join(' · ')||`Error ${idx+1}`}
 function opsLogArcaDetailHtml(error={}){let observations=Array.isArray(error.arca_errors)?error.arca_errors:[];let meta=[error.classification?('Clasificación: '+error.classification):'',error.resultado?('Resultado: '+error.resultado):'',error.stage?('Etapa: '+error.stage):'',error.attempted_at?('Hora: '+dateAR(error.attempted_at)):'',error.expected_cbte_nro?('Comprobante esperado: '+error.expected_cbte_nro):''].filter(Boolean);let obs=observations.map(x=>`<div class="small"><strong>Código ${esc(x.code||'-')}</strong> · ${esc(x.message||'Sin mensaje')}</div>`).join('');return `${meta.length?`<span class="small">${esc(meta.join(' · '))}</span>`:''}${obs}`}
-function opsLogDetailHtml(n={}){let errors=opsLogPayloadErrors(n);if(!errors.length){let body=String(n.body||'').trim().replace(/\s*[\/·-]?\s*Revisar bitácora\.?\s*$/i,'').trim();return body?`<div class="opsLogDetailItem"><strong>Detalle</strong><span>${esc(body)}</span></div>`:'<div class="muted">No hay más detalle disponible.</div>'}return `<div class="opsLogErrorList">${errors.map((error,idx)=>`<div class="opsLogDetailItem"><strong>${esc(opsLogErrorLabel(error,idx))}</strong><span>${esc(opsLogErrorText(error))}</span>${opsLogArcaDetailHtml(error)}</div>`).join('')}</div>`}
-function opsLogActionsHtml(n={}){let acts=Array.isArray(n.actions)?n.actions:[];let html='';acts.forEach(a=>{let kind=String(a.kind||'');if(kind==='retry_import'&&a.job_id){html+=`<button class="secondary" onclick="retryInventoryImportErrors('${esc(String(a.job_id))}',true)">${esc(a.label||'Reintentar importación')}</button>`}else if(kind==='repair_save'&&a.job_id){html+=`<button class="secondary" onclick="repairInventoryImportSaveObservations('${esc(String(a.job_id))}')">${esc(a.label||'Reparar observaciones')}</button>`}else if(kind==='issue_invoice'&&a.channel&&a.order_id){html+=`<button class="secondary" onclick="issueInvoiceFromSale('${jsq(String(a.channel))}','${jsq(String(a.order_id))}')">${esc(a.label||'Facturar manualmente')}</button>`}else if(kind==='open_view'&&a.view){html+=`<button class="secondary" onclick="showView('${esc(String(a.view))}')">${esc(a.label||'Abrir')}</button>`}else if(kind==='dismiss'&&a.id){html+=`<button class="secondary trashBtn" onclick="deleteOpsLogItem('${esc(String(a.id))}')">🗑 ${esc(a.label||'Borrar')}</button>`}});return html||'<button class="secondary" disabled>Sin acción automática</button>'}
-function opsLogLiveInvoiceItems(dashboard={}){let items=dashboard.failures?.invoices?.items||[];return items.map((x,idx)=>{let operation=x.sale_number||x.external_order_id||x.invoice_id||String(idx+1);let isInvoice=x.kind==='invoice';let status=String(x.status||'not_attempted').toLowerCase();let title=isInvoice?'Comprobante con revisión.':(status==='not_attempted'?'Factura pendiente sin intento registrado.':'Factura pendiente de emitir.');let orderId=x.external_order_id||x.sale_number||'';let preRequestFailure=['build_payload','resolve_customer_from_arca'].includes(String(x.stage||''))&&['technical_error','invalid_fiscal_data'].includes(String(x.response_kind||''));let canIssue=!isInvoice&&orderId&&(status==='not_attempted'||x.response_kind==='explicit_rejection'||preRequestFailure);let actions=canIssue?[{kind:'issue_invoice',channel:x.channel,order_id:orderId,label:'Facturar manualmente'}]:[{kind:'open_view',view:'arca-reportes',label:'Revisar facturación'}];return{id:`live-invoice-${x.channel||''}-${operation}`,type:isInvoice?'invoice_review':'invoice_pending',severity:['error','failed'].includes(status)?'error':'warning',title,created_at:x.attempted_at||x.created_at,payload:{errors:[{channel:x.channel,operation,customer_name:x.customer_name,total:x.total,status:x.status,stage:x.stage,attempted_at:x.attempted_at,reason:x.reason||x.status||'Pendiente de facturar',classification:x.classification,response_kind:x.response_kind,resultado:x.resultado,expected_cbte_nro:x.expected_cbte_nro,arca_errors:Array.isArray(x.arca_errors)?x.arca_errors:[]}]},actions,live_state:true}})}
+function opsLogDetailHtml(n={}){let errors=opsLogPayloadErrors(n),p=n.payload||{};if(!errors.length){let summary=p.human_save_observation_summary||p.observation_summary||p.summary||p.human_summary||'';if(summary&&typeof summary==='object'){try{summary=summary.message||summary.detail||JSON.stringify(summary)}catch(_e){summary=String(summary)}}let body=String(summary||n.body||'').trim().replace(/\s*(?:[\/·-]?\s*Revisar bitácora|Abrilo para ver el detalle)\.?\s*$/i,'').trim();return body?`<div class="opsLogDetailItem"><strong>Detalle</strong><span>${esc(body)}</span></div>`:'<div class="muted">No hay más detalle disponible.</div>'}return `<div class="opsLogErrorList">${errors.map((error,idx)=>`<div class="opsLogDetailItem"><strong>${esc(opsLogErrorLabel(error,idx))}</strong><span>${esc(opsLogErrorText(error))}</span>${opsLogArcaDetailHtml(error)}</div>`).join('')}</div>`}
+function opsLogInvoiceSaleRef(n={}){let e=opsLogPayloadErrors(n)[0]||{},p=n.payload||{};return{channel:String(e.channel||p.channel||'').toUpperCase(),orderId:String(e.external_order_id||e.order_id||e.operation||p.external_order_id||p.order_id||p.operation||'')}}
+function opsLogActionsHtml(n={}){let acts=Array.isArray(n.actions)?n.actions:[];let html='';acts.forEach(a=>{let kind=String(a.kind||'');if(kind==='retry_import'&&a.job_id){html+=`<button class="secondary" onclick="retryInventoryImportErrors('${esc(String(a.job_id))}',true)">${esc(a.label||'Reintentar importación')}</button>`}else if(kind==='repair_save'&&a.job_id){html+=`<button class="secondary" onclick="repairInventoryImportSaveObservations('${esc(String(a.job_id))}')">${esc(a.label||'Reparar observaciones')}</button>`}else if(kind==='issue_invoice'&&a.channel&&a.order_id){html+=`<button class="secondary" onclick="openArcaManualSale('${jsq(String(a.channel))}','${jsq(String(a.order_id))}',{origin:'ops_log'})">${esc(a.label||'Revisar facturación')}</button>`}else if(kind==='open_view'&&a.view==='arca-reportes'&&opsLogCategory(n)==='invoice'){let ref=opsLogInvoiceSaleRef(n);html+=ref.channel&&ref.orderId?`<button class="secondary" onclick="openArcaManualSale('${jsq(ref.channel)}','${jsq(ref.orderId)}',{origin:'ops_log'})">${esc(a.label||'Revisar facturación')}</button>`:`<button class="secondary" onclick="openArcaManualQueue()">${esc(a.label||'Revisar facturación')}</button>`}else if(kind==='open_view'&&a.view){html+=`<button class="secondary" onclick="showView('${esc(String(a.view))}')">${esc(a.label||'Abrir')}</button>`}else if(kind==='dismiss'&&a.id){html+=`<button class="secondary trashBtn" onclick="deleteOpsLogItem('${esc(String(a.id))}')">🗑 ${esc(a.label||'Borrar')}</button>`}});return html||'<button class="secondary" disabled>Sin acción automática</button>'}
+function opsLogLiveInvoiceItems(dashboard={}){let items=dashboard.failures?.invoices?.items||[];return items.map((x,idx)=>{let operation=x.sale_number||x.external_order_id||x.invoice_id||String(idx+1);let isInvoice=x.kind==='invoice';let status=String(x.status||'not_attempted').toLowerCase();let title=isInvoice?'Comprobante con revisión.':(status==='not_attempted'?'Factura pendiente sin intento registrado.':'Factura pendiente de emitir.');let orderId=x.external_order_id||x.sale_number||'';let actions=orderId?[{kind:'issue_invoice',channel:x.channel,order_id:orderId,label:'Revisar facturación'}]:[{kind:'open_view',view:'arca-reportes',label:'Revisar facturación'}];return{id:`live-invoice-${x.channel||''}-${operation}`,type:isInvoice?'invoice_review':'invoice_pending',severity:['error','failed'].includes(status)?'error':'warning',title,created_at:x.attempted_at||x.created_at,payload:{errors:[{channel:x.channel,external_order_id:x.external_order_id,operation,customer_name:x.customer_name,total:x.total,status:x.status,stage:x.stage,attempted_at:x.attempted_at,reason:x.reason||x.status||'Pendiente de facturar',classification:x.classification,response_kind:x.response_kind,resultado:x.resultado,expected_cbte_nro:x.expected_cbte_nro,arca_errors:Array.isArray(x.arca_errors)?x.arca_errors:[]}]},actions,live_state:true}})}
 function opsLogLiveStockItems(dashboard={}){let items=dashboard.failures?.sync_jobs?.items||[];return items.map((x,idx)=>{let operation=x.source_order_number||x.source_order_api_id||x.id||String(idx+1);return{id:`live-stock-${x.id||operation}`,type:'stock_sync_review',severity:['error','failed'].includes(String(x.status||'').toLowerCase())?'error':'warning',title:'Alerta de stock pendiente.',created_at:x.updated_at||x.created_at,payload:{errors:[{marketplace:x.marketplace,operation,sku:x.sku,item_name:x.item_name,current_stock:x.current_stock,target_stock:x.target_stock,status:x.status,reason:x.last_error||'La sincronización necesita revisión.'}]},actions:[{kind:'open_view',view:'fallas',label:'Resolver alerta de stock'}],live_state:true}})}
 function opsLogLiveClaimItems(dashboard={}){
   let items=dashboard.ml_claims?.items||[];
@@ -2201,6 +2205,43 @@ function opsLogLiveClaimItems(dashboard={}){
     };
   });
 }
+function opsLogImportJobId(n={}){
+  let p=n.payload||{};
+  let action=(Array.isArray(n.actions)?n.actions:[]).find(a=>a&&a.job_id);
+  return String(p.job_id||p.import_job_id||p.inventory_import_job_id||action?.job_id||'').trim();
+}
+function opsLogImportHumanSummary(job={}){
+  let errs=Array.isArray(job.item_errors)?job.item_errors:[];
+  let count=Number(job.error_count||errs.length||0);
+  if(!count)return'';
+  let dup=0,net=0,manual=0;
+  errs.forEach(e=>{
+    let txt=String((e.type||'')+' '+(e.detail||e.message||'')).toLowerCase();
+    if(txt.includes('duplicate key')||txt.includes('23505'))dup++;
+    else if(txt.includes('timeout')||txt.includes('connection')||txt.includes('localprotocolerror')||txt.includes('recv_data')||txt.includes('temporarily unavailable'))net++;
+    else manual++;
+  });
+  let parts=[];
+  if(dup)parts.push(`${dup} publicación(es) con SKU ya creado durante el guardado`);
+  if(net)parts.push(`${net} corte(s) temporario(s) de conexión`);
+  if(manual)parts.push(`${manual} publicación(es) para revisión manual`);
+  return parts.length?parts.join(' · '):`${count} observación(es)`;
+}
+async function hydrateOpsLogImportDetails(items=[]){
+  let targets=(items||[]).filter(n=>opsLogCategory(n)==='import'&&!opsLogPayloadErrors(n).length&&opsLogImportJobId(n)).slice(0,12);
+  await Promise.all(targets.map(async n=>{
+    let jobId=opsLogImportJobId(n);
+    try{
+      let d=await fetchJson('/admin/inventory/import-jobs/'+encodeURIComponent(jobId),{skipLastJson:true});
+      let job=d.job||d||{},errs=Array.isArray(job.item_errors)?job.item_errors:[];
+      n.payload={...(n.payload||{}),job_id:jobId};
+      if(errs.length)n.payload.item_errors=errs;
+      let summary=opsLogImportHumanSummary(job);
+      if(summary)n.body=[String(n.body||'').trim(),`Observaciones: ${summary}.`].filter(Boolean).join(' · ');
+    }catch(e){console.debug('hydrateOpsLogImportDetails',jobId,e)}
+  }));
+  return items;
+}
 function mergeOpsLogSources(logItems=[],dashboard={}){let merged=[...opsLogLiveInvoiceItems(dashboard),...opsLogLiveStockItems(dashboard),...opsLogLiveClaimItems(dashboard),...(logItems||[])];let seen=new Set();return merged.filter(item=>{let key=String(item.id||`${item.type}|${item.created_at}|${item.title}`);if(seen.has(key))return false;seen.add(key);return true}).sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||'')))}
 function renderOpsLogFilters(){let ids={all:'opsFilterAll',invoice:'opsFilterInvoice',stock:'opsFilterStock',import:'opsFilterImport',other:'opsFilterOther'};Object.entries(ids).forEach(([key,id])=>qs(id)?.classList.toggle('active',state.opsLogFilter===key))}
 function setOpsLogFilter(filter='all'){state.opsLogFilter=['all','invoice','stock','import','other'].includes(filter)?filter:'all';renderOpsLogFilters();renderOpsLog()}
@@ -2210,7 +2251,7 @@ function opsLogXeliHtml(idx){let item=state.opsLogXeli[idx];if(!item)return '';i
 async function waitForXeliReading(startedAt,minMs=1600){let remaining=Math.max(0,minMs-(Date.now()-startedAt));if(remaining)await new Promise(resolve=>setTimeout(resolve,remaining))}
 function renderOpsLog(){let host=qs('opsLogList');if(!host)return;renderOpsLogFilters();let all=state.opsLog.items||[];let items=state.opsLogFilter==='all'?all:all.filter(n=>opsLogCategory(n)===state.opsLogFilter);if(!items.length){host.innerHTML='<div class="muted">No hay advertencias pendientes en esta categoría.</div>';return}host.innerHTML=items.map(n=>{let idx=all.indexOf(n),sev=String(n.severity||'warning').toLowerCase();let title=n.title||'Evento operativo';let meta=`${opsLogKind(n)} · ${dateAR(n.created_at)||''}`;return `<div class="opsLogCard ${esc(sev)}"><div class="opsLogTop"><div><div class="opsLogTitle">${esc(title)}</div><div class="opsLogMeta">${esc(meta)}</div></div><span class="pill ${sev==='error'?'bad':'warn'}">${esc(sev)}</span></div><div class="opsLogActions">${opsLogActionsHtml(n)}</div>${opsLogXeliHtml(idx)}<details class="opsLogTech"><summary>Detalle</summary>${opsLogDetailHtml(n)}</details></div>`}).join('')}
 async function readOpsLogWithXeli(idx){let event=(state.opsLog.items||[])[idx];if(!event)return;let startedAt=Date.now();state.opsLogXeli[idx]={loading:true};renderOpsLog();try{let safe=scrubSensitiveJson({type:event.type,title:event.title,severity:event.severity,created_at:event.created_at,payload:event.payload||{}});let data=await fetchJson('/admin/xeli/operational-table',{method:'POST',body:JSON.stringify({event:safe}),skipLastJson:true});await waitForXeliReading(startedAt);state.opsLogXeli[idx]={data};renderOpsLog()}catch(e){state.opsLogXeli[idx]={error:errText(e)};renderOpsLog()}}
-async function loadOpsLog(manual=false){if(manual)setStatus('opsLogStatus','Leyendo Errores y Advertencias...');try{let d=await fetchJson('/admin/ops-log?limit=120',{skipLastJson:!manual});let dashboard={};let liveError='';try{dashboard=await fetchJson('/admin/dashboard/summary?sync_jobs_limit=50&sync_jobs_offset=0',{skipLastJson:true})}catch(e){liveError=errText(e)}let items=mergeOpsLogSources(d.items||[],dashboard);state.opsLog={items,total:items.length};renderOpsLog();if(manual)setStatus('opsLogStatus',liveError?`Eventos: ${items.length}. No pude actualizar los estados vivos: ${liveError}`:(items.length?`Eventos: ${items.length}`:'Sin errores ni advertencias pendientes.'),!liveError)}catch(e){setStatus('opsLogStatus','Error leyendo Errores y Advertencias: '+errText(e),false)}}
+async function loadOpsLog(manual=false){if(manual)setStatus('opsLogStatus','Leyendo Errores y Advertencias...');try{let d=await fetchJson('/admin/ops-log?limit=120',{skipLastJson:!manual});let dashboard={};let liveError='';try{dashboard=await fetchJson('/admin/dashboard/summary?sync_jobs_limit=50&sync_jobs_offset=0',{skipLastJson:true})}catch(e){liveError=errText(e)}let items=mergeOpsLogSources(d.items||[],dashboard);await hydrateOpsLogImportDetails(items);state.opsLog={items,total:items.length};renderOpsLog();if(manual)setStatus('opsLogStatus',liveError?`Eventos: ${items.length}. No pude actualizar los estados vivos: ${liveError}`:(items.length?`Eventos: ${items.length}`:'Sin errores ni advertencias pendientes.'),!liveError)}catch(e){setStatus('opsLogStatus','Error leyendo Errores y Advertencias: '+errText(e),false)}}
 async function deleteOpsLogItem(id){if(!id)return;try{await fetchJson('/admin/ops-log/'+encodeURIComponent(id),{method:'DELETE'});setStatus('opsLogStatus','Evento quitado de Errores y Advertencias.',true);loadOpsLog(false).catch(()=>{});loadNotifications(false).catch(()=>{})}catch(e){setStatus('opsLogStatus','No pude borrar de Errores y Advertencias: '+errText(e),false)}}
 
 const NOTIFICATION_GROUPS=[
@@ -4618,10 +4659,17 @@ async function loadMovements(){let sku=qs('movSku')?.value.trim()||'';let lim=Nu
 function ensureArcaReportTabs(){
   let section=qs('arca-reportes'),card=section?.querySelector('.card');
   if(!card||qs('arcaInvoicesPanel'))return;
-  let original=[...card.childNodes],tabs=document.createElement('div'),invoices=document.createElement('div'),incidents=document.createElement('div');
+  let original=[...card.childNodes],tabs=document.createElement('div'),invoices=document.createElement('div'),manual=document.createElement('div'),incidents=document.createElement('div');
   tabs.id='arcaReportTabs';tabs.className='btnrow';tabs.style.marginBottom='16px';
-  tabs.innerHTML=`<button id="arcaInvoicesTab" onclick="showArcaReportTab('invoices')">Comprobantes emitidos</button><button id="arcaIncidentsTab" class="secondary" onclick="showArcaReportTab('incidents')">Incidencias fiscales</button>`;
+  tabs.innerHTML=`<button id="arcaInvoicesTab" onclick="showArcaReportTab('invoices')">Comprobantes emitidos</button><button id="arcaManualPendingTab" class="secondary" onclick="showArcaReportTab('manual')">Facturar manualmente</button><button id="arcaIncidentsTab" class="secondary" onclick="showArcaReportTab('incidents')">Incidencias fiscales</button>`;
   invoices.id='arcaInvoicesPanel';original.forEach(node=>invoices.appendChild(node));
+  manual.id='arcaManualPendingPanel';manual.className='hidden';
+  manual.innerHTML=`
+    <h3>ARCA · Facturar manualmente</h3>
+    <p>Ventas ML/TN pagas, no canceladas y todavía sin comprobante emitido. Elegí una venta para abrir el comprobante ya prellenado; podés revisar o corregir los datos antes de facturar.</p>
+    <div class="btnrow" style="margin-top:12px"><button onclick="loadArcaManualPending(true)">Actualizar ventas no facturadas</button></div>
+    <div id="arcaManualPendingStatus" class="status"></div>
+    <div id="arcaManualPendingTable" class="tableWrap" style="margin-top:12px"></div>`;
   incidents.id='arcaIncidentsPanel';incidents.className='hidden';
   incidents.innerHTML=`
     <h3>ARCA · Incidencias fiscales</h3>
@@ -4635,15 +4683,98 @@ function ensureArcaReportTabs(){
     </div>
     <div class="btnrow" style="margin-top:12px"><button onclick="loadArcaIncidents()">Buscar incidencias</button><button class="secondary" onclick="downloadArcaIncidentsExcel()">Descargar expediente Excel</button></div>
     <div id="arcaIncStatus" class="status"></div><div id="arcaIncTable" class="tableWrap" style="margin-top:12px"></div><pre id="arcaIncOut" class="hidden"></pre>`;
-  card.append(tabs,invoices,incidents);
+  card.append(tabs,invoices,manual,incidents);
 }
 function showArcaReportTab(kind,load=true){
-  ensureArcaReportTabs();let incidents=kind==='incidents';state.arcaReportTab=incidents?'incidents':'invoices';
-  qs('arcaInvoicesPanel')?.classList.toggle('hidden',incidents);qs('arcaIncidentsPanel')?.classList.toggle('hidden',!incidents);
-  if(qs('arcaInvoicesTab'))qs('arcaInvoicesTab').className=incidents?'secondary':'';
-  if(qs('arcaIncidentsTab'))qs('arcaIncidentsTab').className=incidents?'':'secondary';
-  if(load){if(incidents){initArcaIncidentDates();loadArcaIncidents()}else{initArcaDates();loadArcaInvoices()}}
+  ensureArcaReportTabs();
+  let active=['invoices','manual','incidents'].includes(kind)?kind:'invoices';
+  state.arcaReportTab=active;
+  qs('arcaInvoicesPanel')?.classList.toggle('hidden',active!=='invoices');
+  qs('arcaManualPendingPanel')?.classList.toggle('hidden',active!=='manual');
+  qs('arcaIncidentsPanel')?.classList.toggle('hidden',active!=='incidents');
+  if(qs('arcaInvoicesTab'))qs('arcaInvoicesTab').className=active==='invoices'?'':'secondary';
+  if(qs('arcaManualPendingTab'))qs('arcaManualPendingTab').className=active==='manual'?'':'secondary';
+  if(qs('arcaIncidentsTab'))qs('arcaIncidentsTab').className=active==='incidents'?'':'secondary';
+  if(load){
+    if(active==='incidents'){initArcaIncidentDates();loadArcaIncidents()}
+    else if(active==='manual'){loadArcaManualPending()}
+    else{initArcaDates();loadArcaInvoices()}
+  }
 }
+function arcaManualPendingSaleId(row={}){
+  let ch=String(row.channel||'').toUpperCase();
+  if(ch==='ML')return String(row.pack_id||row.ml_order_id||row.external_order_id||row.erp_order_id||'');
+  return String(row.external_order_id||row.erp_order_id||'');
+}
+function arcaManualPendingSaleNumber(row={}){return String(row.sale_number||row.invoice_preview?.source_order_number||row.pack_id||row.external_order_id||row.erp_order_id||'')}
+function renderArcaManualPending(){
+  let host=qs('arcaManualPendingTable');if(!host)return;
+  let rows=Array.isArray(state.arcaManualPendingItems)?state.arcaManualPendingItems:[];
+  if(!rows.length){host.innerHTML='<div class="dashEmpty">No hay ventas pendientes de facturar.</div>';return}
+  host.innerHTML=`<table><thead><tr><th>Fecha</th><th>Canal</th><th>Venta</th><th>Cliente</th><th>Total</th><th>Estado</th><th></th></tr></thead><tbody>${rows.map(row=>{
+    let ch=String(row.channel||'').toUpperCase();let oid=arcaManualPendingSaleId(row);let sale=arcaManualPendingSaleNumber(row);let preview=row.invoice_preview||{};let err=row.preview_error||'';let status=err?'<span class="pill warn">Revisar datos fiscales</span>':'<span class="pill ok">Lista para revisar</span>';
+    let errTextShort='';if(err){try{errTextShort=typeof err==='string'?err:(err.message||err.detail||JSON.stringify(err))}catch(_e){errTextShort=String(err)}}
+    return `<tr><td>${esc(dateAR(row.created_at)||String(row.created_at||'').slice(0,10))}</td><td><strong>${esc(ch)}</strong></td><td>${esc(sale)}</td><td>${esc(row.customer_name||preview.customer_name||'')}</td><td><strong>${money(row.total??preview.importe_total)}</strong></td><td>${status}${errTextShort?`<div class="small" style="margin-top:4px">${esc(errTextShort)}</div>`:''}</td><td><button onclick="openArcaManualSale('${jsq(ch)}','${jsq(oid)}')">Facturar venta</button></td></tr>`;
+  }).join('')}</tbody></table>`;
+}
+async function loadArcaManualPending(manual=false){
+  if(qs('arcaManualPendingStatus'))setStatus('arcaManualPendingStatus',manual?'Actualizando ventas no facturadas...':'Leyendo ventas no facturadas...');
+  try{
+    let [ml,tn]=await Promise.all([
+      fetchJson('/admin/arca/orders/pending?channel=ML&hours=8760&limit=100',{skipLastJson:true}),
+      fetchJson('/admin/arca/orders/pending?channel=TN&hours=8760&limit=100',{skipLastJson:true})
+    ]);
+    let rows=[...(ml.items||[]),...(tn.items||[])].sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||'')));
+    state.arcaManualPendingItems=rows;renderArcaManualPending();
+    setStatus('arcaManualPendingStatus',rows.length?`${rows.length} venta(s) pendiente(s) de facturar.`:'No hay ventas pendientes de facturar.',true);
+    return rows;
+  }catch(e){state.arcaManualPendingItems=[];renderArcaManualPending();setStatus('arcaManualPendingStatus','No pude leer las ventas pendientes: '+errText(e),false);return []}
+}
+function arcaManualSetDocType(value){
+  let select=qs('amDocType'),raw=String(value||'').trim().toUpperCase();if(!select)return;
+  if(!raw)raw='CF';let option=Array.from(select.options).find(o=>String(o.value||'').toUpperCase()===raw);
+  if(!option){option=new Option(raw,raw);select.add(option)}select.value=option.value;
+}
+async function openArcaManualSale(ch,orderId,opts={}){
+  ch=String(ch||'').toUpperCase();orderId=String(orderId||'').trim();
+  if(!ch||!orderId){openArcaManualQueue();return}
+  let origin=String(opts.origin||'manual_queue');
+  try{
+    if(qs('arcaManualPendingStatus'))setStatus('arcaManualPendingStatus',`Preparando ${ch} ${orderId}...`);
+    let d=await fetchJson(`/admin/arca/orders/${encodeURIComponent(ch)}/${encodeURIComponent(orderId)}/manual-prefill`,{skipLastJson:true});
+    let inv=d.prefill||{};
+    state.arcaManualReturnContext={view:'arca-reportes',tab:'manual',origin,channel:ch,orderId};
+    arcaManualClear();
+    qs('amTipo').value=String(inv.cbte_tipo||6);arcaManualTypeChanged();
+    qs('amConcepto').value=inv.concept||'Productos';arcaManualConceptChanged();
+    qs('amFecha').value=String(inv.invoice_date||inv.source_created_at||'').slice(0,10)||arcaManualToday();
+    qs('amSourceChannel').value=ch;
+    qs('amSourceOrder').value=String(inv.source_order_id||orderId);
+    qs('amCustomerName').value=inv.customer_name||'Consumidor Final';
+    arcaManualSetDocType(inv.customer_doc_type||'CF');
+    qs('amDocNumber').value=inv.customer_doc_number||'';
+    arcaManualSetIvaCondition(inv.customer_iva_condition||'Consumidor Final');
+    if(qs('amEmail'))qs('amEmail').value=inv.customer_email||'';
+    qs('amAddress').value=inv.customer_address||'';
+    qs('amLocalidad').value=inv.customer_localidad||'';
+    qs('amNotes').value=`Venta ${ch} ${inv.source_order_number||orderId} preparada desde ARCA Reportes para facturación manual.`;
+    if(qs('amModificaStock'))qs('amModificaStock').checked=false;
+    if(qs('amStockReason'))qs('amStockReason').value='comprobante';
+    qs('arcaManualLines').innerHTML='';arcaManualSeq=0;
+    let lines=Array.isArray(inv.lines)?inv.lines:[];
+    lines.forEach(line=>arcaManualAddLine({
+      sku:line.sku||'',description:line.description||line.name||line.title||line.sku||'Producto',quantity:line.quantity||1,
+      discount_pct:line.discount_pct||0,unit_price_gross:line.unit_price_gross??line.unit_price??line.price??0,iva_pct:line.iva_pct??21
+    }));
+    if(!lines.length)arcaManualAddLine({sku:'',description:'',quantity:1,unit_price_gross:''});
+    showView('arca-manual',{preserveManualDraft:true});
+    let warning=inv.prefill_warning;
+    if(warning){let txt=errText(warning);setStatus('arcaManualStatus','Venta cargada. La automática había encontrado una incidencia fiscal: '+txt,'warn')}
+    else setStatus('arcaManualStatus','Venta cargada. Revisá los datos y la fecha; después podés facturar o cancelar.',true);
+  }catch(e){setStatus('arcaManualPendingStatus','No pude preparar la venta: '+errText(e),false)}
+}
+function openArcaManualQueue(){state.arcaReportTab='manual';showView('arca-reportes')}
+
 function prevMonthRange(){let d=new Date();let firstPrev=new Date(d.getFullYear(),d.getMonth()-1,1);let fmt=x=>x.toISOString().slice(0,10);return{from:fmt(firstPrev),to:fmt(d)}}function initArcaDates(){let r=prevMonthRange();if(qs('arcaDesde')&&!qs('arcaDesde').value)qs('arcaDesde').value=r.from;if(qs('arcaHasta')&&!qs('arcaHasta').value)qs('arcaHasta').value=r.to}
 function initArcaIncidentDates(){let r=prevMonthRange();if(qs('arcaIncDesde')&&!qs('arcaIncDesde').value)qs('arcaIncDesde').value=r.from;if(qs('arcaIncHasta')&&!qs('arcaIncHasta').value)qs('arcaIncHasta').value=r.to}
 function arcaTypeLabel(r){let n=Number(r.cbte_tipo||0);return r.cbte_tipo_label||({1:'Factura A',2:'Nota de Débito A',3:'Nota de Crédito A',6:'Factura B',7:'Nota de Débito B',8:'Nota de Crédito B',11:'Factura C',12:'Nota de Débito C',13:'Nota de Crédito C',19:'Factura de Exportación'}[n]||'Comprobante')}
@@ -5251,7 +5382,14 @@ function arcaManualClear(){hideManualPreviewBox();arcaManualEnsureCustomerAutoco
   qs('arcaManualLines').innerHTML='';arcaManualAddLine();setStatus('arcaManualStatus','');qs('arcaManualOut').classList.add('hidden');
 }
 function cancelArcaManual(){
+  let ctx=state.arcaManualReturnContext;
   arcaManualClear();
+  if(ctx&&ctx.view==='arca-reportes'){
+    state.arcaManualReturnContext=null;
+    state.arcaReportTab='manual';
+    showView('arca-reportes',{skipHistory:true});
+    return;
+  }
   cancelToPreviousView();
 }
 function arcaManualBody(dryRun=true,confirmar=false){
@@ -5307,7 +5445,21 @@ async function arcaManualEmit(){
     qs('arcaManualStatus').className='status oktxt';
     qs('arcaManualStatus').innerHTML=`<div class="successBox">Emitido OK · ${esc(nro)} · CAE ${esc(d.cae||'')}${esc(sm)}${localWarning}${invoiceId?`<div style="margin-top:8px"><button class="secondary" onclick="openInvoiceHtml('${esc(invoiceId)}')">Ver / imprimir PDF</button> <button class="secondary" onclick="downloadInvoicePdf('${esc(invoiceId)}')">Descargar PDF</button></div>`:''}</div>`;
     if(d.save_error){showPre('arcaManualOut',d);return}
-    setTimeout(()=>{arcaManualClear();showView('arca-reportes');loadArcaInvoices();setStatus('arcaStatus',`Emitido OK · ${nro} · CAE ${d.cae||''}`,true);window.scrollTo({top:0,behavior:'smooth'})},2200);
+    setTimeout(()=>{
+      let ctx=state.arcaManualReturnContext;
+      arcaManualClear();
+      state.arcaManualReturnContext=null;
+      if(ctx&&ctx.view==='arca-reportes'&&ctx.tab==='manual'){
+        state.arcaReportTab='manual';
+        showView('arca-reportes');
+        setTimeout(()=>setStatus('arcaManualPendingStatus',`Emitido OK · ${nro} · CAE ${d.cae||''}. La venta fue quitada del listado.`,true),0);
+      }else{
+        state.arcaReportTab='invoices';
+        showView('arca-reportes');
+        setTimeout(()=>setStatus('arcaStatus',`Emitido OK · ${nro} · CAE ${d.cae||''}`,true),0);
+      }
+      window.scrollTo({top:0,behavior:'smooth'});
+    },800);
   }catch(e){if(e?.manualValidation){setStatus('arcaManualStatus',e.message,false)}else{saveLastArcaError(e,{fn:'arcaManualEmit'});setStatus('arcaManualStatus','No se pudo emitir: '+errText(e),false);showPre('arcaManualOut',e)}}
   finally{if(btn){btn.disabled=false;btn.textContent='Emitir comprobante real'}}
 }
