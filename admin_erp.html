@@ -6676,7 +6676,7 @@ async function inventoryImportBootstrapGridButton(){
     if(state.inventoryImportRunning||state.inventoryImportSaving||state.inventoryImportGridLoaded)return;
     let st=sessionToken();
     if(!st)return;
-    let d=await fetchJson('/admin/inventory/import-jobs/grid?limit=500&offset=0');
+    let d=await fetchJson('/admin/inventory/import-grid?limit=500&offset=0');
     let total=Number(d.total||0);
     let rows=Array.isArray(d.rows)?d.rows:[];
     if(d.no_staging||(!rows.length&&!total)){
@@ -7040,7 +7040,7 @@ async function loadInventoryImportGrid(offset=0,opts={}){
   try{
     let batchId=String(state.inventoryImportCurrentBatchId||state.inventoryImportActiveBatchId||'').trim();
     let batchQuery=batchId?('&batch_id='+encodeURIComponent(batchId)):'';
-    let d=await fetchJson('/admin/inventory/import-jobs/grid?limit='+encodeURIComponent(limit)+'&offset='+encodeURIComponent(offset)+batchQuery,opts.fromPoll?{skipLastJson:true}:{});
+    let d=await fetchJson('/admin/inventory/import-grid?limit='+encodeURIComponent(limit)+'&offset='+encodeURIComponent(offset)+batchQuery,opts.fromPoll?{skipLastJson:true}:{});
     renderInventoryImportResult(d,offset,limit,'grid');
     inventoryImportClearGridPoll();
     let ec=Number((d.job&&d.job.error_count)||d.error_count||0);setStatus('inventoryImportStatus','Importación lista para revisar.',true);clearStatusLater('inventoryImportStatus',4500);
