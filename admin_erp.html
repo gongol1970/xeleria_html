@@ -1043,6 +1043,18 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 .mlClaimStrip.followup .mlClaimLink{color:var(--warn)!important;border-color:var(--warn)!important}
 .mlClaimActions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.mlClaimFinalize{background:var(--warn)!important;color:#fff!important;border-color:var(--warn)!important;padding:7px 10px!important}
 .dashClaimCard.hasFollowup{border:3px solid #d97706!important;background:#fff7ed!important}
+.dashboardInsightsGrid{display:grid;grid-template-columns:minmax(220px,1fr) minmax(0,1.5fr) minmax(0,1.5fr);gap:14px;margin-top:14px;align-items:stretch}
+.dashboardInsightsGrid>.stat,.dashboardInsightsGrid>.dashboardChartCard{min-height:166px;height:100%;margin-bottom:0}
+.dashboardChartCard{background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:12px 14px;overflow:hidden}
+.dashboardChartTitle{text-align:center;font-size:14px;font-weight:900;color:var(--muted);margin-bottom:4px}
+.dashboardChart{height:126px;min-width:0}
+.dashboardChart svg{display:block;width:100%;height:100%;overflow:visible}
+.dashboardChartGrid{stroke:#e5ded0;stroke-width:1}
+.dashboardChartAxisText{fill:var(--muted);font-size:10px;font-family:Inter,Arial,sans-serif}
+.dashboardChartLine{fill:none;stroke:var(--ink);stroke-width:2.4;stroke-linejoin:round;stroke-linecap:round}
+.dashboardChartPoint{fill:var(--warn);stroke:var(--warn)}
+@media(max-width:1100px){.dashboardInsightsGrid{grid-template-columns:1fr 1fr}.dashboardInsightsGrid>.dashClaimCard{grid-column:span 2}}
+@media(max-width:760px){.dashboardInsightsGrid{grid-template-columns:1fr}.dashboardInsightsGrid>.dashClaimCard{grid-column:span 1}}
 .orderHead{grid-template-columns:minmax(0,1.15fr) minmax(0,1.25fr) minmax(210px,.9fr) minmax(120px,.8fr) minmax(135px,.58fr) 52px}
 .orderCorreoActions{display:flex;flex-direction:column;gap:7px;align-items:flex-start}.orderCorreoActions button{white-space:nowrap;padding:8px 12px!important}
 .correoModal{position:fixed;inset:0;z-index:9900;background:rgba(16,16,16,.58);display:flex;align-items:center;justify-content:center;padding:20px}.correoModalCard{width:min(820px,96vw);max-height:92vh;overflow:auto;background:#fffdf8;border:1px solid var(--line);border-radius:22px;box-shadow:0 22px 70px rgba(0,0,0,.35);padding:22px}.correoPackageGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.correoPackageGrid label{font-weight:900;font-size:12px}.correoPackageGrid input{margin-top:5px;width:100%}.correoPostalField{grid-column:span 2}.correoRecipientGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}.correoRecipientGrid label{font-weight:900;font-size:12px}.correoRecipientGrid input{margin-top:5px;width:100%}.correoRecipientWide{grid-column:span 2}.correoPackageItems{margin:12px 0;border:1px solid #eee2c8;border-radius:13px;overflow:hidden}.correoPackageItem{display:grid;grid-template-columns:minmax(110px,.6fr) minmax(0,1fr) auto;gap:9px;padding:8px 10px;border-bottom:1px solid #eee2c8;font-size:12px}.correoPackageItem:last-child{border-bottom:0}.correoRates{display:grid;gap:7px;margin-top:12px}.correoRate{display:flex;justify-content:space-between;gap:12px;padding:9px 11px;background:#fff7d6;border-radius:11px}.correoModalActions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}@media(max-width:1050px){.orderHead{grid-template-columns:1fr}}@media(max-width:700px){.correoPackageGrid,.correoRecipientGrid{grid-template-columns:1fr 1fr}.correoPostalField,.correoRecipientWide{grid-column:span 1}.correoPackageItem{grid-template-columns:1fr}}
@@ -1063,7 +1075,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 <div class="navTitle">Local físico</div><div class="sub"><button class="navBtn" data-view="arca-manual">Emitir comprobante manual</button></div>
 <div class="navTitle">Gestión</div><div class="sub"><div class="navParent">Inventario</div><div class="sub2"><button class="navBtn" data-view="inventario">Productos</button><button class="navBtn" data-view="publicador-cruzado">Publicador cruzado ML / TN</button><button class="navBtn" data-view="combos">Combos / Kits</button><button class="navBtn" data-view="full-inbound">Envío a Full</button><button class="navBtn" data-view="movimientos">Movimientos de stock</button></div><button class="navBtn" data-view="clientes">Clientes ML / TN</button><button class="navBtn" data-view="arca-reportes">ARCA reportes</button></div>
 <div class="navTitle">Inteligencia Artificial</div><div class="sub"><button class="navBtn" data-view="xeli-config">Configuración Xeli</button><button class="navBtn" data-view="xeli-training">Entrenamiento Xeli</button></div>
-<div class="navTitle">Sistema</div><div class="sub"><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" type="button" onclick="location.href='suscripcion.html'">Suscripción</button><button class="navBtn" data-view="bitacora">Registro operativo</button><button class="navBtn" data-view="versiones">Versión</button></div>
+<div class="navTitle">Sistema</div><div class="sub"><button class="navBtn" data-view="configuracion">Configuración</button><button class="navBtn" type="button" onclick="location.href='suscripcion.html'">Suscripción</button><button class="navBtn" data-view="bitacora">Errores y Advertencias</button><button class="navBtn" data-view="versiones">Versión</button></div>
 </nav></aside>
 <main>
 <div class="topbar"><div><h2 id="pageTitle">Inicio</h2><div class="crumb" id="pageCrumb">Panel operativo</div></div></div>
@@ -1098,15 +1110,26 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
       <div class="dashMoney" id="dashShipAmount">$0</div>
       <div class="s">solo acciones pendientes</div>
     </div>
-    <div class="col-3 stat dashStat">
+    <div id="dashArcaCard" class="col-3 stat dashStat good">
       <div class="k">Sistema / ARCA</div>
       <div class="v" id="stErp">OK</div>
       <div class="s">Backend <span id="dashBackendVer">?</span></div>
     </div>
-    <div id="dashClaimsCard" class="col-3 stat dashStat dashClaimCard" onclick="showView('ml-ventas')">
+  </div>
+
+  <div class="dashboardInsightsGrid">
+    <div id="dashClaimsCard" class="stat dashStat dashClaimCard good" onclick="showView('ml-ventas')">
       <div class="k">Reclamos y devoluciones ML</div>
       <div class="v" id="dashClaimsCount">0</div>
       <div class="s"><span id="dashClaimsActionCount">0</span> requieren tu acción</div>
+    </div>
+    <div class="dashboardChartCard">
+      <div class="dashboardChartTitle">Ventas $ por día · últimos 15 días</div>
+      <div id="dashSalesAmountChart" class="dashboardChart"></div>
+    </div>
+    <div class="dashboardChartCard">
+      <div class="dashboardChartTitle">Cantidad de ventas por día · últimos 15 días</div>
+      <div id="dashSalesCountChart" class="dashboardChart"></div>
     </div>
   </div>
 
@@ -1154,7 +1177,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
           <h3>Control operativo</h3>
           <p>Facturación, stock e importaciones que necesitan atención. Las ventas no entregadas todavía no son error.</p>
         </div>
-        <button class="secondary" onclick="openOpsLog('all')">Ver registro operativo</button>
+        <button class="secondary" onclick="openOpsLog('all')">Ver Errores y Advertencias</button>
       </div>
       <div class="operationalLinks"><span class="small">Ir al detalle:</span><button class="secondary" onclick="showView('arca-reportes')">Facturación</button><button class="secondary" onclick="showView('fallas')">Stock</button><button class="secondary" onclick="openOpsLog('import')">Importación</button></div>
       <div id="dashFailuresSummary" class="dashList" style="margin-top:12px"></div>
@@ -1418,7 +1441,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 <div id="tnCustomerImportCard" class="card"><h3>Importar clientes de Tienda Nube</h3><p>Descarga desde Tiendanube los clientes que tengan documento y completa la ficha única de XelerIA. Los clientes sin documento se omiten; una nueva importación reconoce los ya existentes y no crea duplicados.</p><div class="btnrow"><button id="tnCustomerImportButton" class="primary" type="button" onclick="importTnCustomersFromConfig()">Importar clientes de TN</button></div><div class="small" style="margin-top:8px">Usalo sólo cuando necesites actualizar la libreta completa. No modifica ventas, publicaciones, stock ni inventario.</div><div id="tnCustomerImportStatus" class="status" role="status" aria-live="polite"></div></div>
 <div id="configSaveActions"><div class="btnrow" style="justify-content:flex-end"><button class="primary" onclick="saveConfig()">Guardar toda la configuración</button><button class="secondary" onclick="cancelToPreviousView()">Cancelar</button></div><div id="cfgStatus" class="status"></div></div>
 </section>
-<section id="bitacora" class="view"><div class="card"><div class="dashStatusLine"><div><h3>Registro operativo</h3><p>Errores y advertencias accionables. Cada evento trae contexto, lectura humana y detalle plegable.</p></div><button class="secondary dashRefresh" onclick="loadOpsLog(true)">Actualizar</button></div><div class="opsLogFilters" role="group" aria-label="Filtrar registro operativo"><button id="opsFilterAll" class="secondary active" onclick="setOpsLogFilter('all')">Todos</button><button id="opsFilterInvoice" class="secondary" onclick="setOpsLogFilter('invoice')">Facturación</button><button id="opsFilterStock" class="secondary" onclick="setOpsLogFilter('stock')">Stock</button><button id="opsFilterImport" class="secondary" onclick="setOpsLogFilter('import')">Importación</button><button id="opsFilterOther" class="secondary" onclick="setOpsLogFilter('other')">Otros</button></div><div id="opsLogStatus" class="status"></div><div id="opsLogList" class="opsLogList"></div></div></section>
+<section id="bitacora" class="view"><div class="card"><div class="dashStatusLine"><div><h3>Errores y Advertencias</h3><p>Errores y advertencias accionables. Cada evento trae contexto, lectura humana y detalle plegable.</p></div><button class="secondary dashRefresh" onclick="loadOpsLog(true)">Actualizar</button></div><div class="opsLogFilters" role="group" aria-label="Filtrar Errores y Advertencias"><button id="opsFilterAll" class="secondary active" onclick="setOpsLogFilter('all')">Todos</button><button id="opsFilterInvoice" class="secondary" onclick="setOpsLogFilter('invoice')">Facturación</button><button id="opsFilterStock" class="secondary" onclick="setOpsLogFilter('stock')">Stock</button><button id="opsFilterImport" class="secondary" onclick="setOpsLogFilter('import')">Importación</button><button id="opsFilterOther" class="secondary" onclick="setOpsLogFilter('other')">Otros</button></div><div id="opsLogStatus" class="status"></div><div id="opsLogList" class="opsLogList"></div></div></section>
 <section id="versiones" class="view">
   <div class="card">
     <div class="versionStatusLine">
@@ -1471,8 +1494,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.60-combo-listing-nullables';
-const FRONTEND_BUILD='admin-erp-v29760-combo-listing-nullables';
+const FRONTEND_VERSION='2.97.61-dashboard-operational';
+const FRONTEND_BUILD='admin-erp-v29761-dashboard-operational';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
@@ -2150,11 +2173,35 @@ function opsLogPayloadErrors(n={}){let p=n.payload||{};let candidates=[p.item_er
 function opsLogErrorText(error={}){if(typeof error==='string')return error;return String(error.user_message||error.message||error.detail||error.error||error.reason||error.type||'Error sin descripción')}
 function opsLogErrorLabel(error={},idx=0){if(typeof error==='string')return `Error ${idx+1}`;let parts=[];if(error.row!==undefined)parts.push(`Fila ${error.row}`);if(error.sku)parts.push(`SKU ${error.sku}`);if(error.marketplace||error.channel)parts.push(String(error.marketplace||error.channel));if(error.operation)parts.push(`Operación ${error.operation}`);if(error.customer_name)parts.push(String(error.customer_name));if(error.external_product_id||error.publication_id)parts.push(`Publicación ${error.external_product_id||error.publication_id}`);if(error.external_variant_id||error.variant_id)parts.push(`Variante ${error.external_variant_id||error.variant_id}`);return parts.join(' · ')||`Error ${idx+1}`}
 function opsLogArcaDetailHtml(error={}){let observations=Array.isArray(error.arca_errors)?error.arca_errors:[];let meta=[error.classification?('Clasificación: '+error.classification):'',error.resultado?('Resultado: '+error.resultado):'',error.stage?('Etapa: '+error.stage):'',error.attempted_at?('Hora: '+dateAR(error.attempted_at)):'',error.expected_cbte_nro?('Comprobante esperado: '+error.expected_cbte_nro):''].filter(Boolean);let obs=observations.map(x=>`<div class="small"><strong>Código ${esc(x.code||'-')}</strong> · ${esc(x.message||'Sin mensaje')}</div>`).join('');return `${meta.length?`<span class="small">${esc(meta.join(' · '))}</span>`:''}${obs}`}
-function opsLogDetailHtml(n={}){let errors=opsLogPayloadErrors(n);if(!errors.length){let body=String(n.body||'').trim();return body?`<div class="opsLogDetailItem"><strong>Detalle</strong><span>${esc(body)}</span></div>`:'<div class="muted">No hay más detalle disponible.</div>'}return `<div class="opsLogErrorList">${errors.map((error,idx)=>`<div class="opsLogDetailItem"><strong>${esc(opsLogErrorLabel(error,idx))}</strong><span>${esc(opsLogErrorText(error))}</span>${opsLogArcaDetailHtml(error)}</div>`).join('')}</div>`}
+function opsLogDetailHtml(n={}){let errors=opsLogPayloadErrors(n);if(!errors.length){let body=String(n.body||'').trim().replace(/\s*[\/·-]?\s*Revisar bitácora\.?\s*$/i,'').trim();return body?`<div class="opsLogDetailItem"><strong>Detalle</strong><span>${esc(body)}</span></div>`:'<div class="muted">No hay más detalle disponible.</div>'}return `<div class="opsLogErrorList">${errors.map((error,idx)=>`<div class="opsLogDetailItem"><strong>${esc(opsLogErrorLabel(error,idx))}</strong><span>${esc(opsLogErrorText(error))}</span>${opsLogArcaDetailHtml(error)}</div>`).join('')}</div>`}
 function opsLogActionsHtml(n={}){let acts=Array.isArray(n.actions)?n.actions:[];let html='';acts.forEach(a=>{let kind=String(a.kind||'');if(kind==='retry_import'&&a.job_id){html+=`<button class="secondary" onclick="retryInventoryImportErrors('${esc(String(a.job_id))}',true)">${esc(a.label||'Reintentar importación')}</button>`}else if(kind==='repair_save'&&a.job_id){html+=`<button class="secondary" onclick="repairInventoryImportSaveObservations('${esc(String(a.job_id))}')">${esc(a.label||'Reparar observaciones')}</button>`}else if(kind==='issue_invoice'&&a.channel&&a.order_id){html+=`<button class="secondary" onclick="issueInvoiceFromSale('${jsq(String(a.channel))}','${jsq(String(a.order_id))}')">${esc(a.label||'Facturar manualmente')}</button>`}else if(kind==='open_view'&&a.view){html+=`<button class="secondary" onclick="showView('${esc(String(a.view))}')">${esc(a.label||'Abrir')}</button>`}else if(kind==='dismiss'&&a.id){html+=`<button class="secondary trashBtn" onclick="deleteOpsLogItem('${esc(String(a.id))}')">🗑 ${esc(a.label||'Borrar')}</button>`}});return html||'<button class="secondary" disabled>Sin acción automática</button>'}
 function opsLogLiveInvoiceItems(dashboard={}){let items=dashboard.failures?.invoices?.items||[];return items.map((x,idx)=>{let operation=x.sale_number||x.external_order_id||x.invoice_id||String(idx+1);let isInvoice=x.kind==='invoice';let status=String(x.status||'not_attempted').toLowerCase();let title=isInvoice?'Comprobante con revisión.':(status==='not_attempted'?'Factura pendiente sin intento registrado.':'Factura pendiente de emitir.');let orderId=x.external_order_id||x.sale_number||'';let preRequestFailure=['build_payload','resolve_customer_from_arca'].includes(String(x.stage||''))&&['technical_error','invalid_fiscal_data'].includes(String(x.response_kind||''));let canIssue=!isInvoice&&orderId&&(status==='not_attempted'||x.response_kind==='explicit_rejection'||preRequestFailure);let actions=canIssue?[{kind:'issue_invoice',channel:x.channel,order_id:orderId,label:'Facturar manualmente'}]:[{kind:'open_view',view:'arca-reportes',label:'Revisar facturación'}];return{id:`live-invoice-${x.channel||''}-${operation}`,type:isInvoice?'invoice_review':'invoice_pending',severity:['error','failed'].includes(status)?'error':'warning',title,created_at:x.attempted_at||x.created_at,payload:{errors:[{channel:x.channel,operation,customer_name:x.customer_name,total:x.total,status:x.status,stage:x.stage,attempted_at:x.attempted_at,reason:x.reason||x.status||'Pendiente de facturar',classification:x.classification,response_kind:x.response_kind,resultado:x.resultado,expected_cbte_nro:x.expected_cbte_nro,arca_errors:Array.isArray(x.arca_errors)?x.arca_errors:[]}]},actions,live_state:true}})}
 function opsLogLiveStockItems(dashboard={}){let items=dashboard.failures?.sync_jobs?.items||[];return items.map((x,idx)=>{let operation=x.source_order_number||x.source_order_api_id||x.id||String(idx+1);return{id:`live-stock-${x.id||operation}`,type:'stock_sync_review',severity:['error','failed'].includes(String(x.status||'').toLowerCase())?'error':'warning',title:'Alerta de stock pendiente.',created_at:x.updated_at||x.created_at,payload:{errors:[{marketplace:x.marketplace,operation,sku:x.sku,item_name:x.item_name,current_stock:x.current_stock,target_stock:x.target_stock,status:x.status,reason:x.last_error||'La sincronización necesita revisión.'}]},actions:[{kind:'open_view',view:'fallas',label:'Resolver alerta de stock'}],live_state:true}})}
-function mergeOpsLogSources(logItems=[],dashboard={}){let merged=[...opsLogLiveInvoiceItems(dashboard),...opsLogLiveStockItems(dashboard),...(logItems||[])];let seen=new Set();return merged.filter(item=>{let key=String(item.id||`${item.type}|${item.created_at}|${item.title}`);if(seen.has(key))return false;seen.add(key);return true}).sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||'')))}
+function opsLogLiveClaimItems(dashboard={}){
+  let items=dashboard.ml_claims?.items||[];
+  return items.map((c,idx)=>{
+    let followup=String(c.status||'').toLowerCase()!=='opened'&&c.post_claim_action_pending===true;
+    let operation=c.sale_number||c.order_id||c.pack_id||c.claim_id||String(idx+1);
+    let rawProblem=String(c.problem||c.detail_title||'').trim();
+    let technicalRef=/^[A-Z]{2,}\d{3,}$/i.test(rawProblem)?rawProblem:'';
+    let problem=technicalRef?'Reclamo registrado por Mercado Libre':(rawProblem||'Revisar el reclamo en Mercado Libre');
+    let who=c.buyer_nickname||c.customer_name||'';
+    let products=(Array.isArray(c.products)?c.products:[]).map(p=>`${p.quantity||1}× ${p.name||p.sku||'Artículo'}`).join(' · ');
+    let stateLabel=followup?(c.post_claim_state_label||'Seguimiento pendiente'):(c.state_label||'Reclamo abierto');
+    let reason=[stateLabel,problem,who?('Usuario/cliente: '+who):'',products?('Artículos: '+products):'',technicalRef?('Ref. técnica ML: '+technicalRef):''].filter(Boolean).join(' · ');
+    return{
+      id:`live-claim-${c.claim_id||operation}`,
+      type:'ml_claim_live',
+      severity:'warning',
+      title:(followup?'Seguimiento de reclamo ML en la venta ':'Reclamo ML en la venta ')+operation,
+      created_at:c.claim_last_updated||c.updated_at||c.claim_date_created,
+      payload:{errors:[{channel:'ML',operation,customer_name:who,reason}]},
+      actions:[{kind:'open_view',view:'ml-ventas',label:'Revisar reclamo'}],
+      live_state:true
+    };
+  });
+}
+function mergeOpsLogSources(logItems=[],dashboard={}){let merged=[...opsLogLiveInvoiceItems(dashboard),...opsLogLiveStockItems(dashboard),...opsLogLiveClaimItems(dashboard),...(logItems||[])];let seen=new Set();return merged.filter(item=>{let key=String(item.id||`${item.type}|${item.created_at}|${item.title}`);if(seen.has(key))return false;seen.add(key);return true}).sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||'')))}
 function renderOpsLogFilters(){let ids={all:'opsFilterAll',invoice:'opsFilterInvoice',stock:'opsFilterStock',import:'opsFilterImport',other:'opsFilterOther'};Object.entries(ids).forEach(([key,id])=>qs(id)?.classList.toggle('active',state.opsLogFilter===key))}
 function setOpsLogFilter(filter='all'){state.opsLogFilter=['all','invoice','stock','import','other'].includes(filter)?filter:'all';renderOpsLogFilters();renderOpsLog()}
 function openOpsLog(filter='all'){state.opsLogFilter=filter;showView('bitacora');renderOpsLogFilters()}
@@ -2163,8 +2210,8 @@ function opsLogXeliHtml(idx){let item=state.opsLogXeli[idx];if(!item)return '';i
 async function waitForXeliReading(startedAt,minMs=1600){let remaining=Math.max(0,minMs-(Date.now()-startedAt));if(remaining)await new Promise(resolve=>setTimeout(resolve,remaining))}
 function renderOpsLog(){let host=qs('opsLogList');if(!host)return;renderOpsLogFilters();let all=state.opsLog.items||[];let items=state.opsLogFilter==='all'?all:all.filter(n=>opsLogCategory(n)===state.opsLogFilter);if(!items.length){host.innerHTML='<div class="muted">No hay advertencias pendientes en esta categoría.</div>';return}host.innerHTML=items.map(n=>{let idx=all.indexOf(n),sev=String(n.severity||'warning').toLowerCase();let title=n.title||'Evento operativo';let meta=`${opsLogKind(n)} · ${dateAR(n.created_at)||''}`;return `<div class="opsLogCard ${esc(sev)}"><div class="opsLogTop"><div><div class="opsLogTitle">${esc(title)}</div><div class="opsLogMeta">${esc(meta)}</div></div><span class="pill ${sev==='error'?'bad':'warn'}">${esc(sev)}</span></div><div class="opsLogActions">${opsLogActionsHtml(n)}</div>${opsLogXeliHtml(idx)}<details class="opsLogTech"><summary>Detalle</summary>${opsLogDetailHtml(n)}</details></div>`}).join('')}
 async function readOpsLogWithXeli(idx){let event=(state.opsLog.items||[])[idx];if(!event)return;let startedAt=Date.now();state.opsLogXeli[idx]={loading:true};renderOpsLog();try{let safe=scrubSensitiveJson({type:event.type,title:event.title,severity:event.severity,created_at:event.created_at,payload:event.payload||{}});let data=await fetchJson('/admin/xeli/operational-table',{method:'POST',body:JSON.stringify({event:safe}),skipLastJson:true});await waitForXeliReading(startedAt);state.opsLogXeli[idx]={data};renderOpsLog()}catch(e){state.opsLogXeli[idx]={error:errText(e)};renderOpsLog()}}
-async function loadOpsLog(manual=false){if(manual)setStatus('opsLogStatus','Leyendo registro...');try{let d=await fetchJson('/admin/ops-log?limit=120',{skipLastJson:!manual});let dashboard={};let liveError='';try{dashboard=await fetchJson('/admin/dashboard/summary?sync_jobs_limit=50&sync_jobs_offset=0',{skipLastJson:true})}catch(e){liveError=errText(e)}let items=mergeOpsLogSources(d.items||[],dashboard);state.opsLog={items,total:items.length};renderOpsLog();if(manual)setStatus('opsLogStatus',liveError?`Eventos: ${items.length}. No pude actualizar los estados vivos: ${liveError}`:(items.length?`Eventos: ${items.length}`:'Registro limpio.'),!liveError)}catch(e){setStatus('opsLogStatus','Error leyendo registro: '+errText(e),false)}}
-async function deleteOpsLogItem(id){if(!id)return;try{await fetchJson('/admin/ops-log/'+encodeURIComponent(id),{method:'DELETE'});setStatus('opsLogStatus','Evento quitado del registro.',true);loadOpsLog(false).catch(()=>{});loadNotifications(false).catch(()=>{})}catch(e){setStatus('opsLogStatus','No pude borrar del registro: '+errText(e),false)}}
+async function loadOpsLog(manual=false){if(manual)setStatus('opsLogStatus','Leyendo Errores y Advertencias...');try{let d=await fetchJson('/admin/ops-log?limit=120',{skipLastJson:!manual});let dashboard={};let liveError='';try{dashboard=await fetchJson('/admin/dashboard/summary?sync_jobs_limit=50&sync_jobs_offset=0',{skipLastJson:true})}catch(e){liveError=errText(e)}let items=mergeOpsLogSources(d.items||[],dashboard);state.opsLog={items,total:items.length};renderOpsLog();if(manual)setStatus('opsLogStatus',liveError?`Eventos: ${items.length}. No pude actualizar los estados vivos: ${liveError}`:(items.length?`Eventos: ${items.length}`:'Sin errores ni advertencias pendientes.'),!liveError)}catch(e){setStatus('opsLogStatus','Error leyendo Errores y Advertencias: '+errText(e),false)}}
+async function deleteOpsLogItem(id){if(!id)return;try{await fetchJson('/admin/ops-log/'+encodeURIComponent(id),{method:'DELETE'});setStatus('opsLogStatus','Evento quitado de Errores y Advertencias.',true);loadOpsLog(false).catch(()=>{});loadNotifications(false).catch(()=>{})}catch(e){setStatus('opsLogStatus','No pude borrar de Errores y Advertencias: '+errText(e),false)}}
 
 const NOTIFICATION_GROUPS=[
   {key:'ml_questions',source:'Mercado Libre',slot:'Preguntas',view:'ml-preguntas'},
@@ -2650,6 +2697,46 @@ function dashChannelBox(obj,ch){return (obj&&obj.channels&&obj.channels[ch])?obj
 function dashInvChannelBox(obj,ch){return (obj&&obj.channels&&obj.channels[ch])?obj.channels[ch]:{count:0,total_amount:0,items:[]}}
 function dashMiniItem(it){let num=it.sale_number||it.external_order_id||'';let ch=it.channel||'';let cust=it.customer_name||'Sin nombre';let amt=dashMoney(it.total);return `<div class="dashItem"><div><span class="pill ${ch==='ML'?'info':'ok'}">${esc(ch)}</span></div><div><strong>${esc(num)}</strong><br><span class="small">${esc(cust)} · ${dateAR(it.created_at)}</span></div><div><strong>${amt}</strong></div></div>`}
 function dashShippingRows(p){let rows=[];let chs=p.channels||{};Object.keys(chs).forEach(ch=>{let types=chs[ch].types||{};Object.keys(types).forEach(t=>{rows.push({channel:ch,type:t,count:types[t].count||0,total:types[t].total_amount||0})})});rows.sort((a,b)=>a.channel.localeCompare(b.channel)||b.count-a.count);if(!rows.length)return '<div class="dashEmpty">Sin pendientes de envío en la ventana actual.</div>';return `<table class="dashTable"><thead><tr><th>Canal</th><th>Tipo de envío</th><th>Cantidad</th><th>Importe</th></tr></thead><tbody>${rows.map(r=>`<tr><td><span class="pill ${r.channel==='ML'?'info':'ok'}">${esc(r.channel)}</span></td><td><strong>${esc(r.type)}</strong></td><td>${esc(r.count)}</td><td>${dashMoney(r.total)}</td></tr>`).join('')}</tbody></table>`}
+function dashboardChartCompact(value,moneyMode=false){
+  let n=Number(value||0);
+  if(moneyMode){
+    if(Math.abs(n)>=1000000)return '$'+(n/1000000).toFixed(n>=10000000?0:1)+'M';
+    if(Math.abs(n)>=1000)return '$'+(n/1000).toFixed(n>=100000?0:1)+'k';
+    return '$'+Math.round(n);
+  }
+  return String(Math.round(n));
+}
+function dashboardHistoryChart(history={},key='total_amount',moneyMode=false){
+  let rows=Array.isArray(history.items)?history.items:[];
+  if(!rows.length)return '<div class="dashEmpty">Sin datos para graficar.</div>';
+  let values=rows.map(r=>Math.max(0,Number(r?.[key]||0)));
+  let max=Math.max(...values,1),w=620,h=170,left=58,right=14,top=10,bottom=34;
+  let innerW=w-left-right,innerH=h-top-bottom;
+  let x=i=>left+(rows.length<=1?innerW/2:(innerW*i/(rows.length-1)));
+  let y=v=>top+innerH-(v/max*innerH);
+  let grid=[0,.25,.5,.75,1].map(p=>{
+    let gy=top+innerH-(p*innerH),label=dashboardChartCompact(max*p,moneyMode);
+    return `<line class="dashboardChartGrid" x1="${left}" y1="${gy.toFixed(1)}" x2="${w-right}" y2="${gy.toFixed(1)}"></line><text class="dashboardChartAxisText" x="${left-7}" y="${(gy+3).toFixed(1)}" text-anchor="end">${esc(label)}</text>`;
+  }).join('');
+  let points=values.map((v,i)=>`${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+  let markers=values.map((v,i)=>{
+    let date=String(rows[i]?.date||'');
+    let label=moneyMode?dashMoney(v):String(Math.round(v));
+    return `<circle class="dashboardChartPoint" cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="3"><title>${esc(date+' · '+label)}</title></circle>`;
+  }).join('');
+  let labelIndexes=[0,3,6,9,12,rows.length-1].filter((v,i,a)=>v>=0&&v<rows.length&&a.indexOf(v)===i);
+  let xLabels=labelIndexes.map(i=>{
+    let date=String(rows[i]?.date||'');
+    let short=date.length>=10?date.slice(5):date;
+    return `<text class="dashboardChartAxisText" x="${x(i).toFixed(1)}" y="${h-9}" text-anchor="middle">${esc(short)}</text>`;
+  }).join('');
+  return `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${moneyMode?'Ventas en pesos':'Cantidad de ventas'} de los últimos 15 días">${grid}<polyline class="dashboardChartLine" points="${points}"></polyline>${markers}${xLabels}</svg>`;
+}
+function renderDashboardHistory(history={}){
+  let amount=qs('dashSalesAmountChart'),count=qs('dashSalesCountChart');
+  if(amount)amount.innerHTML=dashboardHistoryChart(history,'total_amount',true);
+  if(count)count.innerHTML=dashboardHistoryChart(history,'count',false);
+}
 const DASHBOARD_SUMMARY_MAX_MS=15000;
 async function fetchJsonWithTimeout(path,opt={},timeoutMs=15000,label='La consulta'){
   let controller=new AbortController();
@@ -2772,6 +2859,7 @@ async function loadDashboard(force=false){
     let v=d.version||'?';
     dashSet('dashBackendVer',shortVer(v));dashSet('footBackendVer',shortVer(v));
     if(qs('stErp'))qs('stErp').textContent='OK';
+    let arcaCard=qs('dashArcaCard');if(arcaCard){arcaCard.classList.remove('alert','good');arcaCard.classList.add('good')}
     let pi=d.pending_invoices||{};
     dashSet('dashPendingInvCount',pi.count??0);dashSet('dashPendingInvAmount',dashMoney(pi.total_amount));
     let invCard=qs('dashPendingInvCard');if(invCard){invCard.classList.remove('alert','good');invCard.classList.add(Number(pi.count||0)>0?'alert':'good')}
@@ -2785,6 +2873,7 @@ async function loadDashboard(force=false){
     dashSet('dashTodayML',mlT.count||0);dashSet('dashTodayMLAmount',dashMoney(mlT.total_amount));
     dashSet('dashTodayTN',tnT.count||0);dashSet('dashTodayTNAmount',dashMoney(tnT.total_amount));
     let todayList=qs('dashTodayList');if(todayList)todayList.innerHTML=(td.items||[]).length?(td.items||[]).slice(0,8).map(dashMiniItem).join(''):'<div class="dashEmpty">Todavía no hay ventas hoy.</div>';
+    renderDashboardHistory(d.sales_history_15d||{});
     let ps=d.pending_shipping||{};
     dashSet('dashShipCount',ps.count??0);dashSet('dashShipAmount',dashMoney(ps.total_amount));
     let st=qs('dashShippingTable');if(st)st.innerHTML=dashShippingRows(ps);
@@ -2794,8 +2883,9 @@ async function loadDashboard(force=false){
     dashSet('dashClaimsActionCount',claims.seller_action_required_count??0);
     let claimsCard=qs('dashClaimsCard');
     if(claimsCard){
-      claimsCard.classList.toggle('hasOpen',Number(claims.open_count||0)>0);
-      claimsCard.classList.toggle('hasFollowup',Number(claims.open_count||0)===0&&Number(claims.pending_followup_count||0)>0);
+      let claimAttention=Number(claims.attention_count??claims.open_count??0);
+      claimsCard.classList.remove('alert','good','hasOpen','hasFollowup');
+      claimsCard.classList.add(claimAttention>0?'alert':'good');
     }
     let claimsDetail=qs('dashClaimsDetailCard');
     if(claimsDetail)claimsDetail.classList.toggle('hidden',Number((claims.attention_count??claims.open_count)||0)===0);
@@ -2803,7 +2893,13 @@ async function loadDashboard(force=false){
     if(claimsList)claimsList.innerHTML=(claims.items||[]).length?(claims.items||[]).slice(0,10).map(c=>{
       let followup=String(c.status||'').toLowerCase()!=='opened'&&c.post_claim_action_pending===true;
       let label=followup?mlClaimFollowupLabel(c):(c.state_label||'Reclamo abierto');
-      return `<div class="dashItem"><div><span class="pill ${followup?'warn':'bad'}">${esc(label)}</span></div><div><strong>Venta ${esc(c.order_id||c.pack_id||'sin vincular')}</strong><br><span class="small">${esc(c.problem||c.detail_title||'Revisar en Mercado Libre')}${c.due_date&&!followup?' · vence '+dateAR(c.due_date):''}</span></div><div><a class="btn secondary" target="_blank" rel="noopener" href="${esc(c.ml_url||'https://www.mercadolibre.com.ar/ventas')}">Abrir ML</a></div></div>`;
+      let rawProblem=String(c.problem||c.detail_title||'').trim();
+      let technicalRef=/^[A-Z]{2,}\d{3,}$/i.test(rawProblem)?rawProblem:'';
+      let problem=technicalRef?'Reclamo registrado por Mercado Libre':(rawProblem||'Revisar en Mercado Libre');
+      let who=c.buyer_nickname||c.customer_name||'';
+      let products=(Array.isArray(c.products)?c.products:[]).map(p=>`${p.quantity||1}× ${p.name||p.sku||'Artículo'}`).join(' · ');
+      let context=[problem,who?('Usuario/cliente: '+who):'',products?('Artículos: '+products):'',technicalRef?('Ref. técnica ML: '+technicalRef):'',c.due_date&&!followup?('vence '+dateAR(c.due_date)):''].filter(Boolean).join(' · ');
+      return `<div class="dashItem"><div><span class="pill ${followup?'warn':'bad'}">${esc(label)}</span></div><div><strong>Venta ${esc(c.sale_number||c.order_id||c.pack_id||'sin vincular')}</strong><br><span class="small">${esc(context)}</span></div><div><a class="btn secondary" target="_blank" rel="noopener" href="${esc(c.ml_url||'https://www.mercadolibre.com.ar/ventas')}">Abrir ML</a></div></div>`;
     }).join(''):'';
     let failuresBox=qs('dashFailuresSummary');if(failuresBox)failuresBox.innerHTML=dashFailureRows(d.failures||{});
     let poll=d.pollers||{};
@@ -2817,6 +2913,8 @@ async function loadDashboard(force=false){
     else setDashboardStatus('Dashboard actualizado · '+generatedAt,true);
   }catch(e){
     console.error('loadDashboard',e);
+    if(qs('stErp'))qs('stErp').textContent='ERROR';
+    let arcaCard=qs('dashArcaCard');if(arcaCard){arcaCard.classList.remove('good','alert');arcaCard.classList.add('alert')}
     setDashboardStatus('Error dashboard: '+(e.message||JSON.stringify(e)),false);
   }finally{
     loadDashboard.loading=false;
@@ -6404,7 +6502,7 @@ function inventoryImportClearErrors(){let el=qs('inventoryImportErrors');if(el){
 function inventoryImportCloseGrid(msg=''){state.inventoryImportGridLoaded=false;inventoryImportClearSummary();inventoryImportClearErrors();inventoryImportSetGridVisible(false);let body=qs('inventoryImportGridBody');if(body)body.innerHTML='';if(qs('inventoryImportPager'))qs('inventoryImportPager').innerHTML='';if(msg)setStatus('inventoryImportStatus',msg,true)}
 function setInventoryImportGridButtonEnabled(enabled){state.inventoryImportCanViewGrid=!!enabled}
 function inventoryImportErrorsFromPayload(d={}){let job=d.job||{};let errs=job.item_errors||d.item_errors||((d.payload||{}).item_errors)||[];if(!Array.isArray(errs))errs=errs?[errs]:[];if(!errs.length&&(job.last_error||d.last_error)){errs=[{stage:job.last_stage||d.last_stage||'',type:'error',detail:job.last_error||d.last_error}]};return errs}
-function renderInventoryImportErrors(d={}){let el=qs('inventoryImportErrors');if(!el)return;if(state.inventoryImportSaving||state.inventoryImportRunning){el.classList.add('hidden');el.innerHTML='';return;}let errs=inventoryImportErrorsFromPayload(d);let job=d.job||{};let count=Number(job.error_count||d.error_count||errs.length||0);if(!count&&!errs.length){el.classList.add('hidden');el.innerHTML='';return}let rows=errs.map(e=>`<tr><td>${esc(e.stage||'-')}</td><td>${esc(e.item_id||e.sku||e.external_full_id||'-')}</td><td>${esc(e.type||'-')}</td><td>${esc(e.detail||e.message||JSON.stringify(e))}</td></tr>`).join('');let jobId=String(job.id||d.job_id||'');let actions=jobId?`<div class="btnrow" style="margin-top:10px"><button class="secondary" onclick="retryInventoryImportErrors('${esc(jobId)}')">Reintentar importación fallida</button><button class="secondary" onclick="showView('bitacora')">Abrir registro</button></div>`:`<div class="btnrow" style="margin-top:10px"><button class="secondary" onclick="showView('bitacora')">Abrir registro</button></div>`;el.classList.remove('hidden');el.innerHTML=`<div class="importErrorsBox"><strong>Detalles técnicos: ${count}</strong><div class="small">Publicaciones que no entraron en esta corrida después de estabilizar la importación.</div>${actions}<div class="tableWrap"><table><thead><tr><th>Etapa</th><th>Publicación/SKU</th><th>Tipo</th><th>Detalle</th></tr></thead><tbody>${rows||'<tr><td colspan="4">Sin detalle técnico.</td></tr>'}</tbody></table></div></div>`}
+function renderInventoryImportErrors(d={}){let el=qs('inventoryImportErrors');if(!el)return;if(state.inventoryImportSaving||state.inventoryImportRunning){el.classList.add('hidden');el.innerHTML='';return;}let errs=inventoryImportErrorsFromPayload(d);let job=d.job||{};let count=Number(job.error_count||d.error_count||errs.length||0);if(!count&&!errs.length){el.classList.add('hidden');el.innerHTML='';return}let rows=errs.map(e=>`<tr><td>${esc(e.stage||'-')}</td><td>${esc(e.item_id||e.sku||e.external_full_id||'-')}</td><td>${esc(e.type||'-')}</td><td>${esc(e.detail||e.message||JSON.stringify(e))}</td></tr>`).join('');let jobId=String(job.id||d.job_id||'');let actions=jobId?`<div class="btnrow" style="margin-top:10px"><button class="secondary" onclick="retryInventoryImportErrors('${esc(jobId)}')">Reintentar importación fallida</button><button class="secondary" onclick="showView('bitacora')">Abrir Errores y Advertencias</button></div>`:`<div class="btnrow" style="margin-top:10px"><button class="secondary" onclick="showView('bitacora')">Abrir Errores y Advertencias</button></div>`;el.classList.remove('hidden');el.innerHTML=`<div class="importErrorsBox"><strong>Detalles técnicos: ${count}</strong><div class="small">Publicaciones que no entraron en esta corrida después de estabilizar la importación.</div>${actions}<div class="tableWrap"><table><thead><tr><th>Etapa</th><th>Publicación/SKU</th><th>Tipo</th><th>Detalle</th></tr></thead><tbody>${rows||'<tr><td colspan="4">Sin detalle técnico.</td></tr>'}</tbody></table></div></div>`}
 function inventoryImportSelectedChannels(){
   let channels=[];
   let mlOk=!!(state.connections&&state.connections.ml&&state.connections.ml.connected);
