@@ -1495,8 +1495,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.66-preview-error-humano';
-const FRONTEND_BUILD='admin-erp-v29766-preview-error-humano';
+const FRONTEND_VERSION='2.97.69-staging-strict-download';
+const FRONTEND_BUILD='admin-erp-v29769-staging-strict-download';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
@@ -4823,7 +4823,14 @@ async function openArcaManualSale(ch,orderId,opts={}){
     qs('amConcepto').value=inv.concept||'Productos';arcaManualConceptChanged();
     qs('amFecha').value=String(inv.invoice_date||inv.source_created_at||'').slice(0,10)||arcaManualToday();
     qs('amSourceChannel').value=ch;
-    qs('amSourceOrder').value=String(inv.source_order_id||orderId);
+    qs('amSourceOrder').value=String(inv.source_order_id||inv.source_order_number||orderId);
+    state.arcaManualSourceMeta={
+      source_order_number:String(inv.source_order_number||inv.source_order_id||orderId),
+      source_order_api_id:String(inv.source_order_api_id||''),
+      source_pack_id:String(inv.source_pack_id||''),
+      source_shipping_id:String(inv.source_shipping_id||''),
+      source_child_order_ids:Array.isArray(inv.source_child_order_ids)?inv.source_child_order_ids.map(String):[]
+    };
     qs('amCustomerName').value=inv.customer_name||'Consumidor Final';
     arcaManualSetDocType(inv.customer_doc_type||'CF');
     qs('amDocNumber').value=inv.customer_doc_number||'';
@@ -4912,28 +4919,90 @@ async function loadArcaInvoices(){
   }catch(e){saveLastArcaError(e,{fn:'loadArcaInvoices'});setStatus('arcaStatus','Error ARCA: '+errText(e),false);showPre('arcaOut',e)}
 }
 function arcaReportQueryBase(){let p=`date_from=${encodeURIComponent(qs('arcaDesde')?.value||'')}&date_to=${encodeURIComponent(qs('arcaHasta')?.value||'')}`;let tipo=qs('arcaTipo')?.value||'Todos',canal=qs('arcaCanal')?.value||'Todos',concepto=qs('arcaConcepto')?.value||'Todos';if(tipo!=='Todos')p+=`&cbte_tipo=${encodeURIComponent(tipo)}`;if(canal!=='Todos')p+=`&channel=${encodeURIComponent(canal)}`;if(concepto!=='Todos')p+=`&concept=${encodeURIComponent(concepto)}`;return p}
+
+async function arcaSaveFetchedFile({requestUrl,filename,mime,extension,statusId='arcaStatus',successMessage='Archivo guardado.'}){
+  let handle=null;
+  // Chrome/Edge: pedimos destino dentro del click del usuario. Así evitamos
+  // el permiso de "descargas automáticas" que bloquea los <a>.click() async.
+  if(window.showSaveFilePicker){
+    try{
+      handle=await window.showSaveFilePicker({
+        suggestedName:filename,
+        types:[{
+          description:extension.toUpperCase().replace('.','')+' de XelerIA',
+          accept:{[mime]:[extension]}
+        }]
+      });
+    }catch(e){
+      if(e&&e.name==='AbortError'){
+        setStatus(statusId,'Descarga cancelada.');
+        return {cancelled:true};
+      }
+      throw e;
+    }
+  }
+
+  let r=await fetch(requestUrl,{headers:xeleriaHeaders()});
+  if(!r.ok){
+    let txt=await r.text(),data;
+    try{data=JSON.parse(txt)}catch{data={detail:txt}}
+    throw data;
+  }
+  let blob=await r.blob();
+
+  if(handle){
+    let writable=await handle.createWritable();
+    await writable.write(blob);
+    await writable.close();
+  }else{
+    // Fallback para navegadores sin File System Access API.
+    let objectUrl=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=objectUrl;
+    a.download=filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(objectUrl),60000);
+  }
+  setStatus(statusId,successMessage,true);
+  return {ok:true};
+}
+
 async function downloadArcaExcel(){
-  initArcaDates();setStatus('arcaStatus','Generando Excel fiscal...');
+  initArcaDates();
+  setStatus('arcaStatus','Preparando Excel fiscal...');
   try{
-    let r=await fetch(url('/admin/arca/facturas/export_excel?'+arcaReportQueryBase()),{headers:xeleriaHeaders()});
-    if(!r.ok){let txt=await r.text();let data;try{data=JSON.parse(txt)}catch{data={detail:txt}};throw data}
-    let blob=await r.blob();let objectUrl=URL.createObjectURL(blob);let a=document.createElement('a');
-    a.href=objectUrl;a.download=`reporte_arca_${qs('arcaDesde')?.value||'desde'}_a_${qs('arcaHasta')?.value||'hasta'}.xlsx`;
-    document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(objectUrl),60000);
-    setStatus('arcaStatus','Excel descargado con Neto, IVA, Total y jurisdicción discriminados.',true);
-  }catch(e){setStatus('arcaStatus','No pude descargar el Excel: '+errText(e),false);showPre('arcaOut',e)}
+    let filename=`reporte_arca_${qs('arcaDesde')?.value||'desde'}_a_${qs('arcaHasta')?.value||'hasta'}.xlsx`;
+    await arcaSaveFetchedFile({
+      requestUrl:url('/admin/arca/facturas/export_excel?'+arcaReportQueryBase()),
+      filename,
+      mime:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      extension:'.xlsx',
+      statusId:'arcaStatus',
+      successMessage:'Excel guardado con Neto, IVA, Total y jurisdicción discriminados.'
+    });
+  }catch(e){
+    setStatus('arcaStatus','No pude guardar el Excel: '+errText(e),false);
+    saveLastArcaError(e,{fn:'downloadArcaExcel'});
+  }
 }
 async function downloadArcaIvaSimple(){
-  initArcaDates();setStatus('arcaStatus','Generando TXT oficiales de ventas para IVA Simple...');
+  initArcaDates();
+  setStatus('arcaStatus','Preparando TXT oficiales de ventas para IVA Simple...');
   try{
-    let r=await fetch(url('/admin/arca/facturas/export_iva_simple?'+arcaReportQueryBase()),{headers:xeleriaHeaders()});
-    if(!r.ok){let txt=await r.text();let data;try{data=JSON.parse(txt)}catch{data={detail:txt}};throw data}
-    let blob=await r.blob();let objectUrl=URL.createObjectURL(blob);let a=document.createElement('a');
     let period=(qs('arcaDesde')?.value||'periodo').slice(0,7).replace('-','_');
-    a.href=objectUrl;a.download=`iva_simple_ventas_${period}.zip`;
-    document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(objectUrl),60000);
-    setStatus('arcaStatus','ZIP descargado: comprobantes y alícuotas en TXT ANSI, listo para importar en ARCA.',true);
-  }catch(e){setStatus('arcaStatus','No pude generar los TXT: '+errText(e),false);showPre('arcaOut',e)}
+    await arcaSaveFetchedFile({
+      requestUrl:url('/admin/arca/facturas/export_iva_simple?'+arcaReportQueryBase()),
+      filename:`iva_simple_ventas_${period}.zip`,
+      mime:'application/zip',
+      extension:'.zip',
+      statusId:'arcaStatus',
+      successMessage:'ZIP guardado: comprobantes y alícuotas en TXT ANSI, listo para importar en ARCA.'
+    });
+  }catch(e){
+    setStatus('arcaStatus','No pude guardar los TXT: '+errText(e),false);
+    saveLastArcaError(e,{fn:'downloadArcaIvaSimple'});
+  }
 }
 
 function arcaIncidentQueryBase(){let p=`date_from=${encodeURIComponent(qs('arcaIncDesde')?.value||'')}&date_to=${encodeURIComponent(qs('arcaIncHasta')?.value||'')}`;let canal=qs('arcaIncCanal')?.value||'Todos';if(canal!=='Todos')p+=`&channel=${encodeURIComponent(canal)}`;return p}
@@ -4957,11 +5026,22 @@ async function loadArcaIncidents(){
   catch(e){setStatus('arcaIncStatus','No pude cargar las incidencias: '+errText(e),false);showPre('arcaIncOut',e)}
 }
 async function downloadArcaIncidentsExcel(){
-  initArcaIncidentDates();setStatus('arcaIncStatus','Generando expediente para el contador...');
+  initArcaIncidentDates();
+  setStatus('arcaIncStatus','Preparando expediente fiscal...');
   try{
-    let r=await fetch(url('/admin/arca/incidencias/export_excel?'+arcaIncidentQueryBase()),{headers:xeleriaHeaders()});if(!r.ok){let txt=await r.text();let data;try{data=JSON.parse(txt)}catch{data={detail:txt}};throw data}
-    let blob=await r.blob(),objectUrl=URL.createObjectURL(blob),a=document.createElement('a');a.href=objectUrl;a.download=`incidencias_fiscales_arca_${qs('arcaIncDesde')?.value||'desde'}_a_${qs('arcaIncHasta')?.value||'hasta'}.xlsx`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(objectUrl),60000);setStatus('arcaIncStatus','Expediente descargado con identidad, importes, IVA, jurisdicción y trazabilidad ARCA.',true)
-  }catch(e){setStatus('arcaIncStatus','No pude descargar el expediente: '+errText(e),false);showPre('arcaIncOut',e)}
+    let filename=`incidencias_fiscales_arca_${qs('arcaIncDesde')?.value||'desde'}_a_${qs('arcaIncHasta')?.value||'hasta'}.xlsx`;
+    await arcaSaveFetchedFile({
+      requestUrl:url('/admin/arca/incidencias/export_excel?'+arcaIncidentQueryBase()),
+      filename,
+      mime:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      extension:'.xlsx',
+      statusId:'arcaIncStatus',
+      successMessage:'Expediente guardado con identidad, importes, IVA, jurisdicción y trazabilidad ARCA.'
+    });
+  }catch(e){
+    setStatus('arcaIncStatus','No pude guardar el expediente: '+errText(e),false);
+    saveLastArcaError(e,{fn:'downloadArcaIncidentsExcel'});
+  }
 }
 
 function arcaTipoNotaDesdeOriginal(orig,kind){
@@ -5436,7 +5516,7 @@ async function arcaLookupCustomerA5(force){
     setStatus('arcaManualStatus','Receptor fiscal cargado desde ARCA.'+(resolvedInvoiceType?' Comprobante actualizado a '+resolvedInvoiceType+'.':''),true);
   }catch(e){setStatus('arcaManualStatus','No pude traer datos de ARCA: '+(e.detail?.arca_padron_error||e.message||JSON.stringify(e)),false)}
 }
-function arcaManualClear(){hideManualPreviewBox();arcaManualEnsureCustomerAutocomplete();
+function arcaManualClear(){state.arcaManualSourceMeta=null;hideManualPreviewBox();arcaManualEnsureCustomerAutocomplete();
   ['amSourceOrder','amAssociatedVoucher','amCustomerName','amDocNumber','amEmail','amAddress','amNotes','amAssocInvoiceId','amAssocCbteTipo','amAssocPtoVta','amAssocCbteNro','amAssocInvoiceDate','amAssocCae'].forEach(id=>{if(qs(id))qs(id).value=''})
   if(qs('amTipo'))qs('amTipo').value='6';
   if(qs('amConcepto'))qs('amConcepto').value='Productos';
@@ -5485,7 +5565,13 @@ function arcaManualBody(dryRun=true,confirmar=false){
     service_date_from:qs('amServiceDesde')?.value||null,service_date_to:qs('amServiceHasta')?.value||null,payment_due_date:qs('amVtoPago')?.value||null,
     customer_name:qs('amCustomerName').value.trim(),customer_doc_type:qs('amDocType').value,customer_doc_number:qs('amDocNumber').value.trim(),customer_iva_condition:qs('amIvaCond').value,
     customer_address:qs('amAddress').value.trim()||null,customer_localidad:qs('amLocalidad').value.trim()||null,customer_email:(qs('amEmail')?.value||'').trim()||null,
-    source_channel:qs('amSourceChannel').value.trim()||'ARCA_MANUAL',source_order_id:sourceOrder,source_order_number:association?.raw||sourceOrder,
+    source_channel:qs('amSourceChannel').value.trim()||'ARCA_MANUAL',
+    source_order_id:sourceOrder,
+    source_order_number:state.arcaManualSourceMeta?.source_order_number||sourceOrder,
+    source_order_api_id:state.arcaManualSourceMeta?.source_order_api_id||sourceOrder,
+    source_pack_id:state.arcaManualSourceMeta?.source_pack_id||null,
+    source_shipping_id:state.arcaManualSourceMeta?.source_shipping_id||null,
+    source_child_order_ids:state.arcaManualSourceMeta?.source_child_order_ids||[],
     associated_voucher_number:association?.raw||null,
     associated_invoice_id:qs('amAssocInvoiceId')?.value||null,
     associated_cbte_tipo:qs('amAssocCbteTipo')?.value?Number(qs('amAssocCbteTipo').value):(association?arcaManualOriginalInvoiceType(cbteTipo):null),
@@ -5565,6 +5651,17 @@ function arcaManualHumanError(e){
     }
     return '';
   }
+  let root=e;
+  try{
+    let probe=e;
+    for(let i=0;i<8&&probe&&typeof probe==='object';i++){
+      if(probe.classification==='already_issued'||probe.detail?.classification==='already_issued'){
+        let d=probe.classification==='already_issued'?probe:probe.detail;
+        return d.message||'La venta ya tiene un comprobante emitido. No se generó una factura nueva.';
+      }
+      probe=probe.detail||probe.response;
+    }
+  }catch(_e){}
   return walk(e)||'ARCA rechazó el comprobante. Revisá los datos fiscales del receptor o reportá la venta como incidencia fiscal.';
 }
 
@@ -6837,8 +6934,10 @@ async function inventoryImportBootstrapGridButton(){
     let d=await fetchJson('/admin/inventory/import-grid?limit=500&offset=0');
     let total=Number(d.total||0);
     let rows=Array.isArray(d.rows)?d.rows:[];
-    if(d.no_staging||(!rows.length&&!total)){
+    if(d.no_staging||total<=0||rows.length<=0){
       inventoryImportCloseGrid('');
+      state.inventoryImportCurrentBatchId='';
+      state.inventoryImportActiveBatchId='';
       if(qs('inventoryImportStatus'))qs('inventoryImportStatus').textContent='';
       return;
     }
@@ -6948,7 +7047,33 @@ function inventoryImportSaveDoneStatus(st){return ['saved','saved_with_errors','
 function inventoryImportSaveFailedStatus(st){return ['save_failed','failed','error'].includes(String(st||'').toLowerCase())}
 function inventoryImportSaveNeutralStatus(st){return ['completed','cancelled'].includes(String(st||'').toLowerCase())}
 function inventoryImportGridIsClosedPayload(d={}){if(d&&d.needs_reconciliation)return false;let b=(d&&d.batch)||{};let j=(d&&d.job)||{};let st=String(b.status||j.status||d.status||'').toLowerCase();return !!(b.closed_at||b.confirmed_at||['confirmed','confirmed_with_errors','saved','saved_with_errors','closed'].includes(st))}
-function inventoryImportAfterSaved(msg='Grilla guardada correctamente.'){inventoryImportClearGridPoll();state.inventoryImportIgnoreCompletionsUntil=Date.now()+15000;state.inventoryImportSaveNoticeActive=false;state.inventoryImportSaving=false;state.inventoryImportGridLoaded=false;state.inventoryImportCanViewGrid=false;state.inventoryImportActiveJobId='';state.inventoryImportSaveJobId='';state.inventoryImportCurrentBatchId='';state.inventoryImportActiveBatchId='';state.inventoryImportItemTypes={};setInventoryImportSaveBusy(false);renderInventoryImportGrid([]);inventoryImportCloseGrid(msg);if(qs('inventoryImportPager'))qs('inventoryImportPager').innerHTML='';searchInventory(0,false).catch(e=>console.debug('inventory refresh after save',e))}
+function inventoryImportAfterSaved(msg='Grilla guardada correctamente.'){
+  let savedBatchId=String(state.inventoryImportCurrentBatchId||state.inventoryImportActiveBatchId||'').trim();
+  inventoryImportClearGridPoll();
+  state.inventoryImportIgnoreCompletionsUntil=Date.now()+15000;
+  state.inventoryImportSaveNoticeActive=false;
+  state.inventoryImportSaving=false;
+  state.inventoryImportGridLoaded=false;
+  state.inventoryImportCanViewGrid=false;
+  state.inventoryImportActiveJobId='';
+  state.inventoryImportSaveJobId='';
+  state.inventoryImportCurrentBatchId='';
+  state.inventoryImportActiveBatchId='';
+  state.inventoryImportItemTypes={};
+  setInventoryImportSaveBusy(false);
+  renderInventoryImportGrid([]);
+  inventoryImportCloseGrid(msg);
+  if(qs('inventoryImportPager'))qs('inventoryImportPager').innerHTML='';
+  if(savedBatchId){
+    fetchJson('/admin/inventory/import-staging/cleanup-saved',{
+      method:'POST',
+      body:JSON.stringify({batch_id:savedBatchId}),
+      skipLastJson:true,
+      trackActivity:false
+    }).catch(e=>console.debug('staging cleanup after save',e));
+  }
+  searchInventory(0,false).catch(e=>console.debug('inventory refresh after save',e));
+}
 function inventoryImportSaveObservationSummary(job={}){
   let errs=Array.isArray(job.item_errors)?job.item_errors:[];
   let count=Number(job.error_count||errs.length||0);
