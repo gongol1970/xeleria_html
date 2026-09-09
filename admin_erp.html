@@ -1495,8 +1495,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.69-staging-strict-download';
-const FRONTEND_BUILD='admin-erp-v29769-staging-strict-download';
+const FRONTEND_VERSION='2.97.72-real-idle20-manual-invoice-math';
+const FRONTEND_BUILD='admin-erp-v29772-real-idle20-manual-invoice-math';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
@@ -1633,9 +1633,10 @@ function startAlertPolling(){
 
 function qs(id){return document.getElementById(id)}function fieldVal(id){let el=qs(id);return el?el.value:''}function apiBase(){return(fieldVal('cfgApiUrl')||fieldVal('apiUrl')||state.api).replace(/\/$/,'').replace(/\/api$/,'')}function token(){return ''}function sessionToken(){return (localStorage.getItem('xeleria_session_token')||sessionStorage.getItem('xeleria_session_token')||'').trim()}function tenantId(){let saved=localStorage.getItem('xeleria_tenant_id')||localStorage.getItem('xeleria_last_tenant_id')||'';if(saved&&saved!=='00000000-0000-0000-0000-000000000001'){localStorage.setItem('xeleria_last_tenant_id',saved);return saved}try{let last=JSON.parse(localStorage.getItem('xeleria_last_json')||'{}');let ids=[last.tenant_id,last.response&&last.response.tenant_id];let res=(last.response&&last.response.results)||[];for(let r of res){ids.push(r&&r.tenant_id);ids.push(r&&r.json&&r.json.tenant_id)}let good=ids.find(x=>String(x||'').match(/^[0-9a-f-]{36}$/i)&&String(x)!=='00000000-0000-0000-0000-000000000001');if(good){localStorage.setItem('xeleria_tenant_id',String(good));localStorage.setItem('xeleria_last_tenant_id',String(good));return String(good)}}catch(e){}return saved||'00000000-0000-0000-0000-000000000001'}function url(path){return `${apiBase()}${path}`}function xeleriaHeaders(extra={}){let h={'Content-Type':'application/json','x-xeleria-tenant':tenantId(),...(extra||{})};let st=sessionToken();if(st){h['x-session-token']=st;h['Authorization']='Bearer '+st}return h}function cleanTokenFromUrl(){try{let u=new URL(location.href);['token','admin_token','tenant_id','tenant'].forEach(k=>u.searchParams.delete(k));localStorage.removeItem('pc_erp_token');localStorage.removeItem('xeleria_admin_token');history.replaceState({},'',u.toString())}catch(e){}}
 
-const HUMAN_IDLE_MS=10*60*1000;
+const HUMAN_IDLE_MS=20*60*1000;
 const HUMAN_ACTIVITY_PING_MS=60*1000;
 let humanIdleTimer=null,humanActivityPingAt=0,humanActivityPingBusy=false,humanSessionClosing=false;
+let humanLastActivityAt=Date.now();
 function clearLocalSession(){
   try{
     ['xeleria_session_token','xeleria_session_expires_at','xeleria_last_json','xeleria_admin_token','pc_erp_token'].forEach(k=>localStorage.removeItem(k));
@@ -1644,6 +1645,11 @@ function clearLocalSession(){
 }
 async function closeSessionForHumanInactivity(){
   if(humanSessionClosing)return;
+  let elapsed=Date.now()-humanLastActivityAt;
+  if(elapsed<HUMAN_IDLE_MS){
+    armHumanIdleTimer();
+    return;
+  }
   humanSessionClosing=true;
   let st=sessionToken();
   try{
@@ -1654,24 +1660,44 @@ async function closeSessionForHumanInactivity(){
 }
 function armHumanIdleTimer(){
   if(humanIdleTimer)clearTimeout(humanIdleTimer);
-  humanIdleTimer=setTimeout(closeSessionForHumanInactivity,HUMAN_IDLE_MS);
+  let remaining=Math.max(250,HUMAN_IDLE_MS-(Date.now()-humanLastActivityAt));
+  humanIdleTimer=setTimeout(closeSessionForHumanInactivity,remaining);
+}
+async function ensureHumanSessionFresh(){
+  if(humanSessionClosing)throw {ok:false,message:'La sesión se está cerrando.'};
+  let st=sessionToken();
+  if(!st)throw {ok:false,message:'Sesión requerida'};
+  humanLastActivityAt=Date.now();
+  armHumanIdleTimer();
+  let response=await fetch(apiBase()+'/auth/activity',{method:'POST',headers:xeleriaHeaders(),body:'{}'});
+  let data={};try{data=await response.json()}catch(e){}
+  if(response.status===401){
+    clearLocalSession();
+    redirectToInicio('');
+    throw {ok:false,status:401,message:'Sesión expirada'};
+  }
+  if(!response.ok)throw {ok:false,status:response.status,message:errText(data)||'No pude renovar la sesión.'};
+  humanActivityPingAt=Date.now();
+  if(data.expires_at)localStorage.setItem('xeleria_session_expires_at',data.expires_at);
+  return data;
 }
 async function registerHumanActivity(force=false){
   if(humanSessionClosing)return;
+  humanLastActivityAt=Date.now();
   armHumanIdleTimer();
-  let now=Date.now();
+  let now=humanLastActivityAt;
   if(!sessionToken()||humanActivityPingBusy||(!force&&now-humanActivityPingAt<HUMAN_ACTIVITY_PING_MS))return;
   humanActivityPingBusy=true;
-  humanActivityPingAt=now;
   try{
-    let response=await fetch(apiBase()+'/auth/activity',{method:'POST',headers:xeleriaHeaders(),body:'{}'});
-    let data={};try{data=await response.json()}catch(e){}
-    if(response.status===401){clearLocalSession();redirectToInicio('');return}
-    if(response.ok&&data.expires_at)localStorage.setItem('xeleria_session_expires_at',data.expires_at);
-  }catch(e){console.debug('human activity heartbeat',e)}finally{humanActivityPingBusy=false}
+    await ensureHumanSessionFresh();
+  }catch(e){
+    if(Number(e?.status||0)!==401)console.debug('human activity heartbeat',e);
+  }finally{
+    humanActivityPingBusy=false;
+  }
 }
 function startHumanInactivityGuard(){
-  ['pointerdown','pointermove','keydown','touchstart','scroll'].forEach(eventName=>document.addEventListener(eventName,()=>registerHumanActivity(false),{passive:true}));
+  ['pointerdown','pointermove','keydown','touchstart','scroll','input','change'].forEach(eventName=>document.addEventListener(eventName,()=>registerHumanActivity(false),{passive:true}));
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)registerHumanActivity(true)});
   window.addEventListener('focus',()=>registerHumanActivity(true));
   registerHumanActivity(true);
@@ -1801,7 +1827,7 @@ function renderArcaManualPreview(d){
       <div class="arcaPreviewField"><div class="k">Ambiente</div><div class="v">${esc(d.environment||'')}</div></div>
       <div class="arcaPreviewField"><div class="k">Estado</div><div class="v">No emitido</div></div>
     </div>
-    <div class="tableWrap" style="max-height:none"><table class="arcaPreviewLines"><thead><tr><th>SKU</th><th>Detalle</th><th>Cant.</th><th>IVA</th><th>Total</th></tr></thead><tbody>${lines.map(l=>`<tr><td><strong>${esc(l.sku||'')}</strong></td><td>${esc(l.description||'')}</td><td>${esc(l.quantity||'')}</td><td>${esc(l.iva_pct||'')}%</td><td><strong>${money(l.total_gross)}</strong></td></tr>`).join('')||'<tr><td colspan="5" class="muted">Sin líneas.</td></tr>'}</tbody></table></div>
+    <div class="tableWrap" style="max-height:none"><table class="arcaPreviewLines"><thead><tr><th>SKU</th><th>Detalle</th><th>Precio Unit.</th><th>Dto.</th><th>Precio c/dto.</th><th>IVA %</th><th>Neto Unit.</th><th>IVA Unit.</th><th>Cant.</th><th>Total</th></tr></thead><tbody>${lines.map(l=>{let list=Number(l.unit_price_gross||0),dto=Number(l.discount_pct||0),unit=arcaManualRound(list*(1-dto/100),2),iva=Number(l.iva_pct||0),net=arcaManualRound(unit/(1+iva/100),2),ivaUnit=arcaManualRound(unit-net,2);return `<tr><td><strong>${esc(l.sku||'')}</strong></td><td>${esc(l.description||'')}</td><td>${money(list)}</td><td>${esc(dto)}%</td><td>${money(unit)}</td><td>${esc(iva)}%</td><td>${money(net)}</td><td>${money(ivaUnit)}</td><td>${esc(l.quantity||'')}</td><td><strong>${money(l.total_gross)}</strong></td></tr>`}).join('')||'<tr><td colspan="10" class="muted">Sin líneas.</td></tr>'}</tbody></table></div>
     <div class="arcaPreviewTotals"><div>Neto: ${money(d.importe_neto)}</div><div>IVA: ${money(d.importe_iva)}</div><div>Total: ${money(d.importe_total)}</div></div>`;
   let st=qs('arcaManualStatus'); if(st)st.insertAdjacentElement('afterend',box); else host.appendChild(box);
 }
@@ -5323,18 +5349,90 @@ function arcaManualInit(){
   arcaManualConceptChanged();
   arcaManualTypeChanged();
 }
+function arcaManualRound(value,decimals=2){
+  let n=Number(value||0);
+  if(!Number.isFinite(n))return 0;
+  let factor=10**decimals;
+  return Math.round((n+Number.EPSILON)*factor)/factor;
+}
+function arcaManualNumberText(value,decimals=2){
+  let n=arcaManualRound(value,decimals);
+  return Number.isFinite(n)?String(n):'';
+}
+function arcaManualLineRecalc(line,source='discount'){
+  if(!line)return;
+  let listEl=line.querySelector('.amListPrice');
+  let discountEl=line.querySelector('.amDiscount');
+  let finalUnitEl=line.querySelector('.amUnit');
+  let ivaEl=line.querySelector('.amIva');
+  let qtyEl=line.querySelector('.amQty');
+  let netEl=line.querySelector('.amNetUnit');
+  let ivaUnitEl=line.querySelector('.amIvaUnit');
+  let totalEl=line.querySelector('.amLineTotal');
+  let list=Number(listEl?.value||0);
+  let discount=Number(discountEl?.value||0);
+  let finalUnit=Number(finalUnitEl?.value||0);
+  let iva=Number(ivaEl?.value||0);
+  let qty=Number(qtyEl?.value||0);
+
+  if(source==='discount'||source==='list'){
+    discount=Math.max(0,Math.min(100,Number.isFinite(discount)?discount:0));
+    if(discountEl)discountEl.value=arcaManualNumberText(discount);
+    finalUnit=list>0?arcaManualRound(list*(1-discount/100),2):0;
+    if(finalUnitEl)finalUnitEl.value=finalUnit>0?arcaManualNumberText(finalUnit):'';
+  }else if(source==='final'){
+    if(list>0&&finalUnit>=0){
+      discount=Math.max(0,Math.min(100,arcaManualRound((1-finalUnit/list)*100,4)));
+      if(discountEl)discountEl.value=arcaManualNumberText(discount,4);
+    }else if(finalUnit>0){
+      list=finalUnit;
+      if(listEl)listEl.value=arcaManualNumberText(list);
+      discount=0;
+      if(discountEl)discountEl.value='0';
+    }
+  }
+
+  finalUnit=Number(finalUnitEl?.value||0);
+  iva=Math.max(0,Number.isFinite(iva)?iva:0);
+  qty=Math.max(0,Number.isFinite(qty)?qty:0);
+  let netUnit=iva>=0?arcaManualRound(finalUnit/(1+iva/100),2):0;
+  let ivaUnit=arcaManualRound(finalUnit-netUnit,2);
+  let lineTotal=arcaManualRound(finalUnit*qty,2);
+  if(netEl)netEl.value=finalUnit>0?arcaManualNumberText(netUnit):'';
+  if(ivaUnitEl)ivaUnitEl.value=finalUnit>0?arcaManualNumberText(ivaUnit):'';
+  if(totalEl)totalEl.value=(finalUnit>0&&qty>0)?arcaManualNumberText(lineTotal):'';
+}
 function arcaManualLineHtml(id,d={}){
-  return `<div class="marketBox arcaLine" data-id="${id}" style="grid-template-columns:120px minmax(240px,1fr) 85px 82px 110px 82px 44px">
+  let listPrice=Number(d.unit_price_gross??d.unit_price??d.price??0);
+  let discount=Math.max(0,Math.min(100,Number(d.discount_pct||0)));
+  let finalUnit=listPrice>0?arcaManualRound(listPrice*(1-discount/100),2):0;
+  let iva=Number(d.iva_pct??21);
+  let qty=Math.max(1,Number(d.quantity||1));
+  let netUnit=finalUnit>0?arcaManualRound(finalUnit/(1+iva/100),2):0;
+  let ivaUnit=finalUnit>0?arcaManualRound(finalUnit-netUnit,2):0;
+  let total=finalUnit>0?arcaManualRound(finalUnit*qty,2):0;
+  return `<div class="marketBox arcaLine" data-id="${id}" style="grid-template-columns:110px minmax(230px,1.6fr) 100px 76px 108px 72px 100px 92px 68px 112px 44px;gap:5px;align-items:end">
     <div><label>SKU</label><input class="amSku" value="${esc(d.sku||'')}"></div>
     <div class="fieldRel"><label>Producto / servicio</label><input class="amDesc" value="${esc(d.description||'')}" oninput="arcaManualProductSearch(this)" autocomplete="off"><div class="arcaSuggest"></div></div>
-    <div><label>Cant.</label><input class="amQty" type="number" min="1" step="1" value="${esc(Math.max(1,Math.trunc(Number(d.quantity||1))))}"></div>
-    <div><label>Dto. %</label><input class="amDiscount" type="number" min="0" max="100" step="0.01" value="${esc(d.discount_pct||0)}"></div>
-    <div><label>Precio final</label><input class="amUnit" type="number" step="0.01" value="${esc(d.unit_price_gross||'')}"></div>
-    <div><label>IVA %</label><input class="amIva" type="number" step="0.01" value="${esc(d.iva_pct||21)}"></div>
+    <div><label>Precio Unit.</label><input class="amListPrice" type="number" min="0" step="0.01" value="${esc(listPrice||'')}" oninput="arcaManualLineRecalc(this.closest('.arcaLine'),'list')"></div>
+    <div><label>Dto. %</label><input class="amDiscount" type="number" min="0" max="100" step="0.01" value="${esc(discount)}" oninput="arcaManualLineRecalc(this.closest('.arcaLine'),'discount')"></div>
+    <div><label>Precio c/dto.</label><input class="amUnit" type="number" min="0" step="0.01" value="${esc(finalUnit||'')}" oninput="arcaManualLineRecalc(this.closest('.arcaLine'),'final')"></div>
+    <div><label>IVA %</label><input class="amIva" type="number" min="0" max="27" step="0.01" value="${esc(iva)}" oninput="arcaManualLineRecalc(this.closest('.arcaLine'),'iva')"></div>
+    <div><label>Neto Unit.</label><input class="amNetUnit" type="number" step="0.01" value="${esc(netUnit||'')}" readonly tabindex="-1"></div>
+    <div><label>IVA Unit.</label><input class="amIvaUnit" type="number" step="0.01" value="${esc(ivaUnit||'')}" readonly tabindex="-1"></div>
+    <div><label>Cant.</label><input class="amQty" type="number" min="1" step="1" value="${esc(qty)}" oninput="arcaManualLineRecalc(this.closest('.arcaLine'),'qty')"></div>
+    <div><label>Precio final</label><input class="amLineTotal" type="number" step="0.01" value="${esc(total||'')}" readonly tabindex="-1"></div>
     <div><label>&nbsp;</label><button class="secondary" onclick="this.closest('.arcaLine').remove()">×</button></div>
   </div>`;
 }
-function arcaManualAddLine(d={}){let box=qs('arcaManualLines');if(!box)return;arcaManualSeq++;box.insertAdjacentHTML('beforeend',arcaManualLineHtml(arcaManualSeq,d));arcaManualTypeChanged()}
+function arcaManualAddLine(d={}){
+  let box=qs('arcaManualLines');if(!box)return;
+  arcaManualSeq++;
+  box.insertAdjacentHTML('beforeend',arcaManualLineHtml(arcaManualSeq,d));
+  let line=box.lastElementChild;
+  if(line)arcaManualLineRecalc(line,'discount');
+  arcaManualTypeChanged();
+}
 function arcaManualBestTnPrice(item){
   let listings=(item&&item.listings)||[];
   let tn=listings.find(l=>String(l.marketplace||'').toUpperCase()==='TN'&&Number(l.price||0)>0)||listings.find(l=>Number(l.price||0)>0);
@@ -5359,7 +5457,12 @@ function arcaManualPickProduct(el){
   let line=el.closest('.arcaLine'); if(!line)return;
   line.querySelector('.amSku').value=el.dataset.sku||'';
   line.querySelector('.amDesc').value=el.dataset.name||'';
-  let price=Number(el.dataset.price||0); if(price>0)line.querySelector('.amUnit').value=price;
+  let price=Number(el.dataset.price||0);
+  if(price>0){
+    line.querySelector('.amListPrice').value=arcaManualNumberText(price);
+    line.querySelector('.amDiscount').value='0';
+    arcaManualLineRecalc(line,'list');
+  }
   let box=line.querySelector('.arcaSuggest'); if(box){box.style.display='none';box.innerHTML=''}
 }
 function onlyDigits(s){return String(s||'').replace(/\D/g,'')}
@@ -5487,6 +5590,7 @@ async function arcaLookupLocalCustomer(doc){
   return exact.find(c=>String(c.email||'').trim())||exact[0]||null;
 }
 async function arcaLookupCustomerA5(force){
+  await ensureHumanSessionFresh();
   if(arcaManualIsNoteType(Number(qs('amTipo')?.value||0))){
     if(force)setStatus('arcaManualStatus','Para NC/ND se conserva el receptor histórico de la factura asociada; no se vuelve a consultar A5.',true);
     return;
@@ -5548,14 +5652,17 @@ function cancelArcaManual(){
 }
 function arcaManualBody(dryRun=true,confirmar=false){
   arcaManualValidateStockDecision();
-  let lines=[...document.querySelectorAll('#arcaManualLines .arcaLine')].map(r=>({
-    sku:r.querySelector('.amSku').value.trim()||'ARCA_MANUAL',
-    description:r.querySelector('.amDesc').value.trim(),
-    quantity:Number(r.querySelector('.amQty').value||1),
-    discount_pct:Number(r.querySelector('.amDiscount').value||0),
-    unit_price_gross:Number(r.querySelector('.amUnit').value||0),
-    iva_pct:Number(r.querySelector('.amIva').value||21)
-  })).filter(l=>l.description&&l.quantity>0&&l.unit_price_gross>0);
+  let lines=[...document.querySelectorAll('#arcaManualLines .arcaLine')].map(r=>{
+    arcaManualLineRecalc(r,'final');
+    return {
+      sku:r.querySelector('.amSku').value.trim()||'ARCA_MANUAL',
+      description:r.querySelector('.amDesc').value.trim(),
+      quantity:Number(r.querySelector('.amQty').value||1),
+      discount_pct:Number(r.querySelector('.amDiscount').value||0),
+      unit_price_gross:Number(r.querySelector('.amListPrice').value||0),
+      iva_pct:Number(r.querySelector('.amIva').value||21)
+    };
+  }).filter(l=>l.description&&l.quantity>0&&l.unit_price_gross>0);
   if(!lines.length)throw new Error('Cargá al menos una línea con descripción, cantidad y precio.');
   let cbteTipo=Number(qs('amTipo').value||6);
   let association=arcaManualIsNoteType(cbteTipo)?arcaManualParseAssociatedVoucher():null;
@@ -5586,6 +5693,7 @@ function arcaManualBody(dryRun=true,confirmar=false){
   };
 }
 async function arcaManualPreview(){
+  await ensureHumanSessionFresh();
   let out=qs('arcaManualOut');
   if(out){out.classList.add('hidden');out.textContent=''}
   try{
@@ -5672,9 +5780,10 @@ async function arcaManualEmit(){
   if(out){out.classList.add('hidden');out.textContent=''}
   try{
     let body=arcaManualBody(false,true);
-    let total=body.lines.reduce((a,l)=>a+(Number(l.quantity)*Number(l.unit_price_gross)*(1-Number(l.discount_pct||0)/100)),0);
+    let total=body.lines.reduce((a,l)=>a+arcaManualRound(Number(l.quantity)*Number(l.unit_price_gross)*(1-Number(l.discount_pct||0)/100),2),0);
     let stockMsg=body.modifica_stock?'\n\nATENCIÓN: también va a modificar stock y generar sincronización.':'';
     if(!confirm(`Emitir comprobante real en ARCA por ${money(total)}?${stockMsg}`))return;
+    await ensureHumanSessionFresh();
     if(btn){btn.disabled=true;btn.textContent='Emitiendo...'}
     setStatus('arcaManualStatus','Emitiendo comprobante real... No vuelvas a tocar el botón.');
     let d=await fetchJson('/admin/arca/comprobantes/manual/emitir',{
