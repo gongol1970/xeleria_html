@@ -1438,7 +1438,22 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
     </div>
   </div>
 
-<div id="inventoryImportCard" class="card"><div class="btnrow"><div><h3>Carga general de inventario</h3></div></div><div class="importConnectorGrid"><div id="inventoryImportMLCard" class="importConnectorCard"><h4>Mercado Libre</h4><div class="importConnectorMeta">Estado: <span id="inventoryImportMLStatus" class="pill">revisando</span><span id="inventoryImportMLDot" class="dot">·</span><span id="inventoryImportMLAccount" class="importConnectorAccount">—</span></div><div class="importConnectorActions"><button id="inventoryImportMLButton" class="secondary" onclick="connectInventoryChannel('ML')">Conectar ML</button></div></div><div id="inventoryImportTNCard" class="importConnectorCard"><h4>Tienda Nube</h4><div class="importConnectorMeta">Estado: <span id="inventoryImportTNStatus" class="pill">revisando</span><span id="inventoryImportTNDot" class="dot">·</span><span id="inventoryImportTNAccount" class="importConnectorAccount">—</span></div><div class="importConnectorActions"><button id="inventoryImportTNButton" class="secondary" onclick="connectInventoryChannel('TN')">Conectar TN</button></div></div></div><div class="btnrow importImportActions"><button id="inventoryImportRunButton" class="primary" onclick="runInventoryImportRefresh(0)">Importar canales conectados</button><button type="button" class="secondary" id="inventoryReconcileStart" onclick="startInventoryReconciliationFromConfig()">Re-sincronizar stock</button></div><div class="small" style="margin-top:8px">El re-sync controla únicamente el stock de las publicaciones vinculadas y corre en segundo plano. No reimporta ni elimina publicaciones.</div><div id="inventoryImportStatus" class="status"></div><div id="inventoryImportSummary" class="status"></div><div id="inventoryImportErrors" class="status hidden"></div><div class="importReviewLegend importReviewLegendInline hidden"><span class="pill ok">Verde: SKU o publicación nueva / S-C cambiado</span><span class="pill bad">Rojo: falta en refresh confirmado</span><span class="pill warn">Amarillo: SKU faltante</span></div><div class="importReviewGrid hidden"><table><colgroup><col class="sku"><col class="tn"><col class="kind"><col class="ml"></colgroup><thead><tr><th>SKU</th><th>Tienda Nube</th><th title="Simple / Combo">S/C</th><th>Mercado Libre</th></tr></thead><tbody id="inventoryImportGridBody"></tbody></table></div><div id="inventoryImportPager" class="btnrow" style="margin-top:12px"></div></div>
+<div id="inventoryImportCard" class="card">
+  <div class="btnrow" style="justify-content:space-between;align-items:flex-start">
+    <div>
+      <h3>Re-sincronizar publicaciones</h3>
+      <p>Compara las publicaciones actuales de Mercado Libre y Tienda Nube contra los vínculos guardados en XelerIA. No cambia stock ni borra publicaciones del canal.</p>
+    </div>
+    <span id="publicationResyncQuota" class="pill">consultando límite…</span>
+  </div>
+  <div class="small">Disponible hasta 2 veces cada 30 días por comercio. Una publicación sólo puede desvincularse cuando el refresh terminó sin errores y el canal confirmó que ya no existe.</div>
+  <div class="btnrow" style="margin-top:12px">
+    <button id="publicationResyncStart" class="primary" type="button" onclick="startPublicationResync()">Revisar publicaciones ahora</button>
+    <button class="secondary" type="button" onclick="loadPublicationResyncStatus(true)">Actualizar resultado</button>
+  </div>
+  <div id="publicationResyncStatus" class="status"></div>
+  <div id="publicationResyncResults" class="tableWrap hidden" style="max-height:520px;margin-top:12px"></div>
+</div>
 <div id="tnCustomerImportCard" class="card"><h3>Importar clientes de Tienda Nube</h3><p>Descarga desde Tiendanube los clientes que tengan documento y completa la ficha única de XelerIA. Los clientes sin documento se omiten; una nueva importación reconoce los ya existentes y no crea duplicados.</p><div class="btnrow"><button id="tnCustomerImportButton" class="primary" type="button" onclick="importTnCustomersFromConfig()">Importar clientes de TN</button></div><div class="small" style="margin-top:8px">Usalo sólo cuando necesites actualizar la libreta completa. No modifica ventas, publicaciones, stock ni inventario.</div><div id="tnCustomerImportStatus" class="status" role="status" aria-live="polite"></div></div>
 <div id="configSaveActions"><div class="btnrow" style="justify-content:flex-end"><button class="primary" onclick="saveConfig()">Guardar toda la configuración</button><button class="secondary" onclick="cancelToPreviousView()">Cancelar</button></div><div id="cfgStatus" class="status"></div></div>
 </section>
@@ -1495,8 +1510,8 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.74-human-activity20';
-const FRONTEND_BUILD='admin-erp-v29774-human-activity20';
+const FRONTEND_VERSION='2.97.75-resync-xeli-regressions';
+const FRONTEND_BUILD='admin-erp-v29775-resync-xeli-regressions';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
 let state={api:'https://api.xeleria.com.ar',token:'',pendingJobLimit:null,inventoryItems:[],inventory:{offset:0,total:0},sales:{ML:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''},TN:{offset:0,items:[],cursors:{0:''},query:'',limit:20,refreshSeq:0,loadSeq:0,loading:false,freshnessWarning:''}},publications:{ML:{offset:0,total:0},TN:{offset:0,total:0}},jobs:{offset:0},linkCandidates:[]};state.inventoryImportItemTypes={};state.inventoryImportCurrentBatchId='';state.inventoryImportGridLoaded=false;state.inventoryImportIgnoreCompletionsUntil=0;state.debugVersions=null;state.debugVersionError=null;state.configLogoTouched=false;state.crossPublisher={sources:[],preview:null,publishing:false};let timers={};
@@ -2305,7 +2320,7 @@ const NOTIFICATION_GROUPS=[
   {key:'ml_sales',source:'Mercado Libre',slot:'Ventas',view:'ml-ventas'},
   {key:'tn_sales',source:'Tienda Nube',slot:'Ventas',view:'tn-ventas'},
   {key:'inventory_reconcile',source:'Inventario',slot:'Control de stock',view:'inventario'},
-  {key:'inventory_import',source:'Carga general de inventario',slot:'Importación',view:'configuracion',scroll:'inventoryImportCard'}
+  {key:'inventory_import',source:'Re-sincronizar publicaciones',slot:'Publicaciones',view:'configuracion',scroll:'inventoryImportCard'}
 ];
 
 function notificationIsUnread(n){return !n.read_at}
@@ -6045,14 +6060,14 @@ async function downloadInitialXeliConfiguration(){
     setStatus('xeliInitialStatus','Propuesta descargada. Revisala antes de subirla.',true);
   }catch(e){setStatus('xeliInitialStatus','Error descargando la propuesta: '+errText(e),false)}finally{setBusy(false)}
 }
-function xeliTrainingQuestionHtml(q,idx){let item=q.item||{},answer=q.answer||{};return `<div class="xeliQuestionChoice ${idx===state.xeliTraining.selected?'active':''}" onclick="selectXeliTrainingQuestion(${idx})"><strong>${esc(item.title||q.item_id||'Publicación')}</strong><div class="small">${esc(q.text||'')}</div><div class="small mono">${esc(item.seller_sku||'Sin SKU')} · ${esc(q.status||'')}</div>${answer.text?`<div class="small">Respondida: ${esc(answer.text)}</div>`:''}</div>`}
+function xeliTrainingQuestionHtml(q,idx){let item=q.item||{},answer=q.answer||{},sku=String(q.resolved_sku||item.seller_sku||'').trim(),candidates=Array.isArray(q.sku_candidates)?q.sku_candidates:[],variantNote=candidates.length>1?` · ${candidates.length} variantes vinculadas`:'';return `<div class="xeliQuestionChoice ${idx===state.xeliTraining.selected?'active':''}" onclick="selectXeliTrainingQuestion(${idx})"><strong>${esc(item.title||q.item_id||'Publicación')}</strong><div class="small">${esc(q.text||'')}</div><div class="small mono">${esc(sku||'SKU no resoluble')}${esc(variantNote)} · ${esc(q.status||'')}</div>${answer.text?`<div class="small">Respondida: ${esc(answer.text)}</div>`:''}</div>`}
 function renderXeliTrainingQuestions(){let el=qs('xeliQuestionList');if(!el)return;let items=state.xeliTraining.items||[];el.innerHTML=items.length?items.map(xeliTrainingQuestionHtml).join(''):'<div class="dashEmpty">Todavía no hay preguntas almacenadas.</div>'}
 function xeliTrainingRange(){let from=Number(qs('xeliQuestionFrom')?.value||1),to=Number(qs('xeliQuestionTo')?.value||50);if(!Number.isInteger(from)||!Number.isInteger(to)||from<1||to<1){alert('Desde y Hasta deben ser números enteros mayores que cero.');return null}if(from>to){alert('Desde no puede ser mayor que Hasta.');return null}if(to>1000){alert('Hasta no puede superar 1000.');return null}if(to-from+1>200){alert('Podés traer hasta 200 preguntas por vez.');return null}return{from,to}}
 async function loadXeliTrainingQuestions(refresh=false){let range=xeliTrainingRange();if(!range)return;setStatus('xeliTrainingStatus',refresh?`Buscando preguntas ${range.from} a ${range.to} en Mercado Libre...`:'Leyendo preguntas guardadas...');try{let d=await fetchJson(`/admin/xeli/training/questions?from=${range.from}&to=${range.to}&refresh=${refresh?'true':'false'}`);state.xeliTraining.items=d.items||[];state.xeliTraining.selected=-1;renderXeliTrainingQuestions();setStatus('xeliTrainingStatus',`Listas ${d.total||0} preguntas para entrenar · rango ${range.from} a ${range.to}${d.warnings?.length?' · '+d.warnings.join(' · '):''}`,!d.warnings?.length)}catch(e){setStatus('xeliTrainingStatus','Error cargando preguntas: '+errText(e),false)}}
 async function loadXeliResponseModes(){let skuEl=qs('xeliModeSku');if(!skuEl)return;try{let d=await fetchJson('/admin/xeli/response-modes',{skipLastJson:true});state.xeliTraining.responseModes=d.items||[];skuEl.innerHTML=state.xeliTraining.responseModes.length?state.xeliTraining.responseModes.map(r=>`<option value="${esc(r.sku)}">${esc(r.sku)} · ${esc(r.name||'Sin nombre')}</option>`).join(''):'<option value="">Sin productos activos</option>';xeliModeSkuChanged()}catch(e){skuEl.innerHTML='<option value="">No se pudieron cargar los SKU</option>';setStatus('xeliTrainingStatus','Error leyendo modos de respuesta: '+errText(e),false)}}
 function xeliModeSkuChanged(){let row=(state.xeliTraining.responseModes||[]).find(r=>r.sku===qs('xeliModeSku')?.value);if(row&&qs('xeliModeValue'))qs('xeliModeValue').value=row.response_mode||'pre_respuesta'}
 async function saveXeliResponseMode(){let sku=qs('xeliModeSku')?.value||'',mode=qs('xeliModeValue')?.value||'';if(!sku){alert('Elegí un SKU.');return}setStatus('xeliTrainingStatus','Guardando modo de respuesta...');try{let d=await fetchJson('/admin/xeli/response-modes/'+encodeURIComponent(sku),{method:'PUT',body:JSON.stringify({response_mode:mode})});let idx=(state.xeliTraining.responseModes||[]).findIndex(r=>r.sku===sku);if(idx>=0)state.xeliTraining.responseModes[idx]=d.item;setStatus('xeliTrainingStatus',`Modo ${mode} guardado para ${sku}.`,true)}catch(e){setStatus('xeliTrainingStatus','Error guardando modo: '+errText(e),false)}}
-function selectXeliTrainingQuestion(idx){let q=state.xeliTraining.items[idx];if(!q)return;state.xeliTraining.selected=idx;let item=q.item||{},sku=item.seller_sku||'';qs('xeliQuestionId').value=q.id||'';qs('xeliItemId').value=q.item_id||item.id||'';qs('xeliSku').value=sku;qs('xeliQuestionText').value=q.text||'';qs('xeliProposedAnswer').value='';qs('xeliCorrection').value='';qs('xeliSkillSummary').innerHTML='';if(sku&&Array.from(qs('xeliModeSku')?.options||[]).some(o=>o.value===sku)){qs('xeliModeSku').value=sku;xeliModeSkuChanged()}renderXeliTrainingQuestions()}
+function selectXeliTrainingQuestion(idx){let q=state.xeliTraining.items[idx];if(!q)return;state.xeliTraining.selected=idx;let item=q.item||{},sku=q.resolved_sku||item.seller_sku||'';qs('xeliQuestionId').value=q.id||'';qs('xeliItemId').value=q.item_id||item.id||'';qs('xeliSku').value=sku;qs('xeliQuestionText').value=q.text||'';qs('xeliProposedAnswer').value='';qs('xeliCorrection').value='';qs('xeliSkillSummary').innerHTML='';if(sku&&Array.from(qs('xeliModeSku')?.options||[]).some(o=>o.value===sku)){qs('xeliModeSku').value=sku;xeliModeSkuChanged()}renderXeliTrainingQuestions()}
 async function xeliPreanswer(){
   let question=(qs('xeliQuestionText')?.value||'').trim();
   if(!question){alert('Elegí o escribí una pregunta.');return}
@@ -6992,6 +7007,91 @@ async function loadConfig(){
 }
 
 
+
+let publicationResyncPollTimer=null;
+function publicationResyncUsageText(usage={}){
+  let used=Number(usage.used||0),limit=Number(usage.limit||2),remaining=Math.max(0,Number(usage.remaining??(limit-used)));
+  let txt=`${remaining} de ${limit} disponibles / 30 días`;
+  if(!remaining&&usage.next_available_at)txt+=` · próxima: ${dateAR(usage.next_available_at)}`;
+  return txt;
+}
+function publicationResyncPubRows(rows=[]){
+  let out=[];
+  for(let row of (rows||[])){
+    let sku=String(row?.sku||'').trim();
+    for(let pair of [['TN',row?.tn_publications],['ML',row?.ml_publications]]){
+      let market=pair[0],pubs=Array.isArray(pair[1])?pair[1]:[];
+      for(let pub of pubs){
+        let compare=String(pub?.compare_status||'').trim().toLowerCase();
+        out.push({sku,market,pub,compare,title:pub?.title||'',product_id:pub?.external_product_id||pub?.external_full_id||'',variant_id:String(pub?.external_variant_id||'0')});
+      }
+    }
+  }
+  return out;
+}
+function publicationResyncStatusLabel(item,authoritative){
+  if(item.compare==='missing_in_refresh')return authoritative?'No encontrada (confirmado)':'No verificada';
+  if(item.compare==='new')return'Nueva en canal';
+  if(item.compare==='missing_sku')return'SKU faltante';
+  return'OK';
+}
+function renderPublicationResync(job){
+  let box=qs('publicationResyncResults');if(!box)return;
+  if(!job){box.classList.add('hidden');box.innerHTML='';return}
+  let items=publicationResyncPubRows(job.rows||[]),authoritative=job.authoritative===true;
+  if(!items.length){box.classList.remove('hidden');box.innerHTML='<div class="dashEmpty">El control terminó sin publicaciones para mostrar.</div>';return}
+  let html=items.map((x,idx)=>{
+    let missing=x.compare==='missing_in_refresh';
+    let cls=missing?(authoritative?'pill bad':'pill warn'):(x.compare==='new'?'pill ok':(x.compare==='missing_sku'?'pill warn':'pill ok'));
+    let action=(missing&&authoritative&&x.sku)?`<button class="danger" type="button" onclick="unlinkPublicationResync(${idx})">Desvincular</button>`:'—';
+    return `<tr><td><strong class="mono">${esc(x.sku||'(sin SKU)')}</strong></td><td>${esc(x.market)}</td><td><strong>${esc(x.title||'(sin título)')}</strong><br><span class="small mono">${esc(x.product_id)}${x.variant_id&&x.variant_id!=='0'?` · var ${esc(x.variant_id)}`:''}</span></td><td><span class="${cls}">${esc(publicationResyncStatusLabel(x,authoritative))}</span></td><td>${action}</td></tr>`;
+  }).join('');
+  state.publicationResyncItems=items;
+  box.classList.remove('hidden');
+  box.innerHTML=`<table><thead><tr><th>SKU</th><th>Canal</th><th>Publicación</th><th>Estado</th><th>Acción</th></tr></thead><tbody>${html}</tbody></table>`;
+}
+function clearPublicationResyncPoll(){if(publicationResyncPollTimer)clearInterval(publicationResyncPollTimer);publicationResyncPollTimer=null}
+async function pollPublicationResync(jobId){
+  clearPublicationResyncPoll();
+  publicationResyncPollTimer=setInterval(async()=>{
+    try{
+      let d=await fetchJson('/admin/inventory/publication-resync/jobs/'+encodeURIComponent(jobId),{skipLastJson:true});
+      let job=d.job||{};qs('publicationResyncQuota').textContent=publicationResyncUsageText(d.usage||{});
+      if(['completed','completed_with_errors','failed','error','cancelled'].includes(String(job.status||'').toLowerCase())){
+        clearPublicationResyncPoll();renderPublicationResync(job);
+        let msg=job.authoritative?`Control terminado. ${job.missing_confirmed||0} publicación(es) faltante(s) confirmada(s).`:`El control terminó con errores; no se habilita ninguna desvinculación.`;
+        setStatus('publicationResyncStatus',msg,job.authoritative?true:'warn');qs('publicationResyncStart').disabled=Number(d.usage?.remaining||0)<=0;
+      }else setStatus('publicationResyncStatus',`Revisando publicaciones en segundo plano: ${job.processed_items||0}${job.total_items?` de ${job.total_items}`:''}.`,true);
+    }catch(e){console.debug('publication resync poll',e)}
+  },4000);
+}
+async function loadPublicationResyncStatus(showResult=false){
+  try{
+    let d=await fetchJson('/admin/inventory/publication-resync/status',{skipLastJson:true}),usage=d.usage||{},job=d.latest||null;
+    let quota=qs('publicationResyncQuota');if(quota)quota.textContent=publicationResyncUsageText(usage);
+    let btn=qs('publicationResyncStart');if(btn)btn.disabled=Number(usage.remaining||0)<=0||['queued','running'].includes(String(job?.status||'').toLowerCase());
+    if(job&&['queued','running'].includes(String(job.status||'').toLowerCase())){setStatus('publicationResyncStatus','Hay una revisión en curso. Podés seguir trabajando.',true);pollPublicationResync(job.job_id);return}
+    if(showResult&&job){renderPublicationResync(job);setStatus('publicationResyncStatus',job.authoritative?`Último control: ${job.missing_confirmed||0} faltante(s) confirmado(s).`:'El último control tuvo errores; no habilita desvinculaciones.',job.authoritative?true:'warn')}
+  }catch(e){setStatus('publicationResyncStatus','No pude leer el estado del resync: '+errText(e),false)}
+}
+async function startPublicationResync(){
+  if(!confirm('¿Revisar ahora todas las publicaciones conectadas? Esta ejecución consume 1 de las 2 disponibles cada 30 días.'))return;
+  let btn=qs('publicationResyncStart');if(btn)btn.disabled=true;setStatus('publicationResyncStatus','Iniciando revisión de publicaciones...');
+  try{
+    let d=await fetchJson('/admin/inventory/publication-resync/jobs',{method:'POST'}),job=d.job||{};
+    if(qs('publicationResyncQuota'))qs('publicationResyncQuota').textContent=publicationResyncUsageText(d.usage||{});
+    renderPublicationResync(null);setStatus('publicationResyncStatus','Revisión iniciada. Corre en segundo plano.',true);if(job.job_id)pollPublicationResync(job.job_id);
+  }catch(e){if(btn)btn.disabled=false;setStatus('publicationResyncStatus','No pude iniciar la revisión: '+errText(e),false);loadPublicationResyncStatus(false).catch(()=>{})}
+}
+async function unlinkPublicationResync(index){
+  let x=(state.publicationResyncItems||[])[index];if(!x||!x.sku)return;
+  if(!confirm(`Desvincular de XelerIA ${x.market} ${x.product_id}${x.variant_id&&x.variant_id!=='0'?' / variante '+x.variant_id:''} del SKU ${x.sku}? No borra la publicación real ni el SKU.`))return;
+  try{
+    await fetchJson('/admin/v2/inventory/products/'+encodeURIComponent(x.sku)+'/unlink-listing',{method:'POST',body:JSON.stringify({marketplace:x.market,external_product_id:x.product_id,external_variant_id:x.variant_id||'0'})});
+    setStatus('publicationResyncStatus','Publicación desvinculada de XelerIA. El SKU se conserva.',true);await loadPublicationResyncStatus(true);
+  }catch(e){setStatus('publicationResyncStatus','No pude desvincular: '+errText(e),false)}
+}
+
 function importReviewMoney(v){if(v===null||v===undefined||v==='')return'';let n=Number(v);return Number.isFinite(n)?('$ '+n.toLocaleString('es-AR',{maximumFractionDigits:2})):esc(v)}
 function importReviewPubs(list){if(!list||!list.length)return'<span class="small">—</span>';return list.map(p=>`<div class="importReviewPub"><div class="importReviewPubTitle">${esc(p.title||'(sin título)')}</div><div class="importReviewPubMeta">ID: ${esc(p.external_full_id||p.external_product_id||'')}<br>Stock: ${esc(p.stock??'')} · Precio: ${importReviewMoney(p.price)} · Estado: ${esc(p.status||'')}${p.permalink?`<br><a class="link" href="${esc(p.permalink)}" target="_blank">abrir</a>`:''}</div></div>`).join('')}
 function importReviewSafeName(sku){try{return btoa(unescape(encodeURIComponent(String(sku||'')))).replace(/=/g,'')}catch{return String(sku||'').replace(/\W+/g,'_')}}
@@ -7495,7 +7595,7 @@ async function bootstrapXeleria(){
   arcaManualEnsureCustomerAutocomplete();
   loadSettings();if(typeof loadMLQuestionSettings==='function')loadMLQuestionSettings();renderMLQuickButtons();
   let migrationAuditRequested=new URLSearchParams(location.search).get('migration_audit')==='1';
-  startHumanInactivityGuard();showView(migrationAuditRequested?'versiones':'inicio',{skipHistory:true});health();handleOauthReturn();updateVersionBar();startAlertPolling();inventoryImportBootstrapGridButton();resumeInventoryReconciliationJob();if(migrationAuditRequested)loadMigrationAudit();/* Recuperación única al iniciar: muestra staging pendiente sin activar polling periódico. */
+  startHumanInactivityGuard();showView(migrationAuditRequested?'versiones':'inicio',{skipHistory:true});health();handleOauthReturn();updateVersionBar();startAlertPolling();loadPublicationResyncStatus(false);resumeInventoryReconciliationJob();if(migrationAuditRequested)loadMigrationAudit();
 }
 bootstrapXeleria();
 </script>
