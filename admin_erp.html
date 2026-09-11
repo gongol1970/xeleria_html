@@ -1439,18 +1439,49 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
   </div>
 
 <div id="inventoryImportCard" class="card">
-  <div class="btnrow" style="justify-content:space-between;align-items:flex-start">
-    <div>
-      <h3>Re-sincronizar publicaciones</h3>
-      <p>Compara las publicaciones actuales de Mercado Libre y Tienda Nube contra los vínculos guardados en XelerIA. No cambia stock ni borra publicaciones del canal.</p>
+  <div class="btnrow"><div><h3>Carga general de inventario</h3></div></div>
+
+  <div class="importConnectorGrid">
+    <div id="inventoryImportMLCard" class="importConnectorCard">
+      <h4>Mercado Libre</h4>
+      <div class="importConnectorMeta">Estado: <span id="inventoryImportMLStatus" class="pill">revisando</span><span id="inventoryImportMLDot" class="dot">·</span><span id="inventoryImportMLAccount" class="importConnectorAccount">—</span></div>
+      <div class="importConnectorActions"><button id="inventoryImportMLButton" class="secondary" onclick="connectInventoryChannel('ML')">Conectar ML</button></div>
     </div>
+    <div id="inventoryImportTNCard" class="importConnectorCard">
+      <h4>Tienda Nube</h4>
+      <div class="importConnectorMeta">Estado: <span id="inventoryImportTNStatus" class="pill">revisando</span><span id="inventoryImportTNDot" class="dot">·</span><span id="inventoryImportTNAccount" class="importConnectorAccount">—</span></div>
+      <div class="importConnectorActions"><button id="inventoryImportTNButton" class="secondary" onclick="connectInventoryChannel('TN')">Conectar TN</button></div>
+    </div>
+  </div>
+
+  <div class="btnrow importImportActions">
+    <button id="inventoryImportRunButton" class="primary" onclick="runInventoryImportRefresh(0)">Importar canales conectados</button>
+    <button type="button" class="secondary" id="inventoryReconcileStart" onclick="startPublicationResync()">Re-sincronizar publicaciones</button>
     <span id="publicationResyncQuota" class="pill">consultando límite…</span>
   </div>
-  <div class="small">Disponible hasta 2 veces cada 30 días por comercio. Una publicación sólo puede desvincularse cuando el refresh terminó sin errores y el canal confirmó que ya no existe.</div>
-  <div class="btnrow" style="margin-top:12px">
-    <button id="publicationResyncStart" class="primary" type="button" onclick="startPublicationResync()">Revisar publicaciones ahora</button>
-    <button class="secondary" type="button" onclick="loadPublicationResyncStatus(true)">Actualizar resultado</button>
+
+  <div class="small" style="margin-top:8px">
+    Importar conserva el circuito normal de carga. La re-sincronización vuelve a consultar las publicaciones de los canales y está disponible hasta 2 veces cada 30 días por comercio.
   </div>
+
+  <div id="inventoryImportStatus" class="status"></div>
+  <div id="inventoryImportSummary" class="status"></div>
+  <div id="inventoryImportErrors" class="status hidden"></div>
+
+  <div class="importReviewLegend importReviewLegendInline hidden">
+    <span class="pill ok">Verde: SKU o publicación nueva / S-C cambiado</span>
+    <span class="pill bad">Rojo: falta en refresh confirmado</span>
+    <span class="pill warn">Amarillo: SKU faltante</span>
+  </div>
+  <div class="importReviewGrid hidden">
+    <table>
+      <colgroup><col class="sku"><col class="tn"><col class="kind"><col class="ml"></colgroup>
+      <thead><tr><th>SKU</th><th>Tienda Nube</th><th title="Simple / Combo">S/C</th><th>Mercado Libre</th></tr></thead>
+      <tbody id="inventoryImportGridBody"></tbody>
+    </table>
+  </div>
+  <div id="inventoryImportPager" class="btnrow" style="margin-top:12px"></div>
+
   <div id="publicationResyncStatus" class="status"></div>
   <div id="publicationResyncResults" class="tableWrap hidden" style="max-height:520px;margin-top:12px"></div>
 </div>
@@ -1510,7 +1541,7 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.75-resync-xeli-regressions';
+const FRONTEND_VERSION='2.97.76-import-restored-resync-2x30';
 const FRONTEND_BUILD='admin-erp-v29775-resync-xeli-regressions';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
