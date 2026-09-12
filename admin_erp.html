@@ -1456,7 +1456,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;ove
 
   <div class="btnrow importImportActions">
     <button id="inventoryImportRunButton" class="primary" onclick="runInventoryImportRefresh(0)">Importar canales conectados</button>
-    <button type="button" class="secondary" id="inventoryReconcileStart" onclick="startPublicationResync()">Re-sincronizar publicaciones</button>
+    <button type="button" class="secondary" id="publicationResyncStart" onclick="startPublicationResync()">Re-sincronizar publicaciones</button>
     <span id="publicationResyncQuota" class="pill">consultando límite…</span>
   </div>
 
@@ -1541,7 +1541,7 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.76-import-restored-resync-2x30';
+const FRONTEND_VERSION='2.97.77-resync-missing-confirmed';
 const FRONTEND_BUILD='admin-erp-v29775-resync-xeli-regressions';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
@@ -7046,40 +7046,74 @@ function publicationResyncUsageText(usage={}){
   if(!remaining&&usage.next_available_at)txt+=` · próxima: ${dateAR(usage.next_available_at)}`;
   return txt;
 }
-function publicationResyncPubRows(rows=[]){
+function publicationResyncPubRows(job={}){
+  if(Array.isArray(job.missing_rows))return job.missing_rows.map(x=>({
+    sku:String(x?.sku||'').trim(),
+    market:String(x?.market||'').trim().toUpperCase(),
+    title:x?.title||'',
+    product_id:String(x?.product_id||'').trim(),
+    variant_id:String(x?.variant_id||'0'),
+    compare:String(x?.compare_status||'').trim().toLowerCase(),
+    verification_error:x?.verification_error||'',
+    confirmed:x?.confirmed===true
+  }));
   let out=[];
-  for(let row of (rows||[])){
+  for(let row of (job.rows||[])){
     let sku=String(row?.sku||'').trim();
     for(let pair of [['TN',row?.tn_publications],['ML',row?.ml_publications]]){
       let market=pair[0],pubs=Array.isArray(pair[1])?pair[1]:[];
       for(let pub of pubs){
         let compare=String(pub?.compare_status||'').trim().toLowerCase();
-        out.push({sku,market,pub,compare,title:pub?.title||'',product_id:pub?.external_product_id||pub?.external_full_id||'',variant_id:String(pub?.external_variant_id||'0')});
+        if(compare!=='missing_in_refresh')continue;
+        out.push({sku,market,title:pub?.title||'',product_id:pub?.external_product_id||pub?.external_full_id||'',variant_id:String(pub?.external_variant_id||'0'),compare,confirmed:job.authoritative===true});
       }
     }
   }
   return out;
 }
 function publicationResyncStatusLabel(item,authoritative){
-  if(item.compare==='missing_in_refresh')return authoritative?'No encontrada (confirmado)':'No verificada';
-  if(item.compare==='new')return'Nueva en canal';
-  if(item.compare==='missing_sku')return'SKU faltante';
-  return'OK';
+  if(item.compare==='missing_in_refresh')return authoritative?'No encontrada / eliminada (confirmado)':'Faltante detectado, no habilitado';
+  if(item.compare==='missing_unverified')return'Faltante detectado, control con errores';
+  if(item.compare==='verification_error')return item.verification_error||'No se pudo verificar';
+  return'Pendiente de verificación';
+}
+function publicationResyncStatsHtml(job={}){
+  let stats=job.stats||{}, channels=['ML','TN'].filter(ch=>stats[ch]);
+  if(!channels.length)return'';
+  let cards=channels.map(ch=>{
+    let s=stats[ch]||{},name=ch==='ML'?'Mercado Libre':'Tienda Nube';
+    return `<div class="dashMini"><b>${esc(name)}</b>
+      <div class="small">Devueltas por el canal: <strong>${Number(s.returned||0)}</strong></div>
+      <div class="small">Vinculadas antes: <strong>${Number(s.linked_before||0)}</strong></div>
+      <div class="small">Encontradas en refresh: <strong>${Number(s.matched_in_refresh||0)}</strong></div>
+      <div class="small">Faltantes confirmadas: <strong>${Number(s.confirmed_missing||0)}</strong></div>
+      <div class="small">No verificadas: <strong>${Number(s.unverified||0)}</strong> · Errores: <strong>${Number(s.errors||0)}</strong></div>
+      ${Number(s.search_omitted_but_live||0)?`<div class="small">No salieron en el listado pero siguen vivas: <strong>${Number(s.search_omitted_but_live||0)}</strong></div>`:''}
+    </div>`;
+  }).join('');
+  return `<div class="dashGridSmall" style="margin:12px 0">${cards}</div>`;
 }
 function renderPublicationResync(job){
   let box=qs('publicationResyncResults');if(!box)return;
   if(!job){box.classList.add('hidden');box.innerHTML='';return}
-  let items=publicationResyncPubRows(job.rows||[]),authoritative=job.authoritative===true;
-  if(!items.length){box.classList.remove('hidden');box.innerHTML='<div class="dashEmpty">El control terminó sin publicaciones para mostrar.</div>';return}
+  let items=publicationResyncPubRows(job),authoritative=job.authoritative===true;
+  let statsHtml=publicationResyncStatsHtml(job);
+  if(!items.length){
+    state.publicationResyncItems=[];
+    box.classList.remove('hidden');
+    box.innerHTML=statsHtml+`<div class="dashEmpty">${authoritative?'Control completo: no hay publicaciones vinculadas que hayan desaparecido de los canales.':'El control no pudo certificar faltantes porque terminó con errores.'}</div>`;
+    return;
+  }
   let html=items.map((x,idx)=>{
-    let missing=x.compare==='missing_in_refresh';
-    let cls=missing?(authoritative?'pill bad':'pill warn'):(x.compare==='new'?'pill ok':(x.compare==='missing_sku'?'pill warn':'pill ok'));
+    let missing=x.compare==='missing_in_refresh'&&x.confirmed===true;
+    let cls=missing?'pill bad':(x.compare==='verification_error'?'pill warn':'pill warn');
     let action=(missing&&authoritative&&x.sku)?`<button class="danger" type="button" onclick="unlinkPublicationResync(${idx})">Desvincular</button>`:'—';
-    return `<tr><td><strong class="mono">${esc(x.sku||'(sin SKU)')}</strong></td><td>${esc(x.market)}</td><td><strong>${esc(x.title||'(sin título)')}</strong><br><span class="small mono">${esc(x.product_id)}${x.variant_id&&x.variant_id!=='0'?` · var ${esc(x.variant_id)}`:''}</span></td><td><span class="${cls}">${esc(publicationResyncStatusLabel(x,authoritative))}</span></td><td>${action}</td></tr>`;
+    let detail=x.verification_error?`<br><span class="small">${esc(x.verification_error)}</span>`:'';
+    return `<tr><td><strong class="mono">${esc(x.sku||'(sin SKU)')}</strong></td><td>${esc(x.market)}</td><td><strong>${esc(x.title||'(sin título)')}</strong><br><span class="small mono">${esc(x.product_id)}${x.variant_id&&x.variant_id!=='0'?` · var ${esc(x.variant_id)}`:''}</span></td><td><span class="${cls}">${esc(publicationResyncStatusLabel(x,authoritative))}</span>${detail}</td><td>${action}</td></tr>`;
   }).join('');
   state.publicationResyncItems=items;
   box.classList.remove('hidden');
-  box.innerHTML=`<table><thead><tr><th>SKU</th><th>Canal</th><th>Publicación</th><th>Estado</th><th>Acción</th></tr></thead><tbody>${html}</tbody></table>`;
+  box.innerHTML=statsHtml+`<table><thead><tr><th>SKU</th><th>Canal</th><th>Publicación</th><th>Estado</th><th>Acción</th></tr></thead><tbody>${html}</tbody></table>`;
 }
 function clearPublicationResyncPoll(){if(publicationResyncPollTimer)clearInterval(publicationResyncPollTimer);publicationResyncPollTimer=null}
 async function pollPublicationResync(jobId){
@@ -7090,7 +7124,7 @@ async function pollPublicationResync(jobId){
       let job=d.job||{};qs('publicationResyncQuota').textContent=publicationResyncUsageText(d.usage||{});
       if(['completed','completed_with_errors','failed','error','cancelled'].includes(String(job.status||'').toLowerCase())){
         clearPublicationResyncPoll();renderPublicationResync(job);
-        let msg=job.authoritative?`Control terminado. ${job.missing_confirmed||0} publicación(es) faltante(s) confirmada(s).`:`El control terminó con errores; no se habilita ninguna desvinculación.`;
+        let msg=job.authoritative?`Control terminado. ${job.missing_confirmed||0} publicación(es) faltante(s) confirmada(s) sobre ${job.total||0} vínculo(s) revisado(s).`:`El control terminó con errores; no se habilita ninguna desvinculación.`;
         setStatus('publicationResyncStatus',msg,job.authoritative?true:'warn');qs('publicationResyncStart').disabled=Number(d.usage?.remaining||0)<=0;
       }else setStatus('publicationResyncStatus',`Revisando publicaciones en segundo plano: ${job.processed_items||0}${job.total_items?` de ${job.total_items}`:''}.`,true);
     }catch(e){console.debug('publication resync poll',e)}
@@ -7102,7 +7136,7 @@ async function loadPublicationResyncStatus(showResult=false){
     let quota=qs('publicationResyncQuota');if(quota)quota.textContent=publicationResyncUsageText(usage);
     let btn=qs('publicationResyncStart');if(btn)btn.disabled=Number(usage.remaining||0)<=0||['queued','running'].includes(String(job?.status||'').toLowerCase());
     if(job&&['queued','running'].includes(String(job.status||'').toLowerCase())){setStatus('publicationResyncStatus','Hay una revisión en curso. Podés seguir trabajando.',true);pollPublicationResync(job.job_id);return}
-    if(showResult&&job){renderPublicationResync(job);setStatus('publicationResyncStatus',job.authoritative?`Último control: ${job.missing_confirmed||0} faltante(s) confirmado(s).`:'El último control tuvo errores; no habilita desvinculaciones.',job.authoritative?true:'warn')}
+    if(showResult&&job){renderPublicationResync(job);setStatus('publicationResyncStatus',job.authoritative?`Último control: ${job.missing_confirmed||0} faltante(s) confirmado(s) sobre ${job.total||0} vínculo(s) revisado(s).`:'El último control tuvo errores; no habilita desvinculaciones.',job.authoritative?true:'warn')}
   }catch(e){setStatus('publicationResyncStatus','No pude leer el estado del resync: '+errText(e),false)}
 }
 async function startPublicationResync(){
