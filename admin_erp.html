@@ -1541,7 +1541,7 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.77-resync-missing-confirmed';
+const FRONTEND_VERSION='2.97.78-arca-manual-general-inventory';
 const FRONTEND_BUILD='admin-erp-v29775-resync-xeli-regressions';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
@@ -5498,10 +5498,15 @@ function arcaManualAddLine(d={}){
   if(line)arcaManualLineRecalc(line,'discount');
   arcaManualTypeChanged();
 }
-function arcaManualBestTnPrice(item){
-  let listings=(item&&item.listings)||[];
-  let tn=listings.find(l=>String(l.marketplace||'').toUpperCase()==='TN'&&Number(l.price||0)>0)||listings.find(l=>Number(l.price||0)>0);
-  return tn?Number(tn.price||0):0;
+function arcaManualBestGeneralPrice(item){
+  if(!item)return 0;
+  let direct=Number(item.list_price??item.price??0);
+  if(Number.isFinite(direct)&&direct>0)return direct;
+  let listings=(item.listings||[]).filter(l=>String(l.listing_type||'').toLowerCase()!=='unlinked'&&Number(l.price||0)>0);
+  let ml=listings.find(l=>String(l.marketplace||'').toUpperCase()==='ML');
+  let tn=listings.find(l=>String(l.marketplace||'').toUpperCase()==='TN');
+  let chosen=ml||tn||listings[0];
+  return chosen?Number(chosen.price||0):0;
 }
 function arcaManualProductSearch(input){
   clearTimeout(input._arcaTimer);
@@ -5511,23 +5516,23 @@ function arcaManualProductSearch(input){
     let box=line?line.querySelector('.arcaSuggest'):null;
     if(!box||q.length<XELERIA_MIN_SEARCH_CHARS){if(box){box.style.display='none';box.innerHTML=''}return}
     try{
-      let d=await fetchJson('/admin/v2/inventory/products?q='+encodeURIComponent(q)+'&marketplace=TN&limit=8&include_listings=true');
+      let d=await fetchJson('/admin/v2/inventory/products?q='+encodeURIComponent(q)+'&limit=12&include_listings=true');
       let items=(d.items||[]);
-      box.innerHTML=items.map(it=>{let price=arcaManualBestTnPrice(it);let label=[it.name,it.variant_name].filter(Boolean).join(' · ');return `<div class="arcaSuggestItem" onclick="arcaManualPickProduct(this)" data-sku="${esc(it.sku||'')}" data-name="${esc(label)}" data-price="${esc(price)}"><b>${esc(it.sku||'')}</b> · ${esc(label)} <span class="muted">${price?money(price):'sin precio TN'}</span></div>`}).join('')||'<div class="arcaSuggestItem muted">Sin coincidencias</div>';
+      box.innerHTML=items.map(it=>{
+        let price=arcaManualBestGeneralPrice(it);
+        let label=[it.name,it.variant_name].filter(Boolean).join(' · ');
+        let type=String(it.item_type||'').toLowerCase()==='bundle'?'combo':'producto';
+        return `<div class="arcaSuggestItem" onclick="arcaManualPickProduct(this)" data-sku="${esc(it.sku||'')}" data-name="${esc(label)}" data-price="${esc(price)}"><b>${esc(it.sku||'')}</b> · ${esc(label)} <span class="muted">${esc(type)} · ${price?money(price):'sin precio general'}</span></div>`;
+      }).join('')||'<div class="arcaSuggestItem muted">Sin coincidencias en Inventario general</div>';
       box.style.display='block';
-    }catch(e){box.innerHTML='<div class="arcaSuggestItem muted">Error buscando producto</div>';box.style.display='block'}
+    }catch(e){box.innerHTML='<div class="arcaSuggestItem muted">Error buscando en Inventario general</div>';box.style.display='block'}
   },350);
 }
 function arcaManualPickProduct(el){
   let line=el.closest('.arcaLine'); if(!line)return;
   line.querySelector('.amSku').value=el.dataset.sku||'';
   line.querySelector('.amDesc').value=el.dataset.name||'';
-  let price=Number(el.dataset.price||0);
-  if(price>0){
-    line.querySelector('.amListPrice').value=arcaManualNumberText(price);
-    line.querySelector('.amDiscount').value='0';
-    arcaManualLineRecalc(line,'list');
-  }
+  let price=Number(el.dataset.price||0); if(price>0)line.querySelector('.amUnit').value=price;
   let box=line.querySelector('.arcaSuggest'); if(box){box.style.display='none';box.innerHTML=''}
 }
 function onlyDigits(s){return String(s||'').replace(/\D/g,'')}
