@@ -1541,7 +1541,7 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.78-arca-manual-general-inventory';
+const FRONTEND_VERSION='2.97.79-inventory-listing-price-sync';
 const FRONTEND_BUILD='admin-erp-v29775-resync-xeli-regressions';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
@@ -6462,18 +6462,25 @@ async function saveInventoryProductAll(idx){
     let queuedJobs=((d.sync_job_summary||{}).job_ids||[]).length;
     let jobCount=(d.sync_jobs||[]).filter(j=>j&&j.ok!==false).length;
     let syncErrors=Number((d.sync_run||{}).errors||0)+((d.sync_job_summary||{}).errors||[]).length;
+    let hasSyncJobs=queuedJobs>0||jobCount>0;
     applyInventoryProductSaveResultToOpenEditor(idx,item,d);
-    if(syncDeferred){
+    if(syncDeferred&&hasSyncJobs){
       invToolStatus(`Cambios guardados OK · stock ${d.new_stock??''} · sincronización ML/TN iniciada (${queuedJobs}). Cerrando editor...`,true);
+    }else if(syncErrors){
+      invToolStatus(`Cambios guardados · stock ${d.new_stock??''} · sincronización pendiente (${syncErrors}).`, 'warn');
+    }else if(hasSyncJobs){
+      invToolStatus(`Cambios guardados OK · stock ${d.new_stock??''} · canales confirmados ${jobCount}. Cerrando editor...`,true);
     }else{
-      invToolStatus(syncErrors?`Cambios guardados · stock ${d.new_stock??''} · sincronización pendiente (${syncErrors}).`:`Cambios guardados OK · stock ${d.new_stock??''} · canales confirmados ${jobCount}. Cerrando editor...`,syncErrors?'warn':true);
+      invToolStatus(`Cambios guardados · stock ${d.new_stock??''} · sin cambios de stock/precio para sincronizar. Cerrando editor...`,true);
     }
     await searchInventory(state.inventory.offset||0,true);
     let box=inventoryToolBox();
     if(box){box.classList.add('hidden');box.innerHTML='';}
     restoreInventoryReturnPosition();
-    if(syncDeferred)setStatus('invStatus',`Cambios guardados para ${item.sku}; la sincronización ML/TN ya fue iniciada.`,true);
-    else setStatus('invStatus',syncErrors?`Cambios guardados para ${item.sku}; ML/TN quedó pendiente y se reintentará automáticamente.`:`Cambios guardados y confirmados en ML/TN para ${item.sku}${convertingToSimple?' · ahora es Simple':''}.`,syncErrors?'warn':true);
+    if(syncDeferred&&hasSyncJobs)setStatus('invStatus',`Cambios guardados para ${item.sku}; la sincronización ML/TN ya fue iniciada.`,true);
+    else if(syncErrors)setStatus('invStatus',`Cambios guardados para ${item.sku}; ML/TN quedó pendiente y se reintentará automáticamente.`,'warn');
+    else if(hasSyncJobs)setStatus('invStatus',`Cambios guardados y confirmados en ML/TN para ${item.sku}${convertingToSimple?' · ahora es Simple':''}.`,true);
+    else setStatus('invStatus',`Cambios guardados para ${item.sku}; no hubo cambios de stock/precio para sincronizar.`,true);
   }catch(e){
     invToolStatus('Error guardando cambios: '+friendlyInventoryError(e),false);
   }
