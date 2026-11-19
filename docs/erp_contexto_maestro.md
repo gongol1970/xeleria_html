@@ -1,8 +1,15 @@
 # Planeta Casa ERP - Contexto maestro
 
+
+> Referencia historica de Planeta Casa. Para XelerIA SaaS y MultiCD, el documento vigente es `docs/XELERIA_DOCUMENTO_MAESTRO.md` del backend. No utilizar las referencias historicas a Supabase, stock global o alcance monocomercio como contrato del runtime actual.
+>
+> Corte local 2026-11-18: `admin_erp.html` integra `admin_multicd.js` para preparar depositos, reparto por SKU, origen ML manual obligatorio, vinculos TN, planilla de cantidades con revision y conciliacion humana. Con `enabled=true`, ML usa solamente el origen elegido (cero al agotarse), TN usa niveles por ubicacion y el total del producto queda derivado. Los combos se calculan por deposito. Xeli muestra CP de origen como referencia no editable. La confirmacion global TN de Entregado queda bloqueada: cada entrega debe confirmarse en Tiendanube hasta integrar seguimiento por fulfillment. Implementacion local, sin despliegue ni activacion; el plan completo y el punto de retoma estan en el MD del backend.
+
 Última actualización: 2026-05-28
 
 Este documento existe para poder retomar el proyecto aunque se pierda el historial de chats. Si alguien dice “Nina, desarrollame un ERP para Planeta Casa”, este es el primer archivo que hay que leer.
+
+> Actualizacion local MultiCD, 2026-11-18: este documento conserva el contexto historico de Planeta Casa. El contrato vigente de XelerIA esta en `xeleria_app/docs/XELERIA_DOCUMENTO_MAESTRO.md`. La implementacion nueva usa PostgreSQL por tenant; con MultiCD habilitado, `inventory_warehouse_stock` es el saldo fisico y `inventory_items.stock` un agregado derivado. ML usa solo el origen manual obligatorio por SKU; Tiendanube usa niveles por ubicacion. Combos y devoluciones respetan el deposito original. La planilla general no cambia cantidades globales; la planilla de depositos valida revisiones y se aplica completa. CP de Xeli se deriva del origen y no se edita en conocimiento. El publicador revalida origen/saldo y conserva un intento durable ante respuestas inciertas. Las conciliaciones requieren confirmacion humana con evidencia de finalizacion remota. No hay activacion ni despliegue productivo de este paquete local. Los parrafos de abajo que mencionan Supabase, stock global o arquitectura monousuario son historicos y no sustituyen ese contrato.
 
 ## 1. Objetivo del proyecto
 
