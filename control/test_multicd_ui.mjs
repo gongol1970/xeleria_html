@@ -101,3 +101,10 @@ test('preparation blocks operational worksheet without network writes',async()=>
   const s=screen();s.run('warehouseUI.config.enabled=false');await s.run('previewWarehouseSheet()');
   assert.equal(s.calls.length,0);assert.match(s.messages.at(-1)[1],/requiere MultiCD activo/);
 });
+
+test('unknown TN plan stays blocked after the request finishes while ERP controls remain usable',async()=>{
+  const s=screen(),linkButton={disabled:false},erpButton={disabled:false};
+  s.node('warehousePanel').querySelectorAll=selector=>selector==='button'?[linkButton,erpButton]:selector.startsWith('[onclick^')?[linkButton]:[];
+  s.run('warehouseUI.locations={capacity:{known:false}}');await s.run('warehouseAction(async()=>{})');
+  assert.equal(linkButton.disabled,true);assert.equal(erpButton.disabled,false);
+});

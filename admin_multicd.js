@@ -19,7 +19,7 @@ async function warehouseAction(action){
   if(warehouseUI.busy)return;
   warehouseUI.busy=true;warehousePanel()?.querySelectorAll('button').forEach(b=>b.disabled=true);
   try{await action()}catch(e){setStatus('warehouseStatus',errText(e)||String(e),false)}
-  finally{warehouseUI.busy=false;warehousePanel()?.querySelectorAll('button').forEach(b=>b.disabled=false);if(!warehouseMode()){['warehouseSheetFile'].forEach(id=>{if(qs(id))qs(id).disabled=true});warehousePanel()?.querySelectorAll('[onclick="downloadWarehouseSheet()"],[onclick="previewWarehouseSheet()"]').forEach(b=>b.disabled=true)}}
+  finally{warehouseUI.busy=false;warehousePanel()?.querySelectorAll('button').forEach(b=>b.disabled=false);warehousePanel()?.querySelectorAll('[onclick^="saveWarehouseTnLocation("]').forEach(b=>b.disabled=warehouseUI.locations?.capacity?.known===false);if(!warehouseMode()){['warehouseSheetFile'].forEach(id=>{if(qs(id))qs(id).disabled=true});warehousePanel()?.querySelectorAll('[onclick="downloadWarehouseSheet()"],[onclick="previewWarehouseSheet()"]').forEach(b=>b.disabled=true)}}
 }
 async function openWarehousePanel(){
   const panel=warehousePanel();panel.classList.remove('hidden');
