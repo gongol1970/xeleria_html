@@ -1541,7 +1541,7 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.83-multicd-webhooks';
+const FRONTEND_VERSION='2.97.84-multicd-webhooks';
 const FRONTEND_BUILD='admin-erp-v29775-resync-xeli-regressions';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
@@ -4381,6 +4381,7 @@ function renderListingsForItem(item){
   arr.sort((a,b)=>(listingMarket(a)+listingProductId(a)+listingVariantId(a)).localeCompare(listingMarket(b)+listingProductId(b)+listingVariantId(b)));
   return `<div class="productPubList">${arr.map(l=>{
     let m=listingMarket(l),pid=String(listingProductId(l)||''),vid=String(listingVariantId(l)||'0'),price=listingPrice(l),stock=listingStock(l),url=listingUrl(l);
+    let stockPending=!warehouseMode()&&Number.isFinite(Number(stock))&&Number(stock)!==Number(item.stock);
     let pubHtml=url?`<a href="${esc(url)}" target="_blank" rel="noopener">${esc(pid||'abrir')}</a>`:esc(pid||'—');
     return `<div class="productPubLine productPubAlignedLine">
       <span class="productPubSpacer"></span>
@@ -4393,7 +4394,7 @@ function renderListingsForItem(item){
         <span class="productPubVar" title="Variante">${esc(vid||'0')}</span>
       </span>
       <span class="productPubPrice">${money(price)||'—'}</span>
-      <span class="productPubStock ${Number.isFinite(Number(stock))&&Number(stock)!==Number(item.stock)?'syncPending':''}" title="${Number.isFinite(Number(stock))&&Number(stock)!==Number(item.stock)?'Último dato confirmado del canal; sincronización pendiente':'Último dato confirmado del canal'}">${esc(stock??'—')}</span>
+      <span class="productPubStock ${stockPending?'syncPending':''}" title="${stockPending?'Último dato confirmado del canal; sincronización pendiente':warehouseMode()?'Stock confirmado del canal; revisá su objetivo en Depósitos':'Último dato confirmado del canal'}">${esc(stock??'—')}</span>
       ${listingStatusTextSpan(l)}
     </div>`;
   }).join('')}</div>`;
@@ -7685,6 +7686,6 @@ async function bootstrapXeleria(){
 }
 bootstrapXeleria();
 </script>
-<script src="admin_multicd.js?v=2.97.83"></script>
+<script src="admin_multicd.js?v=2.97.84"></script>
 </body>
 </html>

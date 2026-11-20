@@ -6,6 +6,14 @@ import {webcrypto} from 'node:crypto';
 
 const source=fs.readFileSync(new URL('../admin_multicd.js',import.meta.url),'utf8');
 const page=fs.readFileSync(new URL('../admin_erp.html',import.meta.url),'utf8');
+test('depot channel stock is not compared with the global total',()=>{
+  const context=vm.createContext({qs:()=>({value:''}),esc:v=>String(v??''),money:()=>'',listingStatusTextSpan:()=>'',warehouseMode:()=>true});
+  vm.runInContext(page.slice(page.indexOf('function listingMarket(l)'),page.indexOf('function inventoryIsBundle(i)')),context);
+  const item={stock:3,listings:[{marketplace:'TN',external_product_id:'one',stock:0}]};
+  assert.doesNotMatch(context.renderListingsForItem(item),/syncPending|sincronización pendiente/);
+  context.warehouseMode=()=>false;
+  assert.match(context.renderListingsForItem(item),/syncPending/);
+});
 const restoreSource=page.slice(page.indexOf('function cancelledSaleRestoreState(o){'),page.indexOf('function saleExternalOrderIds('));
 function screen(){
   const nodes=new Map(),calls=[],messages=[];
