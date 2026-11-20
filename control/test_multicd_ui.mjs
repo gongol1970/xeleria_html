@@ -84,3 +84,20 @@ test('legacy cancellation accounting remains unchanged',()=>{
     {reference_id:'order',sku:'A',quantity:-3,movement_type:'sale',reference_type:'order'},
     {reference_id:'order',sku:'A',quantity:1,movement_type:'sale_cancellation_restore',reference_type:'order_cancellation'}]}).pending,2);
 });
+
+
+test('differences show actual target and configuration blocker instead of generic text',async()=>{
+  const s=screen();s.context.fetchJson=async()=>({items:[{sku:'A',marketplace:'ML',listing_id:'MLA1',variant_id:'0',observed_stock:8,target_stock:0,blocked_reason:'missing_ml_origin'}]});
+  await s.run('loadWarehouseDifferences()');const html=s.node('warehouseDifferences').innerHTML;
+  assert.match(html,/>8<\/td>/);assert.match(html,/>0<\/td>/);assert.match(html,/Falta elegir el origen ML/);assert.match(html,/no es una consulta en vivo/);
+});
+test('TN location selection preserves saved warehouse and refreshes after save',async()=>{
+  const s=screen();s.run("warehouseUI.config.warehouses=[{id:'flores',name:'Flores',active:true}];warehouseUI.locations={store_id:'1',items:[{id:'loc',name:'Planeta Casa'}]};warehouseUI.config.tn_locations=[{store_id:'1',location_id:'loc',warehouse_id:'flores',revision:2}]");
+  s.run('renderWarehouseTnLocations()');assert.match(s.node('warehouseTnLocations').innerHTML,/value="flores" selected/);
+  s.node('whTn_0').value='flores';s.run('loadWarehouseMode=async()=>warehouseUI.config');await s.run('saveWarehouseTnLocation(0)');
+  assert.match(s.node('warehouseTnLocations').innerHTML,/Actual: Flores/);assert.equal(JSON.parse(s.calls[0].options.body).expected_revision,2);
+});
+test('preparation blocks operational worksheet without network writes',async()=>{
+  const s=screen();s.run('warehouseUI.config.enabled=false');await s.run('previewWarehouseSheet()');
+  assert.equal(s.calls.length,0);assert.match(s.messages.at(-1)[1],/requiere MultiCD activo/);
+});

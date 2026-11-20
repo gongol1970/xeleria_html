@@ -8,7 +8,7 @@ function warehouseRequest(key,body){
 }
 async function loadWarehouseMode(force=false){
   const tenant=tenantId();
-  if(warehouseUI.tenant!==tenant){warehouseUI.tenant=tenant;warehouseUI.config=null;warehouseUI.product=null;warehouseUI.requests.clear();warehouseUI.sheet=null}
+  if(warehouseUI.tenant!==tenant){warehouseUI.tenant=tenant;warehouseUI.config=null;warehouseUI.product=null;warehouseUI.requests.clear();warehouseUI.sheet=null;warehouseUI.locations=null}
   if(force||!warehouseUI.config)warehouseUI.config=await fetchJson('/admin/v2/warehouses',{retrySafeGet:false});
   return warehouseUI.config;
 }
@@ -19,7 +19,7 @@ async function warehouseAction(action){
   if(warehouseUI.busy)return;
   warehouseUI.busy=true;warehousePanel()?.querySelectorAll('button').forEach(b=>b.disabled=true);
   try{await action()}catch(e){setStatus('warehouseStatus',errText(e)||String(e),false)}
-  finally{warehouseUI.busy=false;warehousePanel()?.querySelectorAll('button').forEach(b=>b.disabled=false)}
+  finally{warehouseUI.busy=false;warehousePanel()?.querySelectorAll('button').forEach(b=>b.disabled=false);if(!warehouseMode()){['warehouseSheetFile'].forEach(id=>{if(qs(id))qs(id).disabled=true});warehousePanel()?.querySelectorAll('[onclick="downloadWarehouseSheet()"],[onclick="previewWarehouseSheet()"]').forEach(b=>b.disabled=true)}}
 }
 async function openWarehousePanel(){
   const panel=warehousePanel();panel.classList.remove('hidden');
@@ -31,12 +31,16 @@ function renderWarehousePanel(){
   const c=warehouseUI.config;if(!c)return;
   warehousePanel().innerHTML=`<div class="btnrow"><h3>Depósitos</h3><button class="secondary" onclick="warehousePanel().classList.add('hidden')">Cerrar</button></div>
   <p>${c.enabled?'Stock por depósito habilitado.':'Preparación: los cambios de cantidades y origen todavía no se envían a los canales.'} Mercado Libre usa un único origen por SKU. Si se agota, queda en cero hasta que decidas cambiarlo.</p>
-  <div class="tableWrap"><table><thead><tr><th>Depósito</th><th>Código</th><th>Código postal</th><th>Estado</th><th></th></tr></thead><tbody>${c.warehouses.map((w,i)=>`<tr><td><input aria-label="Nombre del depósito" id="whName_${i}" value="${esc(w.name)}"></td><td><input aria-label="Código del depósito" id="whCode_${i}" value="${esc(w.code)}"></td><td><input aria-label="Código postal del depósito" id="whPostal_${i}" value="${esc(w.postal_code)}"></td><td><select aria-label="Estado del depósito" id="whActive_${i}"><option value="true" ${w.active?'selected':''}>Activo</option><option value="false" ${w.active?'':'selected'}>Inactivo</option></select></td><td><button class="secondary" onclick="saveWarehouse(${i})">Guardar</button></td></tr>`).join('')}</tbody></table></div>
+  <p>Xeli y MultiCD comparten la misma configuración de origen por SKU.</p>
+  ${(c.xeli_origins||[]).length?`<p>Orígenes ya cargados en Xeli: ${c.xeli_origins.map(o=>`CP ${esc(o.origin_postal_code)} (${esc(o.sku_count)} SKU)`).join(' · ')}. Se conservan como referencia; confirmá qué depósito corresponde a cada uno.</p>`:''}
+  <p>1. Agregá tus depósitos. 2. Vinculá las ubicaciones TN. 3. En cada producto, confirmá el reparto y elegí el origen ML.</p>
+  <div class="tableWrap"><table><thead><tr><th>Depósito</th><th>Código</th><th>Código postal</th><th>Estado</th><th></th></tr></thead><tbody>${c.warehouses.map((w,i)=>`<tr><td><input aria-label="Nombre del depósito" id="whName_${i}" value="${esc(w.name)}"></td><td><input aria-label="Código del depósito" id="whCode_${i}" value="${esc(w.code)}"></td><td><input aria-label="Código postal del depósito" id="whPostal_${i}" value="${esc(w.postal_code)}"></td><td><select aria-label="Estado del depósito" id="whActive_${i}"><option value="true" ${w.active?'selected':''}>Activo</option><option value="false" ${w.active?'':'selected'}>Inactivo</option></select></td><td><button class="secondary" onclick="saveWarehouse(${i})">Guardar</button></td></tr>`).join('')||'<tr><td colspan="5">Todavía no hay depósitos. Agregá el primero para comenzar.</td></tr>'}</tbody></table></div>
   <details><summary>Agregar depósito</summary><div class="grid"><div class="col-4"><label>Nombre</label><input id="whNewName"></div><div class="col-4"><label>Código breve</label><input id="whNewCode" maxlength="32"></div><div class="col-4"><label>Código postal</label><input id="whNewPostal"></div></div><button class="secondary" onclick="saveWarehouse(-1)">Agregar depósito</button></details>
-  <div class="btnrow"><button class="secondary" onclick="loadWarehouseTnLocations()">Vincular ubicaciones de Tiendanube</button><button class="secondary" onclick="loadWarehouseDifferences()">Ver diferencias de stock</button><button class="secondary" onclick="loadWarehouseIncidents()">Revisar envíos sin confirmar</button><button class="secondary" onclick="loadWarehousePublicationIncidents()">Revisar publicaciones sin confirmar</button></div>
+  <div class="btnrow"><button class="secondary" onclick="loadWarehouseTnLocations()">Vincular ubicaciones de Tiendanube</button><button class="secondary" onclick="loadWarehouseDifferences()">Ver diferencias de stock</button><button class="secondary" onclick="loadWarehouseIncidents()">Revisar actualizaciones de stock sin confirmar</button><button class="secondary" onclick="loadWarehousePublicationIncidents()">Revisar publicaciones sin confirmar</button></div>
   <div id="warehouseTnLocations"></div><div id="warehouseDifferences"></div><div id="warehouseIncidents"></div><div id="warehousePublicationIncidents"></div>
   <p>Para revisar un SKU, abrí su menú en Productos y elegí «Depósitos y origen ML».</p>
-  <div class="btnrow"><button class="secondary" onclick="downloadWarehouseSheet()">Bajar planilla de productos visibles</button><input aria-label="Planilla de stock por depósito" type="file" accept=".xlsx" id="warehouseSheetFile" onchange="warehouseUI.sheet=null"><button class="secondary" onclick="previewWarehouseSheet()">Revisar planilla</button></div><div id="warehouseSheetPreview"></div>
+  <h4>Planilla operativa de cantidades</h4><p>${c.enabled?'Editá solo cantidades de productos simples con reparto preparado. El origen ML se elige desde cada producto.':'Disponible después de activar MultiCD. Para preparar el inventario, confirmá el reparto desde el menú de cada producto; esta planilla no sirve para la carga inicial.'}</p>
+  <div class="btnrow"><button class="secondary" onclick="downloadWarehouseSheet()" ${c.enabled?'':'disabled'}>Bajar planilla de productos visibles</button><input aria-label="Planilla de stock por depósito" type="file" accept=".xlsx" id="warehouseSheetFile" onchange="warehouseUI.sheet=null;qs('warehouseSheetPreview').textContent=''" ${c.enabled?'':'disabled'}><button class="secondary" onclick="previewWarehouseSheet()" ${c.enabled?'':'disabled'}>Revisar planilla</button></div><div id="warehouseSheetPreview"></div>
   <div id="warehouseStatus" class="status" role="status"></div><div id="warehouseProduct"></div>`;
   if(warehouseUI.product)renderWarehouseProduct();
 }
@@ -59,8 +63,10 @@ function renderWarehouseProduct(){
   const combo=['bundle','combo','kit','combos'].includes(String(p.item.item_type||'').toLowerCase()),origin=p.ml_origin;
   const options=p.warehouses.filter(w=>w.active&&w.stock!==null).map(w=>`<option value="${esc(w.warehouse_id)}" ${origin?.warehouse_id===w.warehouse_id?'selected':''}>${esc(w.name)} · ${esc(w.stock)} unidades · CP ${esc(w.postal_code)}</option>`).join('');
   qs('warehouseProduct').innerHTML=`<hr><h3>${esc(p.item.sku)} · stock por depósito</h3><p>Stock total: ${esc(p.item.stock)}. ${combo?'El stock del combo se calcula con componentes del mismo depósito.':'Las cantidades sin revisar se muestran vacías; no se toman como cero.'}</p>
+    ${p.xeli_origin_postal_code?`<p>CP ya registrado en Xeli para este SKU: <b>${esc(p.xeli_origin_postal_code)}</b>. Usalo como referencia para confirmar su depósito; no se asigna automáticamente.</p>`:''}
     <div class="tableWrap"><table><thead><tr><th>Depósito</th><th>Cantidad</th><th>Origen ML</th><th></th></tr></thead><tbody>${p.warehouses.map((w,i)=>`<tr><td>${esc(w.name)}${w.active?'':' (inactivo)'}</td><td><input aria-label="Cantidad en ${esc(w.name)}" id="whStock_${i}" type="number" min="0" step="1" value="${w.stock===null?'':esc(w.stock)}" ${combo||(!w.active)?'disabled':''}></td><td>${w.ml_origin?'Elegido':''}</td><td>${c.enabled&&!combo&&w.active&&w.stock_revision?`<button class="secondary" onclick="saveWarehouseQuantity(${i})">Guardar cantidad</button>`:''}</td></tr>`).join('')}</tbody></table></div>
     ${combo?'<button class="secondary" onclick="prepareWarehouseBundle()">Calcular por depósito</button>':(!c.enabled||p.warehouses.every(w=>w.stock===null)?'<button class="secondary" onclick="prepareWarehouseDistribution()">Confirmar reparto revisado</button>':'')}
+    ${p.warehouses.length?'':'<p>Primero agregá un depósito desde el panel superior.</p>'}
     <label for="warehouseOrigin">Origen obligatorio de Mercado Libre</label><select id="warehouseOrigin" onchange="renderWarehouseOriginPreview()"><option value="" ${origin?'':'selected'}>Elegí desde dónde podés despachar</option>${options}</select>
     <p id="warehouseOriginPreview"></p><button class="primary" onclick="saveWarehouseOrigin()">Confirmar origen elegido</button><p class="small">No hay reemplazo automático de depósito. Los pedidos anteriores conservan su origen.</p>`;
   renderWarehouseOriginPreview();
@@ -99,22 +105,30 @@ function saveWarehouseOrigin(){return warehouseAction(async()=>{
   await reloadWarehouseProduct();setStatus('warehouseStatus',warehouseMode()?'Origen guardado. La actualización de Mercado Libre queda pendiente de confirmación.':'Origen preparado. Todavía no se actualizan los canales.',true);
 })}
 function loadWarehouseTnLocations(){return warehouseAction(async()=>{
-  const data=await fetchJson('/admin/v2/warehouses/tn-locations');warehouseUI.locations=data;
-  const options=warehouseUI.config.warehouses.filter(w=>w.active).map(w=>`<option value="${esc(w.id)}">${esc(w.name)}</option>`).join('');
-  qs('warehouseTnLocations').innerHTML=`<h4>Ubicaciones de Tiendanube</h4>${data.items.map((location,i)=>{const map=warehouseUI.config.tn_locations.find(m=>m.store_id===data.store_id&&m.location_id===location.id);return `<div class="btnrow"><label>${esc(typeof location.name==='object'?Object.values(location.name)[0]:location.name)} <select id="whTn_${i}"><option value="">Elegí un depósito</option>${options}</select></label><button class="secondary" onclick="saveWarehouseTnLocation(${i})">Guardar vínculo</button><span>${map?'Actual: '+esc(warehouseUI.config.warehouses.find(w=>w.id===map.warehouse_id)?.name||''):'Sin vincular'}</span></div>`}).join('')||'<p>La tienda no informó ubicaciones.</p>'}`;
+  warehouseUI.locations=await fetchJson('/admin/v2/warehouses/tn-locations');renderWarehouseTnLocations();
 })}
+function renderWarehouseTnLocations(){
+  const data=warehouseUI.locations;
+  qs('warehouseTnLocations').innerHTML=`<h4>Ubicaciones de Tiendanube</h4>${data.items.map((location,i)=>{const map=warehouseUI.config.tn_locations.find(m=>m.store_id===data.store_id&&m.location_id===location.id);const options=warehouseUI.config.warehouses.filter(w=>w.active||w.id===map?.warehouse_id).map(w=>`<option value="${esc(w.id)}" ${w.id===map?.warehouse_id?'selected':''}>${esc(w.name)}${w.active?'':' (inactivo)'}</option>`).join('');return `<div class="btnrow"><label>${esc(typeof location.name==='object'?Object.values(location.name)[0]:location.name)} <select id="whTn_${i}"><option value="">Elegí un depósito</option>${options}</select></label><button class="secondary" onclick="saveWarehouseTnLocation(${i})">Guardar vínculo</button><span>${map?'Actual: '+esc(warehouseUI.config.warehouses.find(w=>w.id===map.warehouse_id)?.name||''):'Sin vincular'}</span></div>`}).join('')||'<p>La tienda no informó ubicaciones.</p>'}`;
+}
 function saveWarehouseTnLocation(index){return warehouseAction(async()=>{
   const data=warehouseUI.locations,location=data.items[index],warehouse_id=fieldVal('whTn_'+index);
   if(!warehouse_id)throw Error('Elegí el depósito que corresponde a esa ubicación.');
   const old=warehouseUI.config.tn_locations.find(m=>m.store_id===data.store_id&&m.location_id===location.id);
   const body=warehouseRequest('tn:'+location.id,{warehouse_id,expected_revision:old?.revision||0});
   await fetchJson('/admin/v2/warehouses/tn-locations/'+encodeURIComponent(location.id),{method:'PUT',body:JSON.stringify(body)});
-  await loadWarehouseMode(true);setStatus('warehouseStatus','Ubicación vinculada al depósito elegido.',true);
+  await loadWarehouseMode(true);renderWarehouseTnLocations();setStatus('warehouseStatus','Ubicación vinculada al depósito elegido.',true);
 })}
+function warehouseDifferenceReason(row){
+  const reasons={missing_ml_origin:'Falta elegir el origen ML',inactive_warehouse:'El depósito está inactivo',missing_warehouse_stock:'Falta revisar el stock del depósito',unbalanced_distribution:'El reparto no coincide con el stock total',missing_channel_observation:'Falta una lectura confirmada del canal',missing_tn_store:'Falta conectar Tiendanube',missing_tn_locations:'Faltan ubicaciones TN',unmapped_tn_location:'La ubicación TN no está vinculada',unlimited_channel_stock:'El canal informa stock sin límite'};
+  return row.blocked_reason?(reasons[row.blocked_reason]||row.blocked_reason):'El stock del canal difiere del objetivo';
+}
 function loadWarehouseDifferences(){return warehouseAction(async()=>{
   const data=await fetchJson('/admin/v2/warehouses/stock-differences');
-  qs('warehouseDifferences').innerHTML='<h4>Diferencias por destino</h4><ul>'+(data.items||[]).map(row=>`<li>${esc(row.sku)} · ${esc(row.marketplace||row.channel||'')} · ${esc(row.reason||row.error||'Revisar stock por depósito')}</li>`).join('')+'</ul>';
-  if(!data.items?.length)qs('warehouseDifferences').textContent='No hay diferencias informadas.';
+  const value=n=>n===null||n===undefined?'Sin confirmar':esc(n);
+  qs('warehouseDifferences').innerHTML='<h4>Diferencias por destino</h4><p>Comparación con la última lectura guardada del canal; no es una consulta en vivo ni aplica correcciones. En preparación indica lo que falta configurar.</p><div class="tableWrap"><table><thead><tr><th>SKU</th><th>Canal / publicación / variante</th><th>Ubicación TN</th><th>Stock del canal</th><th>Stock objetivo</th><th>Motivo</th></tr></thead><tbody>'+(data.items||[]).map(row=>`<tr><td>${esc(row.sku)}</td><td>${esc(row.marketplace)} · ${esc(row.listing_id)} · ${esc(row.variant_id)}</td><td>${esc(row.location_id||'—')}</td><td>${value(row.observed_stock)}</td><td>${value(row.target_stock)}</td><td>${esc(warehouseDifferenceReason(row))}</td></tr>`).join('')+'</tbody></table></div>';
+  if(!data.items?.length)qs('warehouseDifferences').textContent='No hay diferencias informadas en la última lectura guardada.';
+  else if(data.items.length>=100)qs('warehouseDifferences').innerHTML+='<p>Se muestran hasta 100 resultados.</p>';
 })}
 function loadWarehouseIncidents(){return warehouseAction(async()=>{
   const data=await fetchJson('/admin/v2/warehouses/stock-incidents');warehouseUI.incidents=data.items||[];
@@ -142,6 +156,7 @@ function resolveWarehousePublicationIncident(index){return warehouseAction(async
   qs('warehousePublicationIncidents').textContent='Resultado registrado. Revisá el stock por depósito antes de sincronizar o preparar otro borrador.';
 })}
 function downloadWarehouseSheet(){return warehouseAction(async()=>{
+  if(!warehouseMode())throw Error('La planilla operativa requiere MultiCD activo. Prepará el reparto desde cada producto.');
   const ids=(state.inventoryItems||[]).filter(i=>!inventoryIsBundle(i)).map(i=>i.id);
   if(!ids.length)throw Error('Buscá los productos simples que querés incluir en la planilla.');
   const r=await fetch(url('/admin/v2/warehouses/stock-sheet?product_ids='+encodeURIComponent(ids.join(','))),{headers:xeleriaHeaders()});
@@ -149,6 +164,7 @@ function downloadWarehouseSheet(){return warehouseAction(async()=>{
   const blob=await r.blob(),link=document.createElement('a'),href=URL.createObjectURL(blob);link.href=href;link.download='Stock-por-deposito.xlsx';link.click();setTimeout(()=>URL.revokeObjectURL(href),1000);
 })}
 async function uploadWarehouseSheet(confirmChanges){
+  if(!warehouseMode())throw Error('La planilla operativa requiere MultiCD activo.');
   const saved=warehouseUI.sheet,file=qs('warehouseSheetFile')?.files?.[0];if(!file)throw Error('Elegí la planilla por depósito.');
   if(!saved||saved.file!==file)warehouseUI.sheet={file,id:crypto.randomUUID(),reviewed:false};
   if(confirmChanges&&!warehouseUI.sheet.reviewed)throw Error('Primero revisá la planilla.');
