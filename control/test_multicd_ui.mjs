@@ -88,6 +88,17 @@ test('a late save cannot close or label a different SKU editor',async()=>{
   release();await saving;
   assert.equal(s.node('editorBox').innerHTML,'ROJ editor');assert.equal(s.messages.length,count);
 });
+test('opening ROJ clears the previous AZU confirmation',()=>{
+  const s=productEditor('PCGRIP_ROJ');s.run('warehouseUI.config.enabled=false');
+  Object.assign(s.context,{rememberInventoryReturnPosition:()=>{},scrollToInventoryTool:()=>{},
+    inventoryListPrice:()=>0,renderEditableListingsForItem:()=>'',jsq:String,
+    setStatus:(id,text)=>{s.node(id).textContent=text}});
+  s.node('invStatus').textContent='Stock de PCGRIP_AZU guardado';
+  vm.runInContext(page.slice(page.indexOf('function renderEditProductTool('),page.indexOf('function cancelInventoryTool(')),s.context);
+  s.run('renderEditProductTool(0)');
+  assert.equal(s.node('invStatus').textContent,'');
+  assert.match(s.node('editorBox').innerHTML,/PCGRIP_ROJ/);
+});
 test('a metadata failure reports stock already saved instead of no changes',async()=>{
   const s=productEditor('PCGRIP_ROJ');
   s.context.fetchJson=async path=>{if(path.endsWith('/stock'))return {changed:true,total_stock:4,new_stock:4,warehouse_stock_revision:3};throw Error('price service unavailable')};

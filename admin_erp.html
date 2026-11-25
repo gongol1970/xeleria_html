@@ -1541,7 +1541,7 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.85-multicd-webhooks';
+const FRONTEND_VERSION='2.97.86-multicd-webhooks';
 const FRONTEND_BUILD='admin-erp-v29775-resync-xeli-regressions';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
@@ -6339,6 +6339,7 @@ function renderEditProductTool(idx){
   let item=state.inventoryItems[idx];if(!item)return;
   let isBundle=inventoryIsBundle(item);
   const editor={itemId:item.id,sku:item.sku,loading:warehouseMode()};warehouseUI.editor=editor;
+  if(qs('invStatus'))setStatus('invStatus','',true);
   rememberInventoryReturnPosition(item);
   inventoryToolBox().classList.remove('hidden');
   inventoryToolBox().innerHTML=`<div class="card productEditCard" style="background:#fffaf0;border-color:#eee2c8">
@@ -7701,6 +7702,6 @@ async function bootstrapXeleria(){
 }
 bootstrapXeleria();
 </script>
-<script src="admin_multicd.js?v=2.97.85"></script>
+<script src="admin_multicd.js?v=2.97.86"></script>
 </body>
 </html>
