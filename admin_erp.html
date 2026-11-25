@@ -1541,7 +1541,7 @@ function comboNormalizeQtyInput(el){
   return n;
 }
 
-const FRONTEND_VERSION='2.97.84-multicd-webhooks';
+const FRONTEND_VERSION='2.97.85-multicd-webhooks';
 const FRONTEND_BUILD='admin-erp-v29775-resync-xeli-regressions';
 const MICORREO_ORDER_EXPORT_ENABLED=true;
 const SALES_DB_LOAD_MAX_MS=15000;
@@ -6307,7 +6307,7 @@ function renderEditableListingsForItem(item,idx){
     <div><strong>${esc(listingMarket(l))}</strong></div>
     <div class="productEditPubTitle" title="${esc(l.title||l.name||'Publicación')}">${esc(l.title||l.name||'Publicación')}<div class="productEditPubMeta">${esc(listingProductId(l))} · Var ${esc(listingVariantId(l)||'0')} ${listingUrl(l)?`· <a href="${esc(listingUrl(l))}" target="_blank" rel="noopener">abrir</a>`:''}</div></div>
     <div><input id="editListingPrice_${idx}_${j}" type="number" step="0.01" value="${esc(listingPrice(l)??'')}"></div>
-    <div><input id="editListingStock_${idx}_${j}" type="number" step="1" value="${esc(listingStock(l)??'')}" title="Stock de la publicación registrado localmente"></div>
+    <div><input id="editListingStock_${idx}_${j}" type="number" step="1" value="${esc(listingStock(l)??'')}" readonly aria-readonly="true" title="Stock confirmado del canal. Se modifica desde el stock maestro o desde Depósitos."></div>
     <div class="productEditPubStatus">${listingStatusTextSpan(l)}<button type="button" class="productEditPubDelete" id="editListingDelete_${idx}_${j}" onclick="unlinkInventoryListing(${idx},${j})" title="Quitar esta publicación de XelerIA" aria-label="Quitar esta publicación de XelerIA"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6.5 7l1 13h9l1-13M10 11v5M14 11v5"/></svg></button></div>
   </div>`).join('');
 }
@@ -6338,6 +6338,7 @@ async function unlinkInventoryListing(idx,j){
 function renderEditProductTool(idx){
   let item=state.inventoryItems[idx];if(!item)return;
   let isBundle=inventoryIsBundle(item);
+  const editor={itemId:item.id,sku:item.sku,loading:warehouseMode()};warehouseUI.editor=editor;
   rememberInventoryReturnPosition(item);
   inventoryToolBox().classList.remove('hidden');
   inventoryToolBox().innerHTML=`<div class="card productEditCard" style="background:#fffaf0;border-color:#eee2c8">
@@ -6348,6 +6349,7 @@ function renderEditProductTool(idx){
       <div class="col-2"><label>Tipo de SKU</label><select id="editItemType" onchange="inventoryEditTypeChanged()"><option value="single" ${isBundle?'':'selected'}>Simple</option><option value="bundle" ${isBundle?'selected':''}>Combo</option></select></div>
       <div class="col-3"><label>Producto *</label><input id="editName" value="${esc(item.name||'')}"></div>
       <div class="col-2"><label>Stock</label><input id="editStock" type="number" step="1" value="${esc(item.stock??0)}" ${isBundle||warehouseMode()?'disabled title="Stock calculado; ajustá cantidades desde Depósitos"':''}></div>
+      ${warehouseMode()?`<div class="col-12 small"><span id="inventoryWarehouseStockHint">${isBundle?'El stock del combo se calcula desde sus componentes.':'Verificando el depósito del stock maestro…'}</span> <button type="button" class="secondary" onclick="cancelInventoryTool();openWarehouseProduct(${idx})">Editar por depósito</button></div>`:''}
       <div class="col-2"><label>Precio lista</label><input id="editListPrice" type="number" step="0.01" value="${esc(inventoryListPrice(item)??'')}"></div>
       <div class="col-2"><label>Costo</label><input id="editCost" type="number" step="0.01" value="${esc(item.cost??'')}"></div>
       <div class="col-3"><label>Peso (kg)</label><input id="editWeightKg" type="number" min="0" step="0.001" value="${esc(item.weight_kg??'')}" placeholder="Bulto embalado"></div>
@@ -6358,19 +6360,20 @@ function renderEditProductTool(idx){
       <div class="col-12"><label>Precios / stock de publicaciones asociadas</label><div class="productEditListings" id="editListingList_${idx}">${renderEditableListingsForItem(item,idx)}</div><div class="small">Con varios depósitos, ML recibe el saldo del origen elegido y Tiendanube recibe el de cada ubicación. Los cambios quedan pendientes hasta la confirmación de los canales.</div></div>
     </div>
     <div class="btnrow" style="margin-top:12px">
-      <button class="ok" onclick="saveInventoryProductAll(${idx})">Guardar cambios</button>
+      <button class="ok" id="inventorySaveAll" onclick="saveInventoryProductAll(${idx})" ${warehouseMode()&&!isBundle?'disabled':''}>Guardar cambios</button>
       <button class="secondary" onclick="renderLinkPublicationsTool('${jsq(item.sku||'')}')">Buscar / asociar publicaciones</button>
       <button class="secondary" onclick="cancelInventoryTool()">Cancelar</button>
     </div>
     <div id="inventoryToolStatus" class="status"></div>
   </div>`;
   scrollToInventoryTool();
+  if(warehouseMode()&&!isBundle)loadWarehouseInventoryEditor(editor);
 }
 
-function cancelInventoryTool(){let box=inventoryToolBox();if(box){box.classList.add('hidden');box.innerHTML=''}restoreInventoryReturnPosition()}
+function cancelInventoryTool(){warehouseUI.editor=null;let box=inventoryToolBox();if(box){box.classList.add('hidden');box.innerHTML=''}restoreInventoryReturnPosition()}
 function inventoryEditTypeChanged(){
   let target=qs('editItemType')?.value||'single';let stock=qs('editStock');
-  if(stock)stock.disabled=target==='bundle'||warehouseMode();
+  if(stock)stock.disabled=target==='bundle'||(warehouseMode()&&!warehouseUI.editor?.target);
   invToolStatus(target==='bundle'?'Al guardar te voy a pedir los componentes del combo.':'El SKU quedará como producto simple.',true);
 }
 
@@ -6393,7 +6396,7 @@ function inventoryListingPayloadsFromEdit(idx,item){
     external_full_id:l.external_full_id||listingProductId(l),
     title:l.title||l.name||item.name||item.sku,
     price:qs(`editListingPrice_${idx}_${j}`)?.value!==''?Number(qs(`editListingPrice_${idx}_${j}`).value):null,
-    stock:qs(`editListingStock_${idx}_${j}`)?.value!==''?Math.trunc(Number(qs(`editListingStock_${idx}_${j}`).value)):null,
+    ...(!warehouseMode()?{stock:qs(`editListingStock_${idx}_${j}`)?.value!==''?Math.trunc(Number(qs(`editListingStock_${idx}_${j}`).value)):null}:{}),
     status:listingStatus(l)||null,
     url:listingUrl(l)||null,
     listing_type:l.listing_type||null,
@@ -6439,7 +6442,11 @@ function applyInventoryProductSaveResultToOpenEditor(idx,item,d){
 /* INVENTORY_EDIT_SAVE_V276_CLOSE_EDITOR_AFTER_SYNC */
 async function saveInventoryProductAll(idx){
   let item=state.inventoryItems[idx];if(!item)return;
-  invToolStatus('Guardando cambios y generando sync ML/TN...');
+  const editor=warehouseUI.editor;if(!warehouseInventoryEditorCurrent(editor)||editor.saving)return;
+  const report=(msg,ok=true)=>{if(warehouseInventoryEditorCurrent(editor))invToolStatus(msg,ok)};
+  editor.saving=true;if(qs('inventorySaveAll'))qs('inventorySaveAll').disabled=true;
+  let stockChange=null;
+  report(`Guardando ${item.sku} y preparando sincronización ML/TN...`);
   try{
     let isBundle=inventoryIsBundle(item);
     let targetType=qs('editItemType')?.value||(isBundle?'bundle':'single');
@@ -6454,13 +6461,15 @@ async function saveInventoryProductAll(idx){
     let body;
     try{body={name:qs('editName').value||'',list_price:listTxt!==''?Number(listTxt):null,listings:inventoryListingPayloadsFromEdit(idx,item),...inventoryPackageBody('edit')}}catch(e){invToolStatus(e.message||String(e),false);return}
     if(costTxt!=='')body.cost=Number(costTxt);
-    if(!isBundle&&qs('editStock')){
+    if(!isBundle&&!warehouseMode()&&qs('editStock')){
       let newStock=Number(qs('editStock').value);
       if(!Number.isFinite(newStock)){invToolStatus('Stock inválido.',false);return}
       body.stock=Math.max(0,Math.trunc(newStock));
       body.listings=(body.listings||[]).map(l=>({...l,stock:body.stock}));
     }
+    stockChange=await saveWarehouseInventoryEditorStock(editor,item);
     let d=await fetchJson('/admin/v2/inventory/product-sync/'+encodeURIComponent(item.sku),{method:'PUT',body:JSON.stringify(body)});
+    if(!warehouseInventoryEditorCurrent(editor))return;
     if(convertingToSimple){
       await fetchJson('/admin/inventory/change-item-type/session',{method:'POST',body:JSON.stringify({sku:item.sku,item_type:'simple',confirm_remove_components:true})});
       item.item_type='single';
@@ -6471,7 +6480,9 @@ async function saveInventoryProductAll(idx){
     let syncErrors=Number((d.sync_run||{}).errors||0)+((d.sync_job_summary||{}).errors||[]).length;
     let hasSyncJobs=queuedJobs>0||jobCount>0;
     applyInventoryProductSaveResultToOpenEditor(idx,item,d);
-    if(syncDeferred&&hasSyncJobs){
+    if(stockChange?.changed){
+      report(`Stock de ${item.sku} guardado: ${stockChange.total_stock} en ${stockChange.warehouse_name}. Sincronización por depósito pendiente de confirmación.`,true);
+    }else if(syncDeferred&&hasSyncJobs){
       invToolStatus(`Cambios guardados OK · stock ${d.new_stock??''} · sincronización ML/TN iniciada (${queuedJobs}). Cerrando editor...`,true);
     }else if(syncErrors){
       invToolStatus(`Cambios guardados · stock ${d.new_stock??''} · sincronización pendiente (${syncErrors}).`, 'warn');
@@ -6481,15 +6492,19 @@ async function saveInventoryProductAll(idx){
       invToolStatus(`Cambios guardados · stock ${d.new_stock??''} · sin cambios de stock/precio para sincronizar. Cerrando editor...`,true);
     }
     await searchInventory(state.inventory.offset||0,true);
+    if(!warehouseInventoryEditorCurrent(editor))return;
     let box=inventoryToolBox();
     if(box){box.classList.add('hidden');box.innerHTML='';}
     restoreInventoryReturnPosition();
-    if(syncDeferred&&hasSyncJobs)setStatus('invStatus',`Cambios guardados para ${item.sku}; la sincronización ML/TN ya fue iniciada.`,true);
+    if(stockChange?.changed)setStatus('invStatus',`Stock de ${item.sku} guardado: ${stockChange.total_stock} en ${stockChange.warehouse_name}; sincronización por depósito pendiente de confirmación.`,true);
+    else if(syncDeferred&&hasSyncJobs)setStatus('invStatus',`Cambios guardados para ${item.sku}; la sincronización ML/TN ya fue iniciada.`,true);
     else if(syncErrors)setStatus('invStatus',`Cambios guardados para ${item.sku}; ML/TN quedó pendiente y se reintentará automáticamente.`,'warn');
     else if(hasSyncJobs)setStatus('invStatus',`Cambios guardados y confirmados en ML/TN para ${item.sku}${convertingToSimple?' · ahora es Simple':''}.`,true);
     else setStatus('invStatus',`Cambios guardados para ${item.sku}; no hubo cambios de stock/precio para sincronizar.`,true);
   }catch(e){
-    invToolStatus('Error guardando cambios: '+friendlyInventoryError(e),false);
+    report((stockChange?.changed?`Stock de ${item.sku} guardado; faltó guardar otros cambios: `:`Error guardando ${item.sku}: `)+friendlyInventoryError(e),false);
+  }finally{
+    editor.saving=false;if(warehouseInventoryEditorCurrent(editor)&&qs('inventorySaveAll'))qs('inventorySaveAll').disabled=false;
   }
 }
 
@@ -7686,6 +7701,6 @@ async function bootstrapXeleria(){
 }
 bootstrapXeleria();
 </script>
-<script src="admin_multicd.js?v=2.97.84"></script>
+<script src="admin_multicd.js?v=2.97.85"></script>
 </body>
 </html>

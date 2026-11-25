@@ -32,6 +32,84 @@ function screen(){
   return {context,nodes,calls,messages,node,run:code=>vm.runInContext(code,context)};
 }
 
+function productEditor(sku='PCGRIP_AZU'){
+  const s=screen();
+  Object.assign(s.context,{listingMarket:l=>l.marketplace,listingProductId:l=>l.external_product_id,
+    listingVariantId:l=>l.external_variant_id,listingStatus:()=> 'active',listingUrl:()=>'',
+    inventoryPackageBody:()=>({}),inventoryToolBox:()=>s.node('editorBox'),restoreInventoryReturnPosition:()=>{},
+    searchInventory:async()=>{},invToolStatus:(...args)=>s.messages.push(args),friendlyInventoryError:e=>e.message,
+    applyInventoryProductSaveResultToOpenEditor:()=>{}});
+  vm.runInContext(page.slice(page.indexOf('function inventoryListingPayloadsFromEdit('),page.indexOf('async function saveInventoryListingPrices(')),s.context);
+  vm.runInContext(page.slice(page.indexOf('async function saveInventoryProductAll('),page.indexOf('/* COMBOS_LEGACY_MONOUSER_EDIT_JS_REMOVED */')),s.context);
+  s.context.state.inventory={offset:0};
+  s.context.state.inventoryItems=[{id:12,sku,stock:3,listings:[{marketplace:'ML',external_product_id:'ml',external_variant_id:'0'},{marketplace:'TN',external_product_id:'tn',external_variant_id:'v'}]}];
+  for(const [id,value] of Object.entries({editSku:sku,editStock:'4',editName:sku,editCost:'',editListPrice:'',editItemType:'single',editListingPrice_0_0:'100',editListingPrice_0_1:'90',editListingStock_0_0:'3',editListingStock_0_1:'3'}))s.node(id).value=value;
+  s.run(`warehouseUI.product.item.stock=3;warehouseUI.product.warehouses[0].stock=3;warehouseUI.product.warehouses[1].stock=0;
+    warehouseUI.product.ml_origin={warehouse_id:'flores',revision:4};
+    warehouseUI.editor={itemId:12,sku:state.inventoryItems[0].sku,product:warehouseUI.product,target:warehouseSingleStockTarget(warehouseUI.product)};`);
+  s.context.fetchJson=async(path,options)=>{
+    s.calls.push({path,options});
+    return path.endsWith('/stock')?{changed:true,total_stock:4,new_stock:4,warehouse_stock_revision:3,sync_status:'pending'}:{new_stock:4,sync_jobs:[],sync_job_summary:{job_ids:[]}};
+  };
+  return s;
+}
+for(const sku of ['PCGRIP_AZU','PCGRIP_ROJ'])test(`${sku}: master stock uses selected depot and channel prices stay independent`,async()=>{
+  const s=productEditor(sku);await s.run('saveInventoryProductAll(0)');
+  assert.equal(s.calls.length,2);
+  assert.match(s.calls[0].path,/products\/12\/warehouses\/flores\/stock$/);
+  const stock=JSON.parse(s.calls[0].options.body);
+  assert.equal(stock.stock,4);assert.equal(stock.expected_revision,2);assert.equal(stock.single_origin_revision,4);
+  const metadata=JSON.parse(s.calls[1].options.body);
+  assert.equal('stock' in metadata,false);assert.ok(metadata.listings.every(l=>!('stock' in l)));
+  assert.deepEqual(metadata.listings.map(l=>l.price),[100,90]);
+  assert.match(s.messages.at(-1)[1],new RegExp(`Stock de ${sku} guardado`));
+  assert.doesNotMatch(s.messages.at(-1)[1],/sin cambios/);
+});
+test('split stock and missing origin keep total read-only',()=>{
+  const s=productEditor();s.run('warehouseUI.product.warehouses[1].stock=1');
+  assert.equal(s.run('warehouseSingleStockTarget(warehouseUI.product)'),null);
+  s.run('warehouseUI.product.warehouses[1].stock=0;warehouseUI.product.ml_origin=null');
+  assert.equal(s.run('warehouseSingleStockTarget(warehouseUI.product)'),null);
+});
+test('legacy editor still saves the master quantity to both listings',async()=>{
+  const s=productEditor();s.run('warehouseUI.config.enabled=false');
+  await s.run('saveInventoryProductAll(0)');
+  assert.equal(s.calls.length,1);
+  const body=JSON.parse(s.calls[0].options.body);
+  assert.equal(body.stock,4);assert.ok(body.listings.every(l=>l.stock===4));
+});
+test('a late save cannot close or label a different SKU editor',async()=>{
+  const s=productEditor();let release;
+  s.context.fetchJson=async(path,options)=>{s.calls.push({path,options});if(path.endsWith('/stock'))return {changed:true,total_stock:4,new_stock:4,warehouse_stock_revision:3};await new Promise(r=>release=r);return {new_stock:4}};
+  const saving=s.run('saveInventoryProductAll(0)');
+  await new Promise(r=>setImmediate(r));
+  s.node('editSku').value='PCGRIP_ROJ';s.node('editorBox').innerHTML='ROJ editor';
+  s.run("warehouseUI.editor={itemId:13,sku:'PCGRIP_ROJ'}");const count=s.messages.length;
+  release();await saving;
+  assert.equal(s.node('editorBox').innerHTML,'ROJ editor');assert.equal(s.messages.length,count);
+});
+test('a metadata failure reports stock already saved instead of no changes',async()=>{
+  const s=productEditor('PCGRIP_ROJ');
+  s.context.fetchJson=async path=>{if(path.endsWith('/stock'))return {changed:true,total_stock:4,new_stock:4,warehouse_stock_revision:3};throw Error('price service unavailable')};
+  await s.run('saveInventoryProductAll(0)');
+  assert.equal(s.context.state.inventoryItems[0].stock,4);
+  assert.match(s.messages.at(-1)[0],/Stock de PCGRIP_ROJ guardado; faltó guardar otros cambios/);
+});
+test('loading a single-origin editor enables the master stock field',async()=>{
+  const s=productEditor();const product=s.run('warehouseUI.product');
+  s.context.fetchJson=async()=>product;
+  await s.run('loadWarehouseInventoryEditor(warehouseUI.editor)');
+  assert.equal(s.node('editStock').disabled,false);
+  assert.match(s.node('inventoryWarehouseStockHint').textContent,/Flores/);
+});
+test('channel quantities render read-only while their prices stay editable',()=>{
+  const s=productEditor();Object.assign(s.context,{listingPrice:()=>100,listingStock:()=>3,listingStatusTextSpan:()=>''});
+  vm.runInContext(page.slice(page.indexOf('function renderEditableListingsForItem('),page.indexOf('async function unlinkInventoryListing(')),s.context);
+  const html=s.run('renderEditableListingsForItem(state.inventoryItems[0],0)');
+  assert.match(html,/<input id="editListingStock_0_0"[^>]*readonly/);
+  assert.doesNotMatch(html,/<input id="editListingPrice_0_0"[^>]*readonly/);
+});
+
 test('missing origin stays unselected and blocks publication',async()=>{
   const s=screen();s.run('renderWarehouseProduct()');
   assert.match(s.node('warehouseProduct').innerHTML,/<option value="" selected>/);

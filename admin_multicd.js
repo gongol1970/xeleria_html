@@ -1,6 +1,40 @@
 'use strict';
 
 const warehouseUI={tenant:'',config:null,product:null,requests:new Map(),sheet:null,busy:false};
+function warehouseInventoryEditorCurrent(editor){return !!editor&&warehouseUI.editor===editor&&qs('editSku')?.value===editor.sku}
+function warehouseSingleStockTarget(product){
+  const origin=product?.ml_origin,rows=product?.warehouses||[];
+  if(!origin||!rows.length||!rows.every(w=>Number.isSafeInteger(w.stock)&&w.stock>=0))return null;
+  const selected=rows.find(w=>w.warehouse_id===origin.warehouse_id);
+  if(!selected?.active||!selected.stock_revision||!origin.revision)return null;
+  if(rows.some(w=>w!==selected&&w.stock!==0)||selected.stock!==product.item.stock)return null;
+  return selected;
+}
+async function loadWarehouseInventoryEditor(editor){
+  if(!warehouseMode())return;
+  editor.loading=true;
+  try{
+    const product=await fetchJson(`/admin/v2/inventory/products/${encodeURIComponent(editor.itemId)}/warehouses`,{retrySafeGet:false});
+    if(!warehouseInventoryEditorCurrent(editor))return;
+    editor.product=product;editor.target=warehouseSingleStockTarget(product);
+    const input=qs('editStock');input.value=product.item.stock;input.disabled=!editor.target;input.min='0';
+    input.title=editor.target?`Stock en ${editor.target.name}`:'Total calculado: editá las cantidades por depósito';
+    qs('inventoryWarehouseStockHint').textContent=editor.target?`El stock de arriba se guarda en ${editor.target.name}, tu origen elegido. Las cantidades de ML y TN son informativas.`:'El stock no está en un único origen verificado. Editá las cantidades por depósito; el total se calcula automáticamente.';
+  }catch(e){if(warehouseInventoryEditorCurrent(editor))invToolStatus('No pude verificar el stock por depósito: '+errText(e),false)}
+  finally{editor.loading=false;if(warehouseInventoryEditorCurrent(editor)&&qs('inventorySaveAll'))qs('inventorySaveAll').disabled=false}
+}
+async function saveWarehouseInventoryEditorStock(editor,item){
+  if(!warehouseMode()||inventoryIsBundle(item))return null;
+  if(!warehouseInventoryEditorCurrent(editor)||editor.loading||!editor.product)throw Error('Actualizá el editor para verificar el depósito antes de guardar.');
+  if(!editor.target)return null;
+  const stock=warehouseInteger(fieldVal('editStock'),'Stock'),w=editor.target;
+  if(stock===editor.product.item.stock)return null;
+  const body=warehouseRequest('editor-stock:'+item.id+':'+w.warehouse_id,{stock,expected_revision:w.stock_revision,single_origin_revision:editor.product.ml_origin.revision});
+  const result=await fetchJson(`/admin/v2/inventory/products/${item.id}/warehouses/${w.warehouse_id}/stock`,{method:'PUT',body:JSON.stringify(body)});
+  editor.product.item.stock=result.total_stock;w.stock=result.new_stock;w.stock_revision=result.warehouse_stock_revision;
+  item.stock=result.total_stock;
+  return {...result,warehouse_name:w.name};
+}
 function warehouseRequest(key,body){
   const signature=JSON.stringify(body),old=warehouseUI.requests.get(key);
   if(old?.signature===signature)return {...body,request_id:old.id};
@@ -8,7 +42,7 @@ function warehouseRequest(key,body){
 }
 async function loadWarehouseMode(force=false){
   const tenant=tenantId();
-  if(warehouseUI.tenant!==tenant){warehouseUI.tenant=tenant;warehouseUI.config=null;warehouseUI.product=null;warehouseUI.requests.clear();warehouseUI.sheet=null;warehouseUI.locations=null}
+  if(warehouseUI.tenant!==tenant){warehouseUI.tenant=tenant;warehouseUI.config=null;warehouseUI.product=null;warehouseUI.editor=null;warehouseUI.requests.clear();warehouseUI.sheet=null;warehouseUI.locations=null}
   if(force||!warehouseUI.config)warehouseUI.config=await fetchJson('/admin/v2/warehouses',{retrySafeGet:false});
   return warehouseUI.config;
 }
